@@ -1,4 +1,4 @@
-#include "../ESPEasyCore/ESPEasyWifi_abstrated.h"
+#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
 
 #ifdef ESP8266
 
