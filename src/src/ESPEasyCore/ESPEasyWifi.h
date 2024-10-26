@@ -112,10 +112,6 @@ bool checkAndResetWiFi();
 void resetWiFi();
 void initWiFi();
 
-#ifdef ESP32
-void removeWiFiEventHandler();
-void registerWiFiEventHandler();
-#endif
 
 #if FEATURE_SET_WIFI_TX_PWR
 void SetWiFiTXpower();

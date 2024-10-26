@@ -3,7 +3,6 @@
 #include "../../ESPEasy-Globals.h"
 #include "../DataStructs/TimingStats.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWiFiEvent.h"
 #include "../ESPEasyCore/ESPEasyWifi_ProcessEvent.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/Serial.h"
@@ -23,6 +22,11 @@
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringGenerator_WiFi.h"
 #include "../Helpers/StringProvider.h"
+
+
+
+#include "../ESPEasyCore/ESPEasyWifi_abstrated.h"
+
 
 #ifdef ESP32
 #include <WiFiGeneric.h>
@@ -261,28 +265,7 @@ bool WiFiConnected() {
 
   if (WiFiEventData.unprocessedWifiEvents()) { return false; }
 
-  bool wifi_isconnected = WiFi.isConnected();
-  #ifdef ESP8266
-  // Perform check on SDK function, see: https://github.com/esp8266/Arduino/issues/7432
-  station_status_t status = wifi_station_get_connect_status();
-  switch(status) {
-    case STATION_GOT_IP:
-      wifi_isconnected = true;
-      break;
-    case STATION_NO_AP_FOUND:
-    case STATION_CONNECT_FAIL:
-    case STATION_WRONG_PASSWORD:
-      wifi_isconnected = false;
-      break;
-    case STATION_IDLE:
-    case STATION_CONNECTING:
-      break;
-
-    default:
-      wifi_isconnected = false;
-      break;
-  }
-  #endif
+  bool wifi_isconnected = ESPEasy_WiFi_abstraction::WiFiConnected();
 
   if (recursiveCall) return wifi_isconnected;
   recursiveCall = true;
@@ -566,9 +549,7 @@ void AttemptWiFiConnect() {
 // Set Wifi config
 // ********************************************************************************
 bool prepareWiFi() {
-  #if defined(ESP32)
-  registerWiFiEventHandler();
-  #endif
+  ESPEasy_WiFi_abstraction::registerWiFiEventHandler();
 
   if (!WiFi_AP_Candidates.hasCandidateCredentials()) {
     if (!WiFiEventData.warnedNoValidWiFiSettings) {
@@ -677,21 +658,6 @@ void resetWiFi() {
   initWiFi();
 }
 
-#ifdef ESP32
-void removeWiFiEventHandler()
-{
-  WiFi.removeEvent(WiFiEventData.wm_event_id);
-  WiFiEventData.wm_event_id = 0;
-}
-
-void registerWiFiEventHandler()
-{
-  if (WiFiEventData.wm_event_id != 0) {
-    removeWiFiEventHandler();
-  }
-  WiFiEventData.wm_event_id = WiFi.onEvent(WiFiEvent);
-}
-#endif
 
 
 void initWiFi()
@@ -704,7 +670,7 @@ void initWiFi()
 //  WiFi = ESP8266WiFiClass();
 #endif // ifdef ESP8266
 #ifdef ESP32
-  removeWiFiEventHandler();
+  ESPEasy_WiFi_abstraction::removeWiFiEventHandler();
 #endif
 
 
@@ -719,23 +685,7 @@ void initWiFi()
   }
   setWifiMode(WIFI_OFF);
 
-#if defined(ESP32)
-  registerWiFiEventHandler();
-#endif
-#ifdef ESP8266
-  // WiFi event handlers
-  static bool handlers_initialized = false;
-  if (!handlers_initialized) {
-    stationConnectedHandler = WiFi.onStationModeConnected(onConnected);
-    stationDisconnectedHandler = WiFi.onStationModeDisconnected(onDisconnect);
-    stationGotIpHandler = WiFi.onStationModeGotIP(onGotIP);
-    stationModeDHCPTimeoutHandler = WiFi.onStationModeDHCPTimeout(onDHCPTimeout);
-    stationModeAuthModeChangeHandler = WiFi.onStationModeAuthModeChanged(onStationModeAuthModeChanged);
-    APModeStationConnectedHandler = WiFi.onSoftAPModeStationConnected(onConnectedAPmode);
-    APModeStationDisconnectedHandler = WiFi.onSoftAPModeStationDisconnected(onDisconnectedAPmode);
-    handlers_initialized = true;
-  }
-#endif
+  ESPEasy_WiFi_abstraction::registerWiFiEventHandler();
   delay(100);
 }
 
@@ -791,18 +741,7 @@ void SetWiFiTXpower(float dBm, float rssi) {
     dBm = minTXpwr;
   }
 
-  #ifdef ESP32
-  int8_t power = dBm * 4;
-  if (esp_wifi_set_max_tx_power(power) == ESP_OK)  {
-    if (esp_wifi_get_max_tx_power(&power) == ESP_OK)  {
-      dBm = static_cast<float>(power) / 4.0f;
-    }
-  }
-  #endif
-
-  #ifdef ESP8266
-  WiFi.setOutputPower(dBm);
-  #endif
+ESPEasy_WiFi_abstraction::SetWiFiTXpower(dBm);
 
   if (WiFiEventData.wifi_TX_pwr < dBm) {
     // Will increase the TX power, give power supply of the unit some rest
@@ -840,39 +779,7 @@ void SetWiFiTXpower(float dBm, float rssi) {
 
 float GetRSSIthreshold(float& maxTXpwr) {
   maxTXpwr = Settings.getWiFi_TX_power();
-  float threshold = WIFI_SENSITIVITY_n;
-  switch (getConnectionProtocol()) {
-    case WiFiConnectionProtocol::WiFi_Protocol_11b:
-      threshold = WIFI_SENSITIVITY_11b;
-      if (maxTXpwr > MAX_TX_PWR_DBM_11b) maxTXpwr = MAX_TX_PWR_DBM_11b;
-      break;
-    case WiFiConnectionProtocol::WiFi_Protocol_11g:
-      threshold = WIFI_SENSITIVITY_54g;
-      if (maxTXpwr > MAX_TX_PWR_DBM_54g) maxTXpwr = MAX_TX_PWR_DBM_54g;
-      break;
-#ifdef ESP8266
-    case WiFiConnectionProtocol::WiFi_Protocol_11n:
-#else
-    case WiFiConnectionProtocol::WiFi_Protocol_HT20:
-    case WiFiConnectionProtocol::WiFi_Protocol_HT40:
-    case WiFiConnectionProtocol::WiFi_Protocol_HE20:
-#endif
-
-      threshold = WIFI_SENSITIVITY_n;
-      if (maxTXpwr > MAX_TX_PWR_DBM_n) maxTXpwr = MAX_TX_PWR_DBM_n;
-      break;
-#ifdef ESP32
-#if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(5, 2, 0)
-    case WiFiConnectionProtocol::WiFi_Protocol_11a:
-    case WiFiConnectionProtocol::WiFi_Protocol_VHT20:
-      // FIXME TD-er: Must determine max. TX power for these 5 GHz modi
-#endif
-    case WiFiConnectionProtocol::WiFi_Protocol_LR:
-#endif
-    case WiFiConnectionProtocol::Unknown:
-      break;
-  }
-  return threshold;
+  return ESPEasy_WiFi_abstraction::GetRSSIthreshold(maxTXpwr);
 }
 
 int GetRSSI_quality() {
@@ -886,37 +793,7 @@ int GetRSSI_quality() {
 }
 
 WiFiConnectionProtocol getConnectionProtocol() {
-  if (WiFi.RSSI() < 0) {
-    #ifdef ESP8266
-    switch (wifi_get_phy_mode()) {
-      case PHY_MODE_11B:
-        return WiFiConnectionProtocol::WiFi_Protocol_11b;
-      case PHY_MODE_11G:
-        return WiFiConnectionProtocol::WiFi_Protocol_11g;
-      case PHY_MODE_11N:
-        return WiFiConnectionProtocol::WiFi_Protocol_11n;
-    }
-    #endif
-    #ifdef ESP32
-
-    wifi_phy_mode_t phymode;
-    esp_wifi_sta_get_negotiated_phymode(&phymode);
-    switch (phymode) {
-      case WIFI_PHY_MODE_11B:   return WiFiConnectionProtocol::WiFi_Protocol_11b;
-      case WIFI_PHY_MODE_11G:   return WiFiConnectionProtocol::WiFi_Protocol_11g;
-      case WIFI_PHY_MODE_HT20:  return WiFiConnectionProtocol::WiFi_Protocol_HT20;
-      case WIFI_PHY_MODE_HT40:  return WiFiConnectionProtocol::WiFi_Protocol_HT40;
-      case WIFI_PHY_MODE_HE20:  return WiFiConnectionProtocol::WiFi_Protocol_HE20;
-      case WIFI_PHY_MODE_LR:    return WiFiConnectionProtocol::WiFi_Protocol_LR;
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
-      // 5 GHz
-      case WIFI_PHY_MODE_11A:   return WiFiConnectionProtocol::WiFi_Protocol_11a;
-      case WIFI_PHY_MODE_VHT20: return WiFiConnectionProtocol::WiFi_Protocol_VHT20;
-#endif
-    }
-    #endif
-  }
-  return WiFiConnectionProtocol::Unknown;
+  return ESPEasy_WiFi_abstraction::getConnectionProtocol();
 }
 
 #ifdef ESP32
@@ -947,29 +824,7 @@ void WifiDisconnect()
   # ifndef BUILD_NO_DEBUG
   addLog(LOG_LEVEL_INFO, F("WiFi : WifiDisconnect()"));
   #endif
-  #ifdef ESP32
-  removeWiFiEventHandler();
-  WiFi.disconnect();
-  delay(100);
-  {
-    const IPAddress ip;
-    const IPAddress gw;
-    const IPAddress subnet;
-    const IPAddress dns;
-    WiFi.config(ip, gw, subnet, dns);
-  }
-  #endif
-  #ifdef ESP8266
-  // Only call disconnect when STA is active
-  if (WifiIsSTA(WiFi.getMode())) {
-    wifi_station_disconnect();
-  }
-  station_config conf{};
-  memset(&conf, 0, sizeof(conf));
-  ETS_UART_INTR_DISABLE();
-  wifi_station_set_config_current(&conf);
-  ETS_UART_INTR_ENABLE();
-  #endif
+  ESPEasy_WiFi_abstraction::WiFiDisconnect();
   WiFiEventData.setWiFiDisconnected();
   WiFiEventData.markDisconnect(WIFI_DISCONNECT_REASON_UNSPECIFIED);
   /*
@@ -1395,6 +1250,8 @@ void setWifiMode(WiFiMode_t new_mode) {
 
 
   if (new_mode == WIFI_OFF) {
+
+    // FIXME TD-er: Is this correct to mark Turn ON ????
     WiFiEventData.markWiFiTurnOn();
     #if defined(ESP32)
     // Needs to be set while WiFi is off
@@ -1410,42 +1267,19 @@ void setWifiMode(WiFiMode_t new_mode) {
     #endif // ifdef ESP8266
     delay(1);
   } else {
-    #ifdef ESP32
     if (cur_mode == WIFI_OFF) {
-      registerWiFiEventHandler();
+      ESPEasy_WiFi_abstraction::registerWiFiEventHandler();
     }
-    #endif
     // Only set power mode when AP is not enabled
     // When AP is enabled, the sleep mode is already set to WIFI_NONE_SLEEP
     if (!WifiIsAP(new_mode)) {
       if (Settings.WifiNoneSleep()) {
-        #ifdef ESP8266
-        WiFi.setSleepMode(WIFI_NONE_SLEEP);
-        #endif
-        #ifdef ESP32
-        WiFi.setSleep(WIFI_PS_NONE);
-        #endif
+        ESPEasy_WiFi_abstraction::setWiFiNoneSleep();
       } else if (Settings.EcoPowerMode()) {
-        // Allow light sleep during idle times
-        #ifdef ESP8266
-        WiFi.setSleepMode(WIFI_LIGHT_SLEEP);
-        #endif
-        #ifdef ESP32
-        // Maximum modem power saving. 
-        // In this mode, interval to receive beacons is determined by the listen_interval parameter in wifi_sta_config_t
-        // FIXME TD-er: Must test if this is desired behavior in ESP32.
-        WiFi.setSleep(WIFI_PS_MAX_MODEM);
-        #endif
+        ESPEasy_WiFi_abstraction::setWiFiEcoPowerMode();
       } else {
         // Default
-        #ifdef ESP8266
-        WiFi.setSleepMode(WIFI_MODEM_SLEEP);
-        #endif
-        #ifdef ESP32
-        // Minimum modem power saving. 
-        // In this mode, station wakes up to receive beacon every DTIM period
-        WiFi.setSleep(WIFI_PS_MIN_MODEM);
-        #endif
+        ESPEasy_WiFi_abstraction::setWiFiDefaultPowerMode();
       }
     }
 #if FEATURE_SET_WIFI_TX_PWR
@@ -1477,20 +1311,12 @@ void setWifiMode(WiFiMode_t new_mode) {
 
 bool WifiIsAP(WiFiMode_t wifimode)
 {
-  #if defined(ESP32)
-  return (wifimode == WIFI_MODE_AP) || (wifimode == WIFI_MODE_APSTA);
-  #else // if defined(ESP32)
-  return (wifimode == WIFI_AP) || (wifimode == WIFI_AP_STA);
-  #endif // if defined(ESP32)
+  return ESPEasy_WiFi_abstraction::WifiIsAP(wifimode);
 }
 
 bool WifiIsSTA(WiFiMode_t wifimode)
 {
-  #if defined(ESP32)
-  return (wifimode & WIFI_MODE_STA) != 0;
-  #else // if defined(ESP32)
-  return (wifimode & WIFI_STA) != 0;
-  #endif // if defined(ESP32)
+  return ESPEasy_WiFi_abstraction::WifiIsSTA(wifimode);
 }
 
 bool WiFiUseStaticIP() {
@@ -1510,103 +1336,7 @@ bool wifiAPmodeActivelyUsed()
 }
 
 void setConnectionSpeed() {
-  #ifdef ESP8266
-  // ESP8266 only supports 802.11g mode when running in STA+AP
-  const bool forcedByAPmode = WifiIsAP(WiFi.getMode());
-  WiFiPhyMode_t phyMode = (Settings.ForceWiFi_bg_mode() || forcedByAPmode) ? WIFI_PHY_MODE_11G : WIFI_PHY_MODE_11N;
-  if (!forcedByAPmode) {
-    const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
-    if (candidate.phy_known() && (candidate.bits.phy_11g != candidate.bits.phy_11n)) {
-      if ((WIFI_PHY_MODE_11G == phyMode) && !candidate.bits.phy_11g) {
-        phyMode = WIFI_PHY_MODE_11N;
-        addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11n only"));
-      } else if ((WIFI_PHY_MODE_11N == phyMode) && !candidate.bits.phy_11n) {
-        phyMode = WIFI_PHY_MODE_11G;
-        addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11g only"));
-      }      
-    } else {
-      bool useAlternate = WiFiEventData.connectionFailures > 10;
-      if (useAlternate) {
-        phyMode = (WIFI_PHY_MODE_11G == phyMode) ? WIFI_PHY_MODE_11N : WIFI_PHY_MODE_11G;
-      }
-    }
-  } else {
-    // No need to perform a next attempt.
-    WiFi_AP_Candidates.markAttempt();
-  }
-
-  if (WiFi.getPhyMode() == phyMode) {
-    return;
-  }
-  #ifndef BUILD_NO_DEBUG
-  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-    String log = concat(F("WIFI : Set to 802.11"), (WIFI_PHY_MODE_11G == phyMode) ? 'g' : 'n');
-    if (forcedByAPmode) {
-      log += (F(" (AP+STA mode)"));
-    }
-    if (Settings.ForceWiFi_bg_mode()) {
-      log += F(" Force B/G mode");
-    }
-    addLogMove(LOG_LEVEL_INFO, log);
-  }
-  #endif
-  WiFi.setPhyMode(phyMode);
-  #endif // ifdef ESP8266
-
-  // Does not (yet) work, so commented out.
-  #ifdef ESP32
-
-  // HT20 = 20 MHz channel width.
-  // HT40 = 40 MHz channel width.
-  // In theory, HT40 can offer upto 150 Mbps connection speed.
-  // However since HT40 is using nearly all channels on 2.4 GHz WiFi,
-  // Thus you are more likely to experience disturbances.
-  // The response speed and stability is better at HT20 for ESP units.
-  esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
-
-  uint8_t protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G; // Default to BG
-
-  if (!Settings.ForceWiFi_bg_mode() || (WiFiEventData.connectionFailures > 10)) {
-    // Set to use BGN
-    protocol |= WIFI_PROTOCOL_11N;
-    #ifdef ESP32C6
-    protocol |= WIFI_PROTOCOL_11AX;
-    #endif
-  }
-
-  const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
-  if (candidate.phy_known()) {
-    // Check to see if the access point is set to "N-only"
-    if ((protocol & WIFI_PROTOCOL_11N) == 0) {
-      if (!candidate.bits.phy_11b && !candidate.bits.phy_11g && candidate.bits.phy_11n) {
-        if (candidate.bits.phy_11n) {
-          // Set to use BGN
-          protocol |= WIFI_PROTOCOL_11N;
-          addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11n only"));
-        }
-#ifdef ESP32C6
-        if (candidate.bits.phy_11ax) {
-          // Set to use WiFi6
-          protocol |= WIFI_PROTOCOL_11AX;
-          addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11ax"));
-        }
-#endif
-      }
-    }
-  }
-
-
-  if (WifiIsSTA(WiFi.getMode())) {
-    // Set to use "Long GI" making it more resilliant to reflections
-    // See: https://www.tp-link.com/us/configuration-guides/q_a_basic_wireless_concepts/?configurationId=2958#_idTextAnchor038
-    esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS3_LGI);
-    esp_wifi_set_protocol(WIFI_IF_STA, protocol);
-  }
-
-  if (WifiIsAP(WiFi.getMode())) {
-    esp_wifi_set_protocol(WIFI_IF_AP, protocol);
-  }
-  #endif // ifdef ESP32
+  ESPEasy_WiFi_abstraction::setConnectionSpeed(Settings.ForceWiFi_bg_mode());
 }
 
 void setupStaticIPconfig() {
