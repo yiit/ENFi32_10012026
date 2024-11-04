@@ -43,21 +43,13 @@ struct WiFiEventData_t {
   void clear_processed_flags();
   void markWiFiBegin();
 
-  bool WiFiDisconnected() const {
-    return wifiStatus == ESPEASY_WIFI_DISCONNECTED;
-  }
-
-  bool WiFiGotIP() const {
-    return bitRead(wifiStatus, ESPEASY_WIFI_GOT_IP);
-  }
-
-  bool WiFiConnected() const {
-    return bitRead(wifiStatus, ESPEASY_WIFI_CONNECTED);
-  }
-
-  bool WiFiServicesInitialized() const {
-    return bitRead(wifiStatus, ESPEASY_WIFI_SERVICES_INITIALIZED);
-  }
+  bool WiFiDisconnected() const;
+  bool WiFiGotIP() const;
+#if FEATURE_USE_IPV6
+  bool WiFiGotIPv6() const;
+#endif
+  bool WiFiConnected() const;
+  bool WiFiServicesInitialized() const;
 
   void     setWiFiDisconnected();
   void     setWiFiGotIP();

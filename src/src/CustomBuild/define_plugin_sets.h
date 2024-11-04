@@ -1104,9 +1104,6 @@ To create/register a plugin, you have to :
     #define PLUGIN_SET_MAX
     #define CONTROLLER_SET_ALL
     #define NOTIFIER_SET_ALL
-    #ifndef TESTING_FEATURE_USE_IPV6
-        #define TESTING_FEATURE_USE_IPV6
-    #endif
     #ifndef PLUGIN_ENERGY_COLLECTION
         #define PLUGIN_ENERGY_COLLECTION
     #endif
@@ -3511,11 +3508,7 @@ To create/register a plugin, you have to :
 
 #ifndef FEATURE_USE_IPV6
 # if ESP_IDF_VERSION_MAJOR>=5 && defined(LWIP_IPV6)
-#  ifdef TESTING_FEATURE_USE_IPV6
-#   define FEATURE_USE_IPV6   1
-#  else 
-#   define FEATURE_USE_IPV6   0
-#  endif
+#  define FEATURE_USE_IPV6   1
 # else 
 #  define FEATURE_USE_IPV6   0
 # endif

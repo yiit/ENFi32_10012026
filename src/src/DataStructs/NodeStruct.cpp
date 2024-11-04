@@ -313,8 +313,10 @@ bool NodeStruct::match(const MAC_address& mac) const
 bool NodeStruct::isThisNode() const
 {
     // Check to see if we process a node we've sent ourselves.
+    #if FEATURE_WIFI
     if (WifiSoftAPmacAddress() == ap_mac) return true;
-    if (WifiSTAmacAddress() == sta_mac) return true;
+    #endif
+    if (NetworkMacAddress() == sta_mac) return true;
 
     return false;
 }

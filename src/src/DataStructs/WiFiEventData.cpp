@@ -10,41 +10,44 @@
 #include "../Helpers/Networking.h"
 
 
-#define WIFI_RECONNECT_WAIT                  30000  // in milliSeconds
+#define WIFI_RECONNECT_WAIT                  30000 // in milliSeconds
 
-#define CONNECT_TIMEOUT_MAX                  4000   // in milliSeconds
+#define CONNECT_TIMEOUT_MAX                  4000  // in milliSeconds
 
 
 #if FEATURE_USE_IPV6
-#include <esp_netif.h>
+# include <esp_netif.h>
 
 // -----------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------- Private functions ------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------
 
 esp_netif_t* get_esp_interface_netif(esp_interface_t interface);
-#endif
+#endif // if FEATURE_USE_IPV6
 
-
-
-bool WiFiEventData_t::WiFiConnectAllowed() const {
+bool         WiFiEventData_t::WiFiConnectAllowed() const {
   if (WiFi.status() == WL_IDLE_STATUS) {
     // FIXME TD-er: What to do now? Set a timer?
-    //return false;
-    if (last_wifi_connect_attempt_moment.isSet() && 
-       !last_wifi_connect_attempt_moment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
+    // return false;
+    if (last_wifi_connect_attempt_moment.isSet() &&
+        !last_wifi_connect_attempt_moment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
       return false;
     }
   }
-  if (!wifiConnectAttemptNeeded) return false;
-  if (intent_to_reboot) return false;
-  if (wifiSetupConnect) return true;
+
+  if (!wifiConnectAttemptNeeded) { return false; }
+
+  if (intent_to_reboot) { return false; }
+
+  if (wifiSetupConnect) { return true; }
+
   if (wifiConnectInProgress) {
-    if (last_wifi_connect_attempt_moment.isSet() && 
-       !last_wifi_connect_attempt_moment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
+    if (last_wifi_connect_attempt_moment.isSet() &&
+        !last_wifi_connect_attempt_moment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
       return false;
     }
-  } 
+  }
+
   if (lastDisconnectMoment.isSet()) {
     // TODO TD-er: Make this time more dynamic.
     if (!lastDisconnectMoment.timeoutReached(1000)) {
@@ -59,25 +62,29 @@ bool WiFiEventData_t::unprocessedWifiEvents() const {
 #if FEATURE_USE_IPV6
       && processedGotIP6
 #endif
-  )
+      )
   {
     return false;
   }
+
   if (!processedConnect) {
     if (lastConnectMoment.isSet() && lastConnectMoment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
       return false;
     }
   }
+
   if (!processedGotIP) {
     if (lastGetIPmoment.isSet() && lastGetIPmoment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
       return false;
     }
   }
+
   if (!processedDisconnect) {
     if (lastDisconnectMoment.isSet() && lastDisconnectMoment.timeoutReached(WIFI_PROCESS_EVENTS_TIMEOUT)) {
       return false;
     }
   }
+
   if (!processedDHCPTimeout) {
     return false;
   }
@@ -97,22 +104,23 @@ void WiFiEventData_t::clearAll() {
 
 void WiFiEventData_t::markWiFiTurnOn() {
   setWiFiDisconnected();
-//  lastDisconnectMoment.clear();
+
+  //  lastDisconnectMoment.clear();
   lastConnectMoment.clear();
   lastGetIPmoment.clear();
-  wifi_considered_stable    = false;
-  
+  wifi_considered_stable = false;
+
   clear_processed_flags();
 }
 
 void WiFiEventData_t::clear_processed_flags() {
   // Mark all flags to default to prevent handling old events.
   WiFi.scanDelete();
-  processedConnect          = true;
-  processedDisconnect       = true;
-  processedGotIP            = true;
+  processedConnect    = true;
+  processedDisconnect = true;
+  processedGotIP      = true;
   #if FEATURE_USE_IPV6
-  processedGotIP6           = true;
+  processedGotIP6 = true;
   #endif
   processedDHCPTimeout      = true;
   processedConnectAPmode    = true;
@@ -128,17 +136,17 @@ void WiFiEventData_t::clear_processed_flags() {
 void WiFiEventData_t::markWiFiBegin() {
   markWiFiTurnOn();
   last_wifi_connect_attempt_moment.setNow();
-  wifiConnectInProgress  = true;
-  usedChannel = 0;
+  wifiConnectInProgress = true;
+  usedChannel           = 0;
   ++wifi_connect_attempt;
+
   if (!timerAPstart.isSet()) {
     timerAPstart.setMillisFromNow(3 * WIFI_RECONNECT_WAIT);
   }
 }
 
-
 void WiFiEventData_t::setWiFiDisconnected() {
-  wifiStatus            = ESPEASY_WIFI_DISCONNECTED;
+  wifiStatus = ESPEASY_WIFI_DISCONNECTED;
   last_wifi_connect_attempt_moment.clear();
   wifiConnectInProgress = false;
 }
@@ -146,9 +154,11 @@ void WiFiEventData_t::setWiFiDisconnected() {
 void WiFiEventData_t::setWiFiGotIP() {
   bitSet(wifiStatus, ESPEASY_WIFI_GOT_IP);
   processedGotIP = true;
+
   if (valid_DNS_address(WiFi.dnsIP(0))) {
     dns0_cache = WiFi.dnsIP(0);
   }
+
   if (valid_DNS_address(WiFi.dnsIP(1))) {
     dns1_cache = WiFi.dnsIP(1);
   }
@@ -161,14 +171,14 @@ void WiFiEventData_t::setWiFiConnected() {
 
 void WiFiEventData_t::setWiFiServicesInitialized() {
   if (/*!unprocessedWifiEvents() && */ WiFiConnected() && WiFiGotIP()) {
-    # ifndef BUILD_NO_DEBUG
+    #ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_DEBUG, F("WiFi : WiFi services initialized"));
     #endif
     bitSet(wifiStatus, ESPEASY_WIFI_SERVICES_INITIALIZED);
-    wifiConnectInProgress = false;
+    wifiConnectInProgress    = false;
     wifiConnectAttemptNeeded = false;
-    dns0_cache = WiFi.dnsIP(0);
-    dns1_cache = WiFi.dnsIP(1);
+    dns0_cache               = WiFi.dnsIP(0);
+    dns1_cache               = WiFi.dnsIP(1);
   }
 }
 
@@ -183,12 +193,13 @@ void WiFiEventData_t::markGotIP() {
 }
 
 #if FEATURE_USE_IPV6
-  void WiFiEventData_t::markGotIPv6(const IPAddress& ip6) {
-    processedGotIP6 = false;
-    unprocessed_IP6 = ip6;
-  }
-#endif
 
+void WiFiEventData_t::markGotIPv6(const IPAddress& ip6) {
+  processedGotIP6 = false;
+  unprocessed_IP6 = ip6;
+}
+
+#endif // if FEATURE_USE_IPV6
 
 void WiFiEventData_t::markLostIP() {
   bitClear(wifiStatus, ESPEASY_WIFI_GOT_IP);
@@ -196,13 +207,13 @@ void WiFiEventData_t::markLostIP() {
 }
 
 void WiFiEventData_t::markDisconnect(WiFiDisconnectReason reason) {
-/*
-  #if defined(ESP32)
-  if ((WiFi.getMode() & WIFI_MODE_STA) == 0) return;
-  #else // if defined(ESP32)
-  if ((WiFi.getMode() & WIFI_STA) == 0) return;
-  #endif // if defined(ESP32)
-*/
+  /*
+   #if defined(ESP32)
+     if ((WiFi.getMode() & WIFI_MODE_STA) == 0) return;
+   #else // if defined(ESP32)
+     if ((WiFi.getMode() & WIFI_STA) == 0) return;
+   #endif // if defined(ESP32)
+   */
   lastDisconnectMoment.setNow();
   usedChannel = 0;
 
@@ -210,26 +221,29 @@ void WiFiEventData_t::markDisconnect(WiFiDisconnectReason reason) {
     // There was an unsuccessful connection attempt
     lastConnectedDuration_us = last_wifi_connect_attempt_moment.timeDiff(lastDisconnectMoment);
   } else {
-    if (last_wifi_connect_attempt_moment.isSet())
+    if (last_wifi_connect_attempt_moment.isSet()) {
       lastConnectedDuration_us = lastConnectMoment.timeDiff(lastDisconnectMoment);
-    else 
+    }
+    else {
       lastConnectedDuration_us = 0;
+    }
   }
-  lastDisconnectReason = reason;
-  processedDisconnect  = false;
+  lastDisconnectReason  = reason;
+  processedDisconnect   = false;
   wifiConnectInProgress = false;
 }
 
 void WiFiEventData_t::markConnected(const String& ssid, const uint8_t bssid[6], uint8_t channel) {
   usedChannel = channel;
   lastConnectMoment.setNow();
-  processedConnect    = false;
-  channel_changed     = RTC.lastWiFiChannel != channel;
-  last_ssid           = ssid;
-  bssid_changed       = false;
-  auth_mode           = WiFi_AP_Candidates.getCurrent().enc_type;
+  processedConnect = false;
+  channel_changed  = RTC.lastWiFiChannel != channel;
+  last_ssid        = ssid;
+  bssid_changed    = false;
+  auth_mode        = WiFi_AP_Candidates.getCurrent().enc_type;
 
   RTC.lastWiFiChannel = channel;
+
   for (uint8_t i = 0; i < 6; ++i) {
     if (RTC.lastBSSID[i] != bssid[i]) {
       bssid_changed    = true;
@@ -237,10 +251,11 @@ void WiFiEventData_t::markConnected(const String& ssid, const uint8_t bssid[6], 
     }
   }
 #if FEATURE_USE_IPV6
+
   if (Settings.EnableIPv6()) {
     WiFi.enableIPv6(true);
   }
-#endif
+#endif // if FEATURE_USE_IPV6
 }
 
 void WiFiEventData_t::markConnectedAPmode(const uint8_t mac[6]) {
@@ -253,19 +268,20 @@ void WiFiEventData_t::markDisconnectedAPmode(const uint8_t mac[6]) {
   processedDisconnectAPmode = false;
 }
 
-
-
 String WiFiEventData_t::ESPeasyWifiStatusToString() const {
   String log;
+
   if (WiFiDisconnected()) {
     log = F("DISCONNECTED");
   } else {
     if (WiFiConnected()) {
       log += F("Conn. ");
     }
+
     if (WiFiGotIP()) {
       log += F("IP ");
     }
+
     if (WiFiServicesInitialized()) {
       log += F("Init");
     }
@@ -273,12 +289,63 @@ String WiFiEventData_t::ESPeasyWifiStatusToString() const {
   return log;
 }
 
-
 uint32_t WiFiEventData_t::getSuggestedTimeout(int index, uint32_t minimum_timeout) const {
   auto it = connectDurations.find(index);
+
   if (it == connectDurations.end()) {
     return 3 * minimum_timeout;
   }
   const uint32_t res = 3 * it->second;
   return constrain(res, minimum_timeout, CONNECT_TIMEOUT_MAX);
 }
+
+
+#ifdef ESP8266
+  bool WiFiEventData_t::WiFiDisconnected() const {
+    return wifiStatus == ESPEASY_WIFI_DISCONNECTED;
+  }
+
+  bool WiFiEventData_t::WiFiGotIP() const {
+    return bitRead(wifiStatus, ESPEASY_WIFI_GOT_IP);
+  }
+
+  bool WiFiEventData_t::WiFiConnected() const {
+    return bitRead(wifiStatus, ESPEASY_WIFI_CONNECTED);
+  }
+
+  bool WiFiEventData_t::WiFiServicesInitialized() const {
+    return bitRead(wifiStatus, ESPEASY_WIFI_SERVICES_INITIALIZED);
+  }
+
+#endif
+
+#ifdef ESP32
+  bool WiFiEventData_t::WiFiDisconnected() const {
+    return !WiFi.STA.connected();
+  }
+
+  bool WiFiEventData_t::WiFiGotIP() const {
+    return WiFi.STA.hasIP();
+  }
+
+#if FEATURE_USE_IPV6
+  bool WiFiEventData_t::WiFiGotIPv6() const {
+    return WiFi.STA.hasGlobalIPv6();
+  }
+#endif
+
+  bool WiFiEventData_t::WiFiConnected() const {
+    return WiFi.STA.connected();
+  }
+
+  bool WiFiEventData_t::WiFiServicesInitialized() const {
+    return WiFiConnected() && 
+#if FEATURE_USE_IPV6
+(WiFiGotIP() || WiFi.STA.hasGlobalIPv6() || WiFi.STA.hasLinkLocalIPv6());
+#else
+    WiFiGotIP();
+#endif
+  }
+
+  #endif
+

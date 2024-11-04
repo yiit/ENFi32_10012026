@@ -45,7 +45,7 @@ bool WiFi_pre_STA_setup()
   return true;
 }
 
-STA_connected_state getSTA_connected_state() 
+STA_connected_state getSTA_connected_state()
 {
   switch (WiFi.status())
   {
@@ -117,11 +117,8 @@ bool setWifiMode(WiFiMode_t new_mode)
 
 
   if (cur_mode == WIFI_OFF) {
-    #  if defined(ESP32)
-
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
-    #  endif // if defined(ESP32)
     WiFiEventData.markWiFiTurnOn();
   }
 
@@ -166,20 +163,13 @@ bool setWifiMode(WiFiMode_t new_mode)
 
     // FIXME TD-er: Is this correct to mark Turn ON ????
     WiFiEventData.markWiFiTurnOn();
-    #  if defined(ESP32)
 
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
-    #  endif // if defined(ESP32)
     delay(100);
-    #  if defined(ESP32)
     esp_wifi_set_ps(WIFI_PS_NONE);
 
     //    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
-    #  endif // if defined(ESP32)
-    #  ifdef ESP8266
-    WiFi.forceSleepBegin();
-    #  endif // ifdef ESP8266
     delay(1);
   } else {
     if (cur_mode == WIFI_OFF) {
@@ -380,17 +370,10 @@ void setWiFiNoneSleep() { WiFi.setSleep(WIFI_PS_NONE); }
 
 void setWiFiEcoPowerMode()
 {
-  // Allow light sleep during idle times
-#  ifdef ESP8266
-  WiFi.setSleepMode(WIFI_LIGHT_SLEEP);
-#  endif // ifdef ESP8266
-#  ifdef ESP32
-
   // Maximum modem power saving.
   // In this mode, interval to receive beacons is determined by the listen_interval parameter in wifi_sta_config_t
   // FIXME TD-er: Must test if this is desired behavior in ESP32.
   WiFi.setSleep(WIFI_PS_MAX_MODEM);
-#  endif // ifdef ESP32
 }
 
 void setWiFiDefaultPowerMode()

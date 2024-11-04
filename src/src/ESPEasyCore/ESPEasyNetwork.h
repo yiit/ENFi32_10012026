@@ -40,8 +40,10 @@ MAC_address NetworkMacAddress();
 String NetworkGetHostNameFromSettings(bool force_add_unitnr = false);
 String NetworkGetHostname();
 String NetworkCreateRFCCompliantHostname(bool force_add_unitnr = false);
+#if FEATURE_WIFI
 MAC_address WifiSoftAPmacAddress();
 MAC_address WifiSTAmacAddress();
+#endif
 
 void CheckRunningServices();
 

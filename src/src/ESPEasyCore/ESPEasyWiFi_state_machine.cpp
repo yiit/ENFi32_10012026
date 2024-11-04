@@ -21,7 +21,7 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-    # define WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT   2000
+    # define WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT   6000
     # define WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT  10000
     # define WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT     10000
 
@@ -53,7 +53,7 @@ void ESPEasyWiFi_t::loop()
 
 
   if (_state != WiFiState_e::IdleWaiting) {
-    if (_callbackError || 
+    if (_callbackError ||
         (_state_timeout.isSet() && _state_timeout.timeReached()))
     {
       // TODO TD-er: Must check what error was given???
@@ -135,12 +135,6 @@ void ESPEasyWiFi_t::loop()
     // Check if we need to start AP
     // Flag captive portal in webserver and/or whether we might be in setup mode
   }
-
-# ifdef USE_IMPROV
-  {
-    // Check for Improv mode.
-  }
-# endif // ifdef USE_IMPROV
 }
 
 bool ESPEasyWiFi_t::connected() const
@@ -150,12 +144,17 @@ bool ESPEasyWiFi_t::connected() const
 
 IPAddress ESPEasyWiFi_t::getIP() const
 {
-  IPAddress res;
+  if (WiFi.STA.hasIP()) {
+    return WiFi.STA.localIP();
+  }
 
-  return res;
+  if (WiFi.AP.hasIP()) {
+    return WiFi.AP.localIP();
+  }
+  return IPAddress();
 }
 
-void ESPEasyWiFi_t::disconnect() {}
+void ESPEasyWiFi_t::disconnect() { WiFi.disconnect(Settings.WiFiRestart_connection_lost()); }
 
 void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
@@ -200,8 +199,13 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       break;
     case WiFiState_e::STA_Connecting:
     case WiFiState_e::STA_Reconnecting:
+
       // Start connecting
-      connectSTA();
+      if (!connectSTA()) {
+        // TODO TD-er: Must keep track of failed attempts and start AP when either no credentials present or nr. of attempts failed > some
+        // threshold.
+        setState(WiFiState_e::IdleWaiting, 100);
+      }
       break;
     case WiFiState_e::STA_Connected:
       _last_seen_connected.setNow();
@@ -255,7 +259,6 @@ bool ESPEasyWiFi_t::connectSTA()
   // Start the process of connecting or starting AP
   if (!WiFi_AP_Candidates.getNext(true))
   {
-    startScanning();
     return false;
   }
 
@@ -303,13 +306,22 @@ bool ESPEasyWiFi_t::connectSTA()
     }
 # endif // ifdef ESP32
 
-
-    if ((Settings.HiddenSSID_SlowConnectPerBSSID() || !candidate.bits.isHidden)
-        && candidate.allowQuickConnect()
-        && (_state == WiFiState_e::STA_Reconnecting)) {
-      WiFi.begin(candidate.ssid.c_str(), key.c_str(), candidate.channel, candidate.bssid.mac);
+    if (candidate.bits.isHidden /*&& Settings.HiddenSSID_SlowConnectPerBSSID()*/) {
+      WiFi.disconnect();
+      delay(100);
+      WiFi.begin("" /*candidate.ssid.c_str()*/, key.c_str(), candidate.channel, candidate.bssid.mac);
+      // If the ssid returned from the scan is empty, it is a hidden SSID
+      // it appears that the WiFi.begin() function is asynchronous and takes
+      // additional time to connect to a hidden SSID. Therefore a delay of 1000ms
+      // is added for hidden SSIDs before calling WiFi.status()
+      delay(1000);
+//      WiFi.waitForConnectResult(6000);
     } else {
-      WiFi.begin(candidate.ssid.c_str(), key.c_str());
+      if (candidate.allowQuickConnect()) {
+        WiFi.begin(candidate.ssid.c_str(), key.c_str(), candidate.channel, candidate.bssid.mac);
+      } else {
+        WiFi.begin(candidate.ssid.c_str(), key.c_str());
+      }
     }
 
     // Always wait for a second

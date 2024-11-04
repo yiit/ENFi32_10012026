@@ -488,6 +488,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::DNS_1:                  return formatIP(NetworkDnsIP(0));
     case LabelType::DNS_2:                  return formatIP(NetworkDnsIP(1));
     case LabelType::ALLOWED_IP_RANGE:       return describeAllowedIPrange();
+#if FEATURE_WIFI
     case LabelType::STA_MAC:                return WifiSTAmacAddress().toString();
     case LabelType::AP_MAC:                 return WifiSoftAPmacAddress().toString();
     case LabelType::SSID:                   return WiFi.SSID();
@@ -495,6 +496,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::CHANNEL:                retval = WiFi.channel(); break;
     case LabelType::ENCRYPTION_TYPE_STA:    return // WiFi_AP_Candidates.getCurrent().encryption_type();
                                                    WiFi_encryptionType(WiFiEventData.auth_mode);
+#endif
     case LabelType::CONNECTED:
       #if FEATURE_ETHERNET
       if(active_network_medium == NetworkMedium_t::Ethernet) {
