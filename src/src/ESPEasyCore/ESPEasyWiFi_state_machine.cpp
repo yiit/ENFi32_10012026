@@ -59,7 +59,7 @@ void ESPEasyWiFi_t::loop()
     {
       // TODO TD-er: Must check what error was given???
       _callbackError = false;
-      setState(WiFiState_e::OFF);
+      setState(WiFiState_e::WiFiOFF);
     }
   }
 
@@ -68,7 +68,7 @@ void ESPEasyWiFi_t::loop()
     case WiFiState_e::Disabled:
       // Do nothing here, as the device is disabled.
       break;
-    case WiFiState_e::OFF:
+    case WiFiState_e::WiFiOFF:
       begin();
 
       //      setState(WiFiState_e::IdleWaiting, 100);
@@ -94,7 +94,7 @@ void ESPEasyWiFi_t::loop()
     case WiFiState_e::STA_AP_Scanning:
 
       if (_state_timeout.timeReached() || (WiFi.scanComplete() >= 0)) {
-        setState(WiFiState_e::OFF, 100);
+        setState(WiFiState_e::WiFiOFF, 100);
       }
 
       // Check if scanning is finished
@@ -113,7 +113,7 @@ void ESPEasyWiFi_t::loop()
         if (_state == WiFiState_e::STA_Connecting) {
           setState(WiFiState_e::STA_Reconnecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
         } else {
-          setState(WiFiState_e::OFF);
+          setState(WiFiState_e::WiFiOFF);
         }
       }
 
@@ -123,7 +123,7 @@ void ESPEasyWiFi_t::loop()
 
       // Check if still connected
       if (getSTA_connected_state() != STA_connected_state::Connected) {
-        setState(WiFiState_e::OFF);
+        setState(WiFiState_e::WiFiOFF);
       } else {
         // Else mark last timestamp seen as connected
         _last_seen_connected.setNow();
@@ -172,7 +172,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
     case WiFiState_e::Disabled:
       // Do nothing here, as the device is disabled.
       break;
-    case WiFiState_e::OFF:
+    case WiFiState_e::WiFiOFF:
       // TODO TD-er: Must cancel all and turn off WiFi.
       break;
     case WiFiState_e::AP_only:

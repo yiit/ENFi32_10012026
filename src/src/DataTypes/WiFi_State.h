@@ -58,7 +58,7 @@ enum class WiFiState_e
   Disabled,
 
   // WiFi radio off, to continue, everything needs to be (re)initialized
-  OFF,
+  WiFiOFF,
 
   // Only running in AP mode
   AP_only,
