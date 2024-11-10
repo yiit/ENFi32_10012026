@@ -63,9 +63,13 @@
 # include "hal/efuse_ll.h"
 # include "hal/efuse_hal.h"
 #else
-#include <soc/efuse_defs.h>
+# include <soc/efuse_defs.h>
+# include <bootloader_common.h>
+
+# if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(5, 2, 0)
 // IDF5.3 fix esp_gpio_reserve used in init PSRAM.
-#include "esp_private/esp_gpio_reserve.h"
+#  include "esp_private/esp_gpio_reserve.h"
+# endif
 #endif
 #endif
 
@@ -148,17 +152,38 @@ void ESPEasy_setup()
     // test if the CPU is not pico
     #if ESP_IDF_VERSION_MAJOR < 5
     uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_VER_PKG);
+    uint32_t pkg_version = chip_ver & 0x7;
     #else
+    uint32_t pkg_version = bootloader_common_get_chip_ver_pkg();
     uint32_t chip_ver = REG_GET_FIELD(EFUSE_BLK0_RDATA3_REG, EFUSE_RD_CHIP_PACKAGE);
     #endif
-    uint32_t pkg_version = chip_ver & 0x7;
-    if (pkg_version <= 3) {   // D0WD, S0WD, D2WD
-    #if ESP_IDF_VERSION_MAJOR >= 5
+    if (pkg_version <= 7) {   // D0WD, S0WD, D2WD
+    gpio_num_t PSRAM_CLK = GPIO_NUM_17;
+    gpio_num_t PSRAM_CS  = GPIO_NUM_16;
+    switch (pkg_version) {
+      case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5:
+        PSRAM_CLK = static_cast<gpio_num_t>(CONFIG_D2WD_PSRAM_CLK_IO);
+        PSRAM_CS  = static_cast<gpio_num_t>(CONFIG_D2WD_PSRAM_CS_IO);
+        break;
+      case EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4:
+      case EFUSE_RD_CHIP_VER_PKG_ESP32PICOV302:
+        PSRAM_CLK = static_cast<gpio_num_t>(GPIO_NUM_NC);
+        PSRAM_CS  = static_cast<gpio_num_t>(CONFIG_PICO_PSRAM_CS_IO);
+        break;
+    }
+
+#if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(5, 2, 0)
       // Thanks Theo Arends from Tasmota
-      esp_gpio_revoke(BIT64(GPIO_NUM_16 | GPIO_NUM_17));
-    #endif
-      gpio_reset_pin(GPIO_NUM_16);
-      gpio_reset_pin(GPIO_NUM_17);
+      if (PSRAM_CLK != GPIO_NUM_NC) {
+        esp_gpio_revoke(BIT64(PSRAM_CLK) | BIT64(PSRAM_CS));
+      } else {
+        esp_gpio_revoke(BIT64(PSRAM_CS));
+      }
+#endif
+      if (PSRAM_CLK != GPIO_NUM_NC) {
+        gpio_reset_pin(PSRAM_CLK);
+      }
+      gpio_reset_pin(PSRAM_CS);
     }
   }
 #endif  // if CONFIG_IDF_TARGET_ESP32
