@@ -86,7 +86,7 @@ void RTOS_TaskServers(void *parameter)
     web_server.handleClient();
     # if FEATURE_ESPEASY_P2P
     checkUDP();
-    # endif
+    # endif // if FEATURE_ESPEASY_P2P
   }
 }
 
@@ -135,10 +135,10 @@ void ESPEasy_setup()
 #endif // if defined(ESP8266_DISABLE_EXTRA4K) || defined(USE_SECOND_HEAP)
 #ifdef PHASE_LOCKED_WAVEFORM
   enablePhaseLockedWaveform();
-#endif
+#endif // ifdef PHASE_LOCKED_WAVEFORM
 #ifdef USE_SECOND_HEAP
   HeapSelectDram ephemeral;
-#endif
+#endif // ifdef USE_SECOND_HEAP
 #ifdef ESP32
 # ifdef DISABLE_ESP32_BROWNOUT
   DisableBrownout(); // Workaround possible weak LDO resulting in brownout detection during Wifi connection
@@ -146,7 +146,7 @@ void ESPEasy_setup()
 
 # ifdef BOARD_HAS_PSRAM
   psramInit();
-# endif
+# endif // ifdef BOARD_HAS_PSRAM
 
 # if CONFIG_IDF_TARGET_ESP32
 
@@ -227,7 +227,7 @@ void ESPEasy_setup()
 
 #ifndef BUILD_MINIMAL_OTA
   run_compiletime_checks();
-#endif
+#endif // ifndef BUILD_MINIMAL_OTA
 #ifdef ESP8266
 
   //  ets_isr_attach(8, sw_watchdog_callback, nullptr);  // Set a callback for feeding the watchdog.
@@ -257,7 +257,7 @@ void ESPEasy_setup()
   initLog();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("initLog()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
   #ifdef BOARD_HAS_PSRAM
 
   if (FoundPSRAM()) {
@@ -342,22 +342,22 @@ void ESPEasy_setup()
   }
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("RTC init"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
   fileSystemCheck();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("fileSystemCheck()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
   //  progMemMD5check();
   LoadSettings();
 #if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
   ESPEasy_Console.reInit();
-#endif
+#endif // if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
 
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("LoadSettings()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
 #ifdef ESP32
 
@@ -383,7 +383,7 @@ void ESPEasy_setup()
   hardwareInit();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("hardwareInit()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
   node_time.restoreFromRTC();
 
@@ -474,14 +474,14 @@ void ESPEasy_setup()
   }
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("WifiScan()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
 
   //  ESPEasy::net::wifi::setWifiMode(WIFI_STA);
   checkRuleSets();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("checkRuleSets()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
 
   // if different version, eeprom settings structure has changed. Full Reset needed
@@ -501,7 +501,7 @@ void ESPEasy_setup()
   initSerial();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("initSerial()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLogMove(LOG_LEVEL_INFO, concat(F("INIT : Free RAM:"), FreeMem()));
@@ -519,7 +519,7 @@ void ESPEasy_setup()
   CPluginInit();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("CPluginInit()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
   #if FEATURE_NOTIFIER
   NPluginInit();
   # ifndef BUILD_NO_RAM_TRACKER
@@ -556,7 +556,7 @@ void ESPEasy_setup()
   clearAllCaches();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("clearAllCaches()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
   if (Settings.UseRules && isDeepSleepEnabled())
   {
@@ -610,12 +610,12 @@ void ESPEasy_setup()
   NetworkConnectRelaxed();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("NetworkConnectRelaxed()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
   setWebserverRunning(true);
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("setWebserverRunning()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
 
   #if FEATURE_REPORTING
@@ -633,7 +633,7 @@ void ESPEasy_setup()
     node_time.initTime();
     #ifndef BUILD_NO_RAM_TRACKER
     logMemUsageAfter(F("node_time.initTime()"));
-    #endif
+    #endif // ifndef BUILD_NO_RAM_TRACKER
   }
 
   if (Settings.UseRules)
@@ -642,13 +642,13 @@ void ESPEasy_setup()
     rulesProcessing(event); // TD-er: Process events in the setup() now.
     #ifndef BUILD_NO_RAM_TRACKER
     logMemUsageAfter(F("rulesProcessing(System#Boot)"));
-    #endif
+    #endif // ifndef BUILD_NO_RAM_TRACKER
   }
 
   writeDefaultCSS();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("writeDefaultCSS()"));
-  #endif
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 
 
   #ifdef USE_RTOS_MULTITASKING
@@ -683,6 +683,5 @@ void ESPEasy_setup()
   Scheduler.setIntervalTimerOverride(SchedulerIntervalTimer_e::TIMER_STATISTICS, 2222);
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("Scheduler.setIntervalTimerOverride"));
-  #endif
-
+  #endif // ifndef BUILD_NO_RAM_TRACKER
 }
