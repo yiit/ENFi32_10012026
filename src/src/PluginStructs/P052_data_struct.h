@@ -107,6 +107,9 @@ struct P052_data_struct : public PluginTaskData_base {
 
   static const __FlashStringHelper* Plugin_052_valuename(uint8_t value_nr,
                                                          bool    displayString);
+  #if FEATURE_MQTT_DISCOVER
+  static const int Plugin_052_valueVType(uint8_t value_nr);
+  #endif
 
   void                              setABCperiod(int hours);
 

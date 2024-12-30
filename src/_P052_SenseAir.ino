@@ -7,6 +7,11 @@
 // ############################# Plugin 052: Senseair CO2 Sensors ########################################
 // #######################################################################################################
 
+/** Changelog:
+ * 2024-12-05 tonhuisman: Add support for MQTT AutoDiscovery for supported values
+ * 2024-12 tonhuisman: Start changelog
+ */
+
 /*
    Plugin originally written by: Daniel Tedenljung
    info__AT__tedenljungconsulting.com
@@ -68,6 +73,17 @@ boolean Plugin_052(uint8_t function, struct EventStruct *event, String& string) 
       }
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      for (uint8_t i = 0; i < P052_NR_OUTPUT_VALUES; ++i) {
+        event->ParN[i] = P052_data_struct::Plugin_052_valueVType(i);
+      }
+      success = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_GET_DEVICEVALUECOUNT:
     {
