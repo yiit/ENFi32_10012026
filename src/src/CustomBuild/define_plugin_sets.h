@@ -3621,11 +3621,11 @@ To create/register a plugin, you have to :
 
 
   #ifndef FEATURE_THINGSPEAK_EVENT
-    #ifdef LIMIT_BUILD_SIZE
       #define FEATURE_THINGSPEAK_EVENT 0
-    #else
-      #define FEATURE_THINGSPEAK_EVENT 1
-    #endif
+  #endif
+
+  #ifndef FEATURE_OPENMETEO_EVENT
+    #define FEATURE_OPENMETEO_EVENT 0
   #endif
 
   #if !(defined(SOC_DAC_SUPPORTED) && SOC_DAC_SUPPORTED)

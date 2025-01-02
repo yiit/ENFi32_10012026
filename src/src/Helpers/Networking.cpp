@@ -1683,7 +1683,7 @@ int http_authenticate(const String& logIdentifier,
     }
     #endif
 
-    # if FEATURE_OMETEO_EVENT
+      # if FEATURE_OPENMETEO_EVENT
 
     // Generate an event with the response of an open-meteo request.
     // Example command:
@@ -1724,10 +1724,9 @@ int http_authenticate(const String& logIdentifier,
         auto processAndQueueParams = [](String& params, String& str, String eventName) {
                                        if (!params.isEmpty()) {
                                          String keys[20];
-                                         int    keyCount = 0;
-
-                                         int startIndex = 0;
-                                         int commaIndex = params.indexOf(',');
+                                         int    keyCount   = 0;
+                                         int    startIndex = 0;
+                                         int    commaIndex = params.indexOf(',');
 
                                          // Split and add keys to the array
                                          while (commaIndex != -1) {
@@ -1800,7 +1799,7 @@ int http_authenticate(const String& logIdentifier,
         processAndQueueParams(hourlyParams,  str, "hourly");
         processAndQueueParams(dailyParams,   str, "daily");
       }
-  }
+    }
    # endif // if FEATURE_OMETEO_EVENT
   }
 
