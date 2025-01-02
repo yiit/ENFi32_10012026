@@ -1683,7 +1683,7 @@ int http_authenticate(const String& logIdentifier,
     }
     #endif
 
-      # if FEATURE_OPENMETEO_EVENT
+    # if FEATURE_OPENMETEO_EVENT
 
     // Generate an event with the response of an open-meteo request.
     // Example command:
@@ -1704,24 +1704,24 @@ int http_authenticate(const String& logIdentifier,
         addLog(LOG_LEVEL_ERROR, F("Response exceeds 5000 characters"));
       }
       else {
-        String str = http.getString();
+        const String str = http.getString();
 
         // Process URL to get unique keys
-        auto getCombinedParams = [](String url, String paramName) {
-                                   int start = url.indexOf(paramName + "=");
+        auto getCombinedParams = [](const String& url, const String& paramName) {
+                                   int start = url.indexOf(paramName + '=');
 
-                                   if (start == -1) { return String(""); }
+                                   if (start == -1) { return EMPTY_STRING; }
                                    start += paramName.length() + 1;
-                                   int end = url.indexOf('&', start);
+                                   const int end = url.indexOf('&', start);
                                    return (end == -1) ? url.substring(start) : url.substring(start, end);
                                  };
 
         // Extract current hourly and daily parameters
-        String currentParams = getCombinedParams(uri, "current");
-        String hourlyParams  = getCombinedParams(uri, "hourly");
-        String dailyParams   = getCombinedParams(uri, "daily");
+        const String currentParams = getCombinedParams(uri, F("current"));
+        const String hourlyParams  = getCombinedParams(uri, F("hourly"));
+        const String dailyParams = getCombinedParams(uri, F("daily"));
 
-        auto processAndQueueParams = [](String& params, String& str, String eventName) {
+        auto processAndQueueParams = [](const String& params, const String& str, const String& eventName) {
                                        if (!params.isEmpty()) {
                                          String keys[20];
                                          int    keyCount   = 0;
@@ -1730,6 +1730,10 @@ int http_authenticate(const String& logIdentifier,
 
                                          // Split and add keys to the array
                                          while (commaIndex != -1) {
+                                           if (keyCount >= 20){
+                                             // stop adding keys if array is full
+                                             break;
+                                           }
                                            String key = params.substring(startIndex, commaIndex);
                                            keys[keyCount++] = key;
                                            startIndex       = commaIndex + 1;
@@ -1737,29 +1741,33 @@ int http_authenticate(const String& logIdentifier,
                                          }
 
                                          // Add the last key
-                                         String lastKey = params.substring(startIndex);
-                                         keys[keyCount++] = lastKey;
+                                         if (keyCount < 20) {
+                                          const String lastKey = params.substring(startIndex);
+                                          keys[keyCount++] = lastKey;
+                                         } else {
+                                          addLog(LOG_LEVEL_ERROR, F("Too many keys in the URL"));
+                                         }
 
-                                         String csv              = "";
-                                         int    startStringIndex = str.indexOf("\"" + eventName + "\":") + eventName.length() + 4;
-                                         int    endStringIndex   = str.indexOf("}", startStringIndex);
+                                         String csv;
+                                         const int    startStringIndex = str.indexOf("\"" + eventName + "\":") + eventName.length() + 4;
+                                         const int    endStringIndex   = str.indexOf("}", startStringIndex);
 
                                          for (int i = 0; i < keyCount; i++) // Use keyCount to limit the iteration
                                          {
                                            String key        = keys[i];
-                                           String value      = "";
+                                           String value;
                                            int    startIndex = str.indexOf(key + "\":", startStringIndex);
 
                                            if (startIndex == -1)
                                            {
                                              // Handle case where key is not found
-                                             value = "-256"; // Placeholder value
+                                             value = F("-256"); // Placeholder value
                                            }
                                            else
                                            {
                                              int endIndex = 0;
 
-                                             if (eventName != "current") { // in daily and hourly the values are stored in an
+                                             if (!equals(eventName, F("current"))) { // in daily and hourly the values are stored in an
                                                // array
                                                // so
                                                // get rid of the brackets and put the values in a csv
@@ -1786,18 +1794,19 @@ int http_authenticate(const String& logIdentifier,
 
                                            if (!csv.isEmpty())
                                            {
-                                             csv += ",";
+                                             csv += ',';
                                            }
                                            csv += value;
                                          }
-                                         eventName = "OpenMeteo#" + eventName;
+
+                                         concat(F("OpenMeteo#"), eventName);
                                          eventQueue.addMove(strformat(F("%s=%s"), eventName.c_str(), csv.c_str()));
                                        }
                                      };
 
-        processAndQueueParams(currentParams, str, "current");
-        processAndQueueParams(hourlyParams,  str, "hourly");
-        processAndQueueParams(dailyParams,   str, "daily");
+        processAndQueueParams(currentParams, str, F("current"));
+        processAndQueueParams(hourlyParams,  str, F("hourly"));
+        processAndQueueParams(dailyParams,   str, F("daily"));
       }
     }
    # endif // if FEATURE_OMETEO_EVENT
