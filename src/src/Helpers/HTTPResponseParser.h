@@ -2,6 +2,8 @@
 #define HELPERS_HTTPRESPONSEPARSER_H
 
 #include "../../ESPEasy_common.h"
+#include "../../_Plugin_Helper.h"
+
 
 // Function declarations
 void eventFromResponse(const String& host,
@@ -9,5 +11,4 @@ void eventFromResponse(const String& host,
                        const String& uri,
                        HTTPClient  & http);
 
-
-#endif // OTHER_H
+#endif // ifndef HELPERS_HTTPRESPONSEPARSER_H

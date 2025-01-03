@@ -3,9 +3,12 @@
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringProvider.h"
 
+#include <ArduinoJson.h>
 
 void eventFromResponse(const String& host, const int& httpCode, const String& uri, HTTPClient& http) {
-  #if FEATURE_THINGSPEAK_EVENT
+    
+  // -------------------------------------------------------------------------------------------Thingspeak
+#if FEATURE_THINGSPEAK_EVENT
 
   // Generate event with the response of a
   // thingspeak request (https://de.mathworks.com/help/thingspeak/readlastfieldentry.html &
@@ -28,8 +31,7 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
   // => gets the value of each field of the channel 1637928 at (or the last entry before) 23:59:00
   // -----------------------------------------------------------------------------------------------------------------------------
 
-  if ((httpCode == 200) && equals(host,
-                                  F("api.thingspeak.com")) &&
+  if ((httpCode == 200) && equals(host, F("api.thingspeak.com")) &&
       (uri.endsWith(F("/last.csv")) || ((uri.indexOf(F("results=1")) >= 0) && (uri.indexOf(F(".csv")) >= 0)))) {
     String result = http.getString();
 
@@ -51,9 +53,10 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
                            result.c_str()));
     }
   }
-    #endif // if FEATURE_THINGSPEAK_EVENT
+#endif // if FEATURE_THINGSPEAK_EVENT
 
-    #if FEATURE_OPENMETEO_EVENT
+  // ------------------------------------------------------------------------------------------- OpenMeteo
+#if FEATURE_OPENMETEO_EVENT
 
   // Generate an event with the response of an open-meteo request.
   // Example command:
@@ -67,11 +70,10 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
   // Best to make seperate calls. Especially for hourly results.
 
   // define limits
-      # define WEATHER_KEYS_MAX  10
-      # define URI_MAX_LENGTH    5000
+# define WEATHER_KEYS_MAX 10
+# define URI_MAX_LENGTH 5000
 
-  if ((httpCode == 200) && equals(host, F("api.open-meteo.com")))
-  {
+  if ((httpCode == 200) && equals(host, F("api.open-meteo.com"))) {
     const String str = http.getString();
 
     if (str.length() > URI_MAX_LENGTH) {
@@ -119,8 +121,14 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
 
                                      String csv;
                                      const int startStringIndex = str.indexOf(strformat(F("\"%s\":"),
-                                                                                        eventName.c_str())) + eventName.length() + 4;
+                                                                                        eventName.c_str())) +
+                                                                  eventName.length() + 4;
+
+                                     // example( },"current":{"time":... ) we want to start after current":{
+
                                      const int endStringIndex = str.indexOf('}', startStringIndex);
+
+                                     // ...and want to end before }
 
                                      for (int i = 0; i < keyCount; i++) // Use keyCount to limit the iteration
                                      {
@@ -167,5 +175,69 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
     processAndQueueParams(uri, str, F("daily"));
   }
 
-   #endif // if FEATURE_OMETEO_EVENT
+#endif // if FEATURE_OMETEO_EVENT
+
+  // ------------------------------------------------------------------------------------------- Inverter
+#if FEATURE_INVERTER_EVENT
+
+  if ((httpCode == 200) && (uri.endsWith(F("GetInverterRealtimeData.cgi?Scope=System"))))
+  {
+    DynamicJsonDocument *root      = nullptr;
+    uint16_t lastJsonMessageLength = 512;
+
+    const String message = http.getString();
+
+    // Cleanup lambda to deallocate resources
+    auto cleanupJSON = [&root]() {
+                         if (root != nullptr) {
+                           root->clear();
+                           delete root;
+                           root = nullptr;
+                         }
+                       };
+
+    // Check if root needs resizing or cleanup
+    if ((root != nullptr) && (message.length() * 1.5 > lastJsonMessageLength)) {
+      cleanupJSON();
+    }
+
+    // Resize lastJsonMessageLength if needed
+    if (message.length() * 1.5 > lastJsonMessageLength) {
+      lastJsonMessageLength = message.length() * 1.5;
+    }
+
+    // Allocate memory for root if needed
+    if (root == nullptr) {
+# ifdef USE_SECOND_HEAP
+      HeapSelectIram ephemeral;
+# endif                                                                            // ifdef USE_SECOND_HEAP
+      root = new (std::nothrow) DynamicJsonDocument(lastJsonMessageLength); // Dynamic allocation
+    }
+
+    if (root != nullptr) {
+      // Parse the JSON
+      DeserializationError error = deserializeJson(*root, message);
+
+      if (!error) {
+        int dayEnergy   = (*root)["Body"]["Data"]["DAY_ENERGY"]["Values"]["1"].as<int>();
+        int pac         = (*root)["Body"]["Data"]["PAC"]["Values"]["1"].as<int>();
+        int totalEnergy = (*root)["Body"]["Data"]["TOTAL_ENERGY"]["Values"]["1"].as<int>();
+        int yearEnergy  = (*root)["Body"]["Data"]["YEAR_ENERGY"]["Values"]["1"].as<int>();
+
+        addLog(LOG_LEVEL_INFO, strformat(F("Inverter: Day Energy: %d, PAC: %d, Total Energy: %d, Year Energy: %d"),
+                                         dayEnergy,
+                                         pac,
+                                         totalEnergy,
+                                         yearEnergy));
+        eventQueue.addMove(strformat(F("InverterReply=%d,%d,%d,%d"), dayEnergy, pac, totalEnergy, yearEnergy));
+      } else {
+        Serial.println("Failed to parse JSON");
+      }
+
+      // Cleanup JSON resources
+      cleanupJSON();
+    }
+  }
+
+#endif // ifdef FEATURE_INVERTER_EVENT
 }
