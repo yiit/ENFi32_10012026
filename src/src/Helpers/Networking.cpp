@@ -1705,7 +1705,7 @@ int http_authenticate(const String& logIdentifier,
 
       const String str = http.getString();
 
-      if (str.length() > 5000) {
+      if (str.length() > URI_MAX_LENGTH) {
       addLog(LOG_LEVEL_ERROR, strformat(F("Response exceeds %d characters which could cause instabilities or crashes!"), URI_MAX_LENGTH));
       }
 
