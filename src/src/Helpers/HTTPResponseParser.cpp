@@ -192,7 +192,22 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
     // ------------------------------------------------------------------------------------------- JSONevent
   # if FEATURE_JSON_EVENT
 
-    if (uri.endsWith(F("?json"))) {
+    if ((uri.indexOf(F("#json")) != -1) || (uri.indexOf(F("?json")) != -1)) {
+      int numJson = 0; // Default value
+
+      // Check if the URL ends with a number
+      if ((uri.length() > 0) && isDigit(uri.charAt(uri.length() - 1))) {
+        // Find the position of the last non-digit character
+        int i = uri.length() - 1;
+
+        while (i >= 0 && isDigit(uri.charAt(i))) {
+          i--;
+        }
+
+        // Extract the number from the string
+        numJson = uri.substring(i + 1).toInt();
+      }
+
       const String message = http.getString();
 
       if (message.length() > URI_MAX_LENGTH) {
@@ -235,9 +250,9 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
 
         if (!error) {
           // Process the keys from the file
-          readAndProcessJsonKeys(root);
+          readAndProcessJsonKeys(root, numJson);
         } else {
-          Serial.println("Failed to parse JSON");
+          addLog(LOG_LEVEL_INFO, strformat(F("Parsing JSON failed")));
         }
 
         // Cleanup JSON resources
@@ -250,7 +265,20 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
 
 // ------------------------------------------------------------------------------------------- JSONevent Key processing
    # if FEATURE_JSON_EVENT
-void readAndProcessJsonKeys(DynamicJsonDocument*root) {
+void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
+  // function to clean up float values
+  auto cleanUpFloat = [](String& valueStr) {
+                        if (valueStr.lastIndexOf('.') != -1) {
+                          while (valueStr.endsWith("0")) {
+                            valueStr.remove(valueStr.length() - 1);
+                          }
+
+                          if (valueStr.endsWith(".")) {
+                            valueStr.remove(valueStr.length() - 1);
+                          }
+                        }
+                      };
+
   // Open the `json.keys` file
   const String fileName = strformat(
       #  ifdef ESP8266
@@ -269,6 +297,7 @@ void readAndProcessJsonKeys(DynamicJsonDocument*root) {
   int keyCount                   = 0;
   int successfullyProcessedCount = 0; // Counter for successfully processed keys
   String csvOutput;                   // Collect values as a CSV string
+  bool   firstValue = true;           // track the first value
 
   while (keyFile.available()) {
     String key = keyFile.readStringUntil('\n');
@@ -277,18 +306,32 @@ void readAndProcessJsonKeys(DynamicJsonDocument*root) {
     if (key.isEmpty()) {
       continue;
     }
+    int keyNumber = 0;
 
+    // Extract the number prefix (before the first dot)
+    if (key.indexOf(':') != -1) {
+      keyNumber = key.substring(0, key.indexOf(':')).toInt();
+      key       = key.substring(key.indexOf(':') + 1);
+    }
+
+
+    // Only process keys that match the filterNumber (or process all if no match)
+    if ((numJson > 0) && (keyNumber != numJson)) {
+      continue; // Skip this key if it doesn't match the filter number
+    }
     keyCount++;
 
     if (keyCount > MAX_KEYS) {
       addLogMove(LOG_LEVEL_ERROR, strformat(F("Warning: More than %d keys in %s"), MAX_KEYS, fileName.c_str()));
     }
 
+    // addLog(LOG_LEVEL_INFO, strformat(F("Parsing key: %s"), key.c_str()));
+
     // Process the key and navigate the JSON
     JsonVariant value = *root;
     size_t start = 0, end;
 
-    while ((end = key.indexOf('.', start)) != -1) {
+    while ((end = key.indexOf('.', start)) != (unsigned int)-1) {
       String part = key.substring(start, end);
       value = value[part];
 
@@ -310,20 +353,30 @@ void readAndProcessJsonKeys(DynamicJsonDocument*root) {
       if (value.is<int>()) {
         csvOutput += String(value.as<int>());
       } else if (value.is<float>()) {
-        csvOutput += String(value.as<float>(), 16);
-
-        // remove trailing zeros and decimal point
-        if (csvOutput.lastIndexOf('.') != -1) {
-          while (csvOutput.endsWith("0")) {
-            csvOutput.remove(csvOutput.length() - 1);
-          }
-
-          if (csvOutput.endsWith(".")) {
-            csvOutput.remove(csvOutput.length() - 1);
-          }
-        }
+        csvOutput += String(value.as<float>(), decimals);
+        cleanUpFloat(csvOutput);
       } else if (value.is<const char *>()) {
         csvOutput += String(value.as<const char *>());
+      } else if (value.is<JsonArray>()) {
+        // If the value is an array, iterate over its elements
+        JsonArray array = value.as<JsonArray>();
+
+        for (JsonVariant element : array) {
+          if (!csvOutput.isEmpty()) {
+            csvOutput += ","; // Add a separator between array elements
+          }
+
+          if (element.is<int>()) {
+            csvOutput += String(element.as<int>());
+          } else if (element.is<float>()) {
+            csvOutput += String(element.as<float>(), decimals);
+            cleanUpFloat(csvOutput);
+          } else if (element.is<const char *>()) {
+            csvOutput += String(element.as<const char *>());
+          } else {
+            csvOutput += "unknown";
+          }
+        }
       } else {
         csvOutput += "unknown";
       }
@@ -333,7 +386,10 @@ void readAndProcessJsonKeys(DynamicJsonDocument*root) {
 
     // Add a comma unless it's the last key
     if (keyFile.peek() != -1) {
-      csvOutput += ",";
+      if (!firstValue) {
+        csvOutput += ","; // Add a comma before the value if it's not the first
+      }
+      firstValue = false; // After the first value, set it to false
     }
   }
 
@@ -341,7 +397,7 @@ void readAndProcessJsonKeys(DynamicJsonDocument*root) {
 
   // Log the results
   addLog(LOG_LEVEL_INFO, strformat(F("Successfully processed %d out of %d keys"), successfullyProcessedCount, keyCount));
-  eventQueue.addMove(strformat(F("JsonReply=%s"), csvOutput.c_str()));
+  eventQueue.addMove(strformat(F("JsonReply%s=%s"),  (numJson != 0) ? String(numJson).c_str() : "", csvOutput.c_str()));
 }
 
   # endif // if FEATURE_JSON_EVENT
