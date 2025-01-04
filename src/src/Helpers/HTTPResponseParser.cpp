@@ -297,7 +297,6 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
   int keyCount                   = 0;
   int successfullyProcessedCount = 0; // Counter for successfully processed keys
   String csvOutput;                   // Collect values as a CSV string
-  bool   firstValue = true;           // track the first value
 
   while (keyFile.available()) {
     String key = keyFile.readStringUntil('\n');
@@ -353,28 +352,33 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
       if (value.is<int>()) {
         csvOutput += String(value.as<int>());
       } else if (value.is<float>()) {
-        csvOutput += String(value.as<float>(), decimals);
+        csvOutput += String(value.as<float>(), decimalsJP);
         cleanUpFloat(csvOutput);
       } else if (value.is<const char *>()) {
         csvOutput += String(value.as<const char *>());
       } else if (value.is<JsonArray>()) {
         // If the value is an array, iterate over its elements
-        JsonArray array = value.as<JsonArray>();
+        JsonArray array        = value.as<JsonArray>();
+        size_t    arraySize    = array.size(); // Get the total number of elements in the array
+        size_t    currentIndex = 0;            // Track the current index
 
         for (JsonVariant element : array) {
-          if (!csvOutput.isEmpty()) {
-            csvOutput += ","; // Add a separator between array elements
-          }
-
           if (element.is<int>()) {
             csvOutput += String(element.as<int>());
           } else if (element.is<float>()) {
-            csvOutput += String(element.as<float>(), decimals);
+            csvOutput += String(element.as<float>(), decimalsJP);
             cleanUpFloat(csvOutput);
           } else if (element.is<const char *>()) {
             csvOutput += String(element.as<const char *>());
           } else {
             csvOutput += "unknown";
+          }
+
+          // Add a comma unless it's the last element
+          currentIndex++;
+
+          if (currentIndex < arraySize) {
+            csvOutput += ",";
           }
         }
       } else {
@@ -386,10 +390,7 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
 
     // Add a comma unless it's the last key
     if (keyFile.peek() != -1) {
-      if (!firstValue) {
-        csvOutput += ","; // Add a comma before the value if it's not the first
-      }
-      firstValue = false; // After the first value, set it to false
+      csvOutput += ","; // Add a comma after the value
     }
   }
 
@@ -398,8 +399,8 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
   // Log the results
   addLog(LOG_LEVEL_INFO, strformat(F("Successfully processed %d out of %d keys"), successfullyProcessedCount, keyCount));
   eventQueue.addMove(strformat(F("JsonReply%s%s=%s"),
-                               (numJson != 0) ? "#" : "",
-                               (numJson != 0) ? String(numJson).c_str() : "",
+                               numJson != 0 ? "#" : "",
+                               toStringNoZero(numJson).c_str(),
                                csvOutput.c_str()));
 }
 

@@ -16,9 +16,9 @@
 # define MAX_KEYS 20 // Maximum number of keys allowed in json.keys
 # define URI_MAX_LENGTH 5000
 # ifdef ESP32
-int decimals = 16;
+int decimalsJP = 16;
 # else // if ESPEASY_RULES_FLOAT_TYPE double
-int decimals = 6;
+int decimalsJP = 7;
 # endif // if ESPEASY_RULES_FLOAT_TYPE double
 
 /**
