@@ -138,10 +138,6 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
 
                                        // example( },"current":{"time":... ) we want to start after current":{
 
-                                       const int endStringIndex = str.indexOf('}', startStringIndex);
-
-                                       // ...and want to end before }
-
                                        for (int i = 0; i < keyCount; i++) // Use keyCount to limit the iteration
                                        {
                                          String key = keys[i];
@@ -265,7 +261,14 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
 
 // ------------------------------------------------------------------------------------------- JSONevent Key processing
    # if FEATURE_JSON_EVENT
+
 void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
+#  ifdef ESP32
+  int decimalsJP = 16;
+#  else // if ESPEASY_RULES_FLOAT_TYPE double
+  int decimalsJP = 7;
+#  endif // if ESPEASY_RULES_FLOAT_TYPE double
+
   // function to clean up float values
   auto cleanUpFloat = [](String& valueStr) {
                         if (valueStr.lastIndexOf('.') != -1) {

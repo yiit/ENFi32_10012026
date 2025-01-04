@@ -15,11 +15,6 @@
 
 # define MAX_KEYS 20 // Maximum number of keys allowed in json.keys
 # define URI_MAX_LENGTH 5000
-# ifdef ESP32
-int decimalsJP = 16;
-# else // if ESPEASY_RULES_FLOAT_TYPE double
-int decimalsJP = 7;
-# endif // if ESPEASY_RULES_FLOAT_TYPE double
 
 /**
  * @brief Reads and processes keys from a json.keys file and navigates the JSON document.
