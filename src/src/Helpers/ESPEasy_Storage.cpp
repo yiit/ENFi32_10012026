@@ -708,12 +708,14 @@ String SaveSecuritySettings(bool forFactoryReset) {
                      sizeof(SecuritySettings));
 
     // Security settings are saved, may be update of WiFi settings or hostname.
-    if (!forFactoryReset && !NetworkConnected()) {
+    if (!forFactoryReset) {
       if (SecuritySettings.hasWiFiCredentials() && (active_network_medium == NetworkMedium_t::WIFI)) {
-        WiFiEventData.wifiConnectAttemptNeeded = true;
         WiFi_AP_Candidates.force_reload(); // Force reload of the credentials and found APs from the last scan
-        resetWiFi();
-        AttemptWiFiConnect();
+        if (!NetworkConnected()) {
+          WiFiEventData.wifiConnectAttemptNeeded = true;
+          resetWiFi();
+          AttemptWiFiConnect();
+        }
       }
     }
   }
