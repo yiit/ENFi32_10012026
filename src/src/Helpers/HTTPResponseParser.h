@@ -14,7 +14,7 @@
 # endif // ifdef ESP8266 #
 
 # define MAX_KEYS 20 // Maximum number of keys allowed in json.keys
-# define URI_MAX_LENGTH 5000
+# define RESPONSE_MAX_LENGTH 5000
 
 /**
  * @brief Reads and processes keys from a json.keys file and navigates the JSON document.

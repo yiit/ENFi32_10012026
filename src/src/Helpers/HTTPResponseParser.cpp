@@ -88,8 +88,9 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
     if (equals(host, F("api.open-meteo.com"))) {
       const String str = http.getString();
 
-      if (str.length() > URI_MAX_LENGTH) {
-        addLog(LOG_LEVEL_ERROR, strformat(F("Response exceeds %d characters which could cause instabilities or crashes!"), URI_MAX_LENGTH));
+      if (str.length() > RESPONSE_MAX_LENGTH) {
+        addLog(LOG_LEVEL_ERROR,
+               strformat(F("Response exceeds %d characters which could cause instabilities or crashes!"), RESPONSE_MAX_LENGTH));
       }
 
       auto processAndQueueParams = [](const String& url, const String& str, const String& eventName) {
@@ -206,8 +207,9 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
 
       const String message = http.getString();
 
-      if (message.length() > URI_MAX_LENGTH) {
-        addLog(LOG_LEVEL_ERROR, strformat(F("Response exceeds %d characters which could cause instabilities or crashes!"), URI_MAX_LENGTH));
+      if (message.length() > RESPONSE_MAX_LENGTH) {
+        addLog(LOG_LEVEL_ERROR,
+               strformat(F("Response exceeds %d characters which could cause instabilities or crashes!"), RESPONSE_MAX_LENGTH));
       }
 
       DynamicJsonDocument*root       = nullptr;
@@ -223,13 +225,13 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
                          };
 
       // Check if root needs resizing or cleanup
-      if ((root != nullptr) && (message.length() * 1.5 > lastJsonMessageLength)) {
+      if ((root != nullptr) && (message.length() * 2 > lastJsonMessageLength)) {
         cleanupJSON();
       }
 
       // Resize lastJsonMessageLength if needed
-      if (message.length() * 1.5 > lastJsonMessageLength) {
-        lastJsonMessageLength = message.length() * 1.5;
+      if (message.length() * 2 > lastJsonMessageLength) {
+        lastJsonMessageLength = message.length() * 2;
       }
 
       // Allocate memory for root if needed
@@ -248,7 +250,7 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
           // Process the keys from the file
           readAndProcessJsonKeys(root, numJson);
         } else {
-          addLog(LOG_LEVEL_INFO, F("Parsing JSON failed"));
+          addLog(LOG_LEVEL_ERROR, strformat(F("Parsing JSON failed: %s"), error.c_str()));
         }
 
         // Cleanup JSON resources
@@ -263,11 +265,13 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
    # if FEATURE_JSON_EVENT
 
 void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
-#  ifdef ESP32
-  int decimalsJP = 16;
-#  else // if ESPEASY_RULES_FLOAT_TYPE double
-  int decimalsJP = 7;
-#  endif // if ESPEASY_RULES_FLOAT_TYPE double
+// #  ifdef FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+//   int nr_decimals = ESPEASY_DOUBLE_NR_DECIMALS;
+// #  else // ifdef FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+//   int nr_decimals = ESPEASY_FLOAT_NR_DECIMALS;
+// #  endif // ifdef FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+
+int nr_decimals = ESPEASY_FLOAT_NR_DECIMALS;
 
   // function to clean up float values
   auto cleanUpFloat = [](String& valueStr) {
@@ -327,8 +331,6 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
       addLogMove(LOG_LEVEL_ERROR, strformat(F("Warning: More than %d keys in %s"), MAX_KEYS, fileName.c_str()));
     }
 
-    // addLog(LOG_LEVEL_INFO, strformat(F("Parsing key: %s"), key.c_str()));
-
     // Process the key and navigate the JSON
     JsonVariant value = *root;
     size_t start = 0, end;
@@ -355,7 +357,7 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
       if (value.is<int>()) {
         csvOutput += String(value.as<int>());
       } else if (value.is<float>()) {
-        csvOutput += String(value.as<float>(), decimalsJP);
+        csvOutput += String(value.as<float>(), nr_decimals);
         cleanUpFloat(csvOutput);
       } else if (value.is<const char *>()) {
         csvOutput += String(value.as<const char *>());
@@ -369,8 +371,8 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
           if (element.is<int>()) {
             csvOutput += String(element.as<int>());
           } else if (element.is<float>()) {
-            csvOutput += String(element.as<float>(), decimalsJP);
-            cleanUpFloat(csvOutput);
+        csvOutput += String(value.as<float>(), nr_decimals);
+        cleanUpFloat(csvOutput);
           } else if (element.is<const char *>()) {
             csvOutput += String(element.as<const char *>());
           } else {
