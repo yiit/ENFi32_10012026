@@ -25,6 +25,7 @@ namespace wifi {
     # define WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT   10000
     # define WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT  10000
     # define WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT     10000
+    # define WIFI_STATE_MACHINE_AP_ONLY_TIMEOUT          60000
 
 void ESPEasyWiFi_t::setup() {
   // TODO TD-er: Must maybe also call 'disable()' first?
@@ -74,6 +75,12 @@ void ESPEasyWiFi_t::loop()
       //      setState(WiFiState_e::IdleWaiting, 100);
       break;
     case WiFiState_e::AP_only:
+
+      if (WiFi_AP_Candidates.hasCandidates() ||
+          (_state_timeout.timeReached() &&
+           (WiFi.softAPgetStationNum() == 0))) {
+        setState(WiFiState_e::IdleWaiting, 100);
+      }
       break;
     case WiFiState_e::IdleWaiting:
 
@@ -81,25 +88,68 @@ void ESPEasyWiFi_t::loop()
         // Do we have candidate to connect to ?
         if (WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::STA_Connecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
-        } else if (WifiIsAP(WiFi.getMode())) {
-          // TODO TD-er: Must check if any client is connected.
-          // If not, then we can disable AP mode and switch to WiFiState_e::STA_Scanning
-          setState(WiFiState_e::STA_AP_Scanning, WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT);
-        } else {
-          setState(WiFiState_e::STA_Scanning, WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT);
+        } else if (WiFi_AP_Candidates.scanComplete() == 0) {
+          if (WifiIsAP(WiFi.getMode())) {
+            // TODO TD-er: Must check if any client is connected.
+            // If not, then we can disable AP mode and switch to WiFiState_e::STA_Scanning
+            setState(WiFiState_e::STA_AP_Scanning, WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT);
+          } else {
+            setState(WiFiState_e::STA_Scanning, WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT);
+          }
+        } else if (!WiFi_AP_Candidates.hasCandidateCredentials() ||
+                   !Settings.DoNotStartAP()) {
+          if (!WiFi_AP_Candidates.hasCandidateCredentials() &&
+              !WiFiEventData.warnedNoValidWiFiSettings)
+          {
+            addLog(LOG_LEVEL_ERROR, F("WIFI : No valid wifi settings"));
+            WiFiEventData.warnedNoValidWiFiSettings = true;
+          }
+
+          WiFiEventData.last_wifi_connect_attempt_moment.clear();
+          WiFiEventData.wifi_connect_attempt     = 1;
+          WiFiEventData.wifiConnectAttemptNeeded = false;
+          setState(WiFiState_e::AP_only, WIFI_STATE_MACHINE_AP_ONLY_TIMEOUT);
         }
       }
       break;
     case WiFiState_e::STA_Scanning:
     case WiFiState_e::STA_AP_Scanning:
+    {
+      auto scanCompleteStatus = WiFi.scanComplete();
 
-      if (_state_timeout.timeReached() || (WiFi.scanComplete() >= 0)) {
+      if (scanCompleteStatus >= 0) {
+        WiFi_AP_Candidates.load_knownCredentials();
+# if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
+        WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
+# endif
+        addLog(LOG_LEVEL_INFO, strformat(
+                 F("WiFi : Scan done, found %d APs"),
+                 WiFi_AP_Candidates.scanComplete()));
+      } else if (scanCompleteStatus == -2) { // WIFI_SCAN_FAILED
+        addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
+        WiFi.scanDelete();
         setState(WiFiState_e::WiFiOFF, 100);
+        WiFiEventData.processedScanDone = true;
       }
+
+      if (_state_timeout.timeReached() || (scanCompleteStatus >= 0)) {
+        WiFi.scanDelete();
+
+        setState(WiFiState_e::WiFiOFF, 100);
+
+        if (_state_timeout.timeReached()) {
+# ifndef BUILD_NO_DEBUG
+          addLog(LOG_LEVEL_ERROR, F("WiFi : Scan Running Timeout"));
+# endif
+        }
+        WiFiEventData.processedScanDone = true;
+
+      }
+      break;
 
       // Check if scanning is finished
       // When scanning per channel, call for scanning next channel
-      break;
+    }
     case WiFiState_e::STA_Connecting:
     case WiFiState_e::STA_Reconnecting:
 
@@ -154,6 +204,11 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       concat(F(" timeout: "),              timeout));
   }
 
+  if (_state == WiFiState_e::AP_only) {
+    setAPinternal(false);
+    setAP(false);
+  }
+
   if (timeout == 0)
   {
     _state_timeout.clear();
@@ -173,8 +228,10 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       break;
     case WiFiState_e::WiFiOFF:
       // TODO TD-er: Must cancel all and turn off WiFi.
+      setSTA_AP(false, false);
       break;
     case WiFiState_e::AP_only:
+      setAPinternal(true);
       break;
     case WiFiState_e::IdleWaiting:
       // Do nothing here as we're waiting till the timeout is over

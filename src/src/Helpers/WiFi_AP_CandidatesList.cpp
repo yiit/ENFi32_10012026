@@ -92,6 +92,7 @@ void WiFi_AP_CandidatesList::force_reload() {
   clearCache();
   RTC.clearLastWiFi(); // Invalidate the RTC WiFi data.
   candidates.clear();
+  load_knownCredentials();
   loadCandidatesFromScanned();
 }
 
