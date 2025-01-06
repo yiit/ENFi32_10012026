@@ -210,16 +210,18 @@ void WiFiEventData_t::markGotIP() {
 
 void WiFiEventData_t::markGotIP(const IPAddress& ip, const IPAddress& netmask, const IPAddress& gw)
 {
-  addLog(
-    LOG_LEVEL_INFO,
-    strformat(
-      F("WiFi : GotIP IP: %s, GW: %s, SN: %s DNS: %s / %s"),
-      formatIP(ip).c_str(),
-      formatIP(gw).c_str(),
-      formatIP(netmask).c_str(),
-      formatIP(WiFi.dnsIP(0)).c_str(),
-      formatIP(WiFi.dnsIP(1)).c_str()
-      ));
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    addLog(
+      LOG_LEVEL_INFO,
+      strformat(
+        F("WiFi : GotIP IP: %s, GW: %s, SN: %s DNS: %s / %s"),
+        formatIP(ip).c_str(),
+        formatIP(gw).c_str(),
+        formatIP(netmask).c_str(),
+        formatIP(WiFi.dnsIP(0)).c_str(),
+        formatIP(WiFi.dnsIP(1)).c_str()
+        ));
+  }
   markGotIP();
 }
 

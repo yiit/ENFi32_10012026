@@ -46,7 +46,7 @@ bool WiFi_pre_STA_setup()
 }
 
 void WiFiDisconnect() {
-  removeWiFiEventHandler();
+//  removeWiFiEventHandler();
   WiFi.disconnect();
   delay(100);
   {
@@ -70,6 +70,9 @@ bool setWifiMode(WiFiMode_t new_mode)
   static int8_t processing_wifi_mode = -1;
 
   if (cur_mode == new_mode) {
+    if (cur_mode != WIFI_OFF) {
+      registerWiFiEventHandler();
+    }
     return true;
   }
 
@@ -81,6 +84,8 @@ bool setWifiMode(WiFiMode_t new_mode)
 
 
   if (cur_mode == WIFI_OFF) {
+    registerWiFiEventHandler();
+
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
     WiFiEventData.markWiFiTurnOn();
@@ -99,6 +104,7 @@ bool setWifiMode(WiFiMode_t new_mode)
     //    delay(100);
     processDisconnect();
     WiFiEventData.clear_processed_flags();
+    removeWiFiEventHandler();
   }
 
   addLog(LOG_LEVEL_INFO, concat(F("WIFI : Set WiFi to "), getWifiModeString(new_mode)));
@@ -136,10 +142,11 @@ bool setWifiMode(WiFiMode_t new_mode)
     //    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     delay(1);
   } else {
+/*
     if (cur_mode == WIFI_OFF) {
       registerWiFiEventHandler();
     }
-
+*/
     // Only set power mode when AP is not enabled
     // When AP is enabled, the sleep mode is already set to WIFI_NONE_SLEEP
     if (!WifiIsAP(new_mode)) {

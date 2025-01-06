@@ -30,8 +30,9 @@ public:
 
   // Terminate WiFi activity
   void disable();
-  
+
 private:
+
   void begin();
 
 public:
@@ -56,7 +57,8 @@ public:
 
 private:
 
-  void setState(WiFiState_e newState, uint32_t timeout = 0);
+  void setState(WiFiState_e newState,
+                uint32_t    timeout = 0);
 
   // Handle timeouts + start of AP mode
   void                checkConnectProgress();
@@ -93,33 +95,28 @@ private:
 
   // Special modes for initial setup or re-configuration of a node via serial port/IMPROV
   bool _improvActive = false;
-  bool _setupActive = false;
+  bool _setupActive  = false;
 
 
-// WiFi settings => Move to separate class/struct
-bool _disabledAtBoot = false;
-bool _passiveScan = false;
-bool _includeHiddenSSID = false;
-float _TX_power = -1;
+  // WiFi settings => Move to separate class/struct
+  bool _disabledAtBoot    = false;
+  bool _passiveScan       = false;
+  bool _includeHiddenSSID = false;
+  float _TX_power         = -1;
 
-// Manual IP settings
-// IP
-// Gateway
-// Subnet
-// DNS
-
-
-
-// soft AP configuration => TODO TD-er: Implement
-//  bool _must_Start_AP;  // "Do Not Start AP"
-//  bool _has_ap{false};  // Maybe just check for active mode?
-//  WiFiAP _ap_config;
-//   WPA AP mode key
-//   Don't force /setup in AP-Mode
+  // Manual IP settings
+  // IP
+  // Gateway
+  // Subnet
+  // DNS
 
 
-
-
+  // soft AP configuration => TODO TD-er: Implement
+  //  bool _must_Start_AP;  // "Do Not Start AP"
+  //  bool _has_ap{false};  // Maybe just check for active mode?
+  //  WiFiAP _ap_config;
+  //   WPA AP mode key
+  //   Don't force /setup in AP-Mode
 
 
 }; // class ESPEasyWiFi_t
