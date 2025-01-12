@@ -14,6 +14,10 @@
    The stand alone support is not implemented yet
  */
 
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery
+ */
+
 // #include section
 #include "_Plugin_Helper.h"
 #ifdef USES_P144
@@ -84,6 +88,17 @@ boolean Plugin_144(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_144));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = static_cast<int>(Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY);
+      }
+      success = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_GET_DEVICEGPIONAMES:
     {

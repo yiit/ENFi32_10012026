@@ -7,10 +7,14 @@
 
 // ESPEasy Plugin to scan a 12 key touch pad chip MPR121
 // written by Jochen Krapf (jk@nerd2nerd.org)
-// 2021-12-29 tonhuisman: Add setting for panel sensitivity, as requested in https://github.com/letscontrolit/ESPEasy/issues/3828
-//                        Reformat source using Uncrustify
-// 2020-10-14 tonhuisman: Added settings for global and per-sensor sensitivity
-//                        and getting 'calibration' touch pressure data (current, min, max)
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Keypad)
+ *                        Update changelog
+ * 2021-12-29 tonhuisman: Add setting for panel sensitivity, as requested in https://github.com/letscontrolit/ESPEasy/issues/3828
+ *                        Reformat source using Uncrustify
+ * 2020-10-14 tonhuisman: Added settings for global and per-sensor sensitivity
+ *                        and getting 'calibration' touch pressure data (current, min, max)
+ */
 
 // ScanCode;
 // Value 1...12 for the key number
@@ -67,6 +71,15 @@ boolean Plugin_062(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_062));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

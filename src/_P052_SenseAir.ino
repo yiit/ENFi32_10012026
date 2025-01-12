@@ -8,6 +8,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery
  * 2025-01-03 tonhuisman: Small code size reduction
  * 2024-12-05 tonhuisman: Add support for MQTT AutoDiscovery for supported values
  * 2024-12 tonhuisman: Start changelog

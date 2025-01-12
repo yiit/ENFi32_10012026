@@ -19,6 +19,7 @@
 //
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for HLW8012)
  * 2024-12-26 tonhuisman: Add preset for Shelly Plus PLUG-S (ESP32 device), only enabled for ESP32 builds
  *                        Preset data provided by 'dsiggy' in https://www.letscontrolit.com/forum/viewtopic.php?t=10503#p71477
  * 2023-01-03 tonhuisman: Uncrustify source, apply some code improvements
@@ -152,6 +153,15 @@ boolean Plugin_076(uint8_t function, struct EventStruct *event, String& string) 
       event->String3 = formatGpioName_input(F("CF"));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_LOAD: {
       uint8_t devicePinSettings = PCONFIG(7);

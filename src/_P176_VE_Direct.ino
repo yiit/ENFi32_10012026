@@ -6,8 +6,9 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for VE.Direct)
  * 2024-11-24 tonhuisman: Add setting "Events only on updated data" to not generate events/Controller output if no new packets have been
- *received
+ *                        received
  *                        This check is independent from the Updated GetConfig value.
  * 2024-11-10 tonhuisman: Renamed GetConfig ischanged to updated.
  * 2024-11-08 tonhuisman: Add successcount, errorcount and ischanged values for GetConfig. IsChanged will reset the state on each call, so
@@ -74,6 +75,15 @@ boolean Plugin_176(uint8_t function, struct EventStruct *event, String& string)
 
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_SET_DEFAULTS:
     {

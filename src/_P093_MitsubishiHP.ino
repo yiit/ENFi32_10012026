@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Heatpump)
  * 2023-09-21 jfmennedy: Add support for "SetRemoteTemperature" Issue#4711
  * 2023-05-04 tonhuisman: Add support for PLUGIN_GET_CONFIG_VALUE to enable fetching all available values (as included in the json)
  * 2023-05-04 tonhuisman: Start Changelog
@@ -69,6 +70,15 @@ boolean Plugin_093(uint8_t function, struct EventStruct *event, String& string) 
       serialHelper_getGpioNames(event);
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_SHOW_CONFIG: {
       string += serialHelper_getSerialTypeLabel(event);

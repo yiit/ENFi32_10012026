@@ -6,6 +6,9 @@
 // #################################### Plugin-010: LuxRead   ############################################
 // #######################################################################################################
 
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery
+ */
 
 # include <AS_BH1750.h>
 
@@ -46,6 +49,17 @@ boolean Plugin_010(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_010));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = static_cast<int>(Sensor_VType::SENSOR_TYPE_LUX_ONLY);
+      }
+      success = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

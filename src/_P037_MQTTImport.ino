@@ -11,24 +11,26 @@
 // This task reads data from the MQTT Import input stream and saves the value
 
 /**
- * 2025-01-03, tonhuisman: Small code cleanup
- * 2023-06-17, tonhuisman: Replace Device[].FormulaOption by Device[].DecimalsOnly option, as no (successful) PLUGIN_READ is done
- * 2023-03-06, tonhuisman: Fix PLUGIN_INIT behavior to now always return success = true
- * 2022-12-13, tonhuisman: Implement separator character input selector
- * 2022-11-14, tonhuisman: Add support for selecting JSON sub-attributes, using the . notation, like main.sub (1 level only)
- * 2022-11-02, tonhuisman: Enable plugin to generate events initially, like the plugin did before the mapping, filtering and json parsing
- *                         features were added
- * 2022-08-12, tonhuisman: Introduce plugin-specific P037_LIMIT_BUILD_SIZE feature-flag
- * 2022-04-09, tonhuisman: Add features Deduplicate Events, and Max event-queue size
- * 2022-04-09, tonhuisman: Bugfix sending (extra) events only when enabled
- * 2021-10-23, tonhuisman: Fix stability issues when parsing JSON payloads
- * 2021-10-18, tonhuisman: Add Global topic-prefix to accomodate long topics (with a generic prefix)
- *                         (See forum request: https://www.letscontrolit.com/forum/viewtopic.php?f=6&t=8800)
- * 2021-10, tonhuisman   : Refactoring to reduce memory use so the plugin doesn't crash during saving of settings
- *                         SETTINGS NOW INCOMPATIBLE WITH PREVIOUS PR BUILDS, BUT STILL COMPATIBLE WITH ORIGINAL PLUGIN!
- * 2021-02-13, tonhuisman: Refactoring to reduce memory use and String re-allocations
- * 2020-12-10, tonhuisman: Add name-value mapping, filtering and json parsing
- * 2020-12-17, tonhuisman: Bugfixes, filter per MQTT Topic, reorganized Device page
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for MQTT Import)
+ *                        Update changelog
+ * 2025-01-03 tonhuisman: Small code cleanup
+ * 2023-06-17 tonhuisman: Replace Device[].FormulaOption by Device[].DecimalsOnly option, as no (successful) PLUGIN_READ is done
+ * 2023-03-06 tonhuisman: Fix PLUGIN_INIT behavior to now always return success = true
+ * 2022-12-13 tonhuisman: Implement separator character input selector
+ * 2022-11-14 tonhuisman: Add support for selecting JSON sub-attributes, using the . notation, like main.sub (1 level only)
+ * 2022-11-02 tonhuisman: Enable plugin to generate events initially, like the plugin did before the mapping, filtering and json parsing
+ *                        features were added
+ * 2022-08-12 tonhuisman: Introduce plugin-specific P037_LIMIT_BUILD_SIZE feature-flag
+ * 2022-04-09 tonhuisman: Add features Deduplicate Events, and Max event-queue size
+ * 2022-04-09 tonhuisman: Bugfix sending (extra) events only when enabled
+ * 2021-10-23 tonhuisman: Fix stability issues when parsing JSON payloads
+ * 2021-10-18 tonhuisman: Add Global topic-prefix to accomodate long topics (with a generic prefix)
+ *                        (See forum request: https://www.letscontrolit.com/forum/viewtopic.php?f=6&t=8800)
+ * 2021-10, tonhuisman  : Refactoring to reduce memory use so the plugin doesn't crash during saving of settings
+ *                        SETTINGS NOW INCOMPATIBLE WITH PREVIOUS PR BUILDS, BUT STILL COMPATIBLE WITH ORIGINAL PLUGIN!
+ * 2021-02-13 tonhuisman: Refactoring to reduce memory use and String re-allocations
+ * 2020-12-10 tonhuisman: Add name-value mapping, filtering and json parsing
+ * 2020-12-17 tonhuisman: Bugfixes, filter per MQTT Topic, reorganized Device page
  */
 
 # include "src/PluginStructs/P037_data_struct.h"
@@ -136,6 +138,15 @@ boolean Plugin_037(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[3], PSTR(PLUGIN_VALUENAME4_037));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_SET_DEFAULTS:
     {

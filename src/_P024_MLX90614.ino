@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery
  * 2024-08-17 tonhuisman: Show correct I2C address when non-default address is used (by setting a Port nr. 0..15)
  * 2023-11-23 tonhuisman: Add Device flag for I2CMax100kHz as this sensor won't work at 400 kHz
  * 2023-11-23 tonhuisman: Add Changelog
@@ -54,6 +55,17 @@ boolean Plugin_024(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_024));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = static_cast<int>(Sensor_VType::SENSOR_TYPE_TEMP_ONLY);
+      }
+      success = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {

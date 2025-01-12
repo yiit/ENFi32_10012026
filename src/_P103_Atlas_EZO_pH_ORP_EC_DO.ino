@@ -16,6 +16,7 @@
 // only i2c mode is supported
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Atlas EZO)
  * 2024-10-19 tonhuisman: Fix javascript errors, some code improvements
  * 2023-10-23 tonhuisman: Handle EZO-HUM firmware issue of including 'Dew,' in the result values
  * // TODO Rewrite plugin using PluginDataStruct so it will allow proper async handling of commands requiring 300 msec delay before reading
@@ -113,6 +114,15 @@ boolean Plugin_103(uint8_t function, struct EventStruct *event, String& string)
 
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

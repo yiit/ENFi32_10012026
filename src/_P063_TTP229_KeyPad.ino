@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Keypad)
  * 2025-01-04 tonhuisman: Make plugin multi-instance by not using a static variable for lastKey, but reading back from UserVar
  *                        Minor code optimizations
  */
@@ -106,6 +107,15 @@ boolean Plugin_063(uint8_t function, struct EventStruct *event, String& string)
       event->String2 = formatGpioName_bidirectional(F("SDO"));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_LOAD:
     {

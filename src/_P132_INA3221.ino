@@ -6,10 +6,11 @@
 
 /**
  * Changelog:
- * 2022-04-23, tonhuisman: Add separate settings for Conversion rate Voltage and Current
- * 2022-04-21, tonhuisman: Move source into PluginStructs
- * 2022-04-20, tonhuisman: Add averaging of samples and conversion rate settings
- * 2022-04-19, tonhuisman: Adapt to general ESPEasy coding standards
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for INA3221)
+ * 2022-04-23 tonhuisman: Add separate settings for Conversion rate Voltage and Current
+ * 2022-04-21 tonhuisman: Move source into PluginStructs
+ * 2022-04-20 tonhuisman: Add averaging of samples and conversion rate settings
+ * 2022-04-19 tonhuisman: Adapt to general ESPEasy coding standards
  **/
 
 // Initial development: ## 25 jan 2021 Fred van Duin ####
@@ -60,6 +61,15 @@ boolean Plugin_132(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[3], PSTR(PLUGIN_VALUENAME4_132));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

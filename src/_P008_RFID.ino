@@ -7,6 +7,7 @@
 
 /*
    History:
+   2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for RFID)
    2023-01-22 tonhuisman: Disable some strings in BUILD_NO_DEBUG builds to reduce size, minor optimizations
    2022-12-04 tonhuisman: Fix initialization issue (hanginging ESP...) when GPIO pins are not configured correctly
    2022-12-03 tonhuisman: Add Get Config values for tag value and bits received
@@ -74,6 +75,15 @@ boolean Plugin_008(uint8_t function, struct EventStruct *event, String& string)
       event->String2 = formatGpioName_input(F("D1 (White, 5V)"));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_SET_DEFAULTS:
     {

@@ -16,6 +16,9 @@
 //  Written by José Araújo (josemariaaraujo@gmail.com),
 //      with most code copied from plugin 085: _P085_AcuDC243.ino
 
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for DDS238)
+ */
 
 /*
    DF - Below doesn't look right; needs a RS485 to TTL(3.3v) level converter (see https://github.com/reaper7/SDM_Energy_Meter)
@@ -74,6 +77,15 @@ boolean Plugin_108(uint8_t function, struct EventStruct *event, String& string) 
       event->String3 = formatGpioName_output_optional(F("DE"));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_SHOW_CONFIG:
     {

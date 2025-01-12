@@ -5,6 +5,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for LD24xx)
  * 2024-12-09 tonhuisman: Fix: Reduced max sensitivity to configure to 101, as the max value that vill be reported by the sensor is 100,
  *                        so checking up to 100 was an off-by-one error.
  * 2024-10-09 tonhuisman: Extend sensitivity max. value to 110 (experimental, was 100)
@@ -134,6 +135,15 @@ boolean Plugin_159(uint8_t function, struct EventStruct *event, String& string)
 
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_SHOW_CONFIG:
     {

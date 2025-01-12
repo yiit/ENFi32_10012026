@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Keypad)
  * 2022-01-23 tonhuisman: Add support for MCP23017 Direct mode, see https://github.com/letscontrolit/ESPEasy/issues/557
  *                        Add support for PCF8575 Matrix and Direct mode (requires pull-ups, 10-100k, on all 8 or 16 inputs!)
  *                        Support for PCF8575 can be disabled by disabling #define P061_ENABLE_PCF8575
@@ -111,6 +112,15 @@ boolean Plugin_061(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_061));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

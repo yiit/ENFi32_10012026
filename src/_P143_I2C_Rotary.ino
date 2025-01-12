@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Rotary encoders)
  * 2022-12-26 tonhuisman: Disable all code related to M5Stack encoder firmware v1.1, as we don't have a device available for testing
  * 2022-12-24 tonhuisman: Add null-checks before using an instantiated object, fix byte-swap for M5Stack encoder with 1.1 firmware
  * 2022-11-26 tonhuisman: Add 'set' subcommand to set the encoder position (count)
@@ -70,6 +71,15 @@ boolean Plugin_143(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[1], PSTR(PLUGIN_VALUENAME2_143));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

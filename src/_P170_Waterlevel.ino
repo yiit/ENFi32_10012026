@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /**
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Level sensor)
  * 2024-05-25 tonhuisman: Add optional logging at info level with received data
  * 2024-05-20 tonhuisman: Add low- and high-level trigger checks (0 = disabled), and trigger-once option with auto-reset
  *                        Trigger is checked at Interval setting, or once per second if Interval = 0.
@@ -58,6 +59,15 @@ boolean Plugin_170(uint8_t function, struct EventStruct *event, String& string)
 
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {

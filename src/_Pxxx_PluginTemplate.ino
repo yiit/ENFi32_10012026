@@ -201,18 +201,34 @@ boolean Plugin_xxx(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      // This is called during data gathering to send MQTT AutoDiscover messages for the task, if a MQTT Controller with Discovery enabled is 
+      // configured for the task.
+      // Per taskvalue you can provide a Sensor_VType value (casted to int) in Par1..Par4, SENSOR_TYPE_NONE == 0, so actually not needed to set
+      // In event->Par5 is the current value for PLUGIN_GET_DEVICEVALUECOUNT available, so you can loop to set multiple the same VTypes, see P004
+      // See P052 for an example how to return correct data for a User-selected TaskValue configuration
+      // If the DeviceStruct.VType is set to one of the supported VTypes and matches the available values, this function can be ommitted, see P028
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not (yet) supported
+      success     = true;                                             // To indicate that we have set a value
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
+
     // START: For I2C plugins only:
 
     // When multiple I2C addresses can be used for the hardware:
     // case PLUGIN_I2C_HAS_ADDRESS:
     // case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:
     // {
-    //   const uint8_t i2cAddressValues[] = { 0x40, 0x41, 0x42, 0x43 }; // A list of usable I2C addresses, length 4 must be adjusted below
+    //   const uint8_t i2cAddressValues[]  = { 0x40, 0x41, 0x42, 0x43 }; // A list of usable I2C addresses
+    //   constexpr uint8_t i2cAddressCount = NR_ELEMENTS(i2cAddressValues);
 
     //   if (function == PLUGIN_WEBFORM_SHOW_I2C_PARAMS) {
-    //     addFormSelectorI2C(F("i2c_addr"), 4, i2cAddressValues, PCONFIG(0));
+    //     addFormSelectorI2C(F("i2c_addr"), i2cAddressCount, i2cAddressValues, PCONFIG(0));
     //   } else {
-    //     success = intArrayContains(4, i2cAddressValues, event->Par1);
+    //     success = intArrayContains(i2cAddressCount, i2cAddressValues, event->Par1);
     //   }
     //   break;
     // }

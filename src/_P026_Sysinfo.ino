@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for SysInfo)
  * 2023-09-24 tonhuisman: Add support for getting all values via Get Config option [<taskname>#<valuename>] where <valuename> is the default
  *                        name as set for an output value. None is ignored. Not available in MINIMAL_OTA builds.
  *                        Move all includes to P026_data_struct.h
@@ -70,6 +71,15 @@ boolean Plugin_026(uint8_t function, struct EventStruct *event, String& string)
       success           = true;
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
 
     case PLUGIN_SET_DEFAULTS:

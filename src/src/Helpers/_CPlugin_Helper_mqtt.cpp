@@ -6,6 +6,7 @@
 
 # if FEATURE_MQTT_DISCOVER
 #  include "../Globals/MQTT.h"
+#  include "../Helpers/StringGenerator_System.h"
 # endif // if FEATURE_MQTT_DISCOVER
 
 /***************************************************************************************
@@ -338,11 +339,18 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
           const bool usesControllerIDX        = validProtocolIndex(ProtocolIndex) &&
                                                 getProtocolStruct(ProtocolIndex).usesID;
 
-          // dev = device, ids = identifiers
-          const String deviceElement = groupId != 0 && !usesControllerIDX ?
-                                       strformat(F(",\"dev\":{\"name\":\"Group %u\",\"ids\":[\"group_%u\"]}"), groupId, groupId) :
-                                       strformat(F(",\"dev\":{\"name\":\"%s %s\",\"ids\":[\"%s_%s\"]}"),
-                                                 hostName.c_str(), taskName.c_str(), hostName.c_str(), taskName.c_str());
+          const String elementName = groupId != 0 && !usesControllerIDX ?
+                                     strformat(F("Group %u"), groupId) :
+                                     strformat(F("%s %s"),    hostName.c_str(), taskName.c_str());
+          const String elementIds = groupId != 0 && !usesControllerIDX ?
+                                     strformat(F("group_%u"), groupId) :
+                                     strformat(F("%s_%s"),    hostName.c_str(), taskName.c_str());
+
+          // dev = device, ids = identifiers, mf = manufacturer, sw = sw_version
+          const String deviceElement = strformat(F(",\"dev\":{\"name\":\"%s\",\"ids\":\"%s\","
+                                                   "\"mf\":\"ESPEasy\",\"sw\":\"%s\"}"),
+                                                 elementName.c_str(), elementIds.c_str(),
+                                                 getSystemBuildString().c_str());
 
           for (size_t s = 0; s < discoveryItems.size(); ++s) {
             struct EventStruct TempEvent(x); // FIXME Check if this has enough data
@@ -703,191 +711,55 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
   Sensor_VType VType              = Device[DeviceIndex].VType;
 
   // For those plugin IDs that don't have an explicitly set VType, or the wrong VType set
-  switch (Device[DeviceIndex].Number) {
-    case 2:   // Analog input
-    case 7:   // PCF8591
-    case 25:  // ADS1x15
-    case 60:  // MCP3221
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY, valueCount, 0));
-      break;
-    case 4:   // Dallas temperature sensors
-    case 24:  // MLX90614
-    case 39:  // SPI Thermosensors
-    case 69:  // LM75A
-    case 150: // TMP117
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_ONLY, valueCount, 0));
-      break;
-    case 10:  // BH1750
-    case 168: // VEML6030/VEML7700
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, valueCount, 0));
-      break;
-    case 13:  // HCSR04
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_SWITCH, 1, 1));
-      break;
-    case 14: // SI70xx
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_HUM, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY, 1, 2));
-      break;
-    case 15: // TSL2561 Only Lux / IR / Broadband values made available
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_IR_ONLY, 1, 1));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 1, 2));
-      break;
-    case 18:  // GP2Y10
-    case 144: // Vindriktning / PM1006K
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY, valueCount, 0));
-      break;
-    case 27:  // INA219
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_CURRENT_ONLY, 1, 1));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY, 1, 2));
-      break;
-    case 47: // Soil Moisture
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_MOISTURE_ONLY, 1, 1));
+  // Deliberately ignored/skipped for now:
+  // case 3:   // Pulse: Needs special handling/not usable?
+  // case 8:   // RFID Wiegand
+  // case 17:  // RFID PN532
+  // case 33:  // Dummy: Needs special handling/not usable?
+  // case 40:  // RFID ID12
+  // case 58:  // Keypad: Not a switch
+  // case 59:  // Encoder: Not a switch
+  // case 61:  // Keypad: Not a switch
+  // case 62:  // Touch Keypad: Not a switch
+  // case 63:  // Touch Keypad: Not a switch
+  // case 111: // RFID RC522
 
-      if (valueCount == 3) {
-        discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 1, 2));
-      }
-      break;
-    case 49: // MHZ19
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_CO2_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_ONLY, 1, 1));
-      break;
-    case 53:  // PMSx003
-    case 175: // PMSx003i (I2C)
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DUSTPM1_0_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY, 1, 1));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DUSTPM10_ONLY, 1, 2));
-      break;
-    case 56: // SDS011
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DUSTPM10_ONLY, 1, 1));
-      break;
-    case 67: // HX711 Load cell
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_WEIGHT_ONLY, valueCount, 0));
-      break;
-    case 74: // TSL2591
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 3, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_ONLY, 1, 3));
-      break;
-    case 83: // SGP30 TVOC/eCO2
-    case 90: // CCS811 TVOC/eCO2
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TVOC_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_CO2_ONLY, 1, 1));
-      break;
-    case 84: // VEML6070 (UV and Index only)
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY, 1, 1));
-      break;
-    case 106: // BME68x
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_HUM_BARO, valueCount, 0));
-      break;
-    case 107: // SI1145
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_IR_ONLY, 1, 1));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_ONLY, 1, 2));
-      break;
-    case 110: // VL53L0X
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DIRECTION_ONLY, 1, 1));
-      break;
-    case 113: // VL53L1X
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 1, 1));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DIRECTION_ONLY, 1, 2));
-      break;
-    case 114: // VEML6075
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_ONLY, 2, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY, 1, 2));
-      break;
-    case 127: // CDM7160
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_CO2_ONLY, valueCount, 0));
-      break;
-    case 133: // LTR390
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY, 1, 1));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_LUX_ONLY, 2, 2));
-      break;
-    case 134: // A02YYUW
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY, valueCount, 0));
-      break;
-    case 135: // SCD4x
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_CO2_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_HUM, 1, 1));
-      break;
-    case 151: // Honeywell pressure
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_BARO_ONLY, 1, 0));
-      discoveryItems.push_back(DiscoveryItem(Sensor_VType::SENSOR_TYPE_TEMP_ONLY, 1, 1));
-      break;
+  // TODO: To be reviewed/considered later/custom/special handled:
+  // case 26:  // Sysinfo: Needs special handling/not usable?
+  // case 45:  // MPU6050
+  // case 50:  // TCS34725 RGB: Needs special handling
+  // case 64:  // APDS9960: Needs special handling
+  // case 66:  // VEML6040 RGB: Needs special handling
+  // case 71:  // Kamstrup Heat
+  // case 76:  // HLW8012: Needs special handling
+  // case 77:  // CSE7766: Needs special handling
+  // case 78:  // Eastron: Needs special handling
+  // case 82:  // GPS: Needs special handling
+  // case 85:  // AcuDC243: Needs special handling
+  // case 92:  // DL-bus: Needs special handling
+  // case 93:  // Mitsubishi Heatpump
+  // case 102: // PZEM004: Needs special handling
+  // case 103: // Atlas EZO: Needs special handling
+  // case 108: // DDS238: Needs special handling
+  // case 112: // AS7265x: Needs special handling
+  // case 115: // MAX1704x
+  // case 117: // SCD30 CO2: Needs special handling
+  // case 132: // INA3221: Needs special handling
+  // case 142: // AS5600 Angle/rotation
+  // case 145: // MQxxx gases
+  // case 159: // LD2410
+  // case 163: // RadSens
+  // case 167: // Vindstyrka: Needs special handling
+  // case 169: // AS3935 Lightning
+  // case 176: // Victron VE.Direct: Needs user-configurable Sensor_VType + Unit_of_measure per value
 
-    // Deliberately ignored/skipped for now:
-    case 3:  // Pulse: Needs special handling/not usable?
-    case 26: // Sysinfo: Needs special handling/not usable?
-    case 33: // Dummy: Needs special handling/not usable?
-    case 61: // Keypad: Not a switch
-    case 62: // Touch Keypad: Not a switch
-    case 63: // Touch Keypad: Not a switch
-      // Reset
-      VType = Sensor_VType::SENSOR_TYPE_NONE;
-      break;
+  // Plugin ID numbers not listed in the above switch statement either have the correct Sensor_VType value set in DeviceStruct,
+  // or have PLUGIN_GET_DISCOVERY_VTYPES implemented
 
-    // To be reviewed/considered later/custom/special handled:
-    case 8:   // RFID Wiegand
-    case 17:  // RFID PN532
-    case 40:  // RFID ID12
-    case 45:  // MPU6050
-    case 50:  // TCS34725 RGB: Needs special handling
-    case 52:  // SensAir: Needs special handling
-    case 64:  // APDS9960: Needs special handling
-    case 66:  // VEML6040 RGB: Needs special handling
-    case 71:  // Kamstrup Heat
-    case 76:  // HLW8012: Needs special handling
-    case 77:  // CSE7766: Needs special handling
-    case 78:  // Eastron: Needs special handling
-    case 82:  // GPS: Needs special handling
-    case 85:  // AcuDC243: Needs special handling
-    case 92:  // DL-bus: Needs special handling
-    case 93:  // Mitsubishi Heatpump
-    case 102: // PZEM004: Needs special handling
-    case 103: // Atlas EZO: Needs special handling
-    case 108: // DDS238: Needs special handling
-    case 111: // RFID RC522
-    case 112: // AS7265x: Needs special handling
-    case 115: // MAX1704x
-    case 117: // SCD30 CO2: Needs special handling
-    case 132: // INA3221: Needs special handling
-    case 142: // AS5600 Angle/rotation
-    case 145: // MQxxx gases
-    case 147: // SGP4x
-    case 159: // LD2410
-    case 163: // RadSens
-    case 164: // ENS160: Needs special handling
-    case 167: // Vindstyrka: Needs special handling
-    case 169: // AS3935 Lightning
-    case 176: // Victron VE.Direct: Needs user-configurable Sensor_VType + Unit_of_measure per value
-      // Reset
-      VType = Sensor_VType::SENSOR_TYPE_NONE;
-      break;
-
-      // Plugin ID numbers not listed in the above switch statement most likely have the correct Sensor_VType value set in DeviceStruct
-  }
-
-  // Use Device VType setting if not overridden or reset
-  if ((Sensor_VType::SENSOR_TYPE_NONE != VType) && (discoveryItems.size() == orgLen)) {
-    discoveryItems.push_back(DiscoveryItem(VType, valueCount, 0));
-
-    #  ifndef BUILD_NO_DEBUG
-
-    // FIXME change this log to DEBUG level
-    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : AutoDiscovery Default Plugin config (%d)"), discoveryItems.size()));
-    }
-    #  endif // ifndef BUILD_NO_DEBUG
-  }
   struct EventStruct TempEvent(TaskIndex);
   String dummy;
+
+  TempEvent.Par5 = valueCount; // Pass in the provided value count, so we don't have to determine that again
 
   // Get value VTypes from plugin
   if (PluginCall(PLUGIN_GET_DISCOVERY_VTYPES, &TempEvent, dummy)) {
@@ -895,14 +767,10 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
 
     // FIXME change this log to DEBUG level
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : AutoDiscovery Reset for Plugin custom config (%d)"), discoveryItems.size()));
+      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : AutoDiscovery using Plugin-defined config (%d)"), discoveryItems.size()));
     }
     #  endif // ifndef BUILD_NO_DEBUG
 
-    // Plugin can override, clear any defaults acquired earlier
-    while (discoveryItems.size() > orgLen) {
-      discoveryItems.pop_back();
-    }
     uint8_t maxVar = VARS_PER_TASK;
 
     for (; maxVar > 0; --maxVar) { // Only include minimal used values
@@ -912,7 +780,11 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
     }
 
     for (uint8_t v = 0; v < maxVar; ++v) {
-      discoveryItems.push_back(DiscoveryItem(static_cast<Sensor_VType>(TempEvent.ParN[v]), 1, v));
+      const Sensor_VType VType = static_cast<Sensor_VType>(TempEvent.ParN[v]);
+
+      if (Sensor_VType::SENSOR_TYPE_NONE != VType) {
+        discoveryItems.push_back(DiscoveryItem(VType, 1, v));
+      }
     }
 
     #  ifndef BUILD_NO_DEBUG
@@ -922,6 +794,19 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
       addLog(LOG_LEVEL_INFO, strformat(F("MQTT : AutoDiscovery Plugin specific config added (%d)"), discoveryItems.size()));
     }
     #  endif // ifndef BUILD_NO_DEBUG
+  } else {
+    // Use Device VType setting
+    if (Sensor_VType::SENSOR_TYPE_NONE != VType) {
+      discoveryItems.push_back(DiscoveryItem(VType, valueCount, 0));
+
+      #  ifndef BUILD_NO_DEBUG
+
+      // FIXME change this log to DEBUG level
+      if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+        addLog(LOG_LEVEL_INFO, strformat(F("MQTT : AutoDiscovery Default Plugin config (%d)"), discoveryItems.size()));
+      }
+      #  endif // ifndef BUILD_NO_DEBUG
+    }
   }
 
   return discoveryItems.size() != orgLen; // Something added?

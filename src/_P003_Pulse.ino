@@ -13,6 +13,7 @@
 // tolerate less good signals. After a pulse and debounce time it verifies the signal 3 times.
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Pulse Counters)
  * 2024-08-12 tonhuisman: Improved handling of 'Ignore multiple Delta = 0' by peeking the Delta value.
  * 2024-08-10 tonhuisman: Changed option to 'Ignore multiple Delta = 0', and allow Interval = 0, combined with Delta = 0, to send a pulse
  *                        immediately to the Controllers and generate events.
@@ -143,6 +144,15 @@ boolean Plugin_003(uint8_t function, struct EventStruct *event, String& string)
       success = true;
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_LOAD:
     {

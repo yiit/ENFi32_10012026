@@ -12,6 +12,10 @@
    This plugin reads available values of an Eastron SDM120C SDM120/SDM120CT/220/230/630/72D & also DDM18SD.
  */
 
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Eastron)
+ */
+
 # define PLUGIN_078
 # define PLUGIN_ID_078         78
 # define PLUGIN_NAME_078       "Energy (AC) - Eastron SDMxxx Modbus"
@@ -79,6 +83,15 @@ boolean Plugin_078(uint8_t function, struct EventStruct *event, String& string)
       serialHelper_modbus_getGpioNames(event);
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_SHOW_CONFIG:
     {

@@ -16,6 +16,7 @@
 * Used P106 BME680 as starting point
    /******************************************************************************/
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported (yet?) for Magnetometer)
  * 2022-11-06 tonhuisman: Fix compilation issue with older ESP8266 toolchain, reduce some strings, uncrustify sources,
  *                        minor code improvements.
  *                        Adafruit_HMC5883_Unified: Fix waiting indefinitely for a connected sensor.
@@ -68,6 +69,15 @@ boolean Plugin_121(uint8_t function, struct EventStruct *event, String& string)
       success = true;
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:
     {

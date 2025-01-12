@@ -5,6 +5,10 @@
 // ########################   Plugin 169 AS3935 Lightning Detector I2C  ##################################
 // #######################################################################################################
 
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Lightning detector)
+ */
+
 # include "./src/PluginStructs/P169_data_struct.h"
 
 # define PLUGIN_169
@@ -54,6 +58,15 @@ boolean Plugin_169(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_SET_DEFAULTS:
     {

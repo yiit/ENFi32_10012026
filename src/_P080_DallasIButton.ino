@@ -8,6 +8,7 @@
 // Maxim Integrated
 
 /** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for iButton)
  * 2024-05-11 tonhuisman: Dallas_StartConversion() call not needed for iButton.
  *                        Reduce logging in Dallas_readiButton() function to on-change (only used for this plugin)
  * 2024-05-10 tonhuisman: Add support for Event with iButton address,
@@ -58,6 +59,15 @@ boolean Plugin_080(uint8_t function, struct EventStruct *event, String& string)
       strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_080));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_GET_DEVICEGPIONAMES:
     {

@@ -17,21 +17,25 @@
 
 // Note: The chip has a wide view-of-angle. If housing is in this angle the chip blocks!
 
-// 2024-03-30 tonhuisman: Add 'Separate Gesture event' option (<taskname>#Swipe=<gesture>) so it doesn't interfere with light/color
-//                        measurement
-// 2022-08-12 tonhuisman: Remove [DEVELOPMENT] tag
-// 2022-08-05 tonhuisman: Remove [TESTING] tag, Improvement: INIT, 10/sec and READ events now return false if errors occur during processing
-// 2022-06-17 tonhuisman: Remove I2C address selector, as there is nothing to choose...
-//   Clean up source, avoid (memory) inefficient code
-// 2022-03-21 tonhuisman: Attempt to stop the sensor from blocking ESPEasy, by dropping out after 32 loops in reading gesture data
-//   This should fix the Known BUG above.
-//   Lowered reading gesture data from 50/sec to 10/sec, as it still won't be processed quick enough
-//   Change sensor to TESTING from DEVELOPMENT
-// 2020-04-25 tonhuisman: Added Plugin Mode setting to switch between Proximity/Ambient Light Sensor or R/G/B Colors.
-//   Added settings for Gain (Gesture, Proximity, Ambient Light Sensor), Led Power (Gesture and Proximity/ALS) and Led Boost (Gesture)
-//   to allow better tuning for use of the sensor. Also adapted the SparkFun_APDS9960 driver for enabling this.
-//   R/G/B Colors mode has it's settings shared with the Gesture/Proximity/ALS as they are the exact same parameters, but with different
-//   labels only.
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for APDS9960)
+ *                        Update changelog
+ * 2024-03-30 tonhuisman: Add 'Separate Gesture event' option (<taskname>#Swipe=<gesture>) so it doesn't interfere with light/color
+ *                        measurement
+ * 2022-08-12 tonhuisman: Remove [DEVELOPMENT] tag
+ * 2022-08-05 tonhuisman: Remove [TESTING] tag, Improvement: INIT, 10/sec and READ events now return false if errors occur during processing
+ * 2022-06-17 tonhuisman: Remove I2C address selector, as there is nothing to choose...
+ *   Clean up source, avoid (memory) inefficient code
+ * 2022-03-21 tonhuisman: Attempt to stop the sensor from blocking ESPEasy, by dropping out after 32 loops in reading gesture data
+ *   This should fix the Known BUG above.
+ *   Lowered reading gesture data from 50/sec to 10/sec, as it still won't be processed quick enough
+ *   Change sensor to TESTING from DEVELOPMENT
+ * 2020-04-25 tonhuisman: Added Plugin Mode setting to switch between Proximity/Ambient Light Sensor or R/G/B Colors.
+ *   Added settings for Gain (Gesture, Proximity, Ambient Light Sensor), Led Power (Gesture and Proximity/ALS) and Led Boost (Gesture)
+ *   to allow better tuning for use of the sensor. Also adapted the SparkFun_APDS9960 driver for enabling this.
+ *   R/G/B Colors mode has it's settings shared with the Gesture/Proximity/ALS as they are the exact same parameters, but with different
+ *   labels only.
+ */
 
 
 # define PLUGIN_064
@@ -104,6 +108,15 @@ boolean Plugin_064(uint8_t function, struct EventStruct *event, String& string)
       }
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {

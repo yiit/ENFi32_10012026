@@ -10,7 +10,10 @@
 // Based on the library TinyGPS++
 // http://arduiniana.org/libraries/tinygpsplus/
 //
-//
+
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for GPS)
+ */
 
 # include <ESPeasySerial.h>
 # include <TinyGPS++.h>
@@ -98,6 +101,15 @@ boolean Plugin_082(uint8_t function, struct EventStruct *event, String& string) 
       event->String3 = formatGpioName_input_optional(F("PPS"));
       break;
     }
+
+    # if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    # endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_SET_DEFAULTS:
     {

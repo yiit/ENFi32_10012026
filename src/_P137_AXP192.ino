@@ -7,8 +7,8 @@
 // #################################### Plugin 137: AXP192 Powermanagement ###############################
 // #######################################################################################################
 
-/**
- * Changelog:
+/** Changelog:
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for ACP192)
  * 2022-12-27 tonhuisman: Add predefined config settings for LilyGO T-Beam LoRa units
  * 2022-12-07 tonhuisman: Re-order device configuration to use PLUGIN_WEBFORM_LOAD_OUTPUT_SELECTOR
  *                        Enable PluginStats feature
@@ -137,6 +137,15 @@ boolean Plugin_137(uint8_t function, struct EventStruct *event, String& string)
       success           = true;
       break;
     }
+
+    #  if FEATURE_MQTT_DISCOVER
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      success     = true;
+      break;
+    }
+    #  endif // if FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {
