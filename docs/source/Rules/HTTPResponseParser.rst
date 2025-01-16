@@ -1,8 +1,8 @@
 .. _HTTPResponseParser:
 
-#####
+####################
 HTTP Response Parser
-#####
+####################
 
 Introduction
 ============
@@ -14,7 +14,7 @@ The HTTP Response Parser are a set of parsers that can be used to parse the resp
 The Thingspeak Parser
 ---------------------
 
-* ``SendToHTTP`` generates an event with the response of a thingspeak request (https://de.mathworks.com/help/thingspeak/readlastfieldentry.html & // https://de.mathworks.com/help/thingspeak/readdata.html)
+* ``SendToHTTP`` generates an event with the response of a thingspeak request (https://de.mathworks.com/help/thingspeak/readlastfieldentry.html & https://de.mathworks.com/help/thingspeak/readdata.html)
 * There are two options:
 
   1. Get the value of a single field: 
@@ -133,91 +133,89 @@ In rules, you can grep the reply by the kind of weather variables with ``On Open
 
 
 The gerneric JSON Parser
----------------------
+------------------------
 
 * ``SendToHTTP`` generates an event with the response of a JSON request.
 * The JSON parser is a generic parser that can be used to parse any JSON response.
   
 **How-To:**
 
-1. Add either #json or ?json to the end of the URL (either will always work) to tell ESPEasy that the response is in JSON format.
-Example: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System?json"``
+1. Add either #json or ?json to the end of the URL (either will always work) to tell ESPEasy that the response is in JSON format. 
+   
+   Example: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System?json"`` 
+    .. code-block:: json
+        :caption: Example response:
+        :class: collapsible
 
-.. code-block:: json
-    :caption: Example response:
-    :class: collapsible
-
-    {
-        "Head" : {
-            "RequestArguments" : {
-                "DataCollection" : "",
-                "Scope" : "System"
+        {
+            "Head" : {
+                "RequestArguments" : {
+                    "DataCollection" : "",
+                    "Scope" : "System"
+                },
+                "Status" : {
+                    "Code" : 0,
+                    "Reason" : "",
+                    "UserMessage" : ""
+                },
+                "Timestamp" : "2014-12-10T11:25:18+01:00"
             },
-            "Status" : {
-                "Code" : 0,
-                "Reason" : "",
-                "UserMessage" : ""
-            },
-            "Timestamp" : "2014-12-10T11:25:18+01:00"
-        },
-        "Body" : {
-            "Data" : {
-                "PAC" : {
-                    "Unit" : "W",
-                    "Values" : {
-                        "1" : 277
-                    }
-                },
-                "DAY_ENERGY" : {
-                    "Unit" : "Wh",
-                    "Values" : {
-                        "1" : 274
-                    }
-                },
-                "YEAR_ENERGY" : {
-                    "Unit" : "Wh",
-                    "Values" : {
-                        "1" : 2386678
-                    }
-                },
-                "TOTAL_ENERGY" : {
-                    "Unit" : "Wh",
-                    "Values" : {
-                        "1" : 5863003
+            "Body" : {
+                "Data" : {
+                    "PAC" : {
+                            "Unit" : "W",
+                            "Values" : {
+                                "1" : 277
+                            }
+                    },
+                    "DAY_ENERGY" : {
+                            "Unit" : "Wh",
+                            "Values" : {
+                                "1" : 274
+                            }
+                    },
+                    "TOTAL_ENERGY" : {
+                        "Unit" : "Wh",
+                        "Values" : {
+                            "1" : 4173000
+                        }
                     }
                 }
             }
         }
-    }
 
 2. Create a file called json.keys and add the keys you want the values from (each key in an extra line):
+   
+   .. code-block:: none
+        :caption: Example:
 
-**Example:**
-
-.. code:: none
-
-    Body.Data.PAC.Values.1
-    Body.Data.DAY_ENERGY.Values.1
-    Body.Data.TOTAL_ENERGY.Values.1
+        Body.Data.PAC.Values.1
+        Body.Data.DAY_ENERGY.Values.1
+        Body.Data.TOTAL_ENERGY.Values.1
 
 3. Upload the file.
 
 4. Grep the data with ``On JsonReply Do``.
    
 **Extras:**
-1. Grouping or separate calls with different URLs.
 
-- Add a number to #json or ?json e.g.: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System?json1"``
-- Add the number + ":" to the key you want to group:
-  
-  **Example:**
+- Grouping or separate calls with different URLs.
 
-  .. code:: none
+1. Add a number to #json or ?json:
+     
+   e.g.: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System?json1"``
 
-    1:Body.Data.DAY_ENERGY.Values.1
-    2:Body.Data.PAC.Values.1
+2. Add the number + ":" to the key you want to group:
+   
+   .. code-block:: none
+       :caption: Example:
 
-- Grep the data with ``On JsonReply#<number> Do``. e.g.: ``On JsonReply#1 Do``
+       1:Body.Data.DAY_ENERGY.Values.1
+       2:Body.Data.PAC.Values.1
+
+3. Grep the data with ``On JsonReply#<number> Do``. 
+    
+   e.g.: ``On JsonReply#1 Do``
 
 This way you can call more than one URL or put an array in a separate response, as the amount of event values would probably be too long.
 

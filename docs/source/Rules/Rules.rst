@@ -2006,7 +2006,7 @@ Added: 2025/01/15
 
 * **HTTPResponseParser:** A Set of special parser for the response of a HTTP request.
   
-  See `HTTP Response Parser <HTTPResponseParser>`_
+  See :ref:`HTTPResponseParser`
 
 
 
