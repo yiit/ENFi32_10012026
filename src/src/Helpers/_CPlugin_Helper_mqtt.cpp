@@ -577,12 +577,14 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               }
               case Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY:
               case Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY:
+              case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY:
               case Sensor_VType::SENSOR_TYPE_APPRNT_POWER_USG_ONLY:
               {
                 const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY == discoveryItems[s].VType ?
                                                 F("power_factor") : F("power");
                 const __FlashStringHelper*uom = Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY == discoveryItems[s].VType ? F("Cos φ") :
                                                 Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY == discoveryItems[s].VType ? F("kWh") :
+                                                Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY == discoveryItems[s].VType ? F("var") :
                                                 F("VA");
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
