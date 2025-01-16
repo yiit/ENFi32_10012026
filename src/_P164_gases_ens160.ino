@@ -68,6 +68,7 @@ boolean Plugin_164(uint8_t function, struct EventStruct *event, String& string)
     {
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_TVOC_ONLY);
       event->Par2 = static_cast<int>(Sensor_VType::SENSOR_TYPE_CO2_ONLY);
+      event->Par3 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // FIXME Use a better definition if/when available
       success     = true;
       break;
     }
