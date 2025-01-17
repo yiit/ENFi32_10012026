@@ -13,6 +13,7 @@
  */
 
 /** Changelog:
+ * 2025-01-17 tonhuisman: Implement support for MQTT AutoDiscovery (partial)
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Eastron)
  */
 
@@ -66,10 +67,11 @@ boolean Plugin_078(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_GET_DEVICEVALUENAMES:
     {
+      const SDM_MODEL model = static_cast<SDM_MODEL>(P078_MODEL);
+
       for (uint8_t i = 0; i < VARS_PER_TASK; ++i) {
         if (i < P078_NR_OUTPUT_VALUES) {
-          const SDM_MODEL model  = static_cast<SDM_MODEL>(P078_MODEL);
-          const uint8_t   choice = PCONFIG(i + P078_QUERY1_CONFIG_POS);
+          const uint8_t choice = PCONFIG(i + P078_QUERY1_CONFIG_POS);
           ExtraTaskSettings.setTaskDeviceValueName(i, SDM_getValueNameForModel(model, choice));
         } else {
           ExtraTaskSettings.clearTaskDeviceValueName(i);
@@ -87,8 +89,13 @@ boolean Plugin_078(uint8_t function, struct EventStruct *event, String& string)
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      const SDM_MODEL model = static_cast<SDM_MODEL>(P078_MODEL);
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        const uint8_t choice = PCONFIG(i + P078_QUERY1_CONFIG_POS);
+        event->ParN[i] = static_cast<int>(SDM_QueryVType(model, choice));
+      }
+      success = true;
       break;
     }
     # endif // if FEATURE_MQTT_DISCOVER
