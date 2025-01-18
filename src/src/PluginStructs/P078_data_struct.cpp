@@ -208,7 +208,7 @@ String SDM_getValueNameForModel(SDM_MODEL model, int choice)
 }
 
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType SDM_QueryVType(SDM_MODEL model, int choice) {
+Sensor_VType Plugin_078_QueryVType(SDM_MODEL model, int choice) {
   const int index = SDM_getRegisterDescriptionIndexForModel(model, choice);
 
   if (index >= 0) {

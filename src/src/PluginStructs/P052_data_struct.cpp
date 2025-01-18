@@ -35,7 +35,7 @@ const __FlashStringHelper * P052_data_struct::Plugin_052_valuename(uint8_t value
 }
 
 # if FEATURE_MQTT_DISCOVER
-const int P052_data_struct::Plugin_052_valueVType(uint8_t value_nr) {
+int Plugin_052_QueryVType(uint8_t value_nr) {
   constexpr int valueVTypes[] = {
     0,                                                     // empty
     static_cast<int>(Sensor_VType::SENSOR_TYPE_CO2_ONLY),  // co2

@@ -14,7 +14,7 @@
 // #######################################################################################################
 
 /** Changelog:
- * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (partially)
  */
 # include "src/PluginStructs/P164_data_struct.h"
 

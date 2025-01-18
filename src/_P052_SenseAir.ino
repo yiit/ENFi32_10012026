@@ -76,10 +76,7 @@ boolean Plugin_052(uint8_t function, struct EventStruct *event, String& string) 
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      for (uint8_t i = 0; i < P052_NR_OUTPUT_VALUES; ++i) {
-        event->ParN[i] = P052_data_struct::Plugin_052_valueVType(i);
-      }
-      success = true;
+      success = getDiscoveryVType(event, Plugin_052_QueryVType, P052_NR_OUTPUT_VALUES, event->Par5);;
       break;
     }
     # endif // if FEATURE_MQTT_DISCOVER

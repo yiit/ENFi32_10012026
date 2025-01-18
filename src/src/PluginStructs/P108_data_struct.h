@@ -79,7 +79,7 @@ float                      p108_readValue(uint8_t             query,
 void                       p108_showValueLoadPage(uint8_t             query,
                                                   struct EventStruct *event);
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType               Plugin_108_getQueryVType(uint8_t value_nr);
+int                        Plugin_108_QueryVType(uint8_t value_nr);
 # endif // if FEATURE_MQTT_DISCOVER
 
 

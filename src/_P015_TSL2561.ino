@@ -11,7 +11,7 @@
 // written based on version 1.1.0 from https://github.com/sparkfun/SparkFun_TSL2561_Arduino_Library
 
 /** Changelog:
- * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Pulse Counters)
+ * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (partially)
  */
 
 # include "src/PluginStructs/P015_data_struct.h"

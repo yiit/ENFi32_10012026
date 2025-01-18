@@ -112,7 +112,7 @@ unsigned long p076_timer{};
 const __FlashStringHelper* p076_getQueryString(uint8_t value_nr,
                                                bool    displayString);
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType               p076_getQueryVType(uint8_t value_nr);
+int                        Plugin_076_QueryVType(uint8_t value_nr);
 # endif // if FEATURE_MQTT_DISCOVER
 
 # if ESP_IDF_VERSION_MAJOR >= 5
@@ -268,11 +268,7 @@ boolean Plugin_076(uint8_t function, struct EventStruct *event, String& string)
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      for (uint8_t i = 0; i < event->Par5; ++i) {
-        const uint8_t choice = PCONFIG(i + P076_QUERY1_CONFIG_POS);
-        event->ParN[i] = static_cast<int>(p076_getQueryVType(choice));
-      }
-      success = true;
+      success = getDiscoveryVType(event, Plugin_076_QueryVType, P076_QUERY1_CONFIG_POS, event->Par5);
       break;
     }
     # endif // if FEATURE_MQTT_DISCOVER
@@ -937,25 +933,27 @@ const __FlashStringHelper* p076_getQueryString(uint8_t value_nr, bool displayStr
 }
 
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType p076_getQueryVType(uint8_t value_nr) {
+int Plugin_076_QueryVType(uint8_t value_nr) {
+  Sensor_VType result = Sensor_VType::SENSOR_TYPE_NONE;
+
   switch (value_nr)
   {
     case P076_INDEX_VOLT:
-      return Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY;
+      result = Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY; break;
     case P076_INDEX_CURR:
-      return Sensor_VType::SENSOR_TYPE_CURRENT_ONLY;
+      result = Sensor_VType::SENSOR_TYPE_CURRENT_ONLY; break;
     case P076_INDEX_POWR:
-      return Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY;
+      result = Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY; break;
     case P076_INDEX_VAR:
-      return Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY;
+      result = Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY; break;
     case P076_INDEX_VA:
-      return Sensor_VType::SENSOR_TYPE_APPRNT_POWER_USG_ONLY;
+      result = Sensor_VType::SENSOR_TYPE_APPRNT_POWER_USG_ONLY; break;
     case P076_INDEX_PF:
-      return Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY;
+      result = Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY; break;
     case P076_INDEX_ENER:
-      return Sensor_VType::SENSOR_TYPE_NONE; // FIXME Add support for Energy + Unit of Measure
+      result = Sensor_VType::SENSOR_TYPE_NONE; break; // FIXME Add support for Energy + Unit of Measure
   }
-  return Sensor_VType::SENSOR_TYPE_NONE;
+  return static_cast<int>(result);
 }
 
 # endif // if FEATURE_MQTT_DISCOVER

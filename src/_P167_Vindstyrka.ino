@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-01-18 tonhuisman: Implement support for MQTT AutoDiscovery (partially)
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for SEN5x)
  * 2024-05-05 tonhuisman: Add subcommand sen5x,techlog,<1|0> to enable/disable Technical logging option. 0 = Off, any other value is on
  * 2024-04-20 tonhuisman: Replace dewpoint calculation by standard calculation, fix issue with status bits, reduce strings
@@ -82,8 +83,7 @@ boolean Plugin_167(uint8_t function, struct EventStruct *event, String& string) 
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      success = getDiscoveryVType(event, Plugin_167_QueryVType, P167_QUERY1_CONFIG_POS, event->Par5);
       break;
     }
     # endif // if FEATURE_MQTT_DISCOVER

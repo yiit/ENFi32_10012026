@@ -16,6 +16,21 @@ bool MQTT_protocol_send(EventStruct *event,
 
 # if FEATURE_MQTT_DISCOVER
 
+typedef int (*QueryVType_ptr)(uint8_t);
+
+bool getDiscoveryVType(struct EventStruct *event,
+                       QueryVType_ptr      func_ptr,
+                       uint8_t             pConfigOffset,
+                       uint8_t             nrVars);
+
+int Plugin_QueryVType_Analog(uint8_t value_nr);
+int Plugin_QueryVType_CO2(uint8_t value_nr);
+int Plugin_QueryVType_Distance(uint8_t value_nr);
+int Plugin_QueryVType_DustPM2_5(uint8_t value_nr);
+int Plugin_QueryVType_Lux(uint8_t value_nr);
+int Plugin_QueryVType_Temperature(uint8_t value_nr);
+int Plugin_QueryVType_Weight(uint8_t value_nr);
+
 struct DiscoveryItem {
   DiscoveryItem(Sensor_VType _VType, int _valueCount, taskVarIndex_t _varIndex)
     : VType(_VType), valueCount(_valueCount), varIndex(_varIndex) {}

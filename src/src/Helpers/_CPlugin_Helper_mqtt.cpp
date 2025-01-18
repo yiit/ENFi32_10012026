@@ -242,6 +242,51 @@ bool MQTT_protocol_send(EventStruct *event,
 
 # if FEATURE_MQTT_DISCOVER
 
+// Support function to fetch the user-configurable VTypes for a plugin
+// use like:
+// success = getDiscoveryVType(event, Plugin_085_QueryVType, P085_QUERY1_CONFIG_POS, event->Par5);
+bool getDiscoveryVType(struct EventStruct *event, QueryVType_ptr func_ptr, uint8_t pConfigOffset, uint8_t nrVars)
+{
+  bool success           = false;
+  constexpr uint8_t _max = PLUGIN_CONFIGVAR_MAX;
+
+  for (uint8_t i = 0; i < nrVars && i < _max; ++i) {
+    const uint8_t choice = (255 == pConfigOffset) ? i : PCONFIG(i + pConfigOffset);
+    event->ParN[i] = (func_ptr(choice));
+    success        = true;
+  }
+  return success;
+}
+
+// helper functions to supply a single value VType to be used by getDiscoveryVType
+int Plugin_QueryVType_Analog(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY);
+}
+
+int Plugin_QueryVType_CO2(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_CO2_ONLY);
+}
+
+int Plugin_QueryVType_Distance(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY);
+}
+
+int Plugin_QueryVType_DustPM2_5(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY);
+}
+
+int Plugin_QueryVType_Lux(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_LUX_ONLY);
+}
+
+int Plugin_QueryVType_Temperature(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_TEMP_ONLY);
+}
+
+int Plugin_QueryVType_Weight(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_WEIGHT_ONLY);
+}
+
 bool MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex, cpluginID_t CPluginID) {
   bool success = true;
 
@@ -733,25 +778,14 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
   // case 64:  // APDS9960: Needs special handling
   // case 66:  // VEML6040 RGB: Needs special handling
   // case 71:  // Kamstrup Heat
-  // case 76:  // HLW8012: Needs special handling
-  // case 77:  // CSE7766: Needs special handling
-  // case 78:  // Eastron: Needs special handling
   // case 82:  // GPS: Needs special handling
-  // case 85:  // AcuDC243: Needs special handling
   // case 92:  // DL-bus: Needs special handling
   // case 93:  // Mitsubishi Heatpump
-  // case 102: // PZEM004: Needs special handling
   // case 103: // Atlas EZO: Needs special handling
-  // case 108: // DDS238: Needs special handling
   // case 112: // AS7265x: Needs special handling
-  // case 115: // MAX1704x
-  // case 117: // SCD30 CO2: Needs special handling
-  // case 132: // INA3221: Needs special handling
-  // case 142: // AS5600 Angle/rotation
-  // case 145: // MQxxx gases
+  // case 139: // AXP2101
   // case 159: // LD2410
   // case 163: // RadSens
-  // case 167: // Vindstyrka: Needs special handling
   // case 169: // AS3935 Lightning
   // case 176: // Victron VE.Direct: Needs user-configurable Sensor_VType + Unit_of_measure per value
 

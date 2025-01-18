@@ -27,7 +27,7 @@ const __FlashStringHelper* Plugin_077_valuename(P077_query value_nr, bool displa
 }
 
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType Plugin_077_QueryVType(uint8_t value_nr) {
+int Plugin_077_QueryVType(uint8_t value_nr) {
   const Sensor_VType vtypes[] = {
     Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY,
     Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY,
@@ -39,11 +39,12 @@ Sensor_VType Plugin_077_QueryVType(uint8_t value_nr) {
     Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY,
   };
   constexpr uint8_t  valueCount = NR_ELEMENTS(vtypes);
+  Sensor_VType result           = Sensor_VType::SENSOR_TYPE_NONE;
 
   if (value_nr < valueCount) {
-    return vtypes[value_nr];
+    result = vtypes[value_nr];
   }
-  return Sensor_VType::SENSOR_TYPE_NONE;
+  return static_cast<int>(result);
 }
 
 # endif // if FEATURE_MQTT_DISCOVER

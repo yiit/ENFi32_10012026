@@ -48,7 +48,7 @@ enum class P077_query : uint8_t {
 const __FlashStringHelper* Plugin_077_valuename(P077_query value_nr,
                                                 bool       displayString);
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType               Plugin_077_QueryVType(uint8_t value_nr);
+int                        Plugin_077_QueryVType(uint8_t value_nr);
 # endif // if FEATURE_MQTT_DISCOVER
 P077_query                 Plugin_077_from_valuename(const String& valuename);
 

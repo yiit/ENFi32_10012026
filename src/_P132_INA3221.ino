@@ -66,11 +66,7 @@ boolean Plugin_132(uint8_t function, struct EventStruct *event, String& string)
     #if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      for (uint8_t i = 0; i < event->Par5; ++i) {
-        const uint8_t choice = PCONFIG(i + P132_CONFIG_BASE);
-        event->ParN[i] = static_cast<int>(Plugin_132_getQueryVType(choice));
-      }
-      success = true;
+      success = getDiscoveryVType(event, Plugin_132_QueryVType, P132_CONFIG_BASE, event->Par5);;
       break;
     }
     #endif // if FEATURE_MQTT_DISCOVER

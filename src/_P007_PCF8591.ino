@@ -28,6 +28,13 @@
 # define P007_OUTPUT_MODE        PCONFIG_LONG(1)
 # define P007_OUTPUT_ENABLED     (0b01000000)
 
+# if FEATURE_MQTT_DISCOVER
+int Plugin_007_QueryVType(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY);
+}
+
+# endif // if FEATURE_MQTT_DISCOVER
+
 
 boolean Plugin_007(uint8_t function, struct EventStruct *event, String& string)
 {
@@ -83,10 +90,7 @@ boolean Plugin_007(uint8_t function, struct EventStruct *event, String& string)
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      for (uint8_t i = 0; i < event->Par5; ++i) {
-        event->ParN[i] = static_cast<int>(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY);
-      }
-      success = true;
+      success = getDiscoveryVType(event, Plugin_007_QueryVType, 255, event->Par5);;
       break;
     }
     # endif // if FEATURE_MQTT_DISCOVER

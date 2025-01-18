@@ -97,11 +97,7 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      for (uint8_t i = 0; i < event->Par5; ++i) {
-        const uint8_t choice = PCONFIG(i + P102_QUERY1_CONFIG_POS);
-        event->ParN[i] = static_cast<int>(p102_getQueryVType(choice));
-      }
-      success = true;
+      success = getDiscoveryVType(event, Plugin_102_QueryVType, P102_QUERY1_CONFIG_POS, event->Par5);
       break;
     }
     # endif // if FEATURE_MQTT_DISCOVER
@@ -399,17 +395,19 @@ const __FlashStringHelper* p102_getQueryString(uint8_t query) {
 }
 
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType p102_getQueryVType(uint8_t query) {
+int Plugin_102_QueryVType(uint8_t query) {
+  Sensor_VType result = Sensor_VType::SENSOR_TYPE_NONE;
+
   switch (query)
   {
-    case 0: return Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY;
-    case 1: return Sensor_VType::SENSOR_TYPE_CURRENT_ONLY;
-    case 2: return Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY;
-    case 3: return Sensor_VType::SENSOR_TYPE_NONE; // FIXME
-    case 4: return Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY;
-    case 5: return Sensor_VType::SENSOR_TYPE_NONE;
+    case 0: result = Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY; break;
+    case 1: result = Sensor_VType::SENSOR_TYPE_CURRENT_ONLY; break;
+    case 2: result = Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY; break;
+    case 3: result = Sensor_VType::SENSOR_TYPE_NONE; break; // FIXME
+    case 4: result = Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY; break;
+    case 5: result = Sensor_VType::SENSOR_TYPE_NONE; break;
   }
-  return Sensor_VType::SENSOR_TYPE_NONE;
+  return static_cast<int>(result);
 }
 
 # endif // if FEATURE_MQTT_DISCOVER

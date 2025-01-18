@@ -3,12 +3,12 @@
 #ifdef USES_P132
 
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType Plugin_132_getQueryVType(uint8_t value_nr) {
+int Plugin_132_QueryVType(uint8_t value_nr) {
   if (value_nr < 6u) {
     const bool odd = value_nr % 2;
-    return odd ? Sensor_VType::SENSOR_TYPE_CURRENT_ONLY : Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY;
+    return static_cast<int>(odd ? Sensor_VType::SENSOR_TYPE_CURRENT_ONLY : Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY);
   }
-  return Sensor_VType::SENSOR_TYPE_NONE;
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE);
 }
 
 # endif // if FEATURE_MQTT_DISCOVER

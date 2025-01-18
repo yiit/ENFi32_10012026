@@ -14,6 +14,9 @@
 // #################################### Change log        ###############################################
 
 /** Changelog:
+ * 2025-01-18 tonhuisman: Implement support for MQTT AutoDiscovery (partially)
+ *                        Uncrustify source formatting
+ *                        TODO: Move discovery VType (and future UoM) to P145_SENSORDEF type
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for MQ-xx)
  * 2025-01-06 tonhuisman: Formatted source uing Uncrustify and small cleanups
  * 2023-01-06 Reworked after review
@@ -156,7 +159,7 @@ boolean Plugin_145(byte function, struct EventStruct *event, String& string)
     # if FEATURE_MQTT_DISCOVER
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
-      event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
+      event->Par1 = Plugin_145_QueryVType(P145_PCONFIG_SENSORT);
       success     = true;
       break;
     }

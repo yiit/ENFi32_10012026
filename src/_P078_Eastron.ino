@@ -93,7 +93,7 @@ boolean Plugin_078(uint8_t function, struct EventStruct *event, String& string)
 
       for (uint8_t i = 0; i < event->Par5; ++i) {
         const uint8_t choice = PCONFIG(i + P078_QUERY1_CONFIG_POS);
-        event->ParN[i] = static_cast<int>(SDM_QueryVType(model, choice));
+        event->ParN[i] = static_cast<int>(Plugin_078_QueryVType(model, choice));
       }
       success = true;
       break;

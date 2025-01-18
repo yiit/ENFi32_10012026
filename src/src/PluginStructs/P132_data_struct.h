@@ -28,7 +28,7 @@
 # define INA3221_CONVERSION_SHUNT_BIT 3
 
 # if FEATURE_MQTT_DISCOVER
-Sensor_VType Plugin_132_getQueryVType(uint8_t value_nr);
+int Plugin_132_QueryVType(uint8_t value_nr);
 # endif // if FEATURE_MQTT_DISCOVER
 
 struct P132_data_struct : public PluginTaskData_base {
