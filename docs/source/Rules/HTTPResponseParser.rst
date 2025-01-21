@@ -9,7 +9,7 @@ Introduction
 
 The HTTP Response Parser are a set of parsers that can be used to parse the response of an HTTP request. They extract specific information from the response and use it in rules by generating specific events.
 
-.. note:: These parsers are disabled by default and only available in max builds for custom builds where you have to enable them with either ``#define FEATURE_THINGSPEAK_EVENT 1``, ``#define FEATURE_OPENMETEO_EVENT 1`` or ``#define FEATURE_JSON_EVENT 1`` in the config.h file.
+.. note:: These parsers are disabled by default and only available in max builds or custom builds where you have to enable them with either ``#define FEATURE_THINGSPEAK_EVENT 1``, ``#define FEATURE_OPENMETEO_EVENT 1`` or ``#define FEATURE_JSON_EVENT 1`` in the config.h file.
 
 The Thingspeak Parser
 ---------------------
