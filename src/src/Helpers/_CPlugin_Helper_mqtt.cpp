@@ -354,9 +354,6 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
       const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(x);
       String discovery_topic(ControllerSettings.MqttAutoDiscoveryTopic);
       String publish_topic(ControllerSettings.Publish);
-      String discoveryMessage;
-
-      discoveryMessage.reserve(128);
 
       // Device is enabled so send information
       if (validDeviceIndex(DeviceIndex) &&
@@ -544,11 +541,17 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               }
               case Sensor_VType::SENSOR_TYPE_CO2_ONLY:
               case Sensor_VType::SENSOR_TYPE_TVOC_ONLY:
+              case Sensor_VType::SENSOR_TYPE_AQI_ONLY:
+              case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
               {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_CO2_ONLY == discoveryItems[s].VType ?
-                                                F("carbon_dioxide") : F("volatile_organic_compounds");
-                const __FlashStringHelper*uom = Sensor_VType::SENSOR_TYPE_CO2_ONLY == discoveryItems[s].VType ?
-                                                F("ppm") : F("ppd");
+                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_CO2_ONLY == discoveryItems[s].VType ? F("carbon_dioxide") :
+                                                Sensor_VType::SENSOR_TYPE_AQI_ONLY == discoveryItems[s].VType ? F("aqi") :
+                                                Sensor_VType::SENSOR_TYPE_NOX_ONLY == discoveryItems[s].VType ? F("nitrogen_dioxide") :
+                                                F("volatile_organic_compounds");
+                const __FlashStringHelper*uom = Sensor_VType::SENSOR_TYPE_CO2_ONLY == discoveryItems[s].VType ? F("ppm") :
+                                                Sensor_VType::SENSOR_TYPE_AQI_ONLY == discoveryItems[s].VType ? F("") :
+                                                Sensor_VType::SENSOR_TYPE_NOX_ONLY == discoveryItems[s].VType ? F("µg/m³") :
+                                                F("ppd");
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
                   success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
@@ -656,7 +659,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                    discovery_topic,
                                                                    F("sensor"),
                                                                    F("illuminance"),
-                                                                   F("lux"),
+                                                                   F("lx"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
@@ -704,13 +707,33 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                 }
                 break;
 
+              case Sensor_VType::SENSOR_TYPE_UV_ONLY:
+              case Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY:
+              case Sensor_VType::SENSOR_TYPE_IR_ONLY:
+              {
+                const __FlashStringHelper*uom = (Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY == discoveryItems[s].VType ? F("UV index") :
+                                                 F("W/m²"));
+
+                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                                                                   ControllerIndex,
+                                                                   publish_topic,
+                                                                   discovery_topic,
+                                                                   F("sensor"),
+                                                                   F("irradiance"),
+                                                                   uom,
+                                                                   &TempEvent,
+                                                                   deviceElement,
+                                                                   success,
+                                                                   false, false);
+                }
+                break;
+              }
+
               case Sensor_VType::SENSOR_TYPE_WIND:
               case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
               case Sensor_VType::SENSOR_TYPE_DIRECTION_ONLY:
               case Sensor_VType::SENSOR_TYPE_GPS_ONLY:
-              case Sensor_VType::SENSOR_TYPE_UV_ONLY:
-              case Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY:
-              case Sensor_VType::SENSOR_TYPE_IR_ONLY:
                 // TODO
                 break;
 

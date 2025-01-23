@@ -82,6 +82,8 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType)
     case Sensor_VType::SENSOR_TYPE_COLOR_BLUE_ONLY:
     case Sensor_VType::SENSOR_TYPE_COLOR_TEMP_ONLY:
     case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY:
+    case Sensor_VType::SENSOR_TYPE_AQI_ONLY:
+    case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
       return 1;
   }
   #ifndef BUILD_NO_DEBUG
@@ -155,6 +157,8 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_COLOR_BLUE_ONLY:  return F("Blue");
     case Sensor_VType::SENSOR_TYPE_COLOR_TEMP_ONLY:  return F("Color temperature");
     case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY: return F("Reactive Power");
+    case Sensor_VType::SENSOR_TYPE_AQI_ONLY:         return F("AQI");
+    case Sensor_VType::SENSOR_TYPE_NOX_ONLY:         return F("NOx");
     #else // if FEATURE_MQTT_DISCOVER
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:
@@ -184,6 +188,8 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_COLOR_BLUE_ONLY:
     case Sensor_VType::SENSOR_TYPE_COLOR_TEMP_ONLY:
     case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY:
+    case Sensor_VType::SENSOR_TYPE_AQI_ONLY:
+    case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
       break;
     #endif // if FEATURE_MQTT_DISCOVER
   }
