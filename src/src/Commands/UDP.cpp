@@ -41,9 +41,7 @@ const __FlashStringHelper * Command_UPD_SendTo(struct EventStruct *event, const 
   if ((destUnit > 0) && (destUnit < 255))
   {
     String eventName = tolerantParseStringKeepCase(Line, 3);
-    if (eventName.indexOf('|') != -1) {
-      eventName.replace('|', '[');
-    }
+    stripEscapeCharacters(eventName);
     SendUDPCommand(destUnit, eventName.c_str(), eventName.length());
   }
   return return_command_success_flashstr();
