@@ -220,12 +220,28 @@
 #define DEFAULT_PIN_I2C_SDA              -1                // Undefined
 #endif
 #endif
+#ifdef ESP32
+#ifndef DEFAULT_PIN_I2C2_SDA
+#define DEFAULT_PIN_I2C2_SDA             -1                // Undefined
+#endif
+#ifndef DEFAULT_PIN_I2C3_SDA
+#define DEFAULT_PIN_I2C3_SDA             -1                // Undefined
+#endif
+#endif
 #ifndef DEFAULT_PIN_I2C_SCL
 #ifdef ESP8266
 #define DEFAULT_PIN_I2C_SCL              5
 #endif
 #ifdef ESP32
 #define DEFAULT_PIN_I2C_SCL              -1                // Undefined
+#endif
+#endif
+#ifdef ESP32
+#ifndef DEFAULT_PIN_I2C2_SCL
+#define DEFAULT_PIN_I2C2_SCL             -1                // Undefined
+#endif
+#ifndef DEFAULT_PIN_I2C3_SCL
+#define DEFAULT_PIN_I2C3_SCL             -1                // Undefined
 #endif
 #endif
 #ifndef DEFAULT_I2C_CLOCK_SPEED
