@@ -966,7 +966,12 @@ bool SettingsStruct_tmpl<N_TASKS>::isSPI_valid() const {
 template<unsigned int N_TASKS>
 bool SettingsStruct_tmpl<N_TASKS>::isI2C_pin(int8_t pin) const {
   if (pin < 0) { return false; }
-  for (uint8_t i2cBus = 0; i2cBus < getI2CBusCount(); ++i2cBus) {
+  #if !FEATURE_I2C_MULTIPLE
+  const uint8_t i2cBus = 0;
+  #else // if !FEATURE_I2C_MULTIPLE
+  for (uint8_t i2cBus = 0; i2cBus < getI2CBusCount(); ++i2cBus)
+  #endif // if !FEATURE_I2C_MULTIPLE
+  {
     if ((getI2CSdaPin(i2cBus) == pin) || (getI2CSclPin(i2cBus) == pin)) {
       return true;
     }
