@@ -338,12 +338,12 @@ void handle_advanced() {
   addUnit(F("1/80 usec"));
   #endif
   #if FEATURE_I2C_MULTIPLE
-  if (getI2CBusCount() >= 2) {
+  if ((getI2CBusCount() >= 2) && Settings.isI2CEnabled(1)) {
     addFormNumericBox(concat(F("I2C ClockStretchLimit"), F(" Interface 2")), F("wire2stretch"), Settings.Wire2ClockStretchLimit); // TODO define limits
     addUnit(F("1/80 usec"));
   }
   #if FEATURE_I2C_INTERFACE_3
-  if (getI2CBusCount() >= 3) {
+  if ((getI2CBusCount() >= 3) && Settings.isI2CEnabled(2)) {
     addFormNumericBox(concat(F("I2C ClockStretchLimit"), F(" Interface 3")), F("wire3stretch"), Settings.Wire3ClockStretchLimit); // TODO define limits
     addUnit(F("1/80 usec"));
   }

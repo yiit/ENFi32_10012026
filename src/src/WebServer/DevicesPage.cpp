@@ -834,6 +834,12 @@ void format_I2C_port_description(taskIndex_t x)
   # if FEATURE_I2CMULTIPLEXER
   #if FEATURE_I2C_MULTIPLE
   const uint8_t i2cBus = Settings.getI2CInterface(x);
+  if (i2cBus > 0) {
+    html_BR();
+    addHtml(F("I2C Interface"));
+    addHtml(' ');
+    addHtmlInt(i2cBus + 1);
+  }
   #else
   const uint8_t i2cBus = 0;
   #endif // if FEATURE_I2C_MULTIPLE
@@ -876,10 +882,15 @@ void format_SPI_port_description(int8_t spi_gpios[3])
 
 void format_I2C_pin_description(taskIndex_t x)
 {
+  #if FEATURE_I2C_MULTIPLE
+  const uint8_t i2cBus = Settings.getI2CInterface(x);
+  #else
+  const uint8_t i2cBus = 0;
+  #endif // if FEATURE_I2C_MULTIPLE
   if (checkI2CConfigValid_toHtml(x)) {
-    Label_Gpio_toHtml(F("SDA"), formatGpioLabel(Settings.Pin_i2c_sda, false));
+    Label_Gpio_toHtml(F("SDA"), formatGpioLabel(Settings.getI2CSdaPin(i2cBus), false));
     html_BR();
-    Label_Gpio_toHtml(F("SCL"), formatGpioLabel(Settings.Pin_i2c_scl, false));
+    Label_Gpio_toHtml(F("SCL"), formatGpioLabel(Settings.getI2CSclPin(i2cBus), false));
   }
 }
 

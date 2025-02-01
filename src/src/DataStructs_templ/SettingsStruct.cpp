@@ -578,6 +578,12 @@ void SettingsStruct_tmpl<N_TASKS>::clearMisc() {
   Pin_status_led_Inversed  = DEFAULT_PIN_STATUS_LED_INVERSED;
   Pin_sd_cs                = -1;
 #ifdef ESP32
+  #if FEATURE_I2C_MULTIPLE
+  Pin_i2c2_sda             = DEFAULT_PIN_I2C2_SDA;
+  Pin_i2c2_scl             = DEFAULT_PIN_I2C2_SCL;
+  Pin_i2c3_sda             = DEFAULT_PIN_I2C3_SDA;
+  Pin_i2c3_scl             = DEFAULT_PIN_I2C3_SCL;
+  #endif
   // Ethernet related settings are never used on ESP8266
   ETH_Phy_Addr             = DEFAULT_ETH_PHY_ADDR;
   ETH_Pin_mdc_cs           = DEFAULT_ETH_PIN_MDC;

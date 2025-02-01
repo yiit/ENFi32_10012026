@@ -250,7 +250,14 @@ void handle_hardware() {
     #endif // if FEATURE_I2CMULTIPLEXER
   }
   #if FEATURE_I2C_MULTIPLE
-  if (getI2CBusCount() >= 2) {
+  const uint8_t i2cMaxBusCount = (getI2CBusCount() >= 2
+                                  ? ((Settings.isI2CEnabled(1) ? 1 : 0)
+                                    # if FEATURE_I2C_INTERFACE_3
+                                     + (Settings.isI2CEnabled(2) ? 1 : 0)
+                                    # endif // if FEATURE_I2C_INTERFACE_3
+                                     )
+                                  : 0) + (Settings.isI2CEnabled(0) ? 1 : 0);
+  if (i2cMaxBusCount > 1) {
     addFormSubHeader(F("PCF &amp; MCP Direct I/O"));
     const uint8_t i2cBus = Settings.getI2CInterfacePCFMCP();
     I2CInterfaceSelector(F("I2C Interface"),
