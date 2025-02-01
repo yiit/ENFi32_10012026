@@ -834,7 +834,7 @@ void format_I2C_port_description(taskIndex_t x)
   # if FEATURE_I2CMULTIPLEXER
   #if FEATURE_I2C_MULTIPLE
   const uint8_t i2cBus = Settings.getI2CInterface(x);
-  if (i2cBus > 0) {
+  if ((i2cBus > 0) || Settings.isI2CEnabled(1) || Settings.isI2CEnabled(2)) {
     html_BR();
     addHtml(F("I2C Interface"));
     addHtml(' ');
