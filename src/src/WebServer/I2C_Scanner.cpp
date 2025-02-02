@@ -499,7 +499,6 @@ void handle_i2cscanner() {
   #else // if !FEATURE_I2C_MULTIPLE
   for (uint8_t i2cBus = 0; i2cBus < getI2CBusCount(); ++i2cBus)
   #endif // if !FEATURE_I2C_MULTIPLE
-  if (Settings.isI2CEnabled(i2cBus))
   {
     html_table_class_multirow();
     #if FEATURE_I2C_MULTIPLE
@@ -548,15 +547,18 @@ void handle_i2cscanner() {
         I2CMultiplexerOff(i2cBus);
       }
       #endif // if FEATURE_I2CMULTIPLEXER
+      if (nDevices == 0) {
+        html_TR_TD();
+        addHtml(F("No I2C devices found"));
+      }
+      nDevices = 0; // Reset for next interface
     } else {
-      addHtml(strformat(F("<TR>I2C pins not configured for interface %d<BR>"), i2cBus + 1));
+      html_TR_TD();
+      addHtml(strformat(F("I2C pins not configured for interface %d"), i2cBus + 1));
     }
     html_end_table();
     I2CSelectHighClockSpeed(0);   // By default the bus is in standard speed
 
-    if (nDevices == 0) {
-      addHtml(F("<TR>No I2C devices found<BR>"));
-    }
   }
   sendHeadandTail_stdtemplate(_TAIL);
   TXBuffer.endStream();
