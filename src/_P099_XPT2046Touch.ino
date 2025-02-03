@@ -138,7 +138,8 @@ boolean Plugin_099(uint8_t function, struct EventStruct *event, String& string)
         const int optionValues2[]             = { 0, 1, 2, 3 };                                                 // Rotation similar to the
                                                                                                                 // TFT ILI9341 rotation
         constexpr size_t optionCount = NR_ELEMENTS(optionValues2);
-        addFormSelector(F("Rotation"), F("protate"), optionCount, options2, optionValues2, choice2);
+        const FormSelectorOptions selector(optionCount, options2, optionValues2);
+        selector.addFormSelector(F("Rotation"), F("protate"), choice2);
       }
 
       const bool bRotationFlipped = bitRead(P099_CONFIG_FLAGS, P099_FLAGS_ROTATION_FLIPPED);
@@ -163,7 +164,8 @@ boolean Plugin_099(uint8_t function, struct EventStruct *event, String& string)
           F("Objectnames, X, Y and Z") };
         const int optionValues3[]    = { 0, 1, 3, 4, 5, 7 }; // Already used as a bitmap!
         constexpr size_t optionCount = NR_ELEMENTS(optionValues3);
-        addFormSelector(F("Events"), F("pevents"), optionCount, options3, optionValues3, choice3);
+        const FormSelectorOptions selector(optionCount, options3, optionValues3);
+        selector.addFormSelector(F("Events"), F("pevents"), choice3);
       }
 
       if (!Settings.UseRules) {
@@ -225,7 +227,9 @@ boolean Plugin_099(uint8_t function, struct EventStruct *event, String& string)
             const __FlashStringHelper *options5[] = { F("None"), F("8"), F("16"), F("24"), F("32"), F("40") };
             const int optionValues5[]             = { -1, 8, 16, 24, 32, 40 };
             constexpr size_t optionCount          = NR_ELEMENTS(optionValues5);
-            addFormSelector(F("# of objects"), F("pobjectcount"), optionCount, options5, optionValues5, choice5, true);
+            FormSelectorOptions selector(optionCount, options5, optionValues5);
+            selector.reloadonchange = true;
+            selector.addFormSelector(F("# of objects"), F("pobjectcount"), choice5);
           }
         }
 
@@ -249,7 +253,7 @@ boolean Plugin_099(uint8_t function, struct EventStruct *event, String& string)
             addTextBox(getPluginCustomArgName(objectNr),
                        String(P099_data->StoredSettings.TouchObjects[objectNr].objectname),
                        P099_MaxObjectNameLength - 1,
-                       false, false, EMPTY_STRING, F(""));
+                       F(""));
             html_TD();
             addNumericBox(getPluginCustomArgName(objectNr + 100), P099_data->StoredSettings.TouchObjects[objectNr].top_left.x, 0, 65535);
             html_TD();

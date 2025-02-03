@@ -186,7 +186,9 @@ boolean Plugin_046(uint8_t function, struct EventStruct *event, String& string)
           F("Unknown 3, uint8_t 19"),
         };
 
-        addFormSelector(F("Plugin function"), F("p046"), nrchoices, options, nullptr, choice, true);
+        FormSelectorOptions selector(NR_ELEMENTS(options),  options);
+        selector.reloadonchange = true;
+        selector.addFormSelector(F("Plugin function"), F("p046"), choice);
         addFormNote(F("Changing the function will reload this page."));
       }
 
