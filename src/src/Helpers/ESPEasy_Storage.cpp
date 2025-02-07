@@ -1040,7 +1040,7 @@ String LoadStringArray(SettingsType::Enum settingsType,
     #ifndef BUILD_NO_DEBUG
     return F("Invalid index for custom settings");
     #else // ifndef BUILD_NO_DEBUG
-    return F("Save error");
+    return F("Load error");
     #endif // ifndef BUILD_NO_DEBUG
   }
 
@@ -2005,7 +2005,7 @@ String LoadFromFile(const char *fname, String& data, int offset)
   STOP_TIMER(LOADFILE_STATS);
   delay(0);
 
-  return String();
+  return EMPTY_STRING;
 }
 
 /********************************************************************************************\
