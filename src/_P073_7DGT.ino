@@ -150,7 +150,8 @@ boolean Plugin_073(uint8_t function, struct EventStruct *event, String& string) 
                                                    # endif // if P073_USE_74HC595
         };
         constexpr size_t optionCount = NR_ELEMENTS(displtype);
-        addFormSelector(F("Display Type"), F("displtype"), optionCount, displtype, nullptr, PCONFIG(0));
+        const FormSelectorOptions selector(optionCount, displtype);
+        selector.addFormSelector(F("Display Type"), F("displtype"), PCONFIG(0));
       }
       # if P073_USE_74HC595
 
@@ -200,7 +201,9 @@ boolean Plugin_073(uint8_t function, struct EventStruct *event, String& string) 
           8,
           #  endif // if P073_USE_74HCMULTIPLEX
         };
-        addFormSelector(F("Nr. of digits"), F("dgts"), NR_ELEMENTS(digitsOptions), digits, digitsOptions, P073_CFG_DIGITS);
+        constexpr size_t optionCount = NR_ELEMENTS(digitsOptions);
+        const FormSelectorOptions selector(optionCount, digits, digitsOptions);
+        selector.addFormSelector(F("Nr. of digits"), F("dgts"), P073_CFG_DIGITS);
       } else
       # endif // if P073_USE_74HC595
       {
