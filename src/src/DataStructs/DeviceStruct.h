@@ -52,7 +52,7 @@
 * DeviceStruct
 * Description of a plugin
 \*********************************************************************************************/
-struct __attribute__((__packed__)) DeviceStruct
+struct DeviceStruct
 {
   DeviceStruct();
 
@@ -95,7 +95,9 @@ struct __attribute__((__packed__)) DeviceStruct
   uint8_t Pin1Direction : GPIO_DIRECTION_NR_BITS;
   uint8_t Pin2Direction : GPIO_DIRECTION_NR_BITS;
   uint8_t Pin3Direction : GPIO_DIRECTION_NR_BITS;
-                                     
+
+  union {
+    struct {
   bool PullUpOption       : 1;       // Allow to set internal pull-up resistors.
   bool InverseLogicOption : 1;       // Allow to invert the boolean state (e.g. a switch)
   bool FormulaOption      : 1;       // Allow to enter a formula to convert values during read. (not possible with Custom enabled)
@@ -118,6 +120,22 @@ struct __attribute__((__packed__)) DeviceStruct
 
   bool HasFormatUserVar   : 1;       // Optimization to only call this when PLUGIN_FORMAT_USERVAR is implemented
   bool I2CNoBusSelection  : 1;       // Dis-allow I2C Bus selection in device configuration
+
+  bool Dummy21            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy22            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy23            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy24            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy25            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy26            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy27            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy28            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy29            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy30            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy31            : 1;       // Dummy added to force alignment, can be re-used
+  bool Dummy32            : 1;       // Dummy added to force alignment, can be re-used
+    };
+    uint32_t _all{};
+  };
 };
 
 
