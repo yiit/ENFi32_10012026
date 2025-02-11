@@ -136,7 +136,6 @@ void I2CBegin(int8_t sda, int8_t scl, uint32_t clockFreq, uint32_t clockStretch)
   #else // ifdef ESP32
   static uint32_t lastI2CClockSpeed = 0;
   #endif // ifdef ESP32
-  // static uint8_t  cntr = 200;
   static int8_t   last_sda     = -1;
   static int8_t   last_scl     = -1;
   static uint32_t last_stretch = 0;
@@ -151,21 +150,17 @@ void I2CBegin(int8_t sda, int8_t scl, uint32_t clockFreq, uint32_t clockStretch)
     if (!Wire.end()) {
       addLog(LOG_LEVEL_ERROR, strformat(F("I2C  : Wire.end() failed on SDA: %d SCL: %d"), last_sda, last_scl));
     }
-    gpio_reset_pin((gpio_num_t)last_sda);
+    gpio_reset_pin((gpio_num_t)last_sda); // Force-release pins to allow GPIO-multiplexing the Wire object
     gpio_reset_pin((gpio_num_t)last_scl);
-    // if (cntr) {
-    //   addLog(LOG_LEVEL_ERROR, strformat(F("I2C  : Wire.end() called on SDA: %d SCL: %d"), last_sda, last_scl));
-    //   --cntr;
-    // }
-    delay(0); // Release some cycles
+    delay(0);                             // Release some cycles
   }
   #endif // ifdef ESP32
 
   #ifndef BUILD_NO_DEBUG
 
-  if (loglevelActiveFor(LOG_LEVEL_DEBUG)) {
-    addLog(LOG_LEVEL_DEBUG, strformat(F("I2C  : SDA: %d, SCL: %d, Clock: %d (%d) (Stretch: %d)"),
-                                      sda, scl, clockFreq, lastI2CClockSpeed, clockStretch));
+  if (loglevelActiveFor(LOG_LEVEL_DEBUG_DEV)) {
+    addLog(LOG_LEVEL_DEBUG_DEV, strformat(F("I2C  : SDA: %d, SCL: %d, Clock: %d (%d) (Stretch: %d)"),
+                                          sda, scl, clockFreq, lastI2CClockSpeed, clockStretch));
   }
   #endif // ifndef BUILD_NO_DEBUG
 
