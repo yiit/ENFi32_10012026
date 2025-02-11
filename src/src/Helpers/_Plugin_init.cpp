@@ -2225,6 +2225,7 @@ void PluginSetup()
 
   for (deviceIndex_t deviceIndex; deviceIndex < DeviceIndex_to_Plugin_id_size; ++deviceIndex)
   {
+    Device.getDeviceStructForEdit(deviceIndex).clear();
     const pluginID_t pluginID = getPluginID_from_DeviceIndex(deviceIndex);
 
     if (validPluginID(pluginID)) { 
