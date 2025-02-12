@@ -47,8 +47,8 @@ void handle_hardware() {
     if (!isI2CPriorityTaskActive(0))
     #endif //if FEATURE_PLUGIN_PRIORITY
     {
-      Settings.Pin_i2c_sda            = getFormItemInt(F("psda0"));
-      Settings.Pin_i2c_scl            = getFormItemInt(F("pscl0"));
+      update_whenset_FormItemInt(F("psda0"), Settings.Pin_i2c_sda);
+      update_whenset_FormItemInt(F("pscl0"), Settings.Pin_i2c_scl);
     }
     Settings.I2C_clockSpeed           = getFormItemInt(F("pi2csp0"), DEFAULT_I2C_CLOCK_SPEED);
     Settings.I2C_clockSpeed_Slow      = getFormItemInt(F("pi2cspslow0"), DEFAULT_I2C_CLOCK_SPEED_SLOW);
@@ -67,8 +67,8 @@ void handle_hardware() {
       if (!isI2CPriorityTaskActive(1))
       #endif //if FEATURE_PLUGIN_PRIORITY
       {
-        Settings.Pin_i2c2_sda             = getFormItemInt(F("psda1"));
-        Settings.Pin_i2c2_scl             = getFormItemInt(F("pscl1"));
+        update_whenset_FormItemInt(F("psda1"), Settings.Pin_i2c2_sda);
+        update_whenset_FormItemInt(F("pscl1"), Settings.Pin_i2c2_scl);
       }
       Settings.I2C2_clockSpeed            = getFormItemInt(F("pi2csp1"),     DEFAULT_I2C_CLOCK_SPEED);
       Settings.I2C2_clockSpeed_Slow       = getFormItemInt(F("pi2cspslow1"), DEFAULT_I2C_CLOCK_SPEED_SLOW);
@@ -88,8 +88,8 @@ void handle_hardware() {
       if (!isI2CPriorityTaskActive(2))
       #endif //if FEATURE_PLUGIN_PRIORITY
       {
-        Settings.Pin_i2c3_sda             = getFormItemInt(F("psda2"));
-        Settings.Pin_i2c3_scl             = getFormItemInt(F("pscl2"));
+        update_whenset_FormItemInt(F("psda2"), Settings.Pin_i2c3_sda);
+        update_whenset_FormItemInt(F("pscl2"), Settings.Pin_i2c3_scl);
       }
       Settings.I2C3_clockSpeed            = getFormItemInt(F("pi2csp2"),     DEFAULT_I2C_CLOCK_SPEED);
       Settings.I2C3_clockSpeed_Slow       = getFormItemInt(F("pi2cspslow2"), DEFAULT_I2C_CLOCK_SPEED_SLOW);

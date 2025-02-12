@@ -641,6 +641,23 @@ bool update_whenset_FormItemInt(const String& key, int& value) {
 }
 
 bool update_whenset_FormItemInt(const __FlashStringHelper * key,
+                                int8_t& value) 
+{
+  return update_whenset_FormItemInt(String(key), value);
+}
+
+
+bool update_whenset_FormItemInt(const String& key, int8_t& value) {
+  int tmpVal;
+
+  if (getCheckWebserverArg_int(key, tmpVal)) {
+    value = tmpVal;
+    return true;
+  }
+  return false;
+}
+
+bool update_whenset_FormItemInt(const __FlashStringHelper * key,
                                 uint8_t& value) 
 {
   return update_whenset_FormItemInt(String(key), value);

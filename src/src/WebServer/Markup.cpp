@@ -155,6 +155,12 @@ void addPinSelector_Item(PinSelectPurpose purpose, const String& gpio_label, int
           break;
 
         case PinSelectPurpose::I2C:
+#if FEATURE_I2C_MULTIPLE
+        case PinSelectPurpose::I2C_2:
+#if FEATURE_I2C_INTERFACE_3
+        case PinSelectPurpose::I2C_3:
+#endif
+#endif
           includeI2C = false;
           // fallthrough
         case PinSelectPurpose::Generic_bidir:
