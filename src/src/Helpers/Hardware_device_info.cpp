@@ -399,26 +399,6 @@ uint32_t getFreeSketchSpace() {
   return res;
 }
 
-/********************************************************************************************\
-   I2C support
- \*********************************************************************************************/
-const uint8_t getI2CBusCount() {
-  #if !FEATURE_I2C_MULTIPLE
-  return 1u;
-  #else // if !FEATURE_I2C_MULTIPLE
-
-  // Not querying the supported nr. of I2C busses in hardware, but using software multiplexing
-  // Assume/expect IDF 5.x
-  // # if defined(SOC_I2C_SUPPORTED) && SOC_I2C_SUPPORTED
-  #  if FEATURE_I2C_INTERFACE_3
-  return 3u; // SOC_I2C_NUM; // Let's go for all I2C busses, including LP_I2C (low power, where available)
-  #  else // if FEATURE_I2C_INTERFACE_3
-  return 2u; // SOC_I2C_NUM; // Let's go for all I2C busses, including LP_I2C (low power, where available)
-  #  endif // if FEATURE_I2C_INTERFACE_3
-  // # endif // if defined(SOC_I2C_SUPPORTED) && SOC_I2C_SUPPORTED
-  #endif // if !FEATURE_I2C_MULTIPLE
-  return 0u; // Unexpected exit...
-}
 
 /********************************************************************************************\
    PSRAM support

@@ -154,9 +154,10 @@ void addPinSelector_Item(PinSelectPurpose purpose, const String& gpio_label, int
           }
           break;
 
-        case PinSelectPurpose::Generic_bidir:
         case PinSelectPurpose::I2C:
           includeI2C = false;
+          // fallthrough
+        case PinSelectPurpose::Generic_bidir:
 
           if (!output || !input) {
             // SDA is obviously bidirectional.

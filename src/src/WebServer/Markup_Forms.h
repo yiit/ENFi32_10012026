@@ -279,6 +279,7 @@ void addFormPinSelect(PinSelectPurpose purpose, const __FlashStringHelper * labe
 
 void addFormPinSelectI2C(const String& label,
                          const String& id,
+                         uint8_t       i2cBus,
                          int           choice);
 
 void addFormSelectorI2C(const String& id,

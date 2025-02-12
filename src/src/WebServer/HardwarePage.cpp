@@ -223,8 +223,8 @@ void handle_hardware() {
     } else
     #endif // if FEATURE_PLUGIN_PRIORITY
     {
-      addFormPinSelectI2C(formatGpioName_bidirectional(F("SDA")), strformat(F("psda%u"), i2cBus), Settings.getI2CSdaPin(i2cBus));
-      addFormPinSelectI2C(formatGpioName_output(F("SCL")),        strformat(F("pscl%u"), i2cBus), Settings.getI2CSclPin(i2cBus));
+      addFormPinSelectI2C(formatGpioName_bidirectional(F("SDA")), strformat(F("psda%u"), i2cBus), i2cBus, Settings.getI2CSdaPin(i2cBus));
+      addFormPinSelectI2C(formatGpioName_output(F("SCL")),        strformat(F("pscl%u"), i2cBus), i2cBus, Settings.getI2CSclPin(i2cBus));
     }
     addFormNumericBox(F("Clock Speed"), strformat(F("pi2csp%u"), i2cBus), Settings.getI2CClockSpeed(i2cBus), 100, 3400000);
     addUnit(F("Hz"));

@@ -470,10 +470,13 @@ void addFormPinSelect(const String& label, const String & id, int choice)
 }
 */
 
-void addFormPinSelectI2C(const String& label, const String& id, int choice)
+void addFormPinSelectI2C(const String& label, const String& id, uint8_t i2cBus, int choice)
 {
   addRowLabel_tr_id(label, id);
-  addPinSelect(PinSelectPurpose::I2C, id, choice);
+  const PinSelectPurpose purpose = static_cast<PinSelectPurpose>(
+  static_cast<uint8_t>(PinSelectPurpose::I2C) + i2cBus);
+
+  addPinSelect(purpose, id, choice);
 }
 
 void addFormSelectorI2C(const String& id,
