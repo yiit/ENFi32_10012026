@@ -471,7 +471,7 @@ void I2CInterfaceSelector(String  label,
     # if FEATURE_I2CMULTIPLEXER
 
     if (reloadWhenNeeded) {
-      // Only use reloadOnChange if current I2C Interface has multiplexer availability different than the other I2C Interface(s)
+      // Only use reloadOnChange if current I2C Bus has multiplexer availability different than the other I2C Bus(s)
       bool hasMultiplexer = false;
 
       for (uint8_t i2cBus = 0; i2cBus < getI2CBusCount(); ++i2cBus) {

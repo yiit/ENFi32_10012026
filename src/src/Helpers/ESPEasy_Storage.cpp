@@ -475,7 +475,7 @@ bool BuildFixes()
   }
 
   if (Settings.Build <= 21156) { // 2025-03-31
-    // PR #5235 Add 2nd and 3rd I2C Interface
+    // PR #5235 Add 2nd and 3rd I2C Bus
     if ((Settings.Pin_i2c2_sda == 0) &&
         (Settings.Pin_i2c2_scl == 0)) {
       Settings.Pin_i2c2_sda = DEFAULT_PIN_I2C2_SDA;

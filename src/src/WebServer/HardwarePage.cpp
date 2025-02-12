@@ -213,9 +213,9 @@ void handle_hardware() {
   #endif // if FEATURE_I2C_MULTIPLE
   {
     #if !FEATURE_I2C_MULTIPLE
-    addFormSubHeader(F("I2C Interface"));
+    addFormSubHeader(F("I2C Bus"));
     #else // if !FEATURE_I2C_MULTIPLE
-    addFormSubHeader(strformat(F("I2C Interface %u"), i2cBus + 1));
+    addFormSubHeader(strformat(F("I2C Bus %u"), i2cBus + 1));
     #endif // if !FEATURE_I2C_MULTIPLE
     #if FEATURE_PLUGIN_PRIORITY
     if (isI2CPriorityTaskActive(i2cBus)) {
@@ -260,7 +260,7 @@ void handle_hardware() {
   if (i2cMaxBusCount > 1) {
     addFormSubHeader(F("PCF &amp; MCP Direct I/O"));
     const uint8_t i2cBus = Settings.getI2CInterfacePCFMCP();
-    I2CInterfaceSelector(F("I2C Interface"),
+    I2CInterfaceSelector(F("I2C Bus"),
                         F("pi2cbuspcf"),
                         i2cBus,
                         false);

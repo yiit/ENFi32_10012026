@@ -838,7 +838,7 @@ void format_I2C_port_description(taskIndex_t x)
   const uint8_t i2cBus = Settings.getI2CInterface(x);
   if ((i2cBus > 0) || Settings.isI2CEnabled(1) || Settings.isI2CEnabled(2)) {
     html_BR();
-    addHtml(F("I2C Interface"));
+    addHtml(F("I2C Bus"));
     addHtml(' ');
     addHtmlInt(i2cBus + 1);
   }
@@ -1248,7 +1248,7 @@ void devicePage_show_I2C_config(taskIndex_t taskIndex, deviceIndex_t DeviceIndex
      #endif // if FEATURE_I2C_INTERFACE_3
      #endif // if FEATURE_I2C_MULTIPLE
      ) {
-    addFormNote(F("I2C Interface is not configured yet (Hardware page)."));
+    addFormNote(F("I2C Bus is not configured yet (Hardware page)."));
   }
 
   String dummy;
@@ -1266,7 +1266,7 @@ void devicePage_show_I2C_config(taskIndex_t taskIndex, deviceIndex_t DeviceIndex
   #if FEATURE_I2C_MULTIPLE
   if (!Device[DeviceIndex].I2CNoBusSelection) { // If the device doesn't disallow bus selection
     i2cBus = Settings.getI2CInterface(taskIndex);
-    I2CInterfaceSelector(F("I2C Interface"),
+    I2CInterfaceSelector(F("I2C Bus"),
                         F("pi2cbus"),
                         i2cBus,
                         true);

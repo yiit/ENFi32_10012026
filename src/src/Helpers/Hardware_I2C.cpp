@@ -33,7 +33,7 @@ void initI2C() {
   {
     if (Settings.isI2CEnabled(i2cBus)) {
       addLog(LOG_LEVEL_INFO, concat(F("INIT : I2C interface "), i2cBus + 1));
-      I2CSelectHighClockSpeed(i2cBus); // Set normal clock speed, on I2C Interface 1 (index 0)
+      I2CSelectHighClockSpeed(i2cBus); // Set normal clock speed, on I2C Bus 1 (index 0)
     }
   }
 

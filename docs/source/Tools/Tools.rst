@@ -275,11 +275,11 @@ N.B. these modules all use I2C, so they need to be connected to the configured I
 
 Added: 2025-02-02
 
-When multiple I2C Interfaces are configured (ESP32 only), we need to configure on which I2C Interface the RTC chip is connected:
+When multiple I2C Busses are configured (ESP32 only), we need to configure on which I2C Bus the RTC chip is connected:
 
 .. image:: images/Tools_RTC_I2CSelector.png
 
-NB: If only 1 I2C Interface is configured, this configuration option isn't shown.
+NB: If only 1 I2C Bus is configured, this configuration option isn't shown.
 
 
 Procedure to configure a real time clock (RTC) chip:
@@ -420,11 +420,11 @@ What can be read/set/changed must still be documented.
 
 Added: 2025-02-02
 
-When multiple I2C Interfaces are configured (ESP32 only), we need to configure on which I2C Interface the Watchdog chip is connected:
+When multiple I2C Busses are configured (ESP32 only), we need to configure on which I2C Bus the Watchdog chip is connected:
 
 .. image:: images/Tools_WD_I2CSelector.png
 
-NB: If only 1 I2C Interface is configured, this configuration option isn't shown.
+NB: If only 1 I2C Bus is configured, this configuration option isn't shown.
 
 
 JSON bool output without quotes
@@ -970,7 +970,7 @@ Example scan using an I2C multiplexer, showing multiple devices across multiple 
 
 Added: 2025-02-02
 
-When having multiple I2C Interfaces configured, for each configured interface an I2C Scan is performed, including the multiplexer if that's configured.
+When having multiple I2C Busses configured, for each configured interface an I2C Scan is performed, including the multiplexer if that's configured.
 
 An example: (No actual multiplexer connected...)
 
