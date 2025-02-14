@@ -275,7 +275,7 @@ N.B. these modules all use I2C, so they need to be connected to the configured I
 
 Added: 2025-02-02
 
-When multiple I2C Busses are configured (ESP32 only), we need to configure on which I2C Bus the RTC chip is connected:
+When multiple I2C Buses are configured (ESP32 only), we need to configure on which I2C Bus the RTC chip is connected:
 
 .. image:: images/Tools_RTC_I2CSelector.png
 
@@ -420,7 +420,7 @@ What can be read/set/changed must still be documented.
 
 Added: 2025-02-02
 
-When multiple I2C Busses are configured (ESP32 only), we need to configure on which I2C Bus the Watchdog chip is connected:
+When multiple I2C Buses are configured (ESP32 only), we need to configure on which I2C Bus the Watchdog chip is connected:
 
 .. image:: images/Tools_WD_I2CSelector.png
 
@@ -954,7 +954,7 @@ Interfaces
 I2C Scan
 ========
 
-To verify if any connected I2C devices are properly detected by the ESP, the I2C Scan is available. This will scan the I2C bus, and, when configured, the additional busses provided via an I2C multiplexer, for available devices.
+To verify if any connected I2C devices are properly detected by the ESP, the I2C Scan is available. This will scan the I2C bus, and, when configured, the additional buses/channels provided via an I2C multiplexer, for available devices.
 
 The scan is performed if the I2C ``SDA`` and ``SCL`` GPIO pins are configured on the Hardware page, and will use the configured ``Slow device Clock Speed`` setting (default: 100 kHz) during the scan, as that should be supported by any I2C device available.
 
@@ -970,11 +970,11 @@ Example scan using an I2C multiplexer, showing multiple devices across multiple 
 
 Added: 2025-02-02
 
-When having multiple I2C Busses configured, for each configured interface an I2C Scan is performed, including the multiplexer if that's configured.
+When having multiple I2C Buses configured, for each configured interface an I2C Scan is performed, including the multiplexer if that's configured.
 
 An example: (No actual multiplexer connected...)
 
-.. image:: images/Tools_I2Cscan_multipleInterfaces.png
+.. image:: images/Tools_I2Cscan_multipleBuses.png
 
 |
 
