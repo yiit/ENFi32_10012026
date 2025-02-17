@@ -358,7 +358,8 @@ void addToLogMove(uint8_t logLevel, String&& string)
   // May clear the string, so call as last one.
   if (loglevelActiveFor(LOG_TO_WEBLOG, logLevel)) {
     Logging.add(logLevel, std::move(string));
+  } else {
+    // Make sure the string may no longer keep up memory
+    free_string(string);
   }
-  // Make sure the string may no longer keep up memory
-  free_string(string);
 }
