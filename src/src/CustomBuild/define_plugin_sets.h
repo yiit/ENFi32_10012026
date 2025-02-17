@@ -2437,7 +2437,7 @@ To create/register a plugin, you have to :
     #define USES_P139   // AXP2101
   #endif
   #ifndef USES_P140
-//    #define USES_P140   //
+    #define USES_P140   // CardKB
   #endif
   #ifndef USES_P141
     #define USES_P141   // PCD8544 Nokia 5110
@@ -2568,6 +2568,12 @@ To create/register a plugin, you have to :
 
 #endif
 
+#if !defined(USES_P140) && defined(ESP32) && !defined(UN_USES_P140) // Enabled for all ESP32, so we need a way to un-use
+  #define USES_P140
+#endif
+#if defined(UN_USES_P140) && defined(USES_P140)
+  #undef USES_P140
+#endif
 
 /******************************************************************************\
  * Libraries dependencies *****************************************************
