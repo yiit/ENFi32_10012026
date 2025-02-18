@@ -138,10 +138,10 @@ String NodeStruct::getNodeName() const {
   String res;
   size_t length = strnlen(reinterpret_cast<const char *>(nodeName), sizeof(nodeName));
 
-  res.reserve(length);
-
-  for (size_t i = 0; i < length; ++i) {
-    res += static_cast<char>(nodeName[i]);
+  if (reserve_special(res, length)) {
+    for (size_t i = 0; i < length; ++i) {
+      res += static_cast<char>(nodeName[i]);
+    }
   }
   return res;
 }
@@ -212,21 +212,21 @@ float NodeStruct::getLoad() const {
 
 String NodeStruct::getSummary() const {
   String res;
-
-  res.reserve(48);
-  res  = F("Unit: ");
-  res += unit;
-  res += F(" \"");
-  res += getNodeName();
-  res += '"';
-  res += F(" load: ");
-  res += String(getLoad(), 1);
-  res += F(" RSSI: ");
-  res += getRSSI();
-  res += F(" ch: ");
-  res += channel;
-  res += F(" dst: ");
-  res += distance;
+  if (reserve_special(res, 48)) {
+    res  = F("Unit: ");
+    res += unit;
+    res += F(" \"");
+    res += getNodeName();
+    res += '"';
+    res += F(" load: ");
+    res += String(getLoad(), 1);
+    res += F(" RSSI: ");
+    res += getRSSI();
+    res += F(" ch: ");
+    res += channel;
+    res += F(" dst: ");
+    res += distance;
+  }
   return res;
 }
 

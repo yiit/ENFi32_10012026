@@ -78,7 +78,7 @@ bool equals(const String& str, const char& c) {
 void move_special(String& dest, String&& source) {
   #ifdef USE_SECOND_HEAP
   // Only try to store larger strings here as those tend to be kept for a longer period.
-  if ((source.length() >= 32) && mmu_is_dram(&(source[0]))) {
+  if ((source.length() >= 64) && mmu_is_dram(&(source[0]))) {
     // The string was not allocated on the 2nd heap, so copy instead of move
     HeapSelectIram ephemeral;
     if (dest.reserve(source.length())) {
@@ -734,11 +734,9 @@ String stripWrappingChar(const String& text, char wrappingChar) {
   const unsigned int length = text.length();
 
   if ((length >= 2) && stringWrappedWithChar(text, wrappingChar)) {
-    # ifdef USE_SECOND_HEAP
-    HeapSelectIram ephemeral;
-    # endif // ifdef USE_SECOND_HEAP
-
-    return text.substring(1, length - 1);
+    String dest;
+    move_special(dest,text.substring(1, length - 1));
+    return dest;
   }
   return text;
 }

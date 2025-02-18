@@ -419,11 +419,14 @@ bool PluginCallForTask(taskIndex_t taskIndex, uint8_t Function, EventStruct *Tem
                 LoadTaskSettings(taskIndex);
 
                 if (ExtraTaskSettings.anyEnabledPluginStats()) {
-                    # ifdef USE_SECOND_HEAP
-                  HeapSelectIram ephemeral;
-                    # endif // ifdef USE_SECOND_HEAP
 
-                  initPluginTaskData(taskIndex, new (std::nothrow) _StatsOnly_data_struct());
+                  // Try to allocate in PSRAM or 2nd heap if possible
+                  constexpr unsigned size = sizeof(_StatsOnly_data_struct);
+                  void *ptr               = special_calloc(1, size);
+
+                  if (ptr) {
+                    initPluginTaskData(taskIndex, new (ptr) _StatsOnly_data_struct());
+                  }
                 }
               }
             }
@@ -448,10 +451,13 @@ bool PluginCallForTask(taskIndex_t taskIndex, uint8_t Function, EventStruct *Tem
               LoadTaskSettings(taskIndex);
 
               if (ExtraTaskSettings.anyEnabledPluginStats()) {
-                # ifdef USE_SECOND_HEAP
-                HeapSelectIram ephemeral;
-                # endif // ifdef USE_SECOND_HEAP
-                initPluginTaskData(taskIndex, new (std::nothrow) _StatsOnly_data_struct());
+                // Try to allocate in PSRAM or 2nd heap if possible
+                constexpr unsigned size = sizeof(_StatsOnly_data_struct);
+                void *ptr               = special_calloc(1, size);
+
+                if (ptr) {
+                  initPluginTaskData(taskIndex, new (std::nothrow) _StatsOnly_data_struct());
+                }
               }
             }
           }
@@ -700,7 +706,7 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
             const int freemem_end = ESP.getFreeHeap();
             String log;
 
-            if (log.reserve(128)) {
+            if (reserve_special(log, 128)) {
               log  = F("After PLUGIN_INIT ");
               log += F(" task: ");
 

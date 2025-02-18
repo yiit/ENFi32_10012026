@@ -314,11 +314,14 @@ boolean Plugin_082(uint8_t function, struct EventStruct *event, String& string) 
       const int16_t serial_tx      = CONFIG_PIN2;
       const int16_t pps_pin        = CONFIG_PIN3;
 
-      # ifdef USE_SECOND_HEAP
-      HeapSelectIram ephemeral;
-      # endif // ifdef USE_SECOND_HEAP
+      // Try to allocate in PSRAM or 2nd heap if possible
+      constexpr unsigned size = sizeof(P082_data_struct);
+      void *ptr               = special_calloc(1, size);
+      if (!ptr) {
+        return success;
+      }
 
-      initPluginTaskData(event->TaskIndex, new (std::nothrow) P082_data_struct());
+      initPluginTaskData(event->TaskIndex, new (ptr) P082_data_struct());
       P082_data_struct *P082_data =
         static_cast<P082_data_struct *>(getPluginTaskData(event->TaskIndex));
 

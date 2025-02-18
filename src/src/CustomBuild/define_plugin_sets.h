@@ -55,7 +55,9 @@ To create/register a plugin, you have to :
         #define WEBSERVER_LOG
     #endif
     #ifndef WEBSERVER_GITHUB_COPY
-        #define WEBSERVER_GITHUB_COPY
+        #ifndef USE_SECOND_HEAP
+          #define WEBSERVER_GITHUB_COPY
+        #endif
     #endif
     #ifndef WEBSERVER_ROOT
         #define WEBSERVER_ROOT

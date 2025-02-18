@@ -51,15 +51,12 @@ String P036_LineContent::saveDisplayLines(taskIndex_t taskIndex) {
   if (FreeMem() > 8000) {
     // Write in one single chunk.
     tDisplayLines_storage_full *tmp = nullptr;
-    # ifdef USE_SECOND_HEAP
-    {
-      HeapSelectIram ephemeral;
-      tmp = new (std::nothrow) tDisplayLines_storage_full;
-    }
-    # endif // ifdef USE_SECOND_HEAP
 
-    if (tmp == nullptr) {
-      tmp = new (std::nothrow) tDisplayLines_storage_full;
+    // Try to allocate in PSRAM or 2nd heap if possible
+    constexpr unsigned size = sizeof(tDisplayLines_storage_full);
+    void *ptr               = special_calloc(1, size);
+    if (ptr) {
+      tmp = new (ptr) tDisplayLines_storage_full;
     }
 
     if (tmp != nullptr) {
@@ -231,10 +228,13 @@ bool P036_data_struct::init(taskIndex_t      taskIndex,
   }
 
   {
-    # ifdef USE_SECOND_HEAP
-    HeapSelectIram ephemeral;
-    # endif // ifdef USE_SECOND_HEAP
-    LineContent = new (std::nothrow) P036_LineContent();
+    // Try to allocate in PSRAM or 2nd heap if possible
+    constexpr unsigned size = sizeof(P036_LineContent);
+    void *ptr               = special_calloc(1, size);
+
+    if (ptr) {    
+      LineContent = new (ptr) P036_LineContent();
+    }
   }
 
   if (isInitialized()) {
@@ -723,11 +723,15 @@ void P036_data_struct::setOrientationRotated(bool rotated) {
 void P036_data_struct::RestoreLineContent(taskIndex_t taskIndex,
                                           uint8_t     LoadVersion,
                                           uint8_t     LineNo) {
-  # ifdef USE_SECOND_HEAP
-  HeapSelectIram ephemeral;
-  # endif // ifdef USE_SECOND_HEAP
+  // Try to allocate in PSRAM or 2nd heap if possible
+  constexpr unsigned size = sizeof(P036_LineContent);
+  void *ptr               = special_calloc(1, size);
 
-  P036_LineContent *TempContent = new (std::nothrow) P036_LineContent();
+  if (!ptr) {
+    return;
+  }
+
+  P036_LineContent *TempContent = new (ptr) P036_LineContent();
 
   if (TempContent != nullptr) {
     TempContent->loadDisplayLines(taskIndex, LoadVersion);

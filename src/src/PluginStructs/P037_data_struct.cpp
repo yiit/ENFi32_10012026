@@ -973,11 +973,12 @@ bool P037_data_struct::parseJSONMessage(const String& message) {
   }
 
   if (nullptr == root) {
-    # ifdef USE_SECOND_HEAP
-    HeapSelectIram ephemeral;
-    # endif // ifdef USE_SECOND_HEAP
-
-    root = new (std::nothrow) DynamicJsonDocument(lastJsonMessageLength); // Dynamic allocation
+    // Try to allocate in PSRAM or 2nd heap if possible
+    constexpr unsigned size = sizeof(DynamicJsonDocument);
+    void *ptr               = special_calloc(1, size);
+    if (ptr) {    
+      root = new (ptr) DynamicJsonDocument(lastJsonMessageLength); // Dynamic allocation
+    }
   }
 
   if (nullptr != root) {

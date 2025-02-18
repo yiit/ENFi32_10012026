@@ -18,8 +18,7 @@ bool rules_replace_common_mistakes(const String& from, const String& to, String&
 
   if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
     String log;
-
-    if (log.reserve(32 + from.length() + to.length() + line.length())) {
+    if (reserve_special(log, 32 + from.length() + to.length() + line.length())) {
       log  = F("Rules (Syntax Error, auto-corrected): '");
       log += from;
       log += F("' => '");
