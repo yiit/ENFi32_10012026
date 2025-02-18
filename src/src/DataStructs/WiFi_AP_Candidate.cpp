@@ -47,7 +47,7 @@ WiFi_AP_Candidate::WiFi_AP_Candidate(const WiFi_AP_Candidate& other)
   _allBits = other._allBits;
   #ifdef ESP32
   # if ESP_IDF_VERSION_MAJOR >= 5
-  memcpy(&this.country, &other.country, sizeof(wifi_country_t));
+  memcpy(&this->country, &other.country, sizeof(wifi_country_t));
   #endif
   #endif
 }
@@ -195,7 +195,7 @@ WiFi_AP_Candidate& WiFi_AP_Candidate::operator=(const WiFi_AP_Candidate& other)
   _allBits = other._allBits;
   #ifdef ESP32
   # if ESP_IDF_VERSION_MAJOR >= 5
-  memcpy(&this.country, &other.country, sizeof(wifi_country_t));
+  memcpy(&this->country, &other.country, sizeof(wifi_country_t));
   #endif
   #endif
 

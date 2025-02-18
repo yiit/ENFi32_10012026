@@ -2,11 +2,17 @@
 
 #if FEATURE_ESPEASY_P2P
 #include "../../ESPEasy-Globals.h"
+
 #include "../DataTypes/NodeTypeID.h"
+
 #include "../ESPEasyCore/ESPEasyNetwork.h"
+
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Settings.h"
+
 #include "../Helpers/ESPEasy_time_calc.h"
+#include "../Helpers/StringConverter.h"
+
 
 
 #define NODE_STRUCT_AGE_TIMEOUT 300000  // 5 minutes
