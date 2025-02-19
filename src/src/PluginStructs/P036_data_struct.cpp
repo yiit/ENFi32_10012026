@@ -19,6 +19,9 @@
 # include <OLED_SSD1306_SH1106_images.h>
 
 void P036_LineContent::loadDisplayLines(taskIndex_t taskIndex, uint8_t LoadVersion) {
+  #ifdef USE_SECOND_HEAP
+  HeapSelectIram ephemeral;
+  #endif
   if (LoadVersion == 0) {
     // read data of version 0 (up to 22.11.2019)
     String DisplayLinesV0[P36_Nlines];                                           // used to load the CustomTaskSettings for V0

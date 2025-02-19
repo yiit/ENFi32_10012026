@@ -176,14 +176,14 @@ void* special_calloc(size_t num, size_t size) {
     res = heap_caps_calloc(num, size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
   }
 #else // ifdef ESP32
-  if (size > 64) {
 # ifdef USE_SECOND_HEAP
+  if (size > 64 || FreeMem() < 5000) {
 
     // Try allocating on ESP8266 2nd heap, only when sufficiently large data is needed
     HeapSelectIram ephemeral;
-# endif // ifdef USE_SECOND_HEAP
     res = calloc(num, size);
   }
+# endif // ifdef USE_SECOND_HEAP
 #endif  // ifdef ESP32
 
   if (res == nullptr) {
@@ -212,7 +212,7 @@ bool String_reserve_special(String& str, size_t size) {
     return true;
   }
   #ifdef USE_SECOND_HEAP
-  if (size >= 48) {
+  if (size >= 48 || FreeMem() < 5000) {
     // Only try to store larger strings here as those tend to be kept for a longer period.
     HeapSelectIram ephemeral;
     // String does round up to nearest multiple of 16 bytes, so no need to round up to multiples of 32 bit here
