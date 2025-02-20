@@ -148,6 +148,7 @@ boolean Plugin_116(uint8_t function, struct EventStruct *event, String& string)
           ST77xx_type_toString(ST77xx_type_e::ST7735s_80x160_M5),
           # if P116_EXTRA_ST7735
           ST77xx_type_toString(ST77xx_type_e::ST7735s_135x240),
+          ST77xx_type_toString(ST77xx_type_e::ST7735s_172x320),
           # endif // if P116_EXTRA_ST7735
           ST77xx_type_toString(ST77xx_type_e::ST7789vw_240x320),
           ST77xx_type_toString(ST77xx_type_e::ST7789vw_240x240),
@@ -167,6 +168,7 @@ boolean Plugin_116(uint8_t function, struct EventStruct *event, String& string)
           static_cast<int>(ST77xx_type_e::ST7735s_80x160_M5),
           # if P116_EXTRA_ST7735
           static_cast<int>(ST77xx_type_e::ST7735s_135x240),
+          static_cast<int>(ST77xx_type_e::ST7735s_172x320),
           # endif // if P116_EXTRA_ST7735
           static_cast<int>(ST77xx_type_e::ST7789vw_240x320),
           static_cast<int>(ST77xx_type_e::ST7789vw_240x240),
