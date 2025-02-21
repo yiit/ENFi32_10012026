@@ -233,7 +233,11 @@ bool String_reserve_special(String& str, size_t size) {
 class PSRAM_String : public String {
   public:
   PSRAM_String(size_t size) : String() {
-    init();
+    sso.isSSO = 0;      // setSSO(false);
+    ptr.buff = nullptr; // setBuffer(nullptr);
+    ptr.cap = 0;        // setCapacity(0);
+    ptr.len = 0;        // setLen(0);
+
     if (size != 0 && size > capacity() && UsePSRAM()) {
       size_t newSize = (size + 16) & (~0xf);
       void *ptr = special_calloc(1, newSize);
@@ -249,6 +253,9 @@ class PSRAM_String : public String {
 
 
 bool String_reserve_special(String& str, size_t size) {
+  if (size == 0) {
+    return true;
+  }
   if (!UsePSRAM()) {
     return str.reserve(size);
   }
