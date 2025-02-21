@@ -9,6 +9,8 @@
 
 /**
  * Changelog:
+ * 2025-01-21 tonhuisman: Bugfix: commands axp,ldo2,x to axp,dcdc3,x weren't working as intended
+ * 2025-01-18 tonhuisman: Add predefined config settings for M5Stack StickC Plus units
  * 2022-12-27 tonhuisman: Add predefined config settings for LilyGO T-Beam LoRa units
  * 2022-12-07 tonhuisman: Re-order device configuration to use PLUGIN_WEBFORM_LOAD_OUTPUT_SELECTOR
  *                        Enable PluginStats feature
@@ -181,6 +183,7 @@ boolean Plugin_137(uint8_t function, struct EventStruct *event, String& string)
           toString(P137_PredefinedDevices_e::M5Stack_StickC),
           toString(P137_PredefinedDevices_e::M5Stack_Core2),
           toString(P137_PredefinedDevices_e::LilyGO_TBeam),
+          toString(P137_PredefinedDevices_e::M5Stack_StickCPlus),
           toString(P137_PredefinedDevices_e::UserDefined) // keep last and at 99 !!
         };
         const int predefinedValues[] = {
@@ -188,11 +191,12 @@ boolean Plugin_137(uint8_t function, struct EventStruct *event, String& string)
           static_cast<int>(P137_PredefinedDevices_e::M5Stack_StickC),
           static_cast<int>(P137_PredefinedDevices_e::M5Stack_Core2),
           static_cast<int>(P137_PredefinedDevices_e::LilyGO_TBeam),
+          static_cast<int>(P137_PredefinedDevices_e::M5Stack_StickCPlus),
           static_cast<int>(P137_PredefinedDevices_e::UserDefined) }; // keep last and at 99 !!
         constexpr size_t optionCount = NR_ELEMENTS(predefinedValues);
-        addFormSelector(F("Predefined device configuration"), F("predef"),
-                        optionCount,
-                        predefinedNames, predefinedValues, 0, !Settings.isPowerManagerTask(event->TaskIndex));
+        FormSelectorOptions selector(optionCount, predefinedNames, predefinedValues);
+        selector.reloadonchange = !Settings.isPowerManagerTask(event->TaskIndex);
+        selector.addFormSelector(F("Predefined device configuration"), F("predef"), 0);
 
         if (!Settings.isPowerManagerTask(event->TaskIndex)) {
           addFormNote(F("Page will reload when selection is changed."));
@@ -271,14 +275,11 @@ boolean Plugin_137(uint8_t function, struct EventStruct *event, String& string)
         for (int i = 0; i < 5; ++i) { // GPIO0..4
           const String id = concat(F("pgpio"), i);
           addRowLabel(concat(F("Initial state GPIO"), i));
-          addSelector(id, optionCount,
-                      bootStates, bootStateValues, bootStateAttributes,
-                      get3BitFromUL(P137_CONFIG_FLAGS, i * 3),
-                      false, !bitRead(P137_CONFIG_DISABLEBITS, i + 3), F("")
-                      #  if FEATURE_TOOLTIPS
-                      , EMPTY_STRING
-                      #  endif // if FEATURE_TOOLTIPS
-                      );
+          FormSelectorOptions selector(
+            optionCount, bootStates, bootStateValues, bootStateAttributes);
+          selector.enabled = !bitRead(P137_CONFIG_DISABLEBITS, i + 3);
+          selector.clearClassName();
+          selector.addSelector(id, get3BitFromUL(P137_CONFIG_FLAGS, i * 3));
 
           if (bitRead(P137_CONFIG_DISABLEBITS, i + 3)) {
             addUnit(notConnected);
