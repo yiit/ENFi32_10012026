@@ -377,7 +377,7 @@ String getKnownI2Cdevice(uint8_t address) {
       result += F("LiquidLevel");
       break;
     case 0x7f:
-      result += F("Arduino PME");
+      result += F("Arduino PME,XDB401");
       break;
   }
   #endif // LIMIT_BUILD_SIZE
