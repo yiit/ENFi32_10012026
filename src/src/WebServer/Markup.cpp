@@ -874,9 +874,16 @@ void addPinSelect(PinSelectPurpose purpose, const String& id,  int choice)
     if (UsableGPIO || (i == 0)) {
       addPinSelector_Item(
         purpose,
+        #ifdef ESP32
         concat(
-          createGPIO_label(gpio, pinnr, input, output, warning),
-          getConflictingUse_wrapped(gpio, purpose)),
+        #endif // ifdef ESP32
+          concat(
+            createGPIO_label(gpio, pinnr, input, output, warning),
+            getConflictingUse_wrapped(gpio, purpose)),
+        #ifdef ESP32
+            isPSRAMInterfacePin(gpio) ? getConflictingUse_wrapped(gpio, purpose, true) : F("")
+        ),
+        #endif // ifdef ESP32
         gpio,
         choice == gpio);
 

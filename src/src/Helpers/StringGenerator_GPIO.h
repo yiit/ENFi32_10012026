@@ -91,9 +91,9 @@ String createGPIO_label(int  gpio,
                         bool output,
                         bool warning);
 
-const __FlashStringHelper * getConflictingUse(int gpio, PinSelectPurpose purpose = PinSelectPurpose::Generic);
+const __FlashStringHelper * getConflictingUse(int gpio, PinSelectPurpose purpose = PinSelectPurpose::Generic, bool ignorePSRAMpin = false);
 
-String getConflictingUse_wrapped(int gpio, PinSelectPurpose purpose = PinSelectPurpose::Generic);
+String getConflictingUse_wrapped(int gpio, PinSelectPurpose purpose = PinSelectPurpose::Generic, bool ignorePSRAMpin = false);
 
 
 #endif

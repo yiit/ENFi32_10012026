@@ -597,6 +597,11 @@ void addFormPinStateSelect(int gpio, int choice)
       id,
       choice);
     addUnit(getConflictingUse(gpio));
+    #ifdef ESP32
+    if (isPSRAMInterfacePin(gpio)) {
+      addUnit(getConflictingUse(gpio, PinSelectPurpose::Generic, true));
+    }
+    #endif // ifdef ESP32
   }
 }
 

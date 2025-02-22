@@ -165,7 +165,7 @@ String createGPIO_label(int gpio, int pinnr, bool input, bool output, bool warni
   return result;
 }
 
-const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose)
+const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose, bool ignorePSRAMpins)
 {
 #ifdef PIN_USB_D_MIN
   if (gpio == PIN_USB_D_MIN) { return F("USB_D-"); }
@@ -179,7 +179,7 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose)
   }
 
 #ifdef ESP32
-  if (isPSRAMInterfacePin(gpio)) {
+  if (!ignorePSRAMpins && isPSRAMInterfacePin(gpio)) { // PSRAM pins can be shared with SPI
     return F("PSRAM");
   }
 #endif
@@ -373,9 +373,9 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose)
   return F("");
 }
 
-String getConflictingUse_wrapped(int gpio, PinSelectPurpose purpose)
+String getConflictingUse_wrapped(int gpio, PinSelectPurpose purpose, bool ignorePSRAMpins)
 {
-  String conflict = getConflictingUse(gpio, purpose);
+  const String conflict = getConflictingUse(gpio, purpose, ignorePSRAMpins);
 
   if (conflict.isEmpty()) { return conflict; }
   String res = F(" [");
