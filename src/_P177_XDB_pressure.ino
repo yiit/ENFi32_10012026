@@ -6,6 +6,8 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-02-23 tonhuisman: Add Generate events on pressure change and Raw data options
+ *                        Fix pressure and temperature calculation
  * 2025-02-22 tonhuisman: Initial plugin development, direct I2C access,
  *                        based on this documentation: https://www.letscontrolit.com/forum/viewtopic.php?t=10568#p71993 (attachment)
  */
@@ -69,17 +71,24 @@ boolean Plugin_177(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_SET_DEFAULTS:
     {
-      P177_PRESSURE_SCALE_FACTOR = 1; // Default to 1
+      P177_PRESSURE_SCALE_FACTOR = 1000; // Default to 1000
+      P177_GENERATE_EVENTS       = 1;    // Enabled
       break;
     }
 
     case PLUGIN_WEBFORM_LOAD:
     {
-      addFormNumericBox(F("Pressure scaling factor"), F("scale"),      P177_PRESSURE_SCALE_FACTOR, 1);
+      addFormNumericBox(F("Sensor Full-scale Pressure"), F("scale"), P177_PRESSURE_SCALE_FACTOR, 1);
+      addUnit(F("psi, mBar, hPa, etc."));
 
-      addFormNumericBox(F("Temperature offset"),      F("tempoffset"), P177_TEMPERATURE_OFFSET);
+      addFormNumericBox(F("Temperature offset"), F("tempoffset"), P177_TEMPERATURE_OFFSET);
       addUnit(F("x 0.1C"));
       addFormNote(F("Offset in units of 0.1 degree Celsius"));
+
+      addFormCheckBox(F("Generate events on Pressure change"), F("pevents"), P177_GENERATE_EVENTS == 1);
+
+      addFormCheckBox(F("Use raw data from sensor"),           F("praw"),    P177_RAW_DATA == 1);
+      addFormNote(F("When checked: Pressure scaling factor and Temperature offset will be ignored!"));
 
       success = true;
       break;
@@ -89,6 +98,8 @@ boolean Plugin_177(uint8_t function, struct EventStruct *event, String& string)
     {
       P177_PRESSURE_SCALE_FACTOR = getFormItemInt(F("scale"), 1000);
       P177_TEMPERATURE_OFFSET    = getFormItemInt(F("tempoffset"), 0);
+      P177_GENERATE_EVENTS       = isFormItemChecked(F("pevents")) ? 1 : 0;
+      P177_RAW_DATA              = isFormItemChecked(F("praw")) ? 1 : 0;
 
       success = true;
       break;
@@ -96,7 +107,7 @@ boolean Plugin_177(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_INIT:
     {
-      success = initPluginTaskData(event->TaskIndex, new (std::nothrow) P177_data_struct());
+      success = initPluginTaskData(event->TaskIndex, new (std::nothrow) P177_data_struct(event));
       break;
     }
 

@@ -19,6 +19,8 @@
 
 # define P177_PRESSURE_SCALE_FACTOR PCONFIG_LONG(0) // Pressure scaling factor
 # define P177_TEMPERATURE_OFFSET    PCONFIG(0)      // Temperature compensation in 0.1 degree steps
+# define P177_GENERATE_EVENTS       PCONFIG(1)      // To generate an event on Pressure change
+# define P177_RAW_DATA              PCONFIG(2)      // Present raw data
 
 enum class P177_SensorMode_e : uint8_t {
   IdleMode      = 0u,
@@ -32,7 +34,7 @@ enum class P177_SensorMode_e : uint8_t {
 struct P177_data_struct : public PluginTaskData_base {
 public:
 
-  P177_data_struct() = default;
+  P177_data_struct(struct EventStruct *event);
   ~P177_data_struct();
 
   bool plugin_ten_per_second(struct EventStruct *event);
@@ -40,10 +42,12 @@ public:
   bool plugin_read(struct EventStruct *event);
 
   uint32_t          _rawPressure{};
-  uint16_t          _rawTemperature{};
+  uint32_t          _rawTemperature{};
   P177_SensorMode_e _sensorMode = P177_SensorMode_e::IdleMode;
   uint8_t           _cycles     = 1; // Start cycle immediately
   bool              _updated    = false;
+  bool              _sendEvents;
+  bool              _rawData;
 };
 
 #endif // ifdef USES_P177

@@ -3,6 +3,11 @@
 #ifdef USES_P177
 
 
+P177_data_struct::P177_data_struct(struct EventStruct *event) {
+  _sendEvents = P177_GENERATE_EVENTS == 1;
+  _rawData    = P177_RAW_DATA == 1;
+}
+
 P177_data_struct::~P177_data_struct() {}
 
 bool P177_data_struct::plugin_ten_per_second(struct EventStruct *event) {
@@ -34,8 +39,8 @@ bool P177_data_struct::plugin_ten_per_second(struct EventStruct *event) {
     _sensorMode = P177_SensorMode_e::ReportingMode;
   }
 
-  uint32_t prData;
-  uint16_t tmData;
+  uint32_t prData{};
+  uint32_t tmData{};
 
   # if P177_LOG
   String log = F("P177 : RAW data: ");
@@ -43,9 +48,9 @@ bool P177_data_struct::plugin_ten_per_second(struct EventStruct *event) {
   size_t i = 0;
 
   for (; i < 3; ++i) { // first 3 bytes pressure
-    prData << 8;
+    prData <<= 8;
     byteData = I2C_read8_reg(P177_I2C_ADDR, P177_DATA_REG_1 + i);
-    prData  |= byteData;
+    prData  += byteData;
     # if P177_LOG
     log += strformat(F("0x%02X "), byteData);
     # endif // if P177_LOG
@@ -55,9 +60,9 @@ bool P177_data_struct::plugin_ten_per_second(struct EventStruct *event) {
   # endif // if P177_LOG
 
   for (; i < P177_DATA_BYTES; ++i) { // 2 more bytes temperature
-    tmData << 8;
+    tmData <<= 8;
     byteData = I2C_read8_reg(P177_I2C_ADDR, P177_DATA_REG_1 + i);
-    tmData  |= byteData;
+    tmData  += byteData;
     # if P177_LOG
     log += strformat(F("0x%02X "), byteData);
     # endif // if P177_LOG
@@ -69,13 +74,20 @@ bool P177_data_struct::plugin_ten_per_second(struct EventStruct *event) {
   # endif // if P177_LOG
 
   _sensorMode = P177_SensorMode_e::IdleMode; // Start a new cycle
+  const bool pressureChanged = (prData != _rawPressure);
 
-  if ((prData == _rawPressure) && (tmData == _rawTemperature)) {
+  if (!pressureChanged && (tmData == _rawTemperature)) {
     return false;
   }
   _rawPressure    = prData;
   _rawTemperature = tmData;
   _updated        = true;
+
+  if (_sendEvents && pressureChanged) {
+    plugin_read(event);
+    sendData(event);
+    _updated = true; // Is reset in plugin_read()
+  }
   return true;
 }
 
@@ -86,22 +98,24 @@ bool P177_data_struct::plugin_read(struct EventStruct *event) {
   }
 
   if (_updated) {
-    float _pressure = _rawPressure;
+    float _pressure    = 1.0f * _rawPressure;
+    float _temperature = 1.0f * _rawTemperature;
 
-    if (_rawPressure & 0x80000) {
-      _pressure = -1 * (_rawPressure & 0x3FFFF);
+    if (_rawPressure & 0x800000) {
+      _pressure = -1.0f * (_rawPressure & 0x7FFFFF);
     }
-    _pressure /= (0x80000 / P177_PRESSURE_SCALE_FACTOR);
-
-    float _temperature = _rawTemperature;
 
     if (_rawTemperature & 0x8000) {
-      _temperature = -1 * (_rawTemperature & 0x3FFF);
+      _temperature = -1.0f * (_rawTemperature & 0x7FFF);
     }
-    _temperature /= 256;
+    _temperature /= 256.0f; // Shift 5 unused bits off
 
-    if (P177_TEMPERATURE_OFFSET != 0) {
-      _temperature += (P177_TEMPERATURE_OFFSET / 10); // In 0.1 degree steps
+    if (!_rawData) {
+      _pressure /= (1.0f * (8388608.0 / P177_PRESSURE_SCALE_FACTOR));
+
+      if (P177_TEMPERATURE_OFFSET != 0) {
+        _temperature += (P177_TEMPERATURE_OFFSET / 10.0f); // In 0.1 degree steps
+      }
     }
 
     UserVar.setFloat(event->TaskIndex, 0, _pressure);
