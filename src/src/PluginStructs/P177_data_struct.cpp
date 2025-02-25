@@ -99,9 +99,8 @@ bool P177_data_struct::plugin_read(struct EventStruct *event) {
   }
 
   if (_updated) {
-    uint32_t tmpTemperature               = _rawTemperature >> 5;
     ESPEASY_RULES_FLOAT_TYPE _pressure    = 1.0 * (_rawPressure & 0x7FFFFF);
-    ESPEASY_RULES_FLOAT_TYPE _temperature = 1.0 * (tmpTemperature & 0x3FF);
+    ESPEASY_RULES_FLOAT_TYPE _temperature = 1.0 * (_rawTemperature & 0x3FF);
 
     if (_rawPressure & 0x800000) {
       if (_ignoreNegative) {
@@ -111,8 +110,12 @@ bool P177_data_struct::plugin_read(struct EventStruct *event) {
       }
     }
 
-    if (tmpTemperature & 0x400) {
-      _temperature = -1.0 * (tmpTemperature & 0x3FF);
+    if (_rawTemperature & 0x8000) {
+      _temperature = -1.0 * (_rawTemperature & 0x7FFF);
+    }
+
+    if (!essentiallyZero(_temperature)) {
+      _temperature /= 256.0;
     }
 
     if (!_rawData) {
