@@ -99,28 +99,30 @@ bool P177_data_struct::plugin_read(struct EventStruct *event) {
   }
 
   if (_updated) {
-    ESPEASY_RULES_FLOAT_TYPE _pressure    = 1.0 * (_rawPressure & 0x7FFFFF);
-    ESPEASY_RULES_FLOAT_TYPE _temperature = 1.0 * (_rawTemperature & 0x3FF);
+    int tmpPressure                       = _rawPressure; // Unsigned to signed
+    int tmpTemperature                    = _rawTemperature;
+    ESPEASY_RULES_FLOAT_TYPE _pressure    = 1.0 * tmpPressure;
+    ESPEASY_RULES_FLOAT_TYPE _temperature = 1.0 * tmpTemperature;
 
-    if (_rawPressure & 0x800000) {
+    if (tmpPressure > (1 << 23)) { // Negative value
       if (_ignoreNegative) {
         _pressure = 0.0;
       } else {
-        _pressure = -1.0 * (_rawPressure & 0x7FFFFF);
+        _pressure = 1.0 * (tmpPressure - (1 << 24));
       }
     }
 
-    if (_rawTemperature & 0x8000) {
-      _temperature = -1.0 * (_rawTemperature & 0x7FFF);
+    if (tmpTemperature > (1 << 15)) { // Negative value?
+      _temperature = 1.0 * (tmpTemperature - (1 << 15));
     }
 
     if (!essentiallyZero(_temperature)) {
-      _temperature /= 256.0;
+      _temperature /= 256.0; // Move less significant bits
     }
 
     if (!_rawData) {
       if (!essentiallyZero(_pressure)) {
-        _pressure /= (1.0 * (8388608.0 / P177_PRESSURE_SCALE_FACTOR));
+        _pressure /= (1.0 * ((1 << 23) / P177_PRESSURE_SCALE_FACTOR));
       }
 
       if (P177_TEMPERATURE_OFFSET != 0) {
