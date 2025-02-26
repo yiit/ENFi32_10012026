@@ -14,7 +14,6 @@
 #include "../Helpers/StringConverter.h"
 
 
-
 #define NODE_STRUCT_AGE_TIMEOUT 300000  // 5 minutes
 
 NodeStruct::NodeStruct() : 
