@@ -421,11 +421,7 @@ bool PluginCallForTask(taskIndex_t taskIndex, uint8_t Function, EventStruct *Tem
                 LoadTaskSettings(taskIndex);
 
                 if (ExtraTaskSettings.anyEnabledPluginStats()) {
-                    # ifdef USE_SECOND_HEAP
-                  HeapSelectIram ephemeral;
-                    # endif // ifdef USE_SECOND_HEAP
-
-                  initPluginTaskData(taskIndex, new (std::nothrow) _StatsOnly_data_struct());
+                  special_initPluginTaskData(taskIndex, _StatsOnly_data_struct);
                 }
               }
             }
@@ -450,10 +446,8 @@ bool PluginCallForTask(taskIndex_t taskIndex, uint8_t Function, EventStruct *Tem
               LoadTaskSettings(taskIndex);
 
               if (ExtraTaskSettings.anyEnabledPluginStats()) {
-                # ifdef USE_SECOND_HEAP
-                HeapSelectIram ephemeral;
-                # endif // ifdef USE_SECOND_HEAP
-                initPluginTaskData(taskIndex, new (std::nothrow) _StatsOnly_data_struct());
+                // Try to allocate in PSRAM or 2nd heap if possible
+                special_initPluginTaskData(taskIndex, _StatsOnly_data_struct);
               }
             }
           }
@@ -702,7 +696,7 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
             const int freemem_end = ESP.getFreeHeap();
             String log;
 
-            if (log.reserve(128)) {
+            if (reserve_special(log, 128)) {
               log  = F("After PLUGIN_INIT ");
               log += F(" task: ");
 
@@ -927,7 +921,7 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
                 LoadTaskSettings(event->TaskIndex);
 
                 if (ExtraTaskSettings.anyEnabledPluginStats()) {
-                  initPluginTaskData(event->TaskIndex, new (std::nothrow) _StatsOnly_data_struct());
+                  special_initPluginTaskData(event->TaskIndex, _StatsOnly_data_struct);
                 }
               }
             }
