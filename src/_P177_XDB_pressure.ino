@@ -6,6 +6,8 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-03-01 tonhuisman: Ensure all requested data is read from the sensor, to avoid read-stalling
+ *                        Change: We're now ignoring the status bit to see if data is available, and just read it after a ~100 msec delay
  * 2025-02-27 tonhuisman: Swapped Temperature and Pressure values so they can be handled as a single device by Domoticz.
  *                        Re-ordered the settings options for a better grouping of related settings.
  * 2025-02-26 tonhuisman: Fix some typos in calculation.
