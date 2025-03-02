@@ -218,7 +218,8 @@ boolean Plugin_116(uint8_t function, struct EventStruct *event, String& string)
           static_cast<int>(P116_CommandTrigger::st7796)
         };
         constexpr int cmdCount = NR_ELEMENTS(commandTriggerOptions);
-        const FormSelectorOptions selector(cmdCount, commandTriggers, commandTriggerOptions);
+        FormSelectorOptions selector(cmdCount, commandTriggers, commandTriggerOptions);
+        selector.default_index = 1;
         selector.addFormSelector(
           F("Write Command trigger"),
           F("commandtrigger"),
@@ -254,6 +255,7 @@ boolean Plugin_116(uint8_t function, struct EventStruct *event, String& string)
           addFormTextBox(concat(F("Line "), varNr + 1), getPluginCustomArgName(varNr), strings[varNr], P116_Nchars);
           remain -= (strings[varNr].length() + 1);
         }
+        addUnit(concat(F("Remaining: "), remain));
       }
 
       success = true;
