@@ -6,7 +6,8 @@
 #ifdef USES_P177
 # include "../Helpers/I2C_access.h"
 
-# define P177_LOG 1              // Set to 1 to enable raw data logging at INFO level
+# define P177_LOG 0              // Set to 1 to enable raw data logging at INFO level
+# define P177_CHECK_READY_BIT 0  // Set to 1 to read bit 3 of command register (once we know which bit 3...)
 
 # define P177_I2C_ADDR      0x7F // Fixed address
 

@@ -25,13 +25,16 @@ bool P177_data_struct::plugin_ten_per_second(struct EventStruct *event) {
     // we're ignoring the 'bit 3' status info, as it's unclear if it's 0-based or 1-based bit 3...
     // a 100 msec 'delay' (10/sec) after the start of a read should be enough to stabilize the data
 
-    // byteData = I2C_read8_reg(P177_I2C_ADDR, P177_COMMAND_REG, &is_ok);
+    # if P177_CHECK_READY_BIT
+    byteData = I2C_read8_reg(P177_I2C_ADDR, P177_COMMAND_REG, &is_ok);
 
-    // if (is_ok && (0 == bitRead(byteData, 3))) { // Not currently reading
-    I2C_write8_reg(P177_I2C_ADDR, P177_COMMAND_REG, P177_START_READ);
-    _sensorMode = P177_SensorMode_e::SensingMode;
-    _cycles     = P177_SKIP_CYCLES; // Restart timer after a read is started
-    // }
+    if (is_ok && (0 == bitRead(byteData, 3))) // Not currently reading
+    # endif // if P177_CHECK_READY_BIT
+    {
+      I2C_write8_reg(P177_I2C_ADDR, P177_COMMAND_REG, P177_START_READ);
+      _sensorMode = P177_SensorMode_e::SensingMode;
+      _cycles     = P177_SKIP_CYCLES; // Restart timer after a read is started
+    }
     # if P177_LOG
     addLog(LOG_LEVEL_INFO, strformat(F("P177 : 1 Sensormode: %d, ok: %d, status: 0x%02x"),
                                      static_cast<uint8_t>(_sensorMode), is_ok, byteData));
