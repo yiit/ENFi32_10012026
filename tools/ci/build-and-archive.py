@@ -28,7 +28,6 @@ def cmd(*, env, pio_can_fail):
     # be made into a flashable .bin
 
     for _dir in dirs:
-      print(f"dir: {_dir} basename: {os.path.basename(_dir)}")
       shutil.copytree(_dir, os.path.basename(_dir))
 
 
