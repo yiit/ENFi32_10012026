@@ -3,11 +3,6 @@ import enum
 import subprocess
 import shutil
 
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'pio'))
-
-from copy_files import bin_elf_copy
-
 class CannotArchive(Exception):
     pass
 
@@ -24,9 +19,6 @@ def cmd(*, env, pio_can_fail):
     except subprocess.CalledProcessError:
         if not pio_can_fail:
             raise
-
-    # Explicitly copy the files, as it seems to be 'forgotten' sometimes
-    bin_elf_copy()
 
     output = "build_output"
     dirs = [os.path.join(output, "bin")]

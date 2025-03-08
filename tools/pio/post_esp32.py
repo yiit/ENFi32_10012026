@@ -22,6 +22,7 @@ platform = env.PioPlatform()
 
 import sys
 from os.path import join
+from copy_files import bin_elf_copy
 
 sys.path.append(join(platform.get_package_dir("tool-esptoolpy")))
 import esptool
@@ -67,6 +68,8 @@ def esp32_create_combined_bin(source, target, env):
     print('Using esptool.py arguments: %s' % ' '.join(cmd))
 
     esptool.main(cmd)
+
+    bin_elf_copy()
 
 
 env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", esp32_create_combined_bin)
