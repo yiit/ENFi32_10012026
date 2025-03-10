@@ -1043,6 +1043,7 @@ bool useStaticIP() {
 
 // Check connection. Maximum timeout 500 msec.
 bool NetworkConnected(uint32_t timeout_ms) {
+  if (NetworkConnected()) return true;
 
 #ifdef USES_ESPEASY_NOW
 
