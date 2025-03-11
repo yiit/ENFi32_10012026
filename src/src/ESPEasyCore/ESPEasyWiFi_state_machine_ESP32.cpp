@@ -45,7 +45,7 @@ STA_connected_state ESPEasyWiFi_t::getSTA_connected_state() const
   switch (WiFi.status())
   {
     case WL_CONNECTED:
-      return STA_connected_state::Connected;
+      break; // return STA_connected_state::Connected;
 
     case WL_NO_SSID_AVAIL:
       return STA_connected_state::Error_Not_Found;

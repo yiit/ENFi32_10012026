@@ -251,6 +251,11 @@ void WiFi_AP_CandidatesList::markCurrentConnectionStable() {
 }
 
 int8_t WiFi_AP_CandidatesList::scanComplete() const {
+  const int8_t scanCompleteStatus = WiFi.scanComplete();
+  if (scanCompleteStatus <= 0) {
+    return scanCompleteStatus;
+  }
+
   size_t found = 0;
   for (auto scan = scanned.begin(); scan != scanned.end(); ++scan) {
     if (!scan->expired()) {
@@ -262,14 +267,7 @@ int8_t WiFi_AP_CandidatesList::scanComplete() const {
       ++found;
     }
   }
-  if (found > 0) {    
-    return found;
-  }
-  const int8_t scanCompleteStatus = WiFi.scanComplete();
-  if (scanCompleteStatus <= 0) {
-    return scanCompleteStatus;
-  }
-  return 0;
+  return found;
 }
 
 bool WiFi_AP_CandidatesList::SettingsIndexMatchCustomCredentials(uint8_t index)

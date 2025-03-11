@@ -141,6 +141,9 @@ bool setWifiMode(WiFiMode_t new_mode)
 
     //    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     delay(1);
+    #ifdef ESP32
+    WiFi.STA.end();
+    #endif
   } else {
 /*
     if (cur_mode == WIFI_OFF) {

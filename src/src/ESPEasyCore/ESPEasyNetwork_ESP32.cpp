@@ -91,8 +91,30 @@ void NetworkConnectRelaxed() {
   WiFiConnectRelaxed();
 }
 
-bool NetworkConnected() {
+
+// Forward declaration to access internal function in NetworkInterface.cpp
+// as we don't have a public function in NetworkInterface to access the 
+// Network_Interface_ID
+NetworkInterface *getNetifByID(Network_Interface_ID id);
+
+NetworkInterface * getDefaultNonAP_interface()
+{
   auto network_if = Network.getDefaultInterface();
+  if (network_if != nullptr) {
+    auto ap_if = getNetifByID(ESP_NETIF_ID_AP);
+    if (ap_if != nullptr) {
+      if (network_if->netif() == ap_if->netif()) {
+        // This is the AP interface, which we do not want
+        return nullptr;
+      }
+    }
+  }
+  return network_if;
+}
+
+
+bool NetworkConnected() {
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return false;
@@ -101,7 +123,7 @@ bool NetworkConnected() {
 }
 
 IPAddress NetworkLocalIP() {
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return IPAddress();
@@ -110,7 +132,7 @@ IPAddress NetworkLocalIP() {
 }
 
 IPAddress NetworkSubnetMask() {
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return IPAddress();
@@ -119,7 +141,7 @@ IPAddress NetworkSubnetMask() {
 }
 
 IPAddress NetworkGatewayIP() {
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return IPAddress();
@@ -128,7 +150,7 @@ IPAddress NetworkGatewayIP() {
 }
 
 IPAddress NetworkDnsIP(uint8_t dns_no) {
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return IPAddress();
@@ -139,7 +161,7 @@ IPAddress NetworkDnsIP(uint8_t dns_no) {
 #if FEATURE_USE_IPV6
 
 IPAddress NetworkLocalIP6() {
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return IN6ADDR_ANY;
@@ -148,7 +170,7 @@ IPAddress NetworkLocalIP6() {
 }
 
 IPAddress NetworkGlobalIP6() {
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if == nullptr) {
     return IN6ADDR_ANY;
@@ -158,7 +180,7 @@ IPAddress NetworkGlobalIP6() {
 
 IP6Addresses_t NetworkAllIPv6() {
   IP6Addresses_t addresses;
-  auto network_if = Network.getDefaultInterface();
+  auto network_if = getDefaultNonAP_interface();
 
   if (network_if != nullptr) {
     esp_ip6_addr_t esp_ip6_addr[LWIP_IPV6_NUM_ADDRESSES]{};

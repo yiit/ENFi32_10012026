@@ -88,7 +88,11 @@ void ESPEasyWiFi_t::loop()
         // Do we have candidate to connect to ?
         if (WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::STA_Connecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
-        } else if (WiFi_AP_Candidates.scanComplete() == 0) {
+        } else if (WiFi_AP_Candidates.scanComplete() == 0
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
+                  || WiFi.status() == WL_STOPPED
+#endif
+                ) {
           if (WifiIsAP(WiFi.getMode())) {
             // TODO TD-er: Must check if any client is connected.
             // If not, then we can disable AP mode and switch to WiFiState_e::STA_Scanning
@@ -128,7 +132,7 @@ void ESPEasyWiFi_t::loop()
       } else if (scanCompleteStatus == -2) { // WIFI_SCAN_FAILED
         addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
         WiFi.scanDelete();
-        setState(WiFiState_e::WiFiOFF, 100);
+        setState(WiFiState_e::WiFiOFF, 1000);
         WiFiEventData.processedScanDone = true;
       }
 
@@ -211,6 +215,11 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
     setAPinternal(false);
     setAP(false);
   }
+  if (_state == WiFiState_e::STA_AP_Scanning ||
+      _state == WiFiState_e::STA_Scanning) 
+  {
+    WiFi.scanDelete();
+  }
 
   if (timeout == 0)
   {
@@ -257,6 +266,10 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       }
       break;
     case WiFiState_e::STA_Connected:
+    #ifdef ESP32
+      // FIXME TD-er: Must move to ESP32-specific cpp file
+      WiFi.STA.setDefault();
+    #endif
       _last_seen_connected.setNow();
       _state_timeout.clear();
       break;
