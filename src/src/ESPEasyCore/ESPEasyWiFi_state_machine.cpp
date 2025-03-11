@@ -89,10 +89,12 @@ void ESPEasyWiFi_t::loop()
         if (WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::STA_Connecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
         } else if (WiFi_AP_Candidates.scanComplete() == 0
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
-                  || WiFi.status() == WL_STOPPED
-#endif
-                ) {
+# ifdef ESP32
+#  if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
+                   || WiFi.status() == WL_STOPPED
+#  endif
+# endif // ifdef ESP32
+                   ) {
           if (WifiIsAP(WiFi.getMode())) {
             // TODO TD-er: Must check if any client is connected.
             // If not, then we can disable AP mode and switch to WiFiState_e::STA_Scanning
