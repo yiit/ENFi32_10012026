@@ -26,14 +26,14 @@ namespace wifi {
 
 
 // Call before starting WiFi
-bool                WiFi_pre_setup();
+bool WiFi_pre_setup();
 
 // Call before setting WiFi into STA mode
-bool                WiFi_pre_STA_setup();
+bool WiFi_pre_STA_setup();
 
-bool                WiFiConnected();
+bool WiFiConnected();
 
-void                WiFiDisconnect();
+void WiFiDisconnect();
 
 // ********************************************************************************
 // Manage Wifi Modes

@@ -18,13 +18,13 @@ namespace wifi {
 bool WiFi_pre_setup()     {
   registerWiFiEventHandler();
 
-   setSTA_AP(false, false);
+  setSTA_AP(false, false);
   delay(100);
   return true;
 }
 
 bool WiFi_pre_STA_setup() {
-  if (! setSTA(true)) { return false; }
+  if (!setSTA(true)) { return false; }
 
   // Assign to 2 separate bools to make sure both are executed.
   const bool autoConnect   = WiFi.setAutoConnect(false);
@@ -39,7 +39,7 @@ bool WiFi_pre_STA_setup() {
 
 void WiFiDisconnect() {
   // Only call disconnect when STA is active
-  if ( WifiIsSTA(WiFi.getMode())) {
+  if (WifiIsSTA(WiFi.getMode())) {
     wifi_station_disconnect();
   }
   station_config conf{};
@@ -49,9 +49,9 @@ void WiFiDisconnect() {
   ETS_UART_INTR_ENABLE();
 }
 
-bool  WifiIsAP(WiFiMode_t wifimode)  { return (wifimode == WIFI_AP) || (wifimode == WIFI_AP_STA); }
+bool WifiIsAP(WiFiMode_t wifimode)  { return (wifimode == WIFI_AP) || (wifimode == WIFI_AP_STA); }
 
-bool  WifiIsSTA(WiFiMode_t wifimode) { return (wifimode & WIFI_STA) != 0; }
+bool WifiIsSTA(WiFiMode_t wifimode) { return (wifimode & WIFI_STA) != 0; }
 
 bool setWifiMode(WiFiMode_t new_mode)
 {
@@ -71,12 +71,12 @@ bool setWifiMode(WiFiMode_t new_mode)
   processing_wifi_mode = static_cast<int8_t>(new_mode);
 
 
-   if (! WifiIsSTA(new_mode)) {
-        // calls lwIP's dhcp_stop(),
-        // safe to call even if not started
-        // See: https://github.com/esp8266/Arduino/pull/5703/files
-        wifi_station_dhcpc_stop();
-   }
+  if (!WifiIsSTA(new_mode)) {
+    // calls lwIP's dhcp_stop(),
+    // safe to call even if not started
+    // See: https://github.com/esp8266/Arduino/pull/5703/files
+    wifi_station_dhcpc_stop();
+  }
 
   if (new_mode != WIFI_OFF) {
     // See: https://github.com/esp8266/Arduino/issues/6172#issuecomment-500457407

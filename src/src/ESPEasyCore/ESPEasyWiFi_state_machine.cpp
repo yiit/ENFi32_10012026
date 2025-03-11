@@ -217,8 +217,9 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
     setAPinternal(false);
     setAP(false);
   }
-  if (_state == WiFiState_e::STA_AP_Scanning ||
-      _state == WiFiState_e::STA_Scanning) 
+
+  if ((_state == WiFiState_e::STA_AP_Scanning) ||
+      (_state == WiFiState_e::STA_Scanning))
   {
     WiFi.scanDelete();
   }
@@ -268,10 +269,11 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       }
       break;
     case WiFiState_e::STA_Connected:
-    #ifdef ESP32
+    # ifdef ESP32
+
       // FIXME TD-er: Must move to ESP32-specific cpp file
       WiFi.STA.setDefault();
-    #endif
+    # endif // ifdef ESP32
       _last_seen_connected.setNow();
       _state_timeout.clear();
       break;

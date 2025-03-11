@@ -91,17 +91,18 @@ void NetworkConnectRelaxed() {
   WiFiConnectRelaxed();
 }
 
-
 // Forward declaration to access internal function in NetworkInterface.cpp
-// as we don't have a public function in NetworkInterface to access the 
+// as we don't have a public function in NetworkInterface to access the
 // Network_Interface_ID
-NetworkInterface *getNetifByID(Network_Interface_ID id);
+NetworkInterface* getNetifByID(Network_Interface_ID id);
 
-NetworkInterface * getDefaultNonAP_interface()
+NetworkInterface* getDefaultNonAP_interface()
 {
   auto network_if = Network.getDefaultInterface();
+
   if (network_if != nullptr) {
     auto ap_if = getNetifByID(ESP_NETIF_ID_AP);
+
     if (ap_if != nullptr) {
       if (network_if->netif() == ap_if->netif()) {
         // This is the AP interface, which we do not want
@@ -111,7 +112,6 @@ NetworkInterface * getDefaultNonAP_interface()
   }
   return network_if;
 }
-
 
 bool NetworkConnected() {
   auto network_if = getDefaultNonAP_interface();
@@ -273,6 +273,7 @@ String NetworkGetHostname() {
 }
 
 #if FEATURE_WIFI
+
 MAC_address WifiSoftAPmacAddress() {
   MAC_address mac;
 
@@ -286,7 +287,8 @@ MAC_address WifiSTAmacAddress() {
   WiFi.macAddress(mac.mac);
   return mac;
 }
-#endif
+
+#endif // if FEATURE_WIFI
 
 #if FEATURE_ETHERNET
 

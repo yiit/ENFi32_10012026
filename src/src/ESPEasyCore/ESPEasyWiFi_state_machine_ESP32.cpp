@@ -19,7 +19,6 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-
 IPAddress ESPEasyWiFi_t::getIP() const
 {
   if (WiFi.STA.hasIP()) {

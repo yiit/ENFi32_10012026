@@ -16,53 +16,53 @@
   # include <WiFi.h>
 #endif // if defined(ESP32)
 
-#define WIFI_AP_CANDIDATE_MAX_AGE   300000  // 5 minutes in msec
+#define WIFI_AP_CANDIDATE_MAX_AGE   300000 // 5 minutes in msec
 
 
 WiFi_AP_Candidate::WiFi_AP_Candidate() :
 #ifdef ESP32
 # if ESP_IDF_VERSION_MAJOR >= 5
-country({
-    .cc = "01",
-    .schan = 1,
-    .nchan = 14,
-    .policy = WIFI_COUNTRY_POLICY_AUTO,
+  country({
+  .cc     = "01",
+  .schan  = 1,
+  .nchan  = 14,
+  .policy = WIFI_COUNTRY_POLICY_AUTO,
 }),
-#endif
-#endif
+# endif // if ESP_IDF_VERSION_MAJOR >= 5
+#endif // ifdef ESP32
   last_seen(0), rssi(0), channel(0), index(0), enc_type(0)
 {
   _allBits = 0u;
 }
 
 WiFi_AP_Candidate::WiFi_AP_Candidate(const WiFi_AP_Candidate& other)
-: ssid(other.ssid),
-  last_seen(other.last_seen), 
+  : ssid(other.ssid),
+  last_seen(other.last_seen),
   bssid(other.bssid),
-  rssi(other.rssi), 
-  channel(other.channel), 
-  index(other.index), 
+  rssi(other.rssi),
+  channel(other.channel),
+  index(other.index),
   enc_type(other.enc_type)
 {
   _allBits = other._allBits;
   #ifdef ESP32
   # if ESP_IDF_VERSION_MAJOR >= 5
   memcpy(&this->country, &other.country, sizeof(wifi_country_t));
-  #endif
-  #endif
+  # endif
+  #endif // ifdef ESP32
 }
 
 WiFi_AP_Candidate::WiFi_AP_Candidate(uint8_t index_c, const String& ssid_c) :
 #ifdef ESP32
 # if ESP_IDF_VERSION_MAJOR >= 5
-country({
-    .cc = "01",
-    .schan = 1,
-    .nchan = 14,
-    .policy = WIFI_COUNTRY_POLICY_AUTO,
+  country({
+  .cc     = "01",
+  .schan  = 1,
+  .nchan  = 14,
+  .policy = WIFI_COUNTRY_POLICY_AUTO,
 }),
-#endif
-#endif
+# endif // if ESP_IDF_VERSION_MAJOR >= 5
+#endif // ifdef ESP32
   last_seen(0), rssi(0), channel(0), index(index_c), enc_type(0)
 {
   _allBits = 0u;
@@ -121,7 +121,7 @@ WiFi_AP_Candidate::WiFi_AP_Candidate(uint8_t networkItem) : index(0) {
     // FIXME TD-er: Maybe also add other info like 2nd channel, ftm and phy_lr support?
 # if ESP_IDF_VERSION_MAJOR >= 5
     memcpy(&country, &(it->country), sizeof(wifi_country_t));
-#endif
+# endif
   }
   #endif // ifdef ESP32
   last_seen = millis();
@@ -135,15 +135,21 @@ WiFi_AP_Candidate::WiFi_AP_Candidate(const bss_info& ap) :
   phy_11b(ap.phy_11b), phy_11g(ap.phy_11g), phy_11n(ap.phy_11n),
   wps(ap.wps)
 {
-  _allBits = 0u;
+  _allBits  = 0u;
   last_seen = millis();
 
-  switch (ap.authmode) {
-    case AUTH_OPEN: enc_type         = ENC_TYPE_NONE; break;
-    case AUTH_WEP:  enc_type         = ENC_TYPE_WEP; break;
-    case AUTH_WPA_PSK: enc_type      =  ENC_TYPE_TKIP; break;
-    case AUTH_WPA2_PSK: enc_type     =  ENC_TYPE_CCMP; break;
-    case AUTH_WPA_WPA2_PSK: enc_type =  ENC_TYPE_AUTO; break;
+  switch (ap.authmode)
+  {
+    case AUTH_OPEN: enc_type = ENC_TYPE_NONE;
+      break;
+    case AUTH_WEP:  enc_type = ENC_TYPE_WEP;
+      break;
+    case AUTH_WPA_PSK: enc_type =  ENC_TYPE_TKIP;
+      break;
+    case AUTH_WPA2_PSK: enc_type =  ENC_TYPE_CCMP;
+      break;
+    case AUTH_WPA_WPA2_PSK: enc_type =  ENC_TYPE_AUTO;
+      break;
     case AUTH_MAX: break;
   }
 
@@ -185,19 +191,19 @@ bool WiFi_AP_Candidate::operator<(const WiFi_AP_Candidate& other) const {
 
 WiFi_AP_Candidate& WiFi_AP_Candidate::operator=(const WiFi_AP_Candidate& other)
 {
-  ssid = other.ssid;
+  ssid      = other.ssid;
   last_seen = other.last_seen;
-  bssid = other.bssid;
-  rssi = other.rssi;
-  channel = other.channel;
-  index = other.index;
-  enc_type = other.enc_type;
-  _allBits = other._allBits;
+  bssid     = other.bssid;
+  rssi      = other.rssi;
+  channel   = other.channel;
+  index     = other.index;
+  enc_type  = other.enc_type;
+  _allBits  = other._allBits;
   #ifdef ESP32
   # if ESP_IDF_VERSION_MAJOR >= 5
   memcpy(&this->country, &other.country, sizeof(wifi_country_t));
-  #endif
-  #endif
+  # endif
+  #endif // ifdef ESP32
 
   return *this;
 }
@@ -256,10 +262,13 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
 
 #ifdef ESP32
 # if ESP_IDF_VERSION_MAJOR >= 5
+
   // Country code string
-  if (country.cc[0] != '\0' && country.cc[1] != '\0') {
+  if ((country.cc[0] != '\0') && (country.cc[1] != '\0')) {
     result += strformat(F(" '%c%c'"), country.cc[0], country.cc[1]);
-    switch (country.cc[2]) {
+
+    switch (country.cc[2])
+    {
       case 'O': // Outdoor
       case 'I': // Indoor
       case 'X': // "non-country"
@@ -267,11 +276,12 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
         break;
     }
   }
+
   if (country.nchan > 0) {
     result += strformat(F(" ch: %d..%d"), country.schan, country.schan + country.nchan - 1);
   }
-#endif
-#endif
+# endif // if ESP_IDF_VERSION_MAJOR >= 5
+#endif // ifdef ESP32
 
   if (phy_known()) {
     String phy_str;

@@ -131,10 +131,10 @@ void WiFiEvent(WiFiEvent_t event_id, arduino_event_info_t info) {
     {
       // FIXME TD-er: Must also check event->esp_netif to see which interface got this event.
       ignoreDisconnectEvent = false;
-      ip_event_got_ip_t  *event = static_cast<ip_event_got_ip_t *>(&info.got_ip);
-      const IPAddress     ip(event->ip_info.ip.addr);
-      const IPAddress     netmask(event->ip_info.netmask.addr);
-      const IPAddress     gw(event->ip_info.gw.addr);
+      ip_event_got_ip_t *event = static_cast<ip_event_got_ip_t *>(&info.got_ip);
+      const IPAddress    ip(event->ip_info.ip.addr);
+      const IPAddress    netmask(event->ip_info.netmask.addr);
+      const IPAddress    gw(event->ip_info.gw.addr);
       WiFiEventData.markGotIP(ip, netmask, gw);
       break;
     }

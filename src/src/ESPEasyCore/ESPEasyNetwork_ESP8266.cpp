@@ -66,9 +66,10 @@ MAC_address NetworkMacAddress() {
   return mac;
 }
 
-String      NetworkGetHostname() { return String(WiFi.hostname()); }
+String NetworkGetHostname() { return String(WiFi.hostname()); }
 
 #if FEATURE_WIFI
+
 MAC_address WifiSoftAPmacAddress() {
   MAC_address mac;
 
@@ -82,6 +83,7 @@ MAC_address WifiSTAmacAddress() {
   WiFi.macAddress(mac.mac);
   return mac;
 }
-#endif
+
+#endif // if FEATURE_WIFI
 
 #endif // ifdef ESP8266

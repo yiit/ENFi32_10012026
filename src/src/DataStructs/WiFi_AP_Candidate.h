@@ -68,22 +68,22 @@ struct WiFi_AP_Candidate {
     return bits.phy_11b || bits.phy_11g || bits.phy_11n;
   }
 
-  String ssid; 
+  String ssid;
 
   //  String  key;
 
   #ifdef ESP32
   # if ESP_IDF_VERSION_MAJOR >= 5
   wifi_country_t country;
-  #endif
-  #endif
+  # endif
+  #endif // ifdef ESP32
 
   unsigned long last_seen = 0u;
   MAC_address   bssid;
   int8_t        rssi{};
   uint8_t       channel{};
-  uint8_t       index{};              // Index of the matching credentials
-  uint8_t       enc_type{};           // Encryption used (e.g. WPA2)
+  uint8_t       index{};                // Index of the matching credentials
+  uint8_t       enc_type{};             // Encryption used (e.g. WPA2)
   union {
     struct {
       uint16_t isHidden            : 1; // Hidden SSID
@@ -99,9 +99,12 @@ struct WiFi_AP_Candidate {
       uint16_t ftm_initiator       : 1;
 
       uint16_t unused : 5;
-    } bits;
+
+    }        bits;
     uint16_t _allBits;
+
   };
+
 };
 
 #endif // ifndef DATASTRUCTS_WIFI_AP_CANDIDATES_H

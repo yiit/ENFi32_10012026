@@ -3,26 +3,26 @@
 #ifdef ESP8266
 # if FEATURE_WIFI
 
-#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
+#  include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
 
 namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-
 IPAddress ESPEasyWiFi_t::getIP() const
 {
   IPAddress ip = WiFi.localIP();
+
   if (ip.isSet()) {
     return ip;
   }
   ip = WiFi.softAPIP();
+
   if (ip.isSet()) {
     return ip;
   }
   return IPAddress();
 }
-
 
 STA_connected_state ESPEasyWiFi_t::getSTA_connected_state() const
 {

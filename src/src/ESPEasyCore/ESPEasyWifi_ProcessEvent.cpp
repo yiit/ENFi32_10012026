@@ -52,46 +52,48 @@ void handle_unprocessedNetworkEvents()
 
   if (active_network_medium == NetworkMedium_t::WIFI) {
     bool processedSomething = false;
-      if (!WiFiEventData.processedConnect) {
+
+    if (!WiFiEventData.processedConnect) {
         #ifndef BUILD_NO_DEBUG
-        addLog(LOG_LEVEL_DEBUG, F("WIFI : Entering processConnect()"));
+      addLog(LOG_LEVEL_DEBUG, F("WIFI : Entering processConnect()"));
         #endif // ifndef BUILD_NO_DEBUG
-        processConnect();
-        processedSomething = true;
+      processConnect();
+      processedSomething = true;
 
-// FIXME TD-er: Forcefully set the connected flag for now
-        WiFiEventData.setWiFiConnected();
-      }
+      // FIXME TD-er: Forcefully set the connected flag for now
+      WiFiEventData.setWiFiConnected();
+    }
 
-      if (!WiFiEventData.processedGotIP) {
+    if (!WiFiEventData.processedGotIP) {
         #ifndef BUILD_NO_DEBUG
-        addLog(LOG_LEVEL_DEBUG, F("WIFI : Entering processGotIP()"));
+      addLog(LOG_LEVEL_DEBUG, F("WIFI : Entering processGotIP()"));
         #endif // ifndef BUILD_NO_DEBUG
-        processGotIP();
+      processGotIP();
 
-        processedSomething = true;
+      processedSomething = true;
 
-        // FIXME TD-er: Forcefully set the GotIP flag for now
-        WiFiEventData.setWiFiGotIP();
-      }
-      if (!WiFiEventData.WiFiServicesInitialized()) {
-        WiFiEventData.setWiFiServicesInitialized();
-      }
+      // FIXME TD-er: Forcefully set the GotIP flag for now
+      WiFiEventData.setWiFiGotIP();
+    }
 
-      if (WiFiEventData.WiFiServicesInitialized() && processedSomething) {
+    if (!WiFiEventData.WiFiServicesInitialized()) {
+      WiFiEventData.setWiFiServicesInitialized();
+    }
 
-        // #ifdef ESP32
-        setWebserverRunning(false);
-        delay(1);
-        setWebserverRunning(true);
-        delay(1);
+    if (WiFiEventData.WiFiServicesInitialized() && processedSomething) {
 
-        /*
-         #else
-                CheckRunningServices();
-         #endif
-         */
-      }
+      // #ifdef ESP32
+      setWebserverRunning(false);
+      delay(1);
+      setWebserverRunning(true);
+      delay(1);
+
+      /*
+       #else
+              CheckRunningServices();
+       #endif
+       */
+    }
   }
 
 #if FEATURE_ETHERNET
@@ -107,9 +109,7 @@ void handle_unprocessedNetworkEvents()
 // Functions to process the data gathered from the events.
 // These functions are called from Setup() or Loop() and thus may call delay() or yield()
 // ********************************************************************************
-void processDisconnect() {
-
-}
+void processDisconnect() {}
 
 void processConnect() {
   if (WiFiEventData.processedConnect) { return; }
@@ -122,7 +122,7 @@ void processConnect() {
    */
   WiFiEventData.processedConnect = true;
 
-  /*      
+  /*
        if (WiFi.status() == WL_DISCONNECTED) {
         // Apparently not really connected
         return;
@@ -215,10 +215,10 @@ void processGotIP() {
   if (!useStaticIP()) {
    #ifdef ESP8266
 
-    if (!ip.isSet()) 
+    if (!ip.isSet())
    #else // ifdef ESP8266
 
-    if ((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0)) 
+    if ((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0))
    #endif // ifdef ESP8266
     {
       return;
@@ -317,9 +317,9 @@ void processDisconnectAPmode() {
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log(strformat(
-      F("AP Mode: Client disconnected: %s Connected devices: %u"),
-      WiFiEventData.lastMacDisconnectedAPmode.toString().c_str(),
-      WiFi.softAPgetStationNum()));
+                 F("AP Mode: Client disconnected: %s Connected devices: %u"),
+                 WiFiEventData.lastMacDisconnectedAPmode.toString().c_str(),
+                 WiFi.softAPgetStationNum()));
     addLogMove(LOG_LEVEL_INFO, log);
   }
 #endif // ifndef BUILD_NO_DEBUG
@@ -336,9 +336,9 @@ void processConnectAPmode() {
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log(strformat(
-      F("AP Mode: Client connected: %s Connected devices: %u"),
-      WiFiEventData.lastMacConnectedAPmode.toString().c_str(),
-      WiFi.softAPgetStationNum()));
+                 F("AP Mode: Client connected: %s Connected devices: %u"),
+                 WiFiEventData.lastMacConnectedAPmode.toString().c_str(),
+                 WiFi.softAPgetStationNum()));
     addLogMove(LOG_LEVEL_INFO, log);
   }
 #endif // ifndef BUILD_NO_DEBUG

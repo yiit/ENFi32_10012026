@@ -46,7 +46,7 @@ bool WiFi_pre_STA_setup()
 }
 
 void WiFiDisconnect() {
-//  removeWiFiEventHandler();
+  //  removeWiFiEventHandler();
   WiFi.disconnect();
   delay(100);
   {
@@ -141,15 +141,16 @@ bool setWifiMode(WiFiMode_t new_mode)
 
     //    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     delay(1);
-    #ifdef ESP32
+    #  ifdef ESP32
     WiFi.STA.end();
-    #endif
+    #  endif
   } else {
-/*
-    if (cur_mode == WIFI_OFF) {
-      registerWiFiEventHandler();
-    }
-*/
+    /*
+        if (cur_mode == WIFI_OFF) {
+          registerWiFiEventHandler();
+        }
+     */
+
     // Only set power mode when AP is not enabled
     // When AP is enabled, the sleep mode is already set to WIFI_NONE_SLEEP
     if (!WifiIsAP(new_mode)) {
@@ -275,6 +276,7 @@ void doSetWiFiTXpower(float& dBm)
   int8_t power = dBm * 4;
 
   esp_wifi_set_max_tx_power(power);
+
   if (esp_wifi_get_max_tx_power(&power) == ESP_OK)  {
     dBm = static_cast<float>(power) / 4.0f;
   }
@@ -358,15 +360,16 @@ void setWiFiDefaultPowerMode()
 
 void setWiFiCountryPolicyManual()
 {
-/*   wifi_country_t config = {
-    .cc     = "01",
-    .schan  = 1,
-    .nchan  = 14,
-    .policy = WIFI_COUNTRY_POLICY_MANUAL,
-  };
+  /*   wifi_country_t config = {
+      .cc     = "01",
+      .schan  = 1,
+      .nchan  = 14,
+      .policy = WIFI_COUNTRY_POLICY_MANUAL,
+     };
 
-  esp_wifi_set_country(&config);
- */}
+     esp_wifi_set_country(&config);
+   */
+}
 
 } // namespace wifi
 } // namespace net
