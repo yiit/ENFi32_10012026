@@ -62,7 +62,7 @@ void handle_hardware() {
     Settings.I2C_Multiplexer_ResetPin = getFormItemInt(F("pi2cmuxreset0"));
     #endif // if FEATURE_I2CMULTIPLEXER
     #if FEATURE_I2C_MULTIPLE // No loop used here, to avoid adding setters to the SettingsStruct template code
-    if (getI2CBusCount() >= 2) {
+    if (getI2CBusCount() > 1) {
       #if FEATURE_PLUGIN_PRIORITY
       if (!isI2CPriorityTaskActive(1))
       #endif //if FEATURE_PLUGIN_PRIORITY
@@ -83,7 +83,7 @@ void handle_hardware() {
       #endif // if FEATURE_I2CMULTIPLEXER
     }
     #if FEATURE_I2C_INTERFACE_3
-    if (getI2CBusCount() >= 3) {
+    if (getI2CBusCount() > 2) {
       #if FEATURE_PLUGIN_PRIORITY
       if (!isI2CPriorityTaskActive(2))
       #endif //if FEATURE_PLUGIN_PRIORITY
@@ -250,7 +250,7 @@ void handle_hardware() {
     #endif // if FEATURE_I2CMULTIPLEXER
   }
   #if FEATURE_I2C_MULTIPLE
-  const uint8_t i2cMaxBusCount = (getI2CBusCount() >= 2
+  const uint8_t i2cMaxBusCount = (getI2CBusCount() > 1
                                   ? ((Settings.isI2CEnabled(1) ? 1 : 0)
                                     # if FEATURE_I2C_INTERFACE_3
                                      + (Settings.isI2CEnabled(2) ? 1 : 0)

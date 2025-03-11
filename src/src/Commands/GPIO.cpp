@@ -1223,7 +1223,7 @@ bool getGPIOPinStateValues(String& str) {
           pluginID  = PLUGIN_MCP;
           #endif // if FEATURE_PINSTATE_EXTENDED
           #if FEATURE_I2C_MULTIPLE
-          if (getI2CBusCount() >= 2) {
+          if (getI2CBusCount() > 1) {
             I2CSelectHighClockSpeed(Settings.getI2CInterfacePCFMCP());
           }
           #endif // if FEATURE_I2C_MULTIPLE
@@ -1241,7 +1241,7 @@ bool getGPIOPinStateValues(String& str) {
           pluginID  = PLUGIN_PCF;
           #endif // if FEATURE_PINSTATE_EXTENDED
           #if FEATURE_I2C_MULTIPLE
-          if (getI2CBusCount() >= 2) {
+          if (getI2CBusCount() > 1) {
             I2CSelectHighClockSpeed(Settings.getI2CInterfacePCFMCP());
           }
           #endif // if FEATURE_I2C_MULTIPLE

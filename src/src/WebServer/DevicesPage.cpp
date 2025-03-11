@@ -278,7 +278,7 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
 #endif
 
 #if FEATURE_I2C_MULTIPLE
-    if ((getI2CBusCount() >= 2) && (Settings.isI2CEnabled(1) 
+    if ((getI2CBusCount() > 1) && (Settings.isI2CEnabled(1) 
                                     #if FEATURE_I2C_INTERFACE_3
                                     || Settings.isI2CEnabled(2)
                                     #endif
@@ -1242,9 +1242,9 @@ void devicePage_show_I2C_config(taskIndex_t taskIndex, deviceIndex_t DeviceIndex
 
   if (!Settings.isI2CEnabled(0)
      #if FEATURE_I2C_MULTIPLE
-     && (getI2CBusCount() >= 2 && !Settings.isI2CEnabled(1))
+     && (getI2CBusCount() > 1 && !Settings.isI2CEnabled(1))
      #if FEATURE_I2C_INTERFACE_3
-     && (getI2CBusCount() >= 3 && !Settings.isI2CEnabled(2))
+     && (getI2CBusCount() > 2 && !Settings.isI2CEnabled(2))
      #endif // if FEATURE_I2C_INTERFACE_3
      #endif // if FEATURE_I2C_MULTIPLE
      ) {

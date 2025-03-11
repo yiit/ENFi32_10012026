@@ -87,7 +87,7 @@ void handle_advanced() {
       static_cast<ExtTimeSource_e>(getFormItemInt(F("exttimesource")))
     );
     #if FEATURE_I2C_MULTIPLE
-    if (getI2CBusCount() >= 2) {
+    if (getI2CBusCount() > 1) {
       set3BitToUL(Settings.I2C_peripheral_bus, I2C_PERIPHERAL_BUS_CLOCK, getFormItemInt(F("pi2cbusrtc")));
       set3BitToUL(Settings.I2C_peripheral_bus, I2C_PERIPHERAL_BUS_WDT,   getFormItemInt(F("pi2cbuswdt")));
     }
@@ -99,11 +99,11 @@ void handle_advanced() {
     #endif // if FEATURE_SSDP
     Settings.WireClockStretchLimit       = getFormItemInt(F("wirestretch"));
     #if FEATURE_I2C_MULTIPLE
-    if (getI2CBusCount() >= 2) {
+    if (getI2CBusCount() > 1) {
       Settings.Wire2ClockStretchLimit    = getFormItemInt(F("wire2stretch"));
     }
     #if FEATURE_I2C_INTERFACE_3
-    if (getI2CBusCount() >= 3) {
+    if (getI2CBusCount() > 2) {
       Settings.Wire3ClockStretchLimit    = getFormItemInt(F("wire3stretch"));
     }
     #endif // if FEATURE_I2C_INTERFACE_3
@@ -340,12 +340,12 @@ void handle_advanced() {
   addUnit(F("1/80 usec"));
   #endif
   #if FEATURE_I2C_MULTIPLE
-  if ((getI2CBusCount() >= 2) && Settings.isI2CEnabled(1)) {
+  if ((getI2CBusCount() > 1) && Settings.isI2CEnabled(1)) {
     addFormNumericBox(concat(F("I2C ClockStretchLimit"), F(" Interface 2")), F("wire2stretch"), Settings.Wire2ClockStretchLimit); // TODO define limits
     addUnit(F("1/80 usec"));
   }
   #if FEATURE_I2C_INTERFACE_3
-  if ((getI2CBusCount() >= 3) && Settings.isI2CEnabled(2)) {
+  if ((getI2CBusCount() > 2) && Settings.isI2CEnabled(2)) {
     addFormNumericBox(concat(F("I2C ClockStretchLimit"), F(" Interface 3")), F("wire3stretch"), Settings.Wire3ClockStretchLimit); // TODO define limits
     addUnit(F("1/80 usec"));
   }

@@ -430,7 +430,7 @@ void I2CInterfaceSelector(String  label,
                           String  id,
                           uint8_t choice,
                           bool    reloadWhenNeeded) {
-  const uint8_t i2cMaxBusCount = (getI2CBusCount() >= 2
+  const uint8_t i2cMaxBusCount = (getI2CBusCount() > 1
                                   ? ((Settings.isI2CEnabled(1) ? 1 : 0)
                                     # if FEATURE_I2C_INTERFACE_3
                                      + (Settings.isI2CEnabled(2) ? 1 : 0)
@@ -449,14 +449,14 @@ void I2CInterfaceSelector(String  label,
       i2cBusNumbers[i2cBusCount] = 0;
       ++i2cBusCount;
 
-      if ((getI2CBusCount() >= 2) && Settings.isI2CEnabled(1)) {
+      if ((getI2CBusCount() > 1) && Settings.isI2CEnabled(1)) {
         i2cBusList[i2cBusCount]    = '2';
         i2cBusNumbers[i2cBusCount] = 1;
         ++i2cBusCount;
       }
       # if FEATURE_I2C_INTERFACE_3
 
-      if ((getI2CBusCount() >= 3) && Settings.isI2CEnabled(2)) {
+      if ((getI2CBusCount() > 2) && Settings.isI2CEnabled(2)) {
         i2cBusList[i2cBusCount]    = '3';
         i2cBusNumbers[i2cBusCount] = 2;
         ++i2cBusCount;

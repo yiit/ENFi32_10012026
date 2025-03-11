@@ -257,7 +257,7 @@ boolean Plugin_139(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_INIT:
     {
-      if (Settings.isI2CEnabled(Settings.getI2CInterface(event->TaskIndex))) { // FIXME
+      if (Settings.isI2CEnabled(Settings.getI2CInterface(event->TaskIndex))) {
         P139_data_struct *P139_init = static_cast<P139_data_struct *>(getPluginTaskData(event->TaskIndex));
 
         if (nullptr != P139_init) {

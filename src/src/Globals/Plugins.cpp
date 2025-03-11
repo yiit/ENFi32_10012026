@@ -536,7 +536,7 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
             START_TIMER;
             #if FEATURE_I2C_MULTIPLE
             const uint8_t i2cBus = Settings.getI2CInterfacePCFMCP();
-            I2CSelectHighClockSpeed(i2cBus);  // Switch to desired bus, no need to switch back, net I2C plugin call will switch to desired bus
+            I2CSelectHighClockSpeed(i2cBus);  // Switch to requested bus, no need to switch back, next I2C plugin call will switch to desired bus
             #endif // if FEATURE_I2C_MULTIPLE
             PluginCall(DeviceIndex, Function, &TempEvent, str);
             STOP_TIMER_TASK(DeviceIndex, Function);
