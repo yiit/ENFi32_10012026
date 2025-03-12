@@ -73,36 +73,36 @@ private:
 
   STA_connected_state getSTA_connected_state() const;
 
-  WiFi_AP_Candidate _active_sta;
-  WiFi_AP_Candidate _AP_conf;
+//  WiFi_AP_Candidate _active_sta;
+//  WiFi_AP_Candidate _AP_conf;
 
-  String _last_ssid;
-  MAC_address _last_bssid;
-  uint8_t _last_channel = 0;
+//  String _last_ssid;
+//  MAC_address _last_bssid;
+//  uint8_t _last_channel = 0;
   WiFiState_e _state    = WiFiState_e::Disabled;
 
   LongTermTimer _last_state_change;
   LongTermTimer _state_timeout;
   LongTermTimer _last_seen_connected;
-  LongTermTimer _AP_start_timestamp;
+//  LongTermTimer _AP_start_timestamp;
 
-  uint32_t _connect_attempt = 0;
+//  uint32_t _connect_attempt = 0;
 
 
-  uint32_t _nrReconnects = 0;
+//  uint32_t _nrReconnects = 0;
 
   bool _callbackError = false;
 
   // Special modes for initial setup or re-configuration of a node via serial port/IMPROV
-  bool _improvActive = false;
-  bool _setupActive  = false;
+//  bool _improvActive = false;
+//  bool _setupActive  = false;
 
 
   // WiFi settings => Move to separate class/struct
   bool _disabledAtBoot    = false;
-  bool _passiveScan       = false;
-  bool _includeHiddenSSID = false;
-  float _TX_power         = -1;
+//  bool _passiveScan       = false;
+//  bool _includeHiddenSSID = false;
+//  float _TX_power         = -1;
 
   // Manual IP settings
   // IP

@@ -137,6 +137,7 @@ void WiFi_AP_CandidatesList::after_process_WiFiscan() {
   scanned_new.sort();
   scanned_new.unique();
   _mustLoadCredentials = true;
+  load_knownCredentials();
   WiFi.scanDelete();
   attemptsLeft = WiFi_CONNECT_ATTEMPTS;
 }
@@ -252,7 +253,8 @@ void WiFi_AP_CandidatesList::markCurrentConnectionStable() {
 
 int8_t WiFi_AP_CandidatesList::scanComplete() const {
   const int8_t scanCompleteStatus = WiFi.scanComplete();
-  if (scanCompleteStatus <= 0) {
+  if (scanCompleteStatus == -1) {
+    // Still scanning
     return scanCompleteStatus;
   }
 
@@ -265,6 +267,12 @@ int8_t WiFi_AP_CandidatesList::scanComplete() const {
   for (auto scan = scanned_new.begin(); scan != scanned_new.end(); ++scan) {
     if (!scan->expired()) {
       ++found;
+    }
+  }
+  if (found == 0) {
+    if (scanCompleteStatus == -2) {
+      // Not triggered
+      return scanCompleteStatus;
     }
   }
   return found;

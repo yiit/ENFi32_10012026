@@ -85,6 +85,13 @@ void ESPEasyWiFi_t::loop()
     case WiFiState_e::IdleWaiting:
 
       if (_state_timeout.timeReached()) {
+        // This is where we decide what to do next:
+        // - Reconnect
+        // - Scan
+        // 
+
+
+
         // Do we have candidate to connect to ?
         if (WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::STA_Connecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
@@ -121,8 +128,8 @@ void ESPEasyWiFi_t::loop()
     case WiFiState_e::STA_Scanning:
     case WiFiState_e::STA_AP_Scanning:
     {
+      // -1 if scan not finished
       auto scanCompleteStatus = WiFi.scanComplete();
-
       if (scanCompleteStatus >= 0) {
         WiFi_AP_Candidates.load_knownCredentials();
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
@@ -343,7 +350,7 @@ bool ESPEasyWiFi_t::connectSTA()
     addLogMove(LOG_LEVEL_INFO, strformat(
                  F("WIFI : Connecting %s attempt #%u"),
                  candidate.toString().c_str(),
-                 _connect_attempt));
+                 WiFiEventData.wifi_connect_attempt));
   }
   WiFiEventData.markWiFiBegin();
 
