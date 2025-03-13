@@ -43,6 +43,8 @@ public:
 
   bool plugin_read(struct EventStruct *event);
 
+private:
+
   uint32_t          _rawPressure{};
   uint32_t          _rawTemperature{};
   P177_SensorMode_e _sensorMode = P177_SensorMode_e::IdleMode;
