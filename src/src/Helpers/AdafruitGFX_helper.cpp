@@ -211,7 +211,9 @@ void AdaGFXFormTextPrintMode(const __FlashStringHelper *id,
     toString(AdaGFXTextPrintMode::TruncateExceedingCentered),
   };
 
-  const FormSelectorOptions selector(NR_ELEMENTS(textModes), textModes);
+  constexpr int count = NR_ELEMENTS(textModes);
+  FormSelectorOptions selector(count, textModes);
+  selector.default_index = 1;
 
   selector.addFormSelector(F("Text print Mode"), id, selectedIndex);
 }
