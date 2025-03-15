@@ -957,7 +957,10 @@ void handle_devices_TaskSettingsPage(taskIndex_t taskIndex, uint8_t page)
     // show selected device name and delete button
     addHtml(getPluginNameFromDeviceIndex(DeviceIndex));
 
-    addHelpButton(concat(F("Plugin"), Settings.getPluginID_for_task(taskIndex).value));
+    const uint8_t pid = Settings.getPluginID_for_task(taskIndex).value;
+    if (pid <= 101) { // Up to P101 seem to be listed in the old Wiki, so lets keep pointing there too
+      addHelpButton(concat(F("Plugin"), Settings.getPluginID_for_task(taskIndex).value));
+    }
     addRTDPluginButton(Settings.getPluginID_for_task(taskIndex));
 
     addFormTextBox(F("Name"), F("TDN"), getTaskDeviceName(taskIndex), NAME_FORMULA_LENGTH_MAX); // ="taskdevicename"
