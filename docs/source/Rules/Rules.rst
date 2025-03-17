@@ -1,5 +1,9 @@
 .. _Rules:
 
+.. |br| raw:: html
+
+    <br>
+
 #####
 Rules
 #####
@@ -12,8 +16,9 @@ Rules can be used to create very simple flows to control devices on your ESP.
 
 .. note::
    To assist writing rules, one may prefer to use an editor like Notepad++ which supports user defined languages to colorize the text.
-   See the ``Misc/Notepad++`` folder for a Notepad++ language definition which can be used to colorize rules.
-   Another option is the `ESPeasy Code Editor <https://raw.githack.com/chromoxdor/EasyColorCode/main/colorcode.html>`_ , an online editor with rules highlighting and hinting.
+   See the ``Misc/Notepad++`` folder for a Notepad++ language definition which can be used to colorize rules. |br|
+   Another option is the `ESPeasy Code Editor <https://raw.githack.com/chromoxdor/EasyColorCode/main/colorcode.html>`_ , an online editor with rules highlighting and hinting. |br|
+   Additionally, in many builds, EasyColorCode has been integrated, making the syntax highlighting and auto-completion available, directly in the Rules editor of the ESPEasy UI.
 
 Enable Rules
 ------------
@@ -713,16 +718,25 @@ A really great feature to use is the internal variables. You set them like this:
 
  Let,<n>,<value>
 
-Where n must be a positive integer (type ``uint32_t``) and the value a floating point value. To use the values in strings you can
-either use the ``%v7%`` syntax or ``[var#7]``. BUT for formulas you need to use the square
-brackets in order for it to compute, i.e. ``[var#12]``.
+ Let,border,3
 
-.. note: The number for ``n`` used to be limited to 1 ... 16, but this limit has been removed in builds made after 2021-01-09.
+ Let,angle,0.436
+
+Where n can be a positive integer (type ``uint32_t``), or a name (identifier), and the value a floating point value. To use the values in strings you can
+either use the ``%v7%`` syntax or ``[var#7]``, or when using named variables: ``%v_border%`` or ``[var#border]``.
+
+.. note:: The number for ``n`` used to be limited to 1 ... 16, but this limit has been removed in builds made after 2021-01-09.
+
+.. note:: Variables used to be limited to numbers, but named variables can now also be used in builds made after 2025-03-31.
+
+When using named variables, these names should consist of only alphanumeric characters and underscores, a name using spaces, punctuation characters, braces, etc., will be rejected.
 
 If you need to make sure the stored value is an integer value, use the ``[int#n]`` syntax. (i.e. ``[int#12]``)
-The index ``n`` is shared among ``[var#n]`` and ``[int#n]``.
+The index ``n``, or named variable, is shared among ``[var#n]`` and ``[int#n]``, as well as when using the ``%vN%`` or ``%v_N%`` syntax, that will return the same value as when using the ``[var#N]`` notation.
 
-The short hand notation (e.g. ``%v7%``) will be processed first.
+When using a named variable with the short-hand notation, an underscore must be used after the ``%v`` lead-in, so ``%v_border%``, ``%v1%`` and ``%v_1%`` are valid, but ``%vborder%`` is **invalid**.
+
+The short-hand notation (e.g. ``%v7%``) will be processed first.
 Meaning this can be used to switch sets of variables by nesting like this: ``[int#%v7%]``.
 
 On the "System Variables" page of the web interface all set values can be inspected including their values.
@@ -735,7 +749,7 @@ If a specific system variable was never set (using the ``Let`` command), its val
 
 Added: 2023-12-01
 
-Short hand notation can be nested like this: ``[int#%v%v7%%]`` or use simple calculations like this: ``[int#%v=7+%v100%%]``
+Short-hand notation can be nested like this: ``[int#%v%v7%%]`` or use simple calculations like this: ``[int#%v=7+%v100%%]``
 This allows to simply switch a number of variable offsets in rules by only changing 1 variable.
 
 
