@@ -234,12 +234,11 @@ void handle_hardware() {
     addUnit(F("Hz"));
 
     if (0 == i2cBus) { // Only support Clock-stretching on Bus 1
+      addFormNumericBox(F("I2C ClockStretchLimit"), F("wirestretch"), Settings.WireClockStretchLimit, 0);
       #ifdef ESP8266
-      addFormNumericBox(F("I2C ClockStretchLimit"), F("wirestretch"), Settings.WireClockStretchLimit, 0); // TODO define limits
       addUnit(F("usec"));
       #endif
       #ifdef ESP32
-      addFormNumericBox(F("I2C ClockStretchLimit"), F("wirestretch"), Settings.WireClockStretchLimit, 0); // TODO define limits
       addUnit(F("1/80 usec"));
       #endif
     }
