@@ -173,10 +173,12 @@
  #   endif // ifdef ADAGFX_FONTS_EXTRA_90PT_SEVENSEG_B
  #  endif // ifdef ADAGFX_FONTS_EXTRA_90PT_INCLUDED
 
+   This filename has to be copied exactly as it is on disk, as the builds are created mostly on Linux, that uses a case-sensitive file
+   system.
 
    d)
    Next, the include-file generated before needs a few adjustments to make it work with the ESPEasy code:
-   In that font .h file we'll insert, above the first line, a single-include check:
+   In that font .h file we'll insert, before the first line, a single-include check:
 
  #ifndef FONTS_7SEGMENT90PT7B_H
  #define FONTS_7SEGMENT90PT7B_H
@@ -200,7 +202,8 @@
  #  endif // ifdef ADAGFX_FONTS_EXTRA_90PT_INCLUDED
 
    assigning the name sevenseg90b to the font. This name should match the fontname and probably the point size,
-   but _must_ be all lowercase characters! (required!)
+   but _must_ be all lowercase characters! (required!).
+   The name-separator character | must also be added so the name can be recognized as a unique name in the list.
 
    f)
    Next we have to add the font data to the font-list array.
@@ -212,6 +215,8 @@
    { &_7segment90pt7b,               96,              120, 122,  false, 101u },
  #  endif // ifdef ADAGFX_FONTS_EXTRA_90PT_SEVENSEG_B
  # endif  // ifdef ADAGFX_FONTS_EXTRA_90PT_INCLUDED
+
+   The name of the GFXFont definition can be found near the end of the font.h file, and should be autocompleted by VSCode Intellisense.
 
    The numbers are:
    - width (usually a few pixels wider than the font-size)
@@ -2299,7 +2304,7 @@ bool AdafruitGFX_helper::processCommand(const String& string) {
         #  if ADAGFX_ARGUMENT_VALIDATION
         const int16_t curWin = getWindow();
 
-        if (curWin != 0) { selectWindow(0); } // Validate against raw window coordinates
+        if (curWin != 0) { selectWindow(0); }           // Validate against raw window coordinates
 
         if (argCount == 6) { setRotation(nParams[5]); } // Use requested rotation
 
