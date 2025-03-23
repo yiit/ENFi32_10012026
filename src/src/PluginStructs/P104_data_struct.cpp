@@ -1986,7 +1986,8 @@ bool P104_data_struct::webform_load(struct EventStruct *event) {
     #  endif // ifdef P104_USE_TOOLTIPS
     selector_zoneordering.addFormSelector(F("Zone order"), F("zoneorder"),
                                           bitRead(P104_CONFIG_FLAGS, P104_CONFIG_FLAG_ZONE_ORDER) ? 1 : 0);
-    # endif                  // ifdef P104_USE_ZONE_ORDERING
+    selector_zoneordering.reloadonchange = true;
+    # endif // ifdef P104_USE_ZONE_ORDERING
     # ifdef P104_ADD_SETTINGS_NOTES
     addFormNote(zonetip);
     # endif // ifdef P104_ADD_SETTINGS_NOTES
