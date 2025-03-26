@@ -8,6 +8,10 @@
 
 /************
  * Changelog:
+ * 2025-03-26 tonhuisman: Add optional receiving (relaying) of UDP data to Serial. Uses the same port as configured for the (default) TCP
+ *                        connection. Available on ESP32 only.
+ *                        Can be enabled for ESP8266 in a Custom build by adding #define P020_USE_PROTOCOL 1
+ *                        Added logging for pass-through data size from TCP or UDP to Serial.
  * 2025-03-23 tonhuisman: Add 'Event data hex format' setting to convert received data as hex so it can be sent via SerialSendMix.
  *                        Data received via TCP is now sent to serial via the 'write' method instead of 'print' so any binary content is
  *                        passed through unaltered.
@@ -188,6 +192,21 @@ boolean Plugin_020(uint8_t function, struct EventStruct *event, String& string)
       addUnit(F("0..65535"));
       # endif // ifndef LIMIT_BUILD_SIZE
 
+      # if P020_USE_PROTOCOL
+      const __FlashStringHelper*tcpudpOptions[] = {
+        F("TCP"),
+        F("UDP"),
+        F("TCP & UDP"),
+      };
+      constexpr int tcpudpCount = NR_ELEMENTS(tcpudpOptions);
+      FormSelectorOptions tcpudpSelector(tcpudpCount, tcpudpOptions);
+      tcpudpSelector.default_index = 0;
+      tcpudpSelector.addFormSelector(
+        F("Protocol"),
+        F("pproto"),
+        P020_GET_PROTOCOL);
+      # endif // if P020_USE_PROTOCOL
+
       addFormNumericBox(F("Baud Rate"), F("pbaud"), P020_GET_BAUDRATE, 0);
       uint8_t serialConfChoice = serialHelper_convertOldSerialConfig(P020_SERIAL_CONFIG);
       serialHelper_serialconfig_webformLoad(event, serialConfChoice);
@@ -305,6 +324,9 @@ boolean Plugin_020(uint8_t function, struct EventStruct *event, String& string)
       } else {
         bitWrite(lSettings, P020_FLAG_MULTI_LINE, isFormItemChecked(F("pmultiline")));
       }
+      # if P020_USE_PROTOCOL
+      set2BitToUL(lSettings, P020_FLAG_PROTOCOL, getFormItemInt(F("pproto")));
+      # endif // if P020_USE_PROTOCOL
 
       P020_FLAGS = lSettings;
 
@@ -362,14 +384,22 @@ boolean Plugin_020(uint8_t function, struct EventStruct *event, String& string)
       # ifndef LIMIT_BUILD_SIZE
 
       if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-        addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: TaskIndex=%d port=%d rxPin=%d txPin=%d BAUDRATE=%d SERVER_PORT=%d SERIAL_PROCESSING=%d"),
+        addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: TaskIndex=%d port=%d rxPin=%d txPin=%d BAUDRATE=%d SERVER_PORT=%d SERIAL_PROCESSING=%d"
+                                           #  if P020_USE_PROTOCOL
+                                           " Protocol=%d"
+                                           #  endif // if P020_USE_PROTOCOL
+                                           ),
                                          event->TaskIndex + 1,
                                          CONFIG_PORT,
                                          rxPin,
                                          txPin,
                                          P020_GET_BAUDRATE,
                                          P020_GET_SERVER_PORT,
-                                         P020_SERIAL_PROCESSING));
+                                         P020_SERIAL_PROCESSING
+                                         #  if P020_USE_PROTOCOL
+                                         , P020_GET_PROTOCOL
+                                         #  endif // if P020_USE_PROTOCOL
+                                         ));
       }
       # endif // ifndef LIMIT_BUILD_SIZE
 
@@ -449,10 +479,22 @@ boolean Plugin_020(uint8_t function, struct EventStruct *event, String& string)
       P020_Task *task = static_cast<P020_Task *>(getPluginTaskData(event->TaskIndex));
 
       if (nullptr != task) {
-        bool hasClient = task->hasClientConnected();
+        const bool hasClient = task->hasClientConnected();
+        # if P020_USE_PROTOCOL
+        const P020_Protocol_e prot = static_cast<P020_Protocol_e>(P020_GET_PROTOCOL);
+        const bool useUdp          = P020_Protocol_e::UDP == prot || P020_Protocol_e::TCP_UDP == prot;
+        # endif // if P020_USE_PROTOCOL
 
-        if (P020_IGNORE_CLIENT_CONNECTED || hasClient) {
-          if (hasClient) {
+        if (P020_IGNORE_CLIENT_CONNECTED || hasClient
+            # if P020_USE_PROTOCOL
+            || useUdp
+            # endif // if P020_USE_PROTOCOL
+            ) {
+          if (hasClient
+              # if P020_USE_PROTOCOL
+              || useUdp
+              # endif // if P020_USE_PROTOCOL
+              ) {
             task->handleClientIn(event);
           }
           task->handleSerialIn(event); // in case of second serial connected, PLUGIN_SERIAL_IN is not called anymore

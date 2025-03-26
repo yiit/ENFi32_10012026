@@ -11,8 +11,6 @@
 # include "../Helpers/Misc.h"
 
 P020_Task::P020_Task(struct EventStruct *event) : _taskIndex(event->TaskIndex) {
-  clearBuffer();
-
   if (P020_GET_LED_ENABLED) {
     _ledPin = P020_LED_PIN; // Default pin (12) is already initialized in P020_Task
   }
@@ -25,6 +23,10 @@ P020_Task::P020_Task(struct EventStruct *event) : _taskIndex(event->TaskIndex) {
   _appendTaskId = P020_GET_APPEND_TASK_ID;
   _rxBufferSize = P020_RX_BUFFER;
   _eventAsHex   = P020_GET_EVENT_AS_HEX;
+  # if P020_USE_PROTOCOL
+  _protocol = static_cast<P020_Protocol_e>(P020_GET_PROTOCOL);
+  # endif // if P020_USE_PROTOCOL
+  clearBuffer(); // Depends on _rxBufferSize
 }
 
 P020_Task::~P020_Task() {
@@ -32,6 +34,13 @@ P020_Task::~P020_Task() {
     delete ser2netServer;
     ser2netServer = nullptr;
   }
+  # if P020_USE_PROTOCOL
+
+  if (ser2netUdp != nullptr) {
+    delete ser2netUdp;
+    ser2netUdp = nullptr;
+  }
+  # endif // if P020_USE_PROTOCOL
 
   if (ser2netSerial != nullptr) {
     delete ser2netSerial;
@@ -48,23 +57,47 @@ bool P020_Task::serverActive(WiFiServer *server) {
 }
 
 void P020_Task::startServer(uint16_t portnumber) {
-  if ((gatewayPort == portnumber) && serverActive(ser2netServer)) {
-    // server is already listening on this port
-    return;
-  }
-  stopServer();
-  gatewayPort   = portnumber;
-  ser2netServer = new (std::nothrow) WiFiServer(portnumber);
+  # if P020_USE_PROTOCOL
 
-  if ((nullptr != ser2netServer) && NetworkConnected()) {
-    ser2netServer->begin();
+  if ((P020_Protocol_e::TCP == _protocol) || (P020_Protocol_e::TCP_UDP == _protocol))
+  # endif // if P020_USE_PROTOCOL
+  {
+    if ((gatewayPort == portnumber) && serverActive(ser2netServer)) {
+      // server is already listening on this port
+      return;
+    }
+    stopServer();
+    gatewayPort   = portnumber;
+    ser2netServer = new (std::nothrow) WiFiServer(portnumber);
 
-    if (serverActive(ser2netServer)) {
-      addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: WiFi server started at port %d"), portnumber));
-    } else {
-      addLog(LOG_LEVEL_ERROR, strformat(F("Ser2Net: WiFi server start FAILED at port %d, retrying..."), portnumber));
+    if ((nullptr != ser2netServer) && NetworkConnected()) {
+      ser2netServer->begin();
+
+      if (serverActive(ser2netServer)) {
+        addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: WiFi server started at port %d"), portnumber));
+      } else {
+        addLog(LOG_LEVEL_ERROR, strformat(F("Ser2Net: WiFi server start FAILED at port %d, retrying..."), portnumber));
+      }
     }
   }
+  # if P020_USE_PROTOCOL
+
+  if ((P020_Protocol_e::UDP == _protocol) || (P020_Protocol_e::TCP_UDP == _protocol)) {
+    ser2netUdp = new (std::nothrow) WiFiUDP();
+
+    if ((nullptr != ser2netUdp) && NetworkConnected()) {
+      if (ser2netUdp->begin(portnumber) == 0) {
+        if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
+          addLog(LOG_LEVEL_ERROR, strformat(F("Ser2Net: Cannot bind UDP at port %d"), portnumber));
+        }
+      } else {
+        if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+          addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: UDP receiver started at port %d"), portnumber));
+        }
+      }
+    }
+  }
+  # endif // if P020_USE_PROTOCOL
 }
 
 void P020_Task::checkServer() {
@@ -87,6 +120,15 @@ void P020_Task::stopServer() {
     delete ser2netServer;
     ser2netServer = nullptr;
   }
+  # if P020_USE_PROTOCOL
+
+  if (nullptr != ser2netUdp) {
+    ser2netUdp->stop();
+    addLog(LOG_LEVEL_INFO, F("Ser2Net: UDP receiver stopped"));
+    delete ser2netUdp;
+    ser2netUdp = nullptr;
+  }
+  # endif // if P020_USE_PROTOCOL
 }
 
 bool P020_Task::hasClientConnected() {
@@ -176,20 +218,70 @@ void P020_Task::serialEnd() {
 }
 
 void P020_Task::handleClientIn(struct EventStruct *event) {
-  size_t  count      = ser2netClient.available();
-  size_t  bytes_read = 0;
-  uint8_t net_buf[_maxDataGramSize];
+  # if P020_USE_PROTOCOL
 
-  if (count > 0) {
-    if (count > _maxDataGramSize) { count = _maxDataGramSize; }
-    bytes_read = ser2netClient.read(net_buf, count);
-    ser2netSerial->write(net_buf, bytes_read);
-    ser2netSerial->flush();             // Waits for the transmission of outgoing serial data to
+  if (((P020_Protocol_e::TCP == _protocol) || (P020_Protocol_e::TCP_UDP == _protocol)) &&
+      (nullptr != ser2netServer))
+  # endif // if P020_USE_PROTOCOL
+  {
+    int count = ser2netClient.available();
 
-    while (ser2netClient.available()) { // flush overflow data if available
-      ser2netClient.read();
+    if (count > 0) {
+      uint8_t net_buf[_maxDataGramSize];
+
+      if (count > _maxDataGramSize) { count = _maxDataGramSize; }
+      const int bytes_read = ser2netClient.read(net_buf, count);
+
+      if (bytes_read) {
+        # ifndef LIMIT_BUILD_SIZE
+
+        if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+          addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: Passing through %d bytes from %s to serial."), bytes_read, FsP(F("TCP"))));
+        }
+        # endif // ifndef LIMIT_BUILD_SIZE
+        ser2netSerial->write(net_buf, bytes_read);
+        ser2netSerial->flush();           // Waits for the transmission of outgoing serial data to
+      }
+
+      while (ser2netClient.available()) { // flush overflow data if available
+        ser2netClient.read();
+      }
+      delay(0);
     }
   }
+  # if P020_USE_PROTOCOL
+
+  if (((P020_Protocol_e::UDP == _protocol) || (P020_Protocol_e::TCP_UDP == _protocol)) &&
+      (nullptr != ser2netUdp)) {
+    const int packetSize = ser2netUdp->parsePacket();
+
+    if (packetSize > 0) {
+      std::vector<uint8_t> packetBuffer;
+      packetBuffer.resize(packetSize + 1);
+
+      if (packetBuffer.size() >= static_cast<size_t>(packetSize)) {
+        memset(&packetBuffer[0], 0, packetSize + 1);
+        const int bytes_read = ser2netUdp->read(&packetBuffer[0], packetSize);
+
+        if (bytes_read > 0) {
+          #  ifndef LIMIT_BUILD_SIZE
+
+          if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+            addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: Passing through %d bytes from %s to serial."), bytes_read, FsP(F("UDP"))));
+          }
+          #  endif // ifndef LIMIT_BUILD_SIZE
+          ser2netSerial->write(&packetBuffer[0], bytes_read);
+          ser2netSerial->flush();
+
+          while (ser2netUdp->available()) {
+            ser2netUdp->read();
+          }
+        }
+      }
+      delay(0);
+    }
+  }
+  # endif // if P020_USE_PROTOCOL
 }
 
 void P020_Task::handleSerialIn(struct EventStruct *event) {
@@ -379,7 +471,11 @@ void P020_Task::rulesEngine(const String& message) {
 }
 
 bool P020_Task::isInit() const {
-  return nullptr != ser2netServer && nullptr != ser2netSerial;
+  return (nullptr != ser2netServer
+          # if P020_USE_PROTOCOL
+          || nullptr != ser2netUdp
+          # endif // if P020_USE_PROTOCOL
+          ) && nullptr != ser2netSerial;
 }
 
 void P020_Task::sendConnectedEvent(bool connected)
