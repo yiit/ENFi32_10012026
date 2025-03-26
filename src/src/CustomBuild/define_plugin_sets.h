@@ -3674,6 +3674,23 @@ To create/register a plugin, you have to :
 #define FEATURE_ALTERNATIVE_CDN_URL 1
 */
 
+#ifndef FEATURE_I2C_MULTIPLE
+  #ifdef ESP8266
+    #define FEATURE_I2C_MULTIPLE  0 // NOT SUPPORTED
+  #endif 
+  #ifdef ESP32
+    #define FEATURE_I2C_MULTIPLE  1
+  #endif 
+#endif
+#if FEATURE_I2C_MULTIPLE
+  #ifndef FEATURE_I2C_INTERFACE_3
+    #define FEATURE_I2C_INTERFACE_3 0 // Not enabled by default
+  #endif
+#endif
+#if defined(ESP8266) && FEATURE_I2C_MULTIPLE
+  #undef FEATURE_I2C_MULTIPLE
+  #define FEATURE_I2C_MULTIPLE    0 // NOT SUPPORTED
+#endif
 
   #ifndef FEATURE_THINGSPEAK_EVENT
     #ifdef LIMIT_BUILD_SIZE
