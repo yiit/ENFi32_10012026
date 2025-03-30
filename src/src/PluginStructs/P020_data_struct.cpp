@@ -229,7 +229,7 @@ void P020_Task::handleClientIn(struct EventStruct *event) {
     if (count > 0) {
       uint8_t net_buf[_maxDataGramSize];
 
-      if (count > _maxDataGramSize) { count = _maxDataGramSize; }
+      if (count > static_cast<int>(_maxDataGramSize)) { count = _maxDataGramSize; }
       const int bytes_read = ser2netClient.read(net_buf, count);
 
       if (bytes_read) {
