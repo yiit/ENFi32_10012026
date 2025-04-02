@@ -684,6 +684,15 @@
 
     ``SendToUDP,<IP address>,<Portnumber>,<command>``"
     "
+    SendToUDPMix","
+    :green:`Rules`","
+    Send command to other network device using UDP (non-ESP Easy units) and allow for binary data to be sent.
+
+    ``SendToUDPMix,<IP address>,<Portnumber>,'<content to send>'``
+    
+    ``<content to send>``: Text and/or hex byte(s) (having 0x prefix) that will be sent (nearly) unprocessed. Only the regular variable replacements will be applied before sending the content to the remote device. The content has to be quoted if it contains commas or spaces. When using multiple parts, parts that have spaces or commas must *also* be quoted, and use a different quote character!
+    "
+    "
     Settings","
     :red:`Internal`","
     Show settings on serial terminal
