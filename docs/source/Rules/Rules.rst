@@ -493,7 +493,7 @@ the '=' sign).
 For historic reasons, ``%eventvalue%`` without a number, can also be used to access the first event value.
 Thus it will be the same when using ``%eventvalue1%``.
 
-There is one exception; When the event starts with an ``!``,  ``%eventvalue%`` does refer to the literal event, or the part of the event after the ``#`` character.
+There is one exception; When the event starts with an ``!``,  ``%eventvalue%`` does refer to the literal event, an with ``%eventname%`` and ``%eventpar%`` the part left and right of the ``#`` character can be used (processing ``%eventname%`` and ``%eventpar%`` was added 2025-03-30).
 This was introduced for the Serial Server plugin (P020) which sends events like ``!Serial#`` followed by the received string.
 
 
