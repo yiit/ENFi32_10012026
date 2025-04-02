@@ -25,6 +25,7 @@ P020_Task::P020_Task(struct EventStruct *event) : _taskIndex(event->TaskIndex) {
   _eventAsHex   = P020_GET_EVENT_AS_HEX;
   # if P020_USE_PROTOCOL
   _protocol = static_cast<P020_Protocol_e>(P020_GET_PROTOCOL);
+  _udpport  = P020_GET_SERVER_PORT;
   # endif // if P020_USE_PROTOCOL
   clearBuffer(); // Depends on _rxBufferSize
 }
@@ -84,18 +85,6 @@ void P020_Task::startServer(uint16_t portnumber) {
 
   if ((P020_Protocol_e::UDP == _protocol) || (P020_Protocol_e::TCP_UDP == _protocol)) {
     ser2netUdp = new (std::nothrow) WiFiUDP();
-
-    if ((nullptr != ser2netUdp) && NetworkConnected()) {
-      if (ser2netUdp->begin(portnumber) == 0) {
-        if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
-          addLog(LOG_LEVEL_ERROR, strformat(F("Ser2Net: Cannot bind UDP at port %d"), portnumber));
-        }
-      } else {
-        if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-          addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: UDP receiver started at port %d"), portnumber));
-        }
-      }
-    }
   }
   # endif // if P020_USE_PROTOCOL
 }
@@ -109,6 +98,22 @@ void P020_Task::checkServer() {
       addLog(LOG_LEVEL_INFO, F("Ser2Net: WiFi server started"));
     }
   }
+  # if P020_USE_PROTOCOL
+
+  if ((nullptr != ser2netUdp) && !_udpInit && NetworkConnected()) {
+    _udpInit = true; // Init only once
+
+    if (ser2netUdp->begin(_udpport) == 0) {
+      if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
+        addLog(LOG_LEVEL_ERROR, strformat(F("Ser2Net: Cannot bind UDP at port %d"), _udpport));
+      }
+    } else {
+      if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+        addLog(LOG_LEVEL_INFO, strformat(F("Ser2Net: UDP receiver started at port %d"), _udpport));
+      }
+    }
+  }
+  # endif // if P020_USE_PROTOCOL
 }
 
 void P020_Task::stopServer() {

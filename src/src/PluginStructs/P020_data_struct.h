@@ -159,6 +159,8 @@ struct P020_Task : public PluginTaskData_base {
   # if P020_USE_PROTOCOL
   WiFiUDP        *ser2netUdp = nullptr;
   P020_Protocol_e _protocol  = P020_Protocol_e::TCP;
+  uint16_t        _udpport;
+  bool            _udpInit = false;
   # endif // if P020_USE_PROTOCOL
   bool           clientConnected = false;
   String         serial_buffer;
