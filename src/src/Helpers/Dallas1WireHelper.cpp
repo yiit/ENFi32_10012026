@@ -10,6 +10,9 @@
 # include "../WebServer/JSON.h"
 
 
+// For timings, see table 1:
+// https://www.analog.com/en/resources/technical-articles/1wire-communication-with-a-microchip-picmicro-microcontroller.html
+
 // DEBUG code using logic analyzer for timings
 // #define DEBUG_LOGIC_ANALYZER_PIN  27
 // #define DEBUG_LOGIC_ANALYZER_PIN_ERROR  26
@@ -55,15 +58,27 @@ void Dallas_pinModeInput(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
 void Dallas_pinWrite(int8_t gpio_pin_rx, int8_t gpio_pin_tx, bool pinstate)
 {
   DIRECT_pinWrite(gpio_pin_tx, pinstate);
-
   if (gpio_pin_rx == gpio_pin_tx) {
     DIRECT_PINMODE_OUTPUT(gpio_pin_rx);
   }
 }
 
+bool Dallas_waitForPinState(int8_t gpio_pin_rx, uint64_t start_usec, int64_t timeout_usec, bool newState)
+{
+  while (usecPassedSince(start_usec) < timeout_usec) {
+    // Invert result from the read as a very quick cast to bool
+    if (!!DIRECT_pinRead(gpio_pin_rx) == newState) {
+      return true;
+    }
+  }
+  return false;
+}
+
 # define Dallas_pinLow   Dallas_pinWrite(gpio_pin_rx, gpio_pin_tx, 0)
 # define Dallas_pinHigh  Dallas_pinWrite(gpio_pin_rx, gpio_pin_tx, 1)
 # define Dallas_pinInput Dallas_pinModeInput(gpio_pin_rx, gpio_pin_tx)
+# define Dallas_waitForPinLow(P, S, T)   Dallas_waitForPinState(P, S, T, 0)
+# define Dallas_waitForPinHigh(P, S, T)  Dallas_waitForPinState(P, S, T, 1)
 
 // References to 1-wire family codes:
 // http://owfs.sourceforge.net/simple_family.html
@@ -161,7 +176,6 @@ void Dallas_addr_selector_webform_load(taskIndex_t TaskIndex, int8_t gpio_pin_rx
   std::vector<uint64_t> scan_res;
   std::vector<bool> fixed_res;
 
-  Dallas_reset(gpio_pin_rx, gpio_pin_tx);
   Dallas_reset_search();
   uint8_t tmpAddress[8]{};
 
@@ -314,8 +328,6 @@ uint8_t Dallas_scan(uint8_t getDeviceROM, uint8_t *ROM, int8_t gpio_pin_rx, int8
   uint8_t tmpaddr[8];
   uint8_t devCount = 0;
 
-  Dallas_reset(gpio_pin_rx, gpio_pin_tx);
-
   Dallas_reset_search();
 
   while (Dallas_search(tmpaddr, gpio_pin_rx, gpio_pin_tx))
@@ -462,7 +474,6 @@ bool Dallas_readiButton(const uint8_t addr[8], int8_t gpio_pin_rx, int8_t gpio_p
   uint8_t tmpaddr[8];
   bool    found = false;
 
-  Dallas_reset(gpio_pin_rx, gpio_pin_tx);
   String log;
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
@@ -690,7 +701,9 @@ bool Dallas_setResolution(const uint8_t ROM[8], uint8_t res, int8_t gpio_pin_rx,
 \*********************************************************************************************/
 uint8_t Dallas_reset(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
 {
-  uint8_t retries = 125;
+  usec_release   = 0;
+  presence_start = 0;
+  presence_end   = 0;
 
   ISR_noInterrupts();
 
@@ -707,22 +720,9 @@ uint8_t Dallas_reset(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
   // DEBUG code using logic analyzer for timings
   DIRECT_pinWrite(DEBUG_LOGIC_ANALYZER_PIN, 0);
 # endif // ifdef DEBUG_LOGIC_ANALYZER_PIN
-  bool success = true;
 
-  do // wait until the wire is high... just in case
-  {
-    if (--retries == 0) {
-      success = false;
-    }
-    delayMicroseconds(2);
-  }
-  while (!DIRECT_pinRead(gpio_pin_rx) && success);
-
-  usec_release   = 0;
-  presence_start = 0;
-  presence_end   = 0;
-
-  if (success) {
+  // wait until the wire is high... just in case
+  if (Dallas_waitForPinHigh(gpio_pin_rx, getMicros64(), 250ll)) {
 # ifdef DEBUG_LOGIC_ANALYZER_PIN
 
     // DEBUG code using logic analyzer for timings
@@ -734,8 +734,9 @@ uint8_t Dallas_reset(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
     // This resets every slave device on the bus.
     Dallas_pinLow;
 
-    delayMicroseconds(480);
+    delayMicroseconds(480);  // t_RSTL 480 ... 960 usec
 
+    const uint64_t start = getMicros64();
     // Set to 'input', state will be pulled high by pull-up resistor
     // Or will be kept pulled low by sensor
     Dallas_pinInput;
@@ -755,52 +756,41 @@ uint8_t Dallas_reset(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
     // - Presence condition start (typ: 30 usec after release)
     // - Presence condition end   (minimal duration 60 usec, typ: 100 usec)
     // - Wait till 480 usec after release.
-    const uint64_t start = getMicros64();
-    int64_t usec_passed  = 0;
+    if (Dallas_waitForPinHigh(gpio_pin_rx, start, 15ll)) { 
+      // Keep track of usec_release as it is an indicator for the recovery time
+      usec_release = usecPassedSince(start);
+      if (Dallas_waitForPinLow(gpio_pin_rx, start, 60ll)) {
+        // t_PDH 15 ... 60 usec 
+        // t_PDL 60 ... 240 usec 
+        presence_start = usecPassedSince(start);
+        if (presence_start > 15ll &&
+            Dallas_waitForPinHigh(gpio_pin_rx, getMicros64(), 240ll)) {
+          presence_end = usecPassedSince(start);
+          // Set the pin high so we have a clear starting level on the next write.
+          Dallas_pinHigh;
 
-    bool waiting_for_presence = true;
+          // Enable interrupts again as soon as timing critical section is done
+          ISR_interrupts();
 
-    while ((usec_passed < 480) && waiting_for_presence) {
-      usec_passed = usecPassedSince(start);
+          const long presence_duration = presence_end - presence_start;
 
-      const bool pin_state = !!DIRECT_pinRead(gpio_pin_rx);
-
-      if (usec_release == 0) {
-        if (pin_state) {
-          // Pin has been released
-          usec_release = usec_passed;
+          if (presence_duration >= 60 && presence_duration < 240) { 
+            // t_RSTH = 480 usec
+            const int64_t timeLeft = 480 - usecPassedSince(start);
+            if (timeLeft > 0) {
+              delayMicroseconds(timeLeft);
+            }
+  
+            return 1; 
+          }
         }
-      } else if (presence_start == 0) {
-        if (!pin_state) {
-          // Presence condition started
-          presence_start = usec_passed;
-        }
-      } else if (presence_end == 0) {
-        if (pin_state) {
-          // Presence condition ended
-          presence_end = usec_passed;
-        }
-      } else {
-        // Set the pin high so we have a clear starting level on the next write.
-        Dallas_pinHigh;
-
-//        waiting_for_presence = false;
-        delayMicroseconds(4);
-      }
-      delayMicroseconds(2);
+      }          
     }
   }
-
   // Set the pin high, just in case we have a (single) parasitic powered sensor
   Dallas_pinHigh;
 
   ISR_interrupts();
-
-  if (presence_end != 0) {
-    const long presence_duration = presence_end - presence_start;
-
-    if (presence_duration > 60) { return 1; }
-  }
   return 0;
 }
 
@@ -1011,6 +1001,9 @@ uint8_t Dallas_read_bit(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
   uint64_t start = 0;
   uint8_t  r     = Dallas_read_bit_ISR(gpio_pin_rx, gpio_pin_tx, start);
 
+  // Recovery time
+  delayMicroseconds(2 * usec_release + 10);
+/*
   while (usecPassedSince(start) < 60ll) {
     // Allow for some 
     // Wait for another 45 usec
@@ -1020,6 +1013,7 @@ uint8_t Dallas_read_bit(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
     // Read value. Typically the sensor keeps the level low for 27 usec.
     // Wait for 55 usec => complete cycle = 6 + 9 + 55 = 70 usec.
   }
+*/
   return r;
 }
 
@@ -1035,7 +1029,7 @@ uint8_t DALLAS_IRAM_ATTR Dallas_read_bit_ISR(
     start = getMicros64();
 
     Dallas_pinLow;
-    delayMicroseconds(1);
+    delayMicroseconds(2);
 
     // Set to 'input', state will be pulled high by pull-up resistor
     // This will take t_RC, which is typically 2 - 3 usec.
@@ -1043,19 +1037,20 @@ uint8_t DALLAS_IRAM_ATTR Dallas_read_bit_ISR(
     // otherwise it is apparently be pulled low by the sensor
     Dallas_pinInput;
 
-    while (r == 0 && usecPassedSince(start) < 15ll) {
+    if (Dallas_waitForPinHigh(gpio_pin_rx, start, 15ll)) {
       // Wait for max 15 usec to have a high level
-      r = DIRECT_pinRead(gpio_pin_rx);
+      r = 1;
     }
 
     ISR_interrupts();
   }
 
-  while (DIRECT_pinRead(gpio_pin_rx) == 0 && usecPassedSince(start) < 60ll) {
-    // Wait for another 45 usec to have a high level
+  if (r == 0) {
+    // Wait upto 60 usec to have a high level
     // Pin should be released within 15 ... 60 usec from start of read slot.
     // We must make sure we don't try to do a strong pull-up 
     // while the sensor is still trying to pull-down.
+    Dallas_waitForPinHigh(gpio_pin_rx, start, 60ll);
   }
   // Pull high again so we can support parasite mode for 1 sensor
   // Sending out a high signal level is stronger than a pull-up resistor can supply
@@ -1072,15 +1067,15 @@ void Dallas_write_bit(uint8_t v, int8_t gpio_pin_rx, int8_t gpio_pin_tx)
   if (gpio_pin_tx == -1) { return; }
 
   // Determine times in usec for high and low
-  // write 1: low 6 usec, high 64 usec
-  // write 0: low 60 usec, high 10 usec
-  const long low_time  = (v & 1) ? 1 : 60;
-  const long high_time = (v & 1) ? 60 : 10;
+  // write 1: low 2 usec, high 64 usec
+  // write 0: low 60 usec, high 20 usec
+  // High time is based on the recovery time, which is detected during reset
+  const long low_time  = (v & 1) ? 2 : 60;
+  const long high_time = (v & 1) ? 60 : (2 * usec_release + 10);  // Recovery time
   uint64_t   start     = 0;
 
   Dallas_write_bit_ISR(v, gpio_pin_rx, gpio_pin_tx, low_time, high_time, start);
-
-  while (usecPassedSince(start) < high_time) {
+  while (usecPassedSince(start) <  high_time) {
     // output remains high
   }
 }
