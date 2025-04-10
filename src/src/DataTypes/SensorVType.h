@@ -50,6 +50,7 @@ enum class Output_Data_type_t : uint8_t {
    To get the actual output values for a task, use getValueCountForTask
 \*********************************************************************************************/
 uint8_t getValueCountFromSensorType(Sensor_VType sensorType);
+uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log);
 
 const __FlashStringHelper * getSensorTypeLabel(Sensor_VType sensorType);
 

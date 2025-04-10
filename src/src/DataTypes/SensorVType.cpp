@@ -7,7 +7,10 @@
    Only use this function to determine nr of output values when changing output type of a task
    To get the actual output values for a task, use getValueCountForTask
 \*********************************************************************************************/
-uint8_t getValueCountFromSensorType(Sensor_VType sensorType)
+uint8_t getValueCountFromSensorType(Sensor_VType sensorType) {
+  return getValueCountFromSensorType(sensorType, true);
+}
+uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log)
 {
   switch (sensorType)
   {
@@ -54,7 +57,9 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType)
     case Sensor_VType::SENSOR_TYPE_NOT_SET:  break;
   }
   #ifndef BUILD_NO_DEBUG
-  addLog(LOG_LEVEL_ERROR, F("getValueCountFromSensorType: Unknown sensortype"));
+  if (log) {
+    addLog(LOG_LEVEL_ERROR, F("getValueCountFromSensorType: Unknown sensortype"));
+  }
   #endif // ifndef BUILD_NO_DEBUG
   return 0;
 }
