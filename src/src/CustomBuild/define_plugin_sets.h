@@ -1772,6 +1772,9 @@ To create/register a plugin, you have to :
   #if !defined(USES_P176) && defined(ESP32)
     #define USES_P176   // Communication - Victron VE.Direct
   #endif
+  #if !defined(USES_P180) && defined(ESP32)
+    #define USES_P180   // Generic - I2C Generic
+  #endif
 
 #endif // ifdef PLUGIN_ENERGY_COLLECTION
 
@@ -1880,6 +1883,9 @@ To create/register a plugin, you have to :
   #endif
   #if !defined(USES_P165) && defined(ESP32)
     #define USES_P165   // Display - NeoPixel (7-Segment)
+  #endif
+  #if !defined(USES_P180) && defined(ESP32)
+    #define USES_P180   // Generic - I2C Generic
   #endif
 #endif // ifdef PLUGIN_DISPLAY_COLLECTION
 
@@ -2054,6 +2060,9 @@ To create/register a plugin, you have to :
   #endif
   #if !defined(USES_P178) && defined(ESP32)
     #define USES_P178   // Extra IO - LU9685 Servo controller
+  #endif
+  #if !defined(USES_P180) && defined(ESP32)
+    #define USES_P180   // Generic - I2C Generic
   #endif
 
   
