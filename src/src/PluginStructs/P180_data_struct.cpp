@@ -378,7 +378,7 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
     }
 
     if (!key.isEmpty()) {
-      _commandCache.insert_or_assign(key, commands);
+      _commandCache.emplace(key, commands);
 
       if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
         addLog(LOG_LEVEL_INFO, strformat(F("P180 : Insert '%s' into cache with %d commands."), name.c_str(), commands.size()));
