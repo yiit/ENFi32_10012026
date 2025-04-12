@@ -9,7 +9,7 @@
    Check if string is valid float
  \*********************************************************************************************/
 bool isValidFloat(float f) {
-  return !isnan(f) && !isinf(f);
+  return !isnanf(f) && !isinff(f);
 }
 
 bool isValidDouble(ESPEASY_RULES_FLOAT_TYPE f) {
