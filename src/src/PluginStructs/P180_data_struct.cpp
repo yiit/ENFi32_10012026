@@ -59,6 +59,12 @@ P180_Command_struct::P180_Command_struct(P180_Command_e    _command,
   }
 }
 
+P180_Command_struct::~P180_Command_struct() {
+  data_b.clear();
+  data_w.clear();
+  calculation.clear();
+}
+
 int64_t P180_Command_struct::getIntValue() {
   int64_t data{};
 
@@ -103,7 +109,7 @@ String P180_Command_struct::getHexValue() {
 # ifndef LIMIT_BUILD_SIZE
 String P180_Command_struct::toString() {
   char cmd[10]{};
-  char cmdS[10]{};
+  char cmdS[3]{};
   char fmt[10]{};
 
   GetTextIndexed(cmd,  sizeof(cmd),  static_cast<uint32_t>(command), P180_commandsLong);
@@ -139,7 +145,9 @@ P180_data_struct::P180_data_struct(struct EventStruct *event) {
 }
 
 P180_data_struct::~P180_data_struct() {
-  //
+  _commandCache.clear();
+  _commands.clear();
+  _strings->clear();
 }
 
 bool P180_data_struct::plugin_init(struct EventStruct *event) {
@@ -218,7 +226,7 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
 
   const String key = parseString(name, 1);
 
-  if (!key.isEmpty() && _commandCache.contains(key) && !update) {
+  if (!key.isEmpty() && (_commandCache.count(key) == 1) && !update) {
     commands = _commandCache.find(key)->second;
 
     if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
@@ -865,7 +873,11 @@ bool P180_data_struct::executeI2CCommands() {
       (_taskIndex != INVALID_TASK_INDEX) &&
       (_varIndex != INVALID_TASKVAR_INDEX) &&
       !_valueIsSet) {
+    # if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE && FEATURE_EXTENDED_TASK_VALUE_TYPES
+    UserVar.setDouble(_taskIndex, _varIndex, _value);
+    # else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE && FEATURE_EXTENDED_TASK_VALUE_TYPES
     UserVar.setFloat(_taskIndex, _varIndex, _value);
+    # endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE && FEATURE_EXTENDED_TASK_VALUE_TYPES
   }
 
   return result;

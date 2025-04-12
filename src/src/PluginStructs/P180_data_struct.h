@@ -83,7 +83,7 @@ enum class P180_CommandState_e :uint8_t {
 };
 
 struct P180_Command_struct {
-  P180_Command_struct() = delete;
+  ~P180_Command_struct();
 
   P180_Command_struct(P180_Command_e    _command,
                       P180_DataFormat_e _format,

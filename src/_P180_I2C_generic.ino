@@ -36,8 +36,10 @@
  * write.<fmt>.<reg>.<data>[.<data>...]
  * eval
  * value.<valueIndex> (1..4)
- * calc.<calculation> Like Rules, extra available vars: %value%, %pvalue%, %h%, %b0%..%b<n>%, %w0%..%w<n>%
+ * calc.<calculation> Like Rules, extra available vars: %value%, %pvalue%, %h%, %b0%..%b<n>%, %bx0%..%bx<n>%, %w0%..%w<n>%, %wx0%..%wx<n>%
  * delay.<msec> (range: 0..500)
+ * enable.<state> (0 or 1)
+ * reset.<state>.<msec> (state = 0 or 1, msec = range: 0..500)
  *
  * fmt options:
  * u8 : uint8_t (1 byte)
@@ -159,21 +161,13 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
 
       sensorTypeHelper_webformLoad_allTypes(event, P180_SENSOR_TYPE_INDEX);
 
-      int sizeSingle = 0;
-
-      for (uint8_t i = P180_START_VTYPE; i < 255; ++i) {
-        if (getValueCountFromSensorType(static_cast<Sensor_VType>(i), false) == 1) {
-          ++sizeSingle;
-        }
-      }
-      uint8_t singleOptions[sizeSingle];
-      uint8_t idx = 0;
+      constexpr uint8_t    maxVType = static_cast<uint8_t>(Sensor_VType::SENSOR_TYPE_NOT_SET);
+      std::vector<uint8_t> singleOptions;
 
       // Build a list of all single-value available value VTypes from PR #5199
-      for (uint8_t i = P180_START_VTYPE; i < 255; ++i) {
+      for (uint8_t i = P180_START_VTYPE; i < maxVType; ++i) {
         if (getValueCountFromSensorType(static_cast<Sensor_VType>(i), false) == 1) {
-          singleOptions[idx] = i;
-          ++idx;
+          singleOptions.push_back(i);
         }
       }
       String strings[P180_CUSTOM_BUFFER_SIZE];
@@ -191,11 +185,13 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
                      P180_MAX_COMMAND_LENGTH);
       addUnit(strformat(F("%d of %d used"), strings[P180_BUFFER_ENTRY_EXIT].length(), P180_MAX_COMMAND_LENGTH));
 
-      addFormSubHeader(F("I2C Commands"));
+      addFormCheckBox(F("Parsing & executing log (INFO)"), F("plog"), P180_LOG_DEBUG == 1);
 
       for (uint8_t i = 0; i < P180_NR_OUTPUT_VALUES; ++i) {
+        addFormSubHeader(strformat(F("Value %d I2C Commands"), i + 1));
+
         // type
-        sensorTypeHelper_webformLoad(event, P180_VALUE_OFFSET + i, sizeSingle, singleOptions, false, i + 1);
+        sensorTypeHelper_webformLoad(event, P180_VALUE_OFFSET + i, singleOptions.size(), &singleOptions[0], false, i + 1);
 
         // Name
         addFormTextBox(strformat(F("Cache-Name %d (optional)"), i + 1),
@@ -210,8 +206,6 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
                        P180_MAX_COMMAND_LENGTH);
         addUnit(strformat(F("%d of %d used"), strings[P180_BUFFER_START_COMMANDS + i].length(), P180_MAX_COMMAND_LENGTH));
       }
-
-      addFormCheckBox(F("Parsing & executing log (INFO)"), F("plog"), P180_LOG_DEBUG == 1);
 
       success = true;
       break;
@@ -260,7 +254,7 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
           success = P180_data->plugin_init(event);
         }
       } else {
-        addLog(LOG_LEVEL_ERROR, F("P180 : I2C address not set."))
+        addLog(LOG_LEVEL_ERROR, F("P180 : I2C address not set."));
       }
 
       break;
