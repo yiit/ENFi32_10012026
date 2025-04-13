@@ -1109,7 +1109,7 @@ uint8_t DALLAS_IRAM_ATTR Dallas_read_bit_ISR(
   // otherwise it is apparently be pulled low by the sensor
   Dallas_pinInput;
 
-  if (Dallas_waitForPinHigh(gpio_pin_rx, start, 15ll)) {
+  if (Dallas_waitForPinHigh(gpio_pin_rx, start, 15ll + (usec_release / 2))) {
     // Wait for max 15 usec to have a high level
     r = 1;
   }
@@ -1139,11 +1139,11 @@ void Dallas_write_bit(uint8_t v, int8_t gpio_pin_rx, int8_t gpio_pin_tx)
   if (gpio_pin_tx == -1) { return; }
 
   // Determine times in usec for high and low
-  // write 1: low 2 usec, high 64 usec
+  // write 1: low 6 usec, high 64 usec  (no less than 6 usec low, or else scanning will no longer work)
   // write 0: low 60 usec, high 20 usec
   // High time is based on the recovery time, which is detected during reset
   const long low_time  = (v & 1) ? 6 : 60;
-  const long high_time = (v & 1) ? 60 : (2 * usec_release + 10); // Recovery time
+  const long high_time = (v & 1) ? (60 + usec_release) : (2 * usec_release + 10); // Recovery time
   uint64_t   start     = 0;
 
   Dallas_write_bit_ISR(v, gpio_pin_rx, gpio_pin_tx, low_time, high_time, start);
