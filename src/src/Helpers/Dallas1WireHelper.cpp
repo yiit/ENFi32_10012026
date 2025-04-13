@@ -118,7 +118,7 @@ int Dallas_measure_rise_time(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
     if (duration >= 0) {
       if (start != pre_start) {
         // Assume pin is set to input halfway between pre_start and start
-        const uint64_t diff = (pre_start - start) >> 1;
+        const int64_t diff = (pre_start - start) / 2;
 
         if (diff < duration) {
           duration -= diff;

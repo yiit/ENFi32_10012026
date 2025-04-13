@@ -26,12 +26,21 @@ unsigned long str2int(const char *string)
 \*********************************************************************************************/
 String toString(const float& value, unsigned int decimalPlaces, bool trimTrailingZeros)
 {
+#ifdef ESP32
   if (isnanf(value)) {
     return F("NaN");
   }
   if (isinff(value)) {
     return F("Inf");
   }
+#else
+  if (isnan(value)) {
+    return F("NaN");
+  }
+  if (isinf(value)) {
+    return F("Inf");
+  }
+#endif
   const double value_d(value);
   return doubleToString(value_d, decimalPlaces, trimTrailingZeros);
 }
