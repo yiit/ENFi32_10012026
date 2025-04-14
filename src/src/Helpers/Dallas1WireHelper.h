@@ -124,11 +124,12 @@ bool Dallas_is_parasite(const uint8_t ROM[8],
                         int8_t        gpio_pin_rx,
                         int8_t        gpio_pin_tx,
                         bool        & isParasitePowered);
+
 /*
-void Dallas_startConversion(const uint8_t ROM[8],
+   void Dallas_startConversion(const uint8_t ROM[8],
                             int8_t        gpio_pin_rx,
                             int8_t        gpio_pin_tx);
-*/
+ */
 
 /*********************************************************************************************\
 *  Dallas data from scratchpad
@@ -210,8 +211,8 @@ void Dallas_write(uint8_t ByteToWrite,
 \*********************************************************************************************/
 uint8_t Dallas_read_bit(int8_t gpio_pin_rx,
                         int8_t gpio_pin_tx);
-uint8_t Dallas_read_bit_ISR(int8_t gpio_pin_rx,
-                            int8_t gpio_pin_tx,
+uint8_t Dallas_read_bit_ISR(int8_t    gpio_pin_rx,
+                            int8_t    gpio_pin_tx,
                             uint64_t& start);
 
 /*********************************************************************************************\
