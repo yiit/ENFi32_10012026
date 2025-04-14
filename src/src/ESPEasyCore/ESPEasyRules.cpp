@@ -263,7 +263,7 @@ bool get_next_inner_bracket(const String& line, int& startIndex, int& closingInd
     return false; 
   }
 
-  for (int i = (closingIndex - 1); i > startIndex; --i) {
+  for (int i = (closingIndex - 1); (i >= startIndex) && (i >= 0); --i) {
     if (line[i] == openingBracket) {
       startIndex = i;
       return true;
