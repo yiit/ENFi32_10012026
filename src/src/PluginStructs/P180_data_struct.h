@@ -53,6 +53,7 @@ enum class P180_Command_e : uint8_t {
   Delay,           // 'd'
   EnableGPIO,      // 'l'
   ResetGPIO,       // 'z'
+  If,              // 'i'
 };
 
 enum class P180_DataFormat_e : uint8_t {
@@ -78,8 +79,9 @@ enum class P180_DataFormat_e : uint8_t {
 enum class P180_CommandState_e :uint8_t {
   Idle = 0u,
   Processing,
-  StartingDelay,
+  StartingDelay,   // Interrupts the command execution loop
   WaitingForDelay,
+  ConditionalExit, // Cancels further command execution
 };
 
 struct P180_Command_struct {

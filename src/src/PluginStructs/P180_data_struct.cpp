@@ -6,9 +6,9 @@
 
 // These commands (not case-sensitive) must have the same order as the P180_Commands_e enum class
 const char P180_commands[] PROGMEM =
-  "n|g|p|r|w|s|t|e|c|v|d|l|z|";
+  "n|g|p|r|w|s|t|e|c|v|d|l|z|i|";
 const char P180_commandsLong[] PROGMEM =
-  "nop|get|put|read|write|read16|write16|eval|calc|value|delay|enable|reset|";
+  "nop|get|put|read|write|read16|write16|eval|calc|value|delay|enable|reset|if|";
 
 // Supported data formats, _ == undefined, not processed
 const char P180_dataFormats[] PROGMEM =
@@ -296,6 +296,7 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
             case P180_Command_e::Write:     // put - p.<format>.<value>
               break;
             case P180_Command_e::Calculate: // calc - c.<calculation>
+            case P180_Command_e::If:        // if - i.<calculation>
               fmt         = P180_DataFormat_e::undefined;
               val         = 0;
               calculation = args[arg - 1];
@@ -745,28 +746,35 @@ bool P180_data_struct::executeI2CCommands() {
         result = true;
         break;
       case P180_Command_e::Calculate:
+      case P180_Command_e::If:
+
+        result = true;
 
         if (!_it->calculation.isEmpty()) {
           String toCalc(_it->calculation);
 
-          toCalc.replace(F("%pvalue%"), toString(_value));                                         // %pvalue%
+          toCalc.replace(F("%pvalue%"), toString(_value));                       // %pvalue%
 
           if (_evalIsSet) {
-            toCalc.replace(F("%value%"), toString(_evalCommand->getIntValue()));                   // %value%
+            toCalc.replace(F("%value%"), toString(_evalCommand->getIntValue())); // %value%
 
             if (P180_DataFormat_e::bytes == _evalCommand->format) {
-              toCalc.replace(F("%h%"), _evalCommand->getHexValue(true));                           // %h%
+              toCalc.replace(F("%h%"), _evalCommand->getHexValue(true));         // %h%
 
-              for (uint8_t i = 0; i < _evalCommand->data_b.size(); ++i) {
-                toCalc.replace(strformat(F("%%b%d%%"), i),  String(_evalCommand->data_b[i]));      // %b<n>%
-                toCalc.replace(strformat(F("%%bx%d%%"), i), formatToHex(_evalCommand->data_b[i])); // %bx<n>%
+              if (toCalc.indexOf(F("%b")) > -1) {
+                for (uint8_t i = 0; i < _evalCommand->data_b.size(); ++i) {
+                  toCalc.replace(strformat(F("%%b%d%%"), i),  String(_evalCommand->data_b[i]));      // %b<n>%
+                  toCalc.replace(strformat(F("%%bx%d%%"), i), formatToHex(_evalCommand->data_b[i])); // %bx<n>%
+                }
               }
             } else if (P180_DataFormat_e::words == _evalCommand->format) {
-              toCalc.replace(F("%%h%%"), _evalCommand->getHexValue());                             // %h%
+              toCalc.replace(F("%h%"), _evalCommand->getHexValue()); // %h%
 
-              for (uint8_t i = 0; i < _evalCommand->data_w.size(); ++i) {
-                toCalc.replace(strformat(F("%%w%d%%"), i),  String(_evalCommand->data_w[i]));      // %w<n>%
-                toCalc.replace(strformat(F("%%wx%d%%"), i), formatToHex(_evalCommand->data_w[i])); // %wx<n>%
+              if (toCalc.indexOf(F("%w")) > -1) {
+                for (uint8_t i = 0; i < _evalCommand->data_w.size(); ++i) {
+                  toCalc.replace(strformat(F("%%w%d%%"), i),  String(_evalCommand->data_w[i]));      // %w<n>%
+                  toCalc.replace(strformat(F("%%wx%d%%"), i), formatToHex(_evalCommand->data_w[i])); // %wx<n>%
+                }
               }
             }
           }
@@ -774,10 +782,20 @@ bool P180_data_struct::executeI2CCommands() {
           ESPEASY_RULES_FLOAT_TYPE tmp{};
 
           if (Calculate(newCalc, tmp) == CalculateReturnCode::OK) {
-            _value = tmp;
+            if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
+              addLog(LOG_LEVEL_INFO, strformat(F("P180 : Calculation result: %s"), doubleToString(tmp).c_str()));
+            }
+
+            if (P180_Command_e::If == _it->command) {
+              if (essentiallyZero(tmp)) { // 0 = false => cancel execution
+                commandState = P180_CommandState_e::ConditionalExit;
+                result       = false;     // PLUGIN_READ failed
+              }
+            } else {
+              _value = tmp;
+            }
           }
         }
-        result = true;
         break;
       case P180_Command_e::Eval:
 
@@ -898,7 +916,7 @@ bool P180_data_struct::plugin_read(struct EventStruct *event) {
     _varIndex = _loop + 1;
   }
 
-  while (P180_CommandState_e::StartingDelay != commandState && _loop < _loopMax) {
+  while (P180_CommandState_e::StartingDelay != commandState && P180_CommandState_e::ConditionalExit != commandState && _loop < _loopMax) {
     if (!_commands.empty()) {
       result &= executeI2CCommands();
     }
@@ -910,7 +928,7 @@ bool P180_data_struct::plugin_read(struct EventStruct *event) {
     }
   }
 
-  if (P180_CommandState_e::Processing == commandState) {
+  if ((P180_CommandState_e::Processing == commandState) || (P180_CommandState_e::ConditionalExit == commandState)) {
     commandState = P180_CommandState_e::Idle;
     _commands.clear();
   } else if (P180_CommandState_e::StartingDelay == commandState) {

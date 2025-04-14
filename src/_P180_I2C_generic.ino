@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-04-13 tonhuisman: Add 'if' command, some optimizations
  * 2025-04-10 tonhuisman: First version made available. Most plugin features implemented, few todos to resolve.
  * 2025-03-27 tonhuisman: Start plugin development
  */
@@ -19,8 +20,9 @@
  * w : write = Write to a register
  * s : read16 = Read from a 16 bit register (not supported yet)
  * t : write16 = Write to a 16 bit register (not supported yet)
- * e : eval = Set previous command data to eval for calc command
+ * e : eval = Set previous command data to eval for calc and/or if commands
  * c : calc = Calculate a result from eval data retrieved
+ * i : if = Calculate a result from eval data and cancel execution if the result is 0
  * v : value = Put current result in Value
  * d : delay = Delay msec. until next command is executed (asynchronous/non-blocking when > 10 msec)
  * q : checksum = Calculate & validate checksum (not supported yet)
@@ -37,6 +39,7 @@
  * eval
  * value.<valueIndex> (1..4)
  * calc.<calculation> Like Rules, extra available vars: %value%, %pvalue%, %h%, %b0%..%b<n>%, %bx0%..%bx<n>%, %w0%..%w<n>%, %wx0%..%wx<n>%
+ * if.<calculation> Similar to 'calc', when the calculation-result is 0 execution is cancelled
  * delay.<msec> (range: 0..500)
  * enable.<state> (0 or 1)
  * reset.<state>.<msec> (state = 0 or 1, msec = range: 0..500)
