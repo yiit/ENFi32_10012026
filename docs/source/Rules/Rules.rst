@@ -1454,6 +1454,24 @@ With:
 * ``<low>`` Lower end of range, if it is representing a valid numerical value.
 * ``<high>`` Higher end of range, if it is representing a valid numerical value.
 
+crc8/crc32
+^^^^^^^^^^
+
+(Added: 2025-04-15)
+
+Calculates the crc8 / crc32 for a range of bytes provided in hex format.
+
+Usage: ``{crc8:<hex_bytes_range>}`` or ``{crc32:<hex_bytes_range>}``
+
+With:
+
+* ``<hex_bytes_range>`` Text and/or hex byte(s) (having 0x prefix) that will be converted to bytes and a crc calculated from. If spaces, commas, colons etc. are to be used, the bytes range should be quoted.
+
+Result:
+
+* ``crc8``: 8-bit checksum
+* ``crc32``: 32-bit checksum
+
 Math Functions
 --------------
 

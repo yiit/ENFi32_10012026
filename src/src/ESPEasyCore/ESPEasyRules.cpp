@@ -14,6 +14,7 @@
 #include "../Globals/Plugins_other.h"
 #include "../Globals/RulesCalculate.h"
 #include "../Globals/Settings.h"
+#include "../Helpers/CRC_functions.h"
 #include "../Helpers/ESPEasy_Storage.h"
 #include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/FS_Helper.h"
@@ -431,6 +432,23 @@ bool parse_math_functions(const String& cmd_s_lower, const String& arg1, const S
         farg3 = tmp;
       }
       result = constrain(farg1, farg2, farg3);
+    } else {
+      return false;
+    }
+  } else if (cmd_s_lower.startsWith("crc")) {
+    std::vector<uint8_t> argument = parseHexTextData(arg1, 1);
+    const String crctype          = cmd_s_lower.substring(3);
+
+    if (argument.size() > 0) {
+      if (equals(crctype, F("8"))) {
+        result = calc_CRC8(&argument[0], argument.size());
+      // } else if (equals(crctype, F("16"))) { // FIXME crc16 not supported until needed/used/tested
+      //   result = calc_CRC16((const char *)argument.data(), argument.size());
+      } else if (equals(crctype, F("32"))) {
+        result = calc_CRC32(&argument[0], argument.size());
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
