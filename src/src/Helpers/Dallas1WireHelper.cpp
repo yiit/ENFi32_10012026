@@ -1106,7 +1106,8 @@ uint8_t DALLAS_IRAM_ATTR Dallas_read_bit_ISR(
 
   Dallas_pinLow;
   start = getMicros64();
-  delayMicroseconds(6);
+  //delayMicroseconds(1);
+  while (usecPassedSince(start) < 2ll) {}
 
   // Set to 'input', state will be pulled high by pull-up resistor
   // This will take t_RC, which is typically 2 - 3 usec.
