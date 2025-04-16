@@ -35,7 +35,7 @@ inline long timePassedSince(const uint32_t& timestamp) {
 }
 
 // Long term usec calculations
-inline int64_t usecPassedSince(volatile uint64_t& timestamp) {
+inline int64_t usecPassedSince(ESPEASY_VOLATILE(uint64_t)& timestamp) {
   return timeDiff64(timestamp, getMicros64());
 }
 
@@ -48,15 +48,15 @@ inline int64_t usecPassedSince(uint64_t& timestamp) { //-V669
 }
 
 // Fast short-term usec calculations
-inline int32_t usecPassedSince(volatile uint32_t& timestamp) {
+inline int32_t usecPassedSince_fast(ESPEASY_VOLATILE(uint32_t)& timestamp) {
   return timeDiff(timestamp, micros());
 }
 
-inline int32_t usecPassedSince(const uint32_t& timestamp) {
+inline int32_t usecPassedSince_fast(const uint32_t& timestamp) {
   return timeDiff(timestamp, micros());
 }
 
-inline int32_t usecPassedSince(uint32_t& timestamp) { //-V669
+inline int32_t usecPassedSince_fast(uint32_t& timestamp) { //-V669
   return timeDiff(timestamp, micros());
 }
 

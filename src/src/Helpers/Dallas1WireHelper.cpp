@@ -69,7 +69,7 @@ int32_t DALLAS_IRAM_ATTR Dallas_measureWaitForPinState(uint32_t gpio_pin_rx, uin
   int32_t passed{};
 
   do {
-    passed = usecPassedSince(start_usec);
+    passed = usecPassedSince_fast(start_usec);
   } while (passed < timeout_usec &&
          (!DIRECT_pinRead_ISR(gpio_pin_rx) == newState)); // Using '!' to do a quick cast to bool
 
@@ -868,7 +868,7 @@ uint8_t Dallas_reset(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
 
         if ((presence_duration >= 60) && (presence_duration < (240 /* + usec_release*/))) {
           // t_RSTH = 480 usec
-          const int32_t timeLeft = 480 - usecPassedSince(start);
+          const int32_t timeLeft = 480 - usecPassedSince_fast(start);
 
           if (timeLeft > 0) {
             delayMicroseconds(timeLeft);
@@ -1099,7 +1099,7 @@ uint8_t Dallas_read_bit(int8_t gpio_pin_rx, int8_t gpio_pin_tx)
   // Recovery time, make sure we at least wait for 10 usec + RC-rise time
   delayMicroseconds(2 * usec_release + 10);
 
-  while (usecPassedSince(start) < 60) {
+  while (usecPassedSince_fast(start) < 60) {
     // Allow for some
     // Wait for another 45 usec
     // Complete read cycle:
@@ -1126,7 +1126,7 @@ uint8_t DALLAS_IRAM_ATTR Dallas_read_bit_ISR(
   // Make sure there is at least 5 usec 'low' level.
   // Minimum state by Infineon, however other brands, like Analog, 
   // claim lower minimum.
-  while (usecPassedSince(start) < 4) {}
+  while (usecPassedSince_fast(start) < 4) {}
 
   // Set to 'input', state will be pulled high by pull-up resistor
   // This will take t_RC, which is typically 2 - 3 usec.
@@ -1177,7 +1177,7 @@ void Dallas_write_bit(uint8_t v, int8_t gpio_pin_rx, int8_t gpio_pin_tx)
   // Minimum Recovery time
   delayMicroseconds(10);
 
-  while (usecPassedSince(start) <  high_time) {
+  while (usecPassedSince_fast(start) <  high_time) {
     // output remains high
   }
 }
@@ -1193,7 +1193,7 @@ void DALLAS_IRAM_ATTR Dallas_write_bit_ISR(uint8_t   v,
   start = micros();
   Dallas_pinLow;
 
-  while (usecPassedSince(start) < low_time) {
+  while (usecPassedSince_fast(start) < low_time) {
     // output remains low
   }
   start = micros();
