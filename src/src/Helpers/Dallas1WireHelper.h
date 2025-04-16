@@ -65,9 +65,9 @@ extern uint8_t LastDeviceFlag;
 /*********************************************************************************************\
    Timings for diagnostics regarding the reset + presence detection
 \*********************************************************************************************/
-extern int64_t usec_release;   // Time needed for the line to rise (typ: < 1 usec)
-extern int64_t presence_start; // Start presence condition after release by master (typ: 30 usec)
-extern int64_t presence_end;   // End presence condition (minimal 60 usec, typ: 100 usec)
+extern int32_t usec_release;   // Time needed for the line to rise (typ: < 1 usec)
+extern int32_t presence_start; // Start presence condition after release by master (typ: 30 usec)
+extern int32_t presence_end;   // End presence condition (minimal 60 usec, typ: 100 usec)
 
 
 /*********************************************************************************************\
@@ -213,7 +213,7 @@ uint8_t Dallas_read_bit(int8_t gpio_pin_rx,
                         int8_t gpio_pin_tx);
 uint8_t Dallas_read_bit_ISR(int8_t    gpio_pin_rx,
                             int8_t    gpio_pin_tx,
-                            uint64_t& start);
+                            uint32_t& start);
 
 /*********************************************************************************************\
 *  Dallas Write bit
@@ -228,7 +228,7 @@ void Dallas_write_bit_ISR(uint8_t   v,
                           int8_t    gpio_pin_tx,
                           long      low_time,
                           long      high_time,
-                          uint64_t& start);
+                          uint32_t& start);
 
 /*********************************************************************************************\
 *  Standard function to initiate addressing a sensor.

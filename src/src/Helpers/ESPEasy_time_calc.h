@@ -34,6 +34,7 @@ inline long timePassedSince(const uint32_t& timestamp) {
   return timeDiff(timestamp, millis());
 }
 
+// Long term usec calculations
 inline int64_t usecPassedSince(volatile uint64_t& timestamp) {
   return timeDiff64(timestamp, getMicros64());
 }
@@ -45,6 +46,20 @@ inline int64_t usecPassedSince(const uint64_t& timestamp) {
 inline int64_t usecPassedSince(uint64_t& timestamp) { //-V669
   return timeDiff64(timestamp, getMicros64());
 }
+
+// Fast short-term usec calculations
+inline int32_t usecPassedSince(volatile uint32_t& timestamp) {
+  return timeDiff(timestamp, micros());
+}
+
+inline int32_t usecPassedSince(const uint32_t& timestamp) {
+  return timeDiff(timestamp, micros());
+}
+
+inline int32_t usecPassedSince(uint32_t& timestamp) { //-V669
+  return timeDiff(timestamp, micros());
+}
+
 
 // Check if a certain timeout has been reached.
 inline bool timeOutReached(unsigned long timer) {
