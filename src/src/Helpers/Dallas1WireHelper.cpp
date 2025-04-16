@@ -238,7 +238,7 @@ void Dallas_addr_selector_webform_load(taskIndex_t TaskIndex, int8_t gpio_pin_rx
     scan_res.push_back(Dallas_addr_to_uint64(tmpAddress));
     bool hasFixedResolution = false;
     Dallas_getResolution(tmpAddress, gpio_pin_rx, gpio_pin_tx, hasFixedResolution);
-    fixed_res.push_back(hasFixedResolution);
+    fixed_res.push_back(hasFixedResolution);    
   }
 
   for (uint8_t var_index = 0; var_index < nrVariables; ++var_index) {
@@ -259,7 +259,15 @@ void Dallas_addr_selector_webform_load(taskIndex_t TaskIndex, int8_t gpio_pin_rx
     for (uint8_t index = 0; index < scan_res.size(); ++index) {
       uint8_t tmpAddress[8]{};
       Dallas_uint64_to_addr(scan_res[index], tmpAddress);
-      String option = Dallas_format_address(tmpAddress, fixed_res[index]);
+
+      bool parasitePowered = false;
+      Dallas_is_parasite(tmpAddress, gpio_pin_rx, gpio_pin_tx, parasitePowered);
+  
+      String option;
+      if (parasitePowered) {
+        option += F("[P] ");
+      }
+      option += Dallas_format_address(tmpAddress, fixed_res[index]);
       auto   it     = addr_task_map.find(scan_res[index]);
 
       if (it != addr_task_map.end()) {
@@ -300,8 +308,14 @@ void Dallas_show_sensor_stats_webform_load(const Dallas_SensorData& sensor_data)
   addRowLabel(F("Samples Read Success"));
   addHtmlInt(sensor_data.read_success);
 
-  addRowLabel(F("Samples Read Init Failed"));
+  addRowLabel(F("Samples Sensor No Reply"));
   addHtmlInt(sensor_data.start_read_failed);
+
+  addRowLabel(F("Samples Sensor Power Lost"));
+  addHtmlInt(sensor_data.sensor_power_on_reset);
+
+  addRowLabel(F("Samples Read CRC error"));
+  addHtmlInt(sensor_data.read_CRC);
 
   addRowLabel(F("Samples Read Retry"));
   addHtmlInt(sensor_data.read_retry);
@@ -422,13 +436,13 @@ bool Dallas_is_parasite(const uint8_t ROM[8], int8_t gpio_pin_rx, int8_t gpio_pi
 /*********************************************************************************************\
 *  Dallas Read temperature from scratchpad
 \*********************************************************************************************/
-bool Dallas_readTemp(const uint8_t ROM[8], float *value, int8_t gpio_pin_rx, int8_t gpio_pin_tx)
+Dallas_read_result Dallas_readTemp(const uint8_t ROM[8], float *value, int8_t gpio_pin_rx, int8_t gpio_pin_tx)
 {
   int16_t DSTemp;
   uint8_t ScratchPad[12]{};
 
   if (!Dallas_address_ROM(ROM, gpio_pin_rx, gpio_pin_tx)) {
-    return false;
+    return Dallas_read_result::NoReply;
   }
   Dallas_write(0xBE, gpio_pin_rx, gpio_pin_tx); // Read scratchpad
 
@@ -486,7 +500,7 @@ bool Dallas_readTemp(const uint8_t ROM[8], float *value, int8_t gpio_pin_rx, int
 
 
     *value = 0;
-    return false;
+    return Dallas_read_result::CRCerr;
   }
 
   if ((ROM[0] == 0x28)     // DS18B20
@@ -498,21 +512,21 @@ bool Dallas_readTemp(const uint8_t ROM[8], float *value, int8_t gpio_pin_rx, int
 
     if (DSTemp == 0x550) { // power-on reset value
       *value = 0;
-      return false;
+      return Dallas_read_result::PowerOnResetValue;
     }
     *value = (float(DSTemp) * 0.0625f);
   }
   else if (ROM[0] == 0x10)       // DS1820 DS18S20
   {
     if (ScratchPad[0] == 0xaa) { // power-on reset value
-      return false;
+      return Dallas_read_result::PowerOnResetValue;
     }
     DSTemp = (ScratchPad[1] << 11) | ScratchPad[0] << 3;
     DSTemp = ((DSTemp & 0xfff0) << 3) - 16 +
              (((ScratchPad[7] - ScratchPad[6]) << 7) / ScratchPad[7]);
     *value = float(DSTemp) * 0.0078125f;
   }
-  return true;
+  return Dallas_read_result::OK;
 }
 
 # ifdef USES_P080
@@ -1319,26 +1333,41 @@ bool Dallas_SensorData::collect_value(int8_t gpio_rx, int8_t gpio_tx) {
     uint8_t tmpaddr[8];
     Dallas_uint64_to_addr(addr, tmpaddr);
 
-    if (!Dallas_readTemp(tmpaddr, &value, gpio_rx, gpio_tx)) {
-      ++read_retry;
+    uint8_t nrRetries = 2;
+    while (nrRetries) {
+      --nrRetries;
+      Dallas_read_result res = Dallas_readTemp(tmpaddr, &value, gpio_rx, gpio_tx);
+      switch (res) {
+        case Dallas_read_result::OK:
+          ++read_success;
+          lastReadError = false;
+          valueRead     = true;
+          return true;
+        case Dallas_read_result::PowerOnResetValue:
+          // No need to retry, sensor did reset
+          nrRetries = 0;
+          ++sensor_power_on_reset;
+          break;
+        case Dallas_read_result::CRCerr:
+          ++read_CRC;
+          ++read_retry;
+          break;
+        case Dallas_read_result::NoReply:
+          // No need to retry, sensor not found
+          nrRetries = 0;
+          ++start_read_failed;
+          break;  
 
-      if (!Dallas_readTemp(tmpaddr, &value, gpio_rx, gpio_tx)) {
-        ++read_failed;
-        lastReadError = true;
-
-        if (!parasitePowered) {
-          Dallas_is_parasite(tmpaddr, gpio_rx, gpio_tx, parasitePowered);
-        }
-
-        return false;
+      }
+      
+      if (!parasitePowered) {
+        Dallas_is_parasite(tmpaddr, gpio_rx, gpio_tx, parasitePowered);
       }
     }
-
-    ++read_success;
-    lastReadError = false;
-    valueRead     = true;
-    return true;
   }
+  valueRead     = false;
+  lastReadError = true;
+  ++read_failed;
   return false;
 }
 
@@ -1359,6 +1388,10 @@ bool Dallas_SensorData::check_sensor(int8_t gpio_rx, int8_t gpio_tx, int8_t res)
 
   Dallas_uint64_to_addr(addr, tmpaddr);
 
+  if (!parasitePowered) {
+    Dallas_is_parasite(tmpaddr, gpio_rx, gpio_tx, parasitePowered);
+  }
+
   actual_res = Dallas_getResolution(tmpaddr, gpio_rx, gpio_tx, fixed_resolution);
 
   if (actual_res == 0) {
@@ -1374,9 +1407,6 @@ bool Dallas_SensorData::check_sensor(int8_t gpio_rx, int8_t gpio_tx, int8_t res)
     actual_res = res; // Update for later use
   }
 
-  if (!parasitePowered) {
-    Dallas_is_parasite(tmpaddr, gpio_rx, gpio_tx, parasitePowered);
-  }
   return true;
 }
 

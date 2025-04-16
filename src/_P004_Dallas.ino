@@ -169,10 +169,14 @@ boolean Plugin_004(uint8_t function, struct EventStruct *event, String& string)
 
             addRowLabel(F("Data pin Rise Time"));
             const int riseTime = P004_data->measure_rise_time();
-            if (riseTime >= 15) {
-              addHtml('>');
+            if (riseTime == 0) {
+              addHtml(F("< 1"));
+            } else {
+              if (riseTime >= 15) {
+                addHtml('>');
+              }
+              addHtmlInt(riseTime);
             }
-            addHtmlInt(riseTime);
             addUnit(F("usec"));
             if (riseTime > 6) {
               addHtml(F("&nbsp;"));

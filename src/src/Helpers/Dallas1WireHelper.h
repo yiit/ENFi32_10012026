@@ -39,6 +39,8 @@ struct Dallas_SensorData {
   uint32_t start_read_failed{};
   uint32_t start_read_retry{};
   uint32_t read_success{};
+  uint32_t sensor_power_on_reset{};
+  uint32_t read_CRC{};
   uint32_t read_retry{};
   uint32_t read_failed{};
   uint32_t reinit_count{};
@@ -134,7 +136,13 @@ bool Dallas_is_parasite(const uint8_t ROM[8],
 /*********************************************************************************************\
 *  Dallas data from scratchpad
 \*********************************************************************************************/
-bool Dallas_readTemp(const uint8_t ROM[8],
+enum struct Dallas_read_result {
+  OK,
+  NoReply,
+  CRCerr,
+  PowerOnResetValue
+};
+Dallas_read_result Dallas_readTemp(const uint8_t ROM[8],
                      float        *value,
                      int8_t        gpio_pin_rx,
                      int8_t        gpio_pin_tx);
