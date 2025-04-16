@@ -129,6 +129,10 @@ var commonPlugins = [
   "as3935", "as3935,clearstats", "as3935,calibrate", "as3935,setgain,", "as3935,setnf,", "as3935,setwd,", "as3925,setsrej,",
   //P175(P053)
   /*"pmsx003", "pmsx003,wake", "pmsx003,sleep", "pmsx003,reset",*/
+  //P178
+  "lu9685", "lu9685,servo,", "lu9685,enable,", "lu9685,disable,", "lu9685,setrange,",
+  //P180
+  "geni2c", "geni2c,cmd,",
 ];
 var pluginDispKind = [
   //P095
