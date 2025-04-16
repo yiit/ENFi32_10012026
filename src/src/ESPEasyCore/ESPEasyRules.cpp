@@ -418,7 +418,7 @@ bool parse_math_functions(const String& cmd_s_lower, const String& arg1, const S
   ESPEASY_RULES_FLOAT_TYPE farg1;
   float  farg2, farg3 = 0.0f;
 
-  if (!validDoubleFromString(arg1, farg1)) {
+  if (!cmd_s_lower.startsWith("crc") && !validDoubleFromString(arg1, farg1)) {
     return false;
   }
 
@@ -448,6 +448,10 @@ bool parse_math_functions(const String& cmd_s_lower, const String& arg1, const S
         result = calc_CRC32(&argument[0], argument.size());
       } else {
         return false;
+      }
+
+      if (!arg2.isEmpty() && validDoubleFromString(arg2, farg1)) { // Optional expected crc value
+        result = essentiallyEqual(result, farg1) ? 1.0 : 0.0; // Return 1 if the calculated crc == expected crc
       }
     } else {
       return false;
