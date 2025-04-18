@@ -49,7 +49,13 @@ int32_t presence_end{};
 void DALLAS_IRAM_ATTR Dallas_pinModeInput(uint32_t gpio_pin_rx, uint32_t gpio_pin_tx)
 {
   if (gpio_pin_rx == gpio_pin_tx) {
-    DIRECT_PINMODE_INPUT_ISR(gpio_pin_rx); // let pin float, pull up will raise level
+    // let pin float, pull up will raise level
+#ifdef ESP8266
+    // We're running out of IRAM on ESP8266
+    DIRECT_PINMODE_INPUT(gpio_pin_rx);
+#else
+    DIRECT_PINMODE_INPUT_ISR(gpio_pin_rx);
+#endif
   } else {
     DIRECT_pinWrite_ISR(gpio_pin_tx, 1);
   }
@@ -60,7 +66,12 @@ void DALLAS_IRAM_ATTR Dallas_pinWrite(uint32_t gpio_pin_rx, uint32_t gpio_pin_tx
   DIRECT_pinWrite_ISR(gpio_pin_tx, pinstate);
 
   if (gpio_pin_rx == gpio_pin_tx) {
+#ifdef ESP8266
+    // We're running out of IRAM on ESP8266
+    DIRECT_PINMODE_OUTPUT(gpio_pin_rx);
+#else
     DIRECT_PINMODE_OUTPUT_ISR(gpio_pin_rx);
+#endif
   }
 }
 
