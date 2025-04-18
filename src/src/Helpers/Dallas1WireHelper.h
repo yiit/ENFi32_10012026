@@ -136,7 +136,7 @@ bool Dallas_is_parasite(const uint8_t ROM[8],
 /*********************************************************************************************\
 *  Dallas data from scratchpad
 \*********************************************************************************************/
-enum struct Dallas_read_result {
+enum class Dallas_read_result {
   OK,
   NoReply,
   CRCerr,
