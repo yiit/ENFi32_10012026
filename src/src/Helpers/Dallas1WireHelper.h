@@ -15,7 +15,7 @@
 
 
 struct Dallas_SensorData {
-  Dallas_SensorData();
+  Dallas_SensorData() = default;
 
   void clear();
 
@@ -48,9 +48,11 @@ struct Dallas_SensorData {
 
   bool measurementActive = false;
   bool valueRead         = false;
-  bool parasitePowered   = false;
   bool lastReadError     = false;
   bool fixed_resolution  = false;
+#ifndef LIMIT_BUILD_SIZE
+  bool parasitePowered   = false;
+#endif
 };
 
 
@@ -91,7 +93,9 @@ void                       Dallas_addr_selector_webform_load(taskIndex_t TaskInd
                                                              int8_t      gpio_pin_tx,
                                                              uint8_t     nrVariables = 1);
 
+#ifndef LIMIT_BUILD_SIZE
 void Dallas_show_sensor_stats_webform_load(const Dallas_SensorData& sensor_data);
+#endif
 
 void Dallas_addr_selector_webform_save(taskIndex_t TaskIndex,
                                        int8_t      gpio_pin_rx,
@@ -122,11 +126,12 @@ uint8_t Dallas_scan(uint8_t  getDeviceROM,
                     int8_t   gpio_pin_tx);
 
 // read power supply
+#ifndef LIMIT_BUILD_SIZE
 bool Dallas_is_parasite(const uint8_t ROM[8],
                         int8_t        gpio_pin_rx,
                         int8_t        gpio_pin_tx,
                         bool        & isParasitePowered);
-
+#endif
 /*
    void Dallas_startConversion(const uint8_t ROM[8],
                             int8_t        gpio_pin_rx,
