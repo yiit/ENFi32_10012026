@@ -142,6 +142,17 @@ P180_data_struct::P180_data_struct(struct EventStruct *event) {
   _enPin      = P180_ENABLE_PIN;
   _rstPin     = P180_RST_PIN;
   _showLog    = P180_LOG_DEBUG == 1;
+
+  # if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER // When feature is available
+
+  for (uint8_t i = 0; i < VARS_PER_TASK; ++i) {
+    if (i < P180_NR_OUTPUT_VALUES) {
+      _vTypes[i] = static_cast<Sensor_VType>(PCONFIG(P180_VALUE_OFFSET + i));
+    } else {
+      _vTypes[i] = Sensor_VType::SENSOR_TYPE_SINGLE;
+    }
+  }
+  # endif // if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER
 }
 
 P180_data_struct::~P180_data_struct() {
@@ -413,8 +424,7 @@ bool P180_data_struct::executeI2CCommands() {
       (_taskIndex != INVALID_TASK_INDEX) &&
       (_varIndex != INVALID_TASKVAR_INDEX) &&
       !_valueIsSet) {
-    _value      = UserVar.getFloat(_taskIndex, _varIndex);
-    _valueIsSet = false;                                      // init
+    _value = UserVar.getFloat(_taskIndex, _varIndex);
   }
 
   if (P180_CommandState_e::WaitingForDelay == commandState) { // Returning from a delay
@@ -485,7 +495,6 @@ bool P180_data_struct::executeI2CCommands() {
             _it->d0_int32_t = ((du32 & 0xFF000000) >> 24) | ((du32 & 0xFF0000) >> 16) | ((du32 & 0xFF00) << 8) | ((du32 & 0xFF) << 24);
             break;
           case P180_DataFormat_e::bytes:
-          {
             _it->data_b.reserve(_it->len);
 
             Wire.requestFrom(_i2cAddress, _it->len);
@@ -494,9 +503,7 @@ bool P180_data_struct::executeI2CCommands() {
               _it->data_b.push_back(Wire.read());
             }
             break;
-          }
           case P180_DataFormat_e::words:
-          {
             _it->data_w.reserve(_it->len);
 
             Wire.requestFrom(_i2cAddress, _it->len * 2);
@@ -505,7 +512,6 @@ bool P180_data_struct::executeI2CCommands() {
               _it->data_w.push_back((Wire.read() << 8) | Wire.read());
             }
             break;
-          }
         }
         result = true;
         break;
@@ -562,7 +568,6 @@ bool P180_data_struct::executeI2CCommands() {
             I2C_write32(_i2cAddress, du32);
             break;
           case P180_DataFormat_e::bytes:
-          {
             Wire.beginTransmission(_i2cAddress);
 
             for (size_t itb = 0; itb < _it->data_b.size(); ++itb) {
@@ -570,9 +575,7 @@ bool P180_data_struct::executeI2CCommands() {
             }
             result = Wire.endTransmission() == 0;
             break;
-          }
           case P180_DataFormat_e::words:
-          {
             Wire.beginTransmission(_i2cAddress);
 
             for (size_t itw = 0; itw < _it->data_w.size(); ++itw) {
@@ -581,7 +584,6 @@ bool P180_data_struct::executeI2CCommands() {
             }
             result = Wire.endTransmission() == 0;
             break;
-          }
         }
         result = true;
         break;
@@ -635,7 +637,6 @@ bool P180_data_struct::executeI2CCommands() {
             _it->d0_int32_t = ((du32 & 0xFF000000) >> 24) | ((du32 & 0xFF0000) >> 16) | ((du32 & 0xFF00) << 8) | ((du32 & 0xFF) << 24);
             break;
           case P180_DataFormat_e::bytes:
-          {
             _it->data_b.reserve(_it->len);
 
             if (I2C_write8(_i2cAddress, _it->reg) && (Wire.requestFrom(_i2cAddress, _it->len) == _it->len)) {
@@ -644,9 +645,7 @@ bool P180_data_struct::executeI2CCommands() {
               }
             }
             break;
-          }
           case P180_DataFormat_e::words:
-          {
             _it->data_w.reserve(_it->len);
 
             if (I2C_write8(_i2cAddress, _it->reg) && (Wire.requestFrom(_i2cAddress, _it->len * 2) == _it->len * 2)) {
@@ -655,7 +654,6 @@ bool P180_data_struct::executeI2CCommands() {
               }
             }
             break;
-          }
         }
         result = true;
         break;
@@ -712,7 +710,6 @@ bool P180_data_struct::executeI2CCommands() {
             I2C_write32_reg(_i2cAddress, _it->reg, _it->d0_int32_t);
             break;
           case P180_DataFormat_e::bytes:
-          {
             Wire.beginTransmission(_i2cAddress);
             Wire.write((uint8_t)_it->reg);
 
@@ -721,9 +718,7 @@ bool P180_data_struct::executeI2CCommands() {
             }
             result = Wire.endTransmission() == 0;
             break;
-          }
           case P180_DataFormat_e::words:
-          {
             Wire.beginTransmission(_i2cAddress);
             Wire.write((uint8_t)_it->reg);
 
@@ -733,7 +728,6 @@ bool P180_data_struct::executeI2CCommands() {
             }
             result = Wire.endTransmission() == 0;
             break;
-          }
         }
         result = true;
         break;
@@ -757,23 +751,20 @@ bool P180_data_struct::executeI2CCommands() {
 
           if (_evalIsSet) {
             toCalc.replace(F("%value%"), toString(_evalCommand->getIntValue())); // %value%
+            toCalc.replace(F("%h%"),     _evalCommand->getHexValue(true));       // %h%
 
             if (P180_DataFormat_e::bytes == _evalCommand->format) {
-              toCalc.replace(F("%h%"), _evalCommand->getHexValue(true));         // %h%
-
               if (toCalc.indexOf(F("%b")) > -1) {
                 for (uint8_t i = 0; i < _evalCommand->data_b.size(); ++i) {
-                  toCalc.replace(strformat(F("%%b%d%%"), i),  String(_evalCommand->data_b[i]));                // %b<n>%
-                  toCalc.replace(strformat(F("%%bx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_b[i])); // %bx<n>%
+                  toCalc.replace(strformat(F("%%b%d%%"), i),  String(_evalCommand->data_b[i]));                   // %b<n>%
+                  toCalc.replace(strformat(F("%%bx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_b[i], 2)); // %bx<n>%
                 }
               }
             } else if (P180_DataFormat_e::words == _evalCommand->format) {
-              toCalc.replace(F("%h%"), _evalCommand->getHexValue(true)); // %h%
-
               if (toCalc.indexOf(F("%w")) > -1) {
                 for (uint8_t i = 0; i < _evalCommand->data_w.size(); ++i) {
-                  toCalc.replace(strformat(F("%%w%d%%"), i),  String(_evalCommand->data_w[i]));                // %w<n>%
-                  toCalc.replace(strformat(F("%%wx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_w[i])); // %wx<n>%
+                  toCalc.replace(strformat(F("%%w%d%%"), i),  String(_evalCommand->data_w[i]));                   // %w<n>%
+                  toCalc.replace(strformat(F("%%wx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_w[i], 4)); // %wx<n>%
                 }
               }
             }
@@ -828,7 +819,7 @@ bool P180_data_struct::executeI2CCommands() {
         }
         break;
       case P180_Command_e::ResetGPIO:
-      {
+
         if (validGpio(_rstPin)) {
           const uint32_t ms = min(_it->d0_uint32_t, static_cast<uint32_t>(500u)); // Reasonable limit
 
@@ -845,7 +836,6 @@ bool P180_data_struct::executeI2CCommands() {
           }
         }
         break;
-      }
     }
 
     if ((P180_CommandState_e::Processing == commandState) && !_valueIsSet) {
@@ -874,15 +864,16 @@ bool P180_data_struct::executeI2CCommands() {
           break;
       }
     }
-    # if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
-    String valStr = doubleToString(_value, 2, true);
-    # else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
-    String valStr = toString(_value, 2, true);
-    # endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
 
     if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
-      addLog(LOG_LEVEL_INFO, strformat(F("P180 : Executing command: %s, value: %s"),
-                                       _it->toString().c_str(), valStr.c_str()));
+      # if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+      String valStr = doubleToString(_value, 2, true);
+      # else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+      String valStr = toString(_value, 2, true);
+      # endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+
+      addLog(LOG_LEVEL_INFO, strformat(F("P180 : Executing command: %s, value[%d]:(%c): %s"),
+                                       _it->toString().c_str(), _varIndex, _valueIsSet ? 't' : 'f', valStr.c_str()));
     }
     ++_it; // Next command
   }
@@ -891,11 +882,7 @@ bool P180_data_struct::executeI2CCommands() {
       (_taskIndex != INVALID_TASK_INDEX) &&
       (_varIndex != INVALID_TASKVAR_INDEX) &&
       !_valueIsSet) {
-    # if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE && FEATURE_EXTENDED_TASK_VALUE_TYPES
-    UserVar.setDouble(_taskIndex, _varIndex, _value);
-    # else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE && FEATURE_EXTENDED_TASK_VALUE_TYPES
     UserVar.setFloat(_taskIndex, _varIndex, _value);
-    # endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE && FEATURE_EXTENDED_TASK_VALUE_TYPES
   }
 
   return result;
@@ -909,11 +896,12 @@ bool P180_data_struct::plugin_read(struct EventStruct *event) {
     _loop        = 0;
     _loopMax     = P180_NR_OUTPUT_VALUES;
     _value       = 0.0;
+    _valueIsSet  = false; // init
 
     loadStrings(event);
 
     _commands = parseI2CCommands(_strings[P180_BUFFER_START_CACHE + _loop], _strings[P180_BUFFER_START_COMMANDS + _loop]);
-    _varIndex = _loop + 1;
+    _varIndex = _loop;
   }
 
   while (P180_CommandState_e::StartingDelay != commandState && P180_CommandState_e::ConditionalExit != commandState && _loop < _loopMax) {
@@ -924,7 +912,7 @@ bool P180_data_struct::plugin_read(struct EventStruct *event) {
     if (P180_CommandState_e::Processing == commandState) {
       ++_loop;
       _commands = parseI2CCommands(_strings[P180_BUFFER_START_CACHE + _loop], _strings[P180_BUFFER_START_COMMANDS + _loop]);
-      _varIndex = _loop + 1;
+      _varIndex = _loop;
     }
   }
 

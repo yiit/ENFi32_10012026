@@ -175,9 +175,12 @@ private:
   P180_CommandState_e commandState = P180_CommandState_e::Idle;
   P180_Command_e      _lastCommand = P180_Command_e::NOP;
   uint16_t            _lastReg{};
-  uint8_t             _loop    = 0;
+  uint8_t             _loop{};
   uint8_t             _loopMax = VARS_PER_TASK;
   String              _strings[P180_CUSTOM_BUFFER_SIZE];
+  # if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER // When feature is available
+  Sensor_VType _vTypes[VARS_PER_TASK];
+  # endif // if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER
 
   std::map<String, std::vector<P180_Command_struct> >_commandCache;
   std::vector<P180_Command_struct>                   _commands;

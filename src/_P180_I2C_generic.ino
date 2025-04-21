@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-04-21 tonhuisman: Add preliminary support for MQTT Discovery
  * 2025-04-13 tonhuisman: Add 'if' command, some optimizations
  * 2025-04-10 tonhuisman: First version made available. Most plugin features implemented, few todos to resolve.
  * 2025-03-27 tonhuisman: Start plugin development
@@ -15,7 +16,7 @@
  * short : long = Description
  * n : nop = No Operation
  * g : get = Read
- * p : put = write
+ * p : put = Write
  * r : read = Read from a register
  * w : write = Write to a register
  * s : read16 = Read from a 16 bit register (not supported yet)
@@ -25,7 +26,6 @@
  * i : if = Calculate a result from eval data and cancel execution if the result is 0
  * v : value = Put current result in Value
  * d : delay = Delay msec. until next command is executed (asynchronous/non-blocking when > 10 msec)
- * q : checksum = Calculate & validate checksum (not supported yet)
  * l : enable = Set Enable GPIO pin to a state
  * z : reset = Pulse Reset GPIO pin to a state for n msec.
  *
@@ -133,6 +133,17 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
       success           = true;
       break;
     }
+
+    # if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER // When feature is available
+    case PLUGIN_GET_DISCOVERY_VTYPES:
+    {
+      for (uint8_t i = 0; i < P180_NR_OUTPUT_VALUES; ++i) {
+        event->ParN[i] = PCONFIG(P180_VALUE_OFFSET + i); // Selection is limited to single-value VTypes
+      }
+      success = true;
+      break;
+    }
+    # endif // if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {
