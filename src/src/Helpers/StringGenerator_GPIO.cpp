@@ -277,10 +277,10 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
       if (Settings.getI2CSdaPin(i2cBus) == gpio) {
         #if FEATURE_I2C_MULTIPLE
         switch (i2cBus) {
-          case 0:  return F("I2C SDA (bus 1)");
-          case 1:  return F("I2C SDA (bus 2)");
+          case 0:  return F("I2C SDA (bus 0)");
+          case 1:  return F("I2C SDA (bus 1)");
           #if FEATURE_I2C_INTERFACE_3
-          case 2:  return F("I2C SDA (bus 3)");
+          case 2:  return F("I2C SDA (bus 2)");
           #endif
         }
         #else
@@ -290,10 +290,10 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
       if (Settings.getI2CSclPin(i2cBus) == gpio) {
         #if FEATURE_I2C_MULTIPLE
         switch (i2cBus) {
-          case 0:  return F("I2C SCL (bus 1)");
-          case 1:  return F("I2C SCL (bus 2)");
+          case 0:  return F("I2C SCL (bus 0)");
+          case 1:  return F("I2C SCL (bus 1)");
           #if FEATURE_I2C_INTERFACE_3
-          case 2:  return F("I2C SCL (bus 3)");
+          case 2:  return F("I2C SCL (bus 2)");
           #endif
         }
         #else
