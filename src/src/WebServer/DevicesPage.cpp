@@ -840,7 +840,7 @@ void format_I2C_port_description(taskIndex_t x)
     html_BR();
     addHtml(F("I2C Bus"));
     addHtml(' ');
-    addHtmlInt(i2cBus + 1);
+    addHtmlInt(i2cBus);
   }
   #else
   const uint8_t i2cBus = 0;
