@@ -230,21 +230,13 @@ void handle_pinstates() {
       gpio_io_config_t io_config = {};
       gpio_get_io_config((gpio_num_t)gpio_num, &io_config);
 
-      // When the IO is used as a simple GPIO output, oe signal can only be controlled by the oe register
-      // When the IO is not used as a simple GPIO output, oe signal could be controlled by the peripheral
-      const char *oe_str = io_config.oe ? "1" : "0";
-
-      if ((io_config.sig_out != SIG_GPIO_OUT_IDX) && io_config.oe_ctrl_by_periph) {
-        oe_str = "[periph_sig_ctrl]";
-      }
-
       // PullUp
       html_TD();
-      addHtmlInt(io_config.pu);
+      addEnabled(io_config.pu);
 
       // PullDown
       html_TD();
-      addHtmlInt(io_config.pd);
+      addEnabled(io_config.pd);
 
       // DriveCap
       html_TD();
@@ -252,19 +244,24 @@ void handle_pinstates() {
 
       // InputEn
       html_TD();
-      addHtmlInt(io_config.ie);
+      addEnabled(io_config.ie);
 
       // OutputEn
       html_TD();
-      addHtml(strformat(F("%s"), oe_str));
-
+      // When the IO is used as a simple GPIO output, oe signal can only be controlled by the oe register
+      // When the IO is not used as a simple GPIO output, oe signal could be controlled by the peripheral
+      if ((io_config.sig_out != SIG_GPIO_OUT_IDX) && io_config.oe_ctrl_by_periph) {
+        addHtml(F("[periph_sig_ctrl]"));
+      } else {
+        addEnabled(io_config.oe);
+      }
       if ((io_config.fun_sel == PIN_FUNC_GPIO) && (io_config.oe_inv)) {
         addHtml(F(" (inversed)"));
       }
 
       // OpenDrain
       html_TD();
-      addHtmlInt(io_config.od);
+      addEnabled(io_config.od);
 
       // FuncSel
       html_TD();
@@ -279,10 +276,10 @@ void handle_pinstates() {
         addHtml(F("Out: "));
 
         if (io_config.sig_out == SIG_GPIO_OUT_IDX) {
-          addHtml(F(" (**)")); // simple GPIO output
+          addHtml(F("(**)")); // simple GPIO output
           simpleGPIO_found = true;
         } else {
-          addHtml(strformat(F(" %d"), io_config.sig_out));
+          addHtmlInt(io_config.sig_out);
         }
         html_BR();
       }
@@ -294,12 +291,13 @@ void handle_pinstates() {
         for (int i = 0; i < SIG_GPIO_OUT_IDX; i++) {
           if (gpio_ll_get_in_signal_connected_io(GPIO_HAL_GET_HW(GPIO_PORT_0), i) == gpio_num) {
             cnt++;
-            addHtml(strformat(F(" %d"), i));
+            addHtml(' ');
+            addHtmlInt(i);
           }
         }
 
         if (cnt == 0) {
-          addHtml(F(" (**)")); // simple GPIO input
+          addHtml(F("(**)")); // simple GPIO input
           simpleGPIO_found = true;
         }
       }
@@ -313,11 +311,12 @@ void handle_pinstates() {
 
     if (reservedPinFound) {
       html_BR();
-      addHtml(F("(*) GPIO is reserved, use with caution as it is occupied by either SPI flash or PSRAM"));
+      addHtml(F("(*) GPIO is reserved, or in use by some peripheral"));
     }
 
     if (simpleGPIO_found) {
-      addFormNote(F("(**) Simple GPIO input/output"));
+      html_BR();
+      addHtml(F("(**) Simple GPIO input/output"));
     }
   }
 
