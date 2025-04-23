@@ -27,28 +27,21 @@ void statusLED(bool traffic)
   static int gnStatusValueCurrent = -1;
   static long int gnLastUpdate    = millis();
 
-#ifndef ESP32
   // Reset GPIO when status LED pin has changed to free up LEDC channel
   static int8_t last_status_led_pin = -1;
   if (last_status_led_pin != Settings.Pin_status_led) {
     if (last_status_led_pin != -1) {
       set_Gpio_PWM(last_status_led_pin, 0);
-//      ledcDetach(last_status_led_pin);
-//      gpio_reset_pin(static_cast<gpio_num_t>(last_status_led_pin));
     }
     last_status_led_pin = Settings.Pin_status_led;
   }
-#endif
 
   if (!validGpio(Settings.Pin_status_led)) {
     return;
   }
 
   if (gnStatusValueCurrent < 0) {
-#ifndef ESP32
-    gpio_reset_pin(static_cast<gpio_num_t>(Settings.Pin_status_led));
-//    pinMode(Settings.Pin_status_led, OUTPUT);
-#endif // ESP32
+    set_Gpio_PWM(Settings.Pin_status_led, 0);
   }
 
   int nStatusValue = gnStatusValueCurrent;
