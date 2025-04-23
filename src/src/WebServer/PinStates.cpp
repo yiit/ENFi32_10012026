@@ -3,6 +3,7 @@
 #include "../WebServer/ESPEasy_WebServer.h"
 #include "../WebServer/HTML_wrappers.h"
 #include "../WebServer/Markup.h"
+#include "../WebServer/Markup_Forms.h"
 
 #include "../DataStructs/PinMode.h"
 #include "../Globals/GlobalMapPortStatus.h"
@@ -10,6 +11,15 @@
 
 #ifdef ESP32
 # include <esp32-hal-periman.h>
+# include <driver/gpio.h>
+# include <esp_private/esp_gpio_reserve.h>
+
+// # include <hal/gpio_types.h>
+ # include <hal/gpio_hal.h>
+
+// #include <hal/gpio_ll.h>
+
+# include <esp_private/io_mux.h>
 #endif // ifdef ESP32
 
 #ifdef WEBSERVER_NEW_UI
@@ -72,7 +82,8 @@ void handle_pinstates() {
   sendHeadandTail_stdtemplate(_HEAD);
 
   # ifdef ESP32
-  addFormSubHeader(F("Pin states"));
+  html_BR();
+  addFormHeader(F("Pin states"));
   # endif // ifdef ESP32
 
   html_table_class_multirow();
@@ -112,7 +123,11 @@ void handle_pinstates() {
 
 # ifdef ESP32
 
-  addFormSubHeader(F("Peripheral Bus Type per GPIO"));
+  // Collect which pin should be looked into more in-depth.
+  uint64_t io_bit_mask{};
+
+  html_BR();
+  addFormHeader(F("Peripheral Bus Type per GPIO"));
   html_table_class_multirow();
   html_TR();
 #  if defined(BOARD_HAS_PIN_REMAP)
@@ -152,7 +167,7 @@ void handle_pinstates() {
     html_TD();
 
     if (extra_type) {
-      addHtml(strformat(F("%s"), extra_type));
+      addHtml(strformat(F("%s [%s]"), perimanGetTypeName(type), extra_type));
     } else {
       addHtml(strformat(F("%s"), perimanGetTypeName(type)));
     }
@@ -168,9 +183,146 @@ void handle_pinstates() {
     if (bus_channel != -1) {
       addHtmlInt(bus_channel);
     }
+    io_bit_mask |= BIT64(i);
   }
 
   html_end_table();
+  #  if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+
+  if (io_bit_mask) {
+    html_BR();
+
+    addFormHeader(F("GPIO IO configuration"));
+    html_table_class_multirow();
+    html_TR();
+    html_table_header(F("GPIO"));
+    html_table_header(F("PullUp"));
+    html_table_header(F("PullDown"));
+    html_table_header(F("DriveCap"));
+    html_table_header(F("InputEn"));
+    html_table_header(F("OutputEn"));
+    html_table_header(F("OpenDrain"));
+    html_table_header(F("FuncSel"));
+    html_table_header(F("MUX ID"),
+                      F("https://github.com/espressif/esp-idf/blob/master/components/soc/"
+                        ESP32XX
+                        "/include/soc/gpio_sig_map.h"),
+                      0);
+    html_table_header(F("SleepSelEn"));
+
+
+    bool reservedPinFound = false;
+    bool simpleGPIO_found = false;
+
+    for (int gpio_num = 0; gpio_num <= MAX_GPIO; ++gpio_num) {
+      if ((io_bit_mask & BIT64(gpio_num)) == 0) {
+        continue; // skip pin
+      }
+
+      html_TR_TD();
+      addHtmlInt(gpio_num);
+
+      if (esp_gpio_is_reserved(BIT64(gpio_num))) {
+        reservedPinFound = true;
+        addHtml(F(" (*)"));
+      }
+
+      gpio_io_config_t io_config = {};
+      gpio_get_io_config((gpio_num_t)gpio_num, &io_config);
+
+      // When the IO is used as a simple GPIO output, oe signal can only be controlled by the oe register
+      // When the IO is not used as a simple GPIO output, oe signal could be controlled by the peripheral
+      const char *oe_str = io_config.oe ? "1" : "0";
+
+      if ((io_config.sig_out != SIG_GPIO_OUT_IDX) && io_config.oe_ctrl_by_periph) {
+        oe_str = "[periph_sig_ctrl]";
+      }
+
+      // PullUp
+      html_TD();
+      addHtmlInt(io_config.pu);
+
+      // PullDown
+      html_TD();
+      addHtmlInt(io_config.pd);
+
+      // DriveCap
+      html_TD();
+      addHtmlInt((uint32_t)io_config.drv);
+
+      // InputEn
+      html_TD();
+      addHtmlInt(io_config.ie);
+
+      // OutputEn
+      html_TD();
+      addHtml(strformat(F("%s"), oe_str));
+
+      if ((io_config.fun_sel == PIN_FUNC_GPIO) && (io_config.oe_inv)) {
+        addHtml(F(" (inversed)"));
+      }
+
+      // OpenDrain
+      html_TD();
+      addHtmlInt(io_config.od);
+
+      // FuncSel
+      html_TD();
+      addHtmlInt(io_config.fun_sel);
+      addHtml(strformat(F(" (%s)"), (io_config.fun_sel == PIN_FUNC_GPIO) ? "GPIO" : "IOMUX"));
+
+
+      // MUX ID
+      html_TD();
+
+      if (io_config.fun_sel == PIN_FUNC_GPIO) {
+        addHtml(F("Out: "));
+
+        if (io_config.sig_out == SIG_GPIO_OUT_IDX) {
+          addHtml(F(" (**)")); // simple GPIO output
+          simpleGPIO_found = true;
+        } else {
+          addHtml(strformat(F(" %d"), io_config.sig_out));
+        }
+        html_BR();
+      }
+
+      if (io_config.ie && (io_config.fun_sel == PIN_FUNC_GPIO)) {
+        uint32_t cnt = 0;
+        addHtml(F("In: "));
+
+        for (int i = 0; i < SIG_GPIO_OUT_IDX; i++) {
+          if (gpio_ll_get_in_signal_connected_io(GPIO_HAL_GET_HW(GPIO_PORT_0), i) == gpio_num) {
+            cnt++;
+            addHtml(strformat(F(" %d"), i));
+          }
+        }
+
+        if (cnt == 0) {
+          addHtml(F(" (**)")); // simple GPIO input
+          simpleGPIO_found = true;
+        }
+      }
+
+      // SleepSelEn
+      html_TD();
+      addHtmlInt(io_config.slp_sel);
+    }
+    html_end_table();
+
+
+    if (reservedPinFound) {
+      html_BR();
+      addHtml(F("(*) GPIO is reserved, use with caution as it is occupied by either SPI flash or PSRAM"));
+    }
+
+    if (simpleGPIO_found) {
+      addFormNote(F("(**) Simple GPIO input/output"));
+    }
+  }
+
+#  endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+
 # endif // ifdef ESP32
   sendHeadandTail_stdtemplate(_TAIL);
   TXBuffer.endStream();
