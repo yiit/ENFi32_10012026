@@ -196,7 +196,9 @@ bool MQTT_protocol_send(EventStruct *event,
   // Check for %valname%
   const bool contains_valname = pubname.indexOf(F("%valname%")) != -1;
 
+  #ifndef LIMIT_BUILD_SIZE
   // Small speed-up as there are lots of system variables starting with "%sys" and this is used in quite a lot of MQTT topics.
+  // Not needed if build size really matters
   if (pubname.indexOf(F("%sysname%")) != -1) {
     pubname.replace(F("%sysname%"), SystemVariables::getSystemVariable(SystemVariables::SYSNAME));
   }
@@ -204,6 +206,7 @@ bool MQTT_protocol_send(EventStruct *event,
   if (pubname.indexOf(F("%tskname%")) != -1) {
     pubname.replace(F("%tskname%"), getTaskDeviceName(event->TaskIndex));
   }
+  #endif
 
   const uint8_t valueCount = getValueCountForTask(event->TaskIndex);
 

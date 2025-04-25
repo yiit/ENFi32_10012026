@@ -488,6 +488,9 @@ SystemVariables::Enum SystemVariables::startIndex_beginWith(const char* begincha
   }
 
   const char ch = tolower(*beginchar);
+#ifndef LIMIT_BUILD_SIZE
+  // Speedup search for some variables starting with "%sys"
+  // Not needed if build size really matters
   if (ch == 's') {
     // Lots of system variables start with "%sys"
     const char sys_str[] = {'s', 'y', 's'};
@@ -516,7 +519,7 @@ SystemVariables::Enum SystemVariables::startIndex_beginWith(const char* begincha
       }
     }
   }
-
+#endif
   switch (ch)
   {
     case 'b': return Enum::BOARD_NAME;
