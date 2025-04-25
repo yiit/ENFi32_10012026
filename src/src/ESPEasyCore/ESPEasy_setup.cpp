@@ -444,6 +444,10 @@ void ESPEasy_setup()
 
 
   if (initWiFi) {
+#ifdef ESP32
+    check_and_update_WiFi_Calibration();
+#endif
+
     WiFi_AP_Candidates.clearCache();
     WiFi_AP_Candidates.load_knownCredentials();
     setSTA(true);
