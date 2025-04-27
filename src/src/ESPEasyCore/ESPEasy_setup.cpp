@@ -445,7 +445,9 @@ void ESPEasy_setup()
 
   if (initWiFi) {
 #ifdef ESP32
-    check_and_update_WiFi_Calibration();
+    // FIXME TD-er: Disabled for now, as this may not return and thus block the ESP forever.
+    // See: https://github.com/espressif/esp-idf/issues/15862
+    //check_and_update_WiFi_Calibration();
 #endif
 
     WiFi_AP_Candidates.clearCache();
