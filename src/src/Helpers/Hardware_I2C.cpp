@@ -35,7 +35,7 @@ void initI2C() {
       #if !FEATURE_I2C_MULTIPLE
       addLog(LOG_LEVEL_INFO, F("INIT : I2C Bus"));
       #else // if !FEATURE_I2C_MULTIPLE
-      addLog(LOG_LEVEL_INFO, concat(F("INIT : I2C Bus "), i2cBus + 1));
+      addLog(LOG_LEVEL_INFO, concat(F("INIT : I2C Bus "), i2cBus));
       #endif // if !FEATURE_I2C_MULTIPLE
       I2CSelectHighClockSpeed(i2cBus); // Set normal clock speed, on I2C Bus 1 (index 0)
     }
@@ -148,6 +148,16 @@ void I2CBegin(int8_t sda, int8_t scl, uint32_t clockFreq, uint32_t clockStretch)
     // No need to change the clock speed.
     return;
   }
+  if (sda == -1 || scl == -1) {
+#ifdef ESP32
+    Wire.end();
+#endif
+    last_sda = sda;
+    last_scl = scl;
+    return;
+  }
+
+
   #ifdef ESP32
 
   if (((sda != last_sda) || (scl != last_scl)) && (last_sda != -1) && (last_scl != -1)) {
