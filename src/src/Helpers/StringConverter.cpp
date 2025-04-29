@@ -1574,7 +1574,7 @@ bool GetArgvBeginEnd(const char *string, const unsigned int argc, int& pos_begin
 
     if  (!parenthesis && (((c == ' ') && (d == ' ')) || 
                           ((c == separator) && (d == ' ')))) {
-      // Consider multiple consequitive spaces as one.
+      // Consider multiple consecutive spaces as one.
     }
     else if  (!parenthesis && ((d == ' ') && (e == separator))) {
       // Skip the space.      
