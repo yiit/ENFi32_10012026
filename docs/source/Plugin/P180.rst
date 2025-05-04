@@ -315,13 +315,13 @@ Command sequence explanation:
 
 The I2C Command sequence for reading the Barometric pressure:
 
-``read.u24le.0x20;eval;calc.%value%/64``
+``read.u24le.0x20;eval;calc.%value%/6400``
 
 Command sequence explanation:
 
 * ``read.u24le.0x20``: Read an uint24 little endian value (3 bytes) value from register 0x20
 * ``eval``: Use the previous command result for evaluation
-* ``calc.%value%/64``: Divide the read value by 64 as the right-most 6 bits are the fraction part
+* ``calc.%value%/6400``: Divide the read value by 6400 as the right-most 6 bits are the fraction part, and we are used to hPa, so a factor 100 is applied too
 
 |
 
