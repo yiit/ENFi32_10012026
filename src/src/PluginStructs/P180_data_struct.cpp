@@ -136,6 +136,17 @@ String P180_Command_struct::toString() {
 
 # endif // ifndef LIMIT_BUILD_SIZE
 
+const __FlashStringHelper * P180_data_struct::cacheSuffix(P180_CommandSource_e source) {
+  switch (source) {
+    case P180_CommandSource_e::PluginIdle:
+    case P180_CommandSource_e::PluginRead: return F("");
+    case P180_CommandSource_e::PluginOncePerSecond: return F("_1ps");
+    case P180_CommandSource_e::PluginTenPerSecond: return F("_10ps");
+    case P180_CommandSource_e::PluginFiftyPerSecond: return F("_50ps");
+  }
+  return F("");
+}
+
 P180_data_struct::P180_data_struct(struct EventStruct *event) {
   _taskIndex  = event->TaskIndex;
   _i2cAddress = P180_I2C_ADDRESS;
@@ -177,17 +188,19 @@ bool P180_data_struct::plugin_init(struct EventStruct *event) {
   _initialized = true;
 
   if (_stringsLoaded && !_strings[P180_BUFFER_ENTRY_INIT].isEmpty()) {
-    _commands = parseI2CCommands(EMPTY_STRING, _strings[P180_BUFFER_ENTRY_INIT]);
+    _commandSource = P180_CommandSource_e::PluginRead; // To allow logging
+    _commands      = parseI2CCommands(EMPTY_STRING, _strings[P180_BUFFER_ENTRY_INIT]);
 
     if (!_commands.empty()) {
       if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
         addLog(LOG_LEVEL_INFO, strformat(F("P180 : Device initialization with %d commands."), _commands.size()));
       }
-      commandState = P180_CommandState_e::Processing;
-      _initialized = executeI2CCommands();
+      _commandState = P180_CommandState_e::Processing;
+      _initialized  = executeI2CCommands();
       _commands.clear();
-      commandState = P180_CommandState_e::Idle;
+      _commandState = P180_CommandState_e::Idle;
     }
+    _commandSource = P180_CommandSource_e::PluginIdle;
   }
 
   return _initialized;
@@ -197,17 +210,19 @@ void P180_data_struct::plugin_exit(struct EventStruct *event) {
   loadStrings(event);
 
   if (_stringsLoaded && !_strings[P180_BUFFER_ENTRY_EXIT].isEmpty()) {
-    _commands = parseI2CCommands(EMPTY_STRING, _strings[P180_BUFFER_ENTRY_EXIT]);
+    _commandSource = P180_CommandSource_e::PluginRead; // To allow logging
+    _commands      = parseI2CCommands(EMPTY_STRING, _strings[P180_BUFFER_ENTRY_EXIT]);
 
     if (!_commands.empty()) {
       if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
         addLog(LOG_LEVEL_INFO, strformat(F("P180 : Device shutdown/exit with %d commands."), _commands.size()));
       }
-      commandState = P180_CommandState_e::Processing;
-      _initialized = executeI2CCommands();
+      _commandState = P180_CommandState_e::Processing;
+      _initialized  = executeI2CCommands();
       _commands.clear();
-      commandState = P180_CommandState_e::Idle;
+      _commandState = P180_CommandState_e::Idle;
     }
+    _commandSource = P180_CommandSource_e::PluginIdle;
   }
 }
 
@@ -236,181 +251,218 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
   std::vector<P180_Command_struct> commands;
 
   const String key = parseString(name, 1);
+  String keyPostfix;
 
   if (!key.isEmpty() && (_commandCache.count(key) == 1) && !update) {
     commands = _commandCache.find(key)->second;
 
-    if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
+    if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog && (P180_CommandSource_e::PluginRead == _commandSource)) {
       addLog(LOG_LEVEL_INFO, strformat(F("P180 : Retrieve '%s' from cache with %d commands."), name.c_str(), commands.size()));
     }
   }
 
-  if (!line.isEmpty() && ((commands.empty()) || update)) {
-    commands.clear();
+  if (!line.isEmpty() && ((commands.empty()) || update) && (P180_CommandSource_e::PluginRead == _commandSource)) {
+    int evt = 1;
 
-    // parse line
-    int idx = 1;
+    while (evt > 0) {
+      keyPostfix.clear();
+      String evtAll = parseStringKeepCaseNoTrim(line, evt, P180_EVENT_SEPARATOR);
 
-    while (idx > 0) {
-      const String cmdAll = parseStringKeepCaseNoTrim(line, idx, P180_COMMAND_SEPARATOR);
-      bool addCmd         = true;
+      if (evtAll.equalsIgnoreCase(F("1ps"))) { // PLUGIN_ONCE_A_SECOND
+        ++evt;
+        keyPostfix = cacheSuffix(P180_CommandSource_e::PluginOncePerSecond);
+        _has1ps    = true;
+      } else
+      if (evtAll.equalsIgnoreCase(F("10ps"))) { // PLUGIN_TEN_PER_SECOND
+        ++evt;
+        keyPostfix = cacheSuffix(P180_CommandSource_e::PluginTenPerSecond);
+        _has10ps   = true;
+      } else
+      if (evtAll.equalsIgnoreCase(F("50ps"))) { // PLUGIN_FIFTY_PER_SECOND
+        ++evt;
+        keyPostfix = cacheSuffix(P180_CommandSource_e::PluginFiftyPerSecond);
+        _has50ps   = true;
+      }
 
-      if (!cmdAll.isEmpty()) {
-        std::vector<String> args;
+      if (!keyPostfix.isEmpty()) { // Next part is I2C command sequence
+        evtAll = parseStringKeepCaseNoTrim(line, evt, P180_EVENT_SEPARATOR);
+      }
 
-        uint8_t i    = 1;
-        String  arg0 = parseStringKeepCaseNoTrim(cmdAll, i, P180_ARGUMENT_SEPARATOR);
+      if (!evtAll.isEmpty()) {
+        ++evt;
+        commands.clear();
+      } else {
+        evt = 0;
+      }
 
-        while (i < 5 || !arg0.isEmpty()) { // Read at least 4 arguments
-          args.push_back(arg0);
-          ++i;
-          arg0 = parseStringKeepCaseNoTrim(cmdAll, i, P180_ARGUMENT_SEPARATOR);
+      // parse line
+      int idx = 1;
+
+      while (idx > 0 && evt > 0) {
+        const String cmdAll = parseStringKeepCaseNoTrim(evtAll, idx, P180_COMMAND_SEPARATOR);
+        bool addCmd         = true;
+
+        if (!cmdAll.isEmpty()) {
+          std::vector<String> args;
+
+          uint8_t i    = 1;
+          String  arg0 = parseStringKeepCaseNoTrim(cmdAll, i, P180_ARGUMENT_SEPARATOR);
+
+          while (i < 5 || !arg0.isEmpty()) { // Read at least 4 arguments
+            args.push_back(arg0);
+            ++i;
+            arg0 = parseStringKeepCaseNoTrim(cmdAll, i, P180_ARGUMENT_SEPARATOR);
+          }
+
+          # ifndef LIMIT_BUILD_SIZE
+
+          if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog && (P180_CommandSource_e::PluginRead == _commandSource)) {
+            addLog(LOG_LEVEL_INFO, strformat(F("P180 : Arguments parsed: %d (%s)"), args.size(), cmdAll.c_str()));
+          }
+          # endif // ifndef LIMIT_BUILD_SIZE
+
+          args[0].toLowerCase();
+          String sFmt = args[1];
+          sFmt.toLowerCase();
+          const int arg2i = GetCommandCode(sFmt.c_str(), P180_dataFormats);
+          int arg1i       = GetCommandCode(args[0].c_str(), P180_commands);
+
+          if (arg1i < 0) {
+            arg1i = GetCommandCode(args[0].c_str(), P180_commandsLong);
+          }
+          uint8_t arg = 2;
+
+          uint16_t reg          = 0;
+          uint32_t len          = 0;
+          P180_DataFormat_e fmt = P180_DataFormat_e::uint8_t;
+          String calculation;
+
+          if (arg2i > -1) {
+            fmt = static_cast<P180_DataFormat_e>(arg2i);
+          }
+
+          if ((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt)) {
+            validUIntFromString(args[arg], len);
+            ++arg;
+          }
+
+          if (arg1i > -1) {
+            P180_Command_e cmd = static_cast<P180_Command_e>(arg1i);
+            int64_t val        = 0;
+            validInt64FromString(args[arg], val);
+
+            switch (cmd) {
+              case P180_Command_e::NOP: break;
+              case P180_Command_e::Read:      // get - g.<format>
+              case P180_Command_e::Write:     // put - p.<format>.<value>
+                break;
+              case P180_Command_e::Calculate: // calc - c.<calculation>
+              case P180_Command_e::If:        // if - i.<calculation>
+                fmt         = P180_DataFormat_e::undefined;
+                val         = 0;
+                calculation = args[arg - 1];
+                stripEscapeCharacters(calculation);
+                break;
+              case P180_Command_e::Eval:  // eval - e
+                fmt = P180_DataFormat_e::undefined;
+                break;
+              case P180_Command_e::Value: // value - v.<valueIndex>
+              case P180_Command_e::Delay: // delay - d.<ms>
+              {
+                fmt = P180_DataFormat_e::undefined;
+                const bool isInt = validInt64FromString(args[arg - 1], val);
+
+                if ((P180_Command_e::Value == cmd) && !isInt) {
+                  val = findDeviceValueIndexByName(args[arg - 1], _taskIndex);
+                }
+                break;
+              }
+              case P180_Command_e::RegisterRead:   // read - r.<format>.<reg>
+              case P180_Command_e::Register16Read: // read16 - s.<format>.<reg16>
+                reg = val;
+                val = 0;
+                break;
+              case P180_Command_e::RegisterWrite:   // write - w.<format>.<reg>.<data>
+              case P180_Command_e::Register16Write: // write16 - t.<format>.<reg16>.<data>
+                reg = val;
+                val = 0;
+
+                if (!((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt))) {
+                  ++arg;
+
+                  validInt64FromString(args[arg], val);
+                }
+                break;
+              case P180_Command_e::EnableGPIO: // enable - l.<state>
+              case P180_Command_e::ResetGPIO:  // reset - z.<state>.<msec>
+                fmt = P180_DataFormat_e::undefined;
+                val = 0;
+                validInt64FromString(args[arg - 1], val);
+
+                if ((val < 0) || (val > 1)) { // Range check
+                  addCmd = false;
+                } else {
+                  reg = val;                  // State
+
+                  if (P180_Command_e::ResetGPIO == cmd) {
+                    val = 0;
+
+                    if (!validInt64FromString(args[arg], val) || (val < 0)) { // msec
+                      addCmd = false;
+                    }
+                  }
+                }
+                break;
+            }
+
+            if (addCmd) {
+              commands.push_back(P180_Command_struct(cmd, fmt, reg, val, len, calculation));
+
+              if (((P180_Command_e::Write == cmd) || (P180_Command_e::RegisterWrite == cmd) || (P180_Command_e::Register16Write == cmd)) &&
+                  ((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt))) {
+                const size_t currentCommandsIdx = commands.size() - 1;
+
+                while (arg < args.size()) {
+                  uint32_t val = 0;
+
+                  if (validUIntFromString(args[arg], val)) {
+                    if (P180_DataFormat_e::bytes == fmt) { // bytes
+                      commands[currentCommandsIdx].data_b.push_back((uint8_t)val);
+                    } else {                               // words
+                      commands[currentCommandsIdx].data_w.push_back((uint16_t)val);
+                    }
+                  }
+                  ++arg;
+                }
+              }
+            }
+          }
+          ++idx;   // next
+        } else {
+          idx = 0; // done
         }
+      }
+
+      if (evt > 0) {
+        # ifndef LIMIT_BUILD_SIZE
 
         if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
-          addLog(LOG_LEVEL_INFO, strformat(F("P180 : Arguments parsed: %d (%s)"), args.size(), cmdAll.c_str()));
-        }
-
-        args[0].toLowerCase();
-        String sFmt = args[1];
-        sFmt.toLowerCase();
-        const int arg2i = GetCommandCode(sFmt.c_str(), P180_dataFormats);
-        int arg1i       = GetCommandCode(args[0].c_str(), P180_commands);
-
-        if (arg1i < 0) {
-          arg1i = GetCommandCode(args[0].c_str(), P180_commandsLong);
-        }
-        uint8_t arg = 2;
-
-        uint16_t reg          = 0;
-        uint32_t len          = 0;
-        P180_DataFormat_e fmt = P180_DataFormat_e::uint8_t;
-        String calculation;
-
-        if (arg2i > -1) {
-          fmt = static_cast<P180_DataFormat_e>(arg2i);
-        }
-
-        if ((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt)) {
-          validUIntFromString(args[arg], len);
-          ++arg;
-        }
-
-        if (arg1i > -1) {
-          P180_Command_e cmd = static_cast<P180_Command_e>(arg1i);
-          int64_t val        = 0;
-          validInt64FromString(args[arg], val);
-
-          switch (cmd) {
-            case P180_Command_e::NOP: break;
-            case P180_Command_e::Read:      // get - g.<format>
-            case P180_Command_e::Write:     // put - p.<format>.<value>
-              break;
-            case P180_Command_e::Calculate: // calc - c.<calculation>
-            case P180_Command_e::If:        // if - i.<calculation>
-              fmt         = P180_DataFormat_e::undefined;
-              val         = 0;
-              calculation = args[arg - 1];
-              stripEscapeCharacters(calculation);
-              break;
-            case P180_Command_e::Eval:  // eval - e
-              fmt = P180_DataFormat_e::undefined;
-              break;
-            case P180_Command_e::Value: // value - v.<valueIndex>
-            case P180_Command_e::Delay: // delay - d.<ms>
-            {
-              fmt = P180_DataFormat_e::undefined;
-              const bool isInt = validInt64FromString(args[arg - 1], val);
-
-              if ((P180_Command_e::Value == cmd) && !isInt) {
-                val = findDeviceValueIndexByName(args[arg - 1], _taskIndex);
-              }
-              break;
-            }
-            case P180_Command_e::RegisterRead:   // read - r.<format>.<reg>
-            case P180_Command_e::Register16Read: // read16 - s.<format>.<reg16>
-              reg = val;
-              val = 0;
-              break;
-            case P180_Command_e::RegisterWrite:   // write - w.<format>.<reg>.<data>
-            case P180_Command_e::Register16Write: // write16 - t.<format>.<reg16>.<data>
-            {
-              reg = val;
-              val = 0;
-
-              if (!((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt))) {
-                ++arg;
-
-                validInt64FromString(args[arg], val);
-              }
-              break;
-            }
-            case P180_Command_e::EnableGPIO: // enable - l.<state>
-            case P180_Command_e::ResetGPIO:  // reset - z.<state>.<msec>
-              fmt = P180_DataFormat_e::undefined;
-              val = 0;
-              validInt64FromString(args[arg - 1], val);
-
-              if ((val < 0) || (val > 1)) { // Range check
-                addCmd = false;
-              } else {
-                reg = val;                  // State
-
-                if (P180_Command_e::ResetGPIO == cmd) {
-                  val = 0;
-
-                  if (!validInt64FromString(args[arg], val) || (val < 0)) { // msec
-                    addCmd = false;
-                  }
-                }
-              }
-              break;
-          }
-
-          if (addCmd) {
-            commands.push_back(P180_Command_struct(cmd, fmt, reg, val, len, calculation));
-
-            if (((P180_Command_e::Write == cmd) || (P180_Command_e::RegisterWrite == cmd) || (P180_Command_e::Register16Write == cmd)) &&
-                ((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt))) {
-              const size_t currentCommandsIdx = commands.size() - 1;
-
-              while (arg < args.size()) {
-                uint32_t val = 0;
-
-                if (validUIntFromString(args[arg], val)) {
-                  if (P180_DataFormat_e::bytes == fmt) { // bytes
-                    commands[currentCommandsIdx].data_b.push_back((uint8_t)val);
-                  } else {                               // words
-                    commands[currentCommandsIdx].data_w.push_back((uint16_t)val);
-                  }
-                }
-                ++arg;
-              }
-            }
+          for (auto it = commands.begin(); it != commands.end(); ++it) {
+            addLog(LOG_LEVEL_INFO, strformat(F("P180 : Parsing command: %s, name: %s"), it->toString().c_str(), name.c_str()));
           }
         }
-        ++idx;   // next
-      } else {
-        idx = 0; // done
+        # endif // ifndef LIMIT_BUILD_SIZE
+
+        if (!key.isEmpty()) {
+          _commandCache[concat(key, keyPostfix)] = commands;
+
+          if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
+            addLog(LOG_LEVEL_INFO, strformat(F("P180 : Insert '%s%s' into cache with %d commands."),
+                                             name.c_str(), keyPostfix.c_str(), commands.size()));
+          }
+        }
       }
     }
-
-    if (!key.isEmpty()) {
-      _commandCache[key] = commands;
-
-      if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
-        addLog(LOG_LEVEL_INFO, strformat(F("P180 : Insert '%s' into cache with %d commands."), name.c_str(), commands.size()));
-      }
-    }
-
-    # ifndef LIMIT_BUILD_SIZE
-
-    if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
-      for (auto it = commands.begin(); it != commands.end(); ++it) {
-        addLog(LOG_LEVEL_INFO, strformat(F("P180 : Parsing command: %s, name: %s"), it->toString().c_str(), name.c_str()));
-      }
-    }
-    # endif // ifndef LIMIT_BUILD_SIZE
   }
 
   return commands;
@@ -422,26 +474,26 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
 bool P180_data_struct::executeI2CCommands() {
   bool result = false;
 
-  if (P180_CommandState_e::Processing == commandState) {
+  if (P180_CommandState_e::Processing == _commandState) {
     _it = _commands.begin();
   }
 
-  if ((P180_CommandState_e::Processing == commandState) &&
+  if ((P180_CommandState_e::Processing == _commandState) &&
       (_taskIndex != INVALID_TASK_INDEX) &&
       (_varIndex != INVALID_TASKVAR_INDEX) &&
       !_valueIsSet) {
     _value = UserVar.getFloat(_taskIndex, _varIndex);
   }
 
-  if (P180_CommandState_e::WaitingForDelay == commandState) { // Returning from a delay
-    commandState = P180_CommandState_e::Processing;
+  if (P180_CommandState_e::WaitingForDelay == _commandState) { // Returning from a delay
+    _commandState = P180_CommandState_e::Processing;
 
     if (validGpio(_rstPin) && (P180_Command_e::ResetGPIO == _lastCommand)) {
       DIRECT_pinWrite(_rstPin, _lastReg ? LOW : HIGH); // Revert ResetGPIO state
     }
   }
 
-  while (_it != _commands.end() && P180_CommandState_e::Processing == commandState) {
+  while (_it != _commands.end() && P180_CommandState_e::Processing == _commandState) {
     bool is_ok = false;
     uint32_t du32{};
     uint16_t du16{};
@@ -779,14 +831,14 @@ bool P180_data_struct::executeI2CCommands() {
           ESPEASY_RULES_FLOAT_TYPE tmp{};
 
           if (Calculate(newCalc, tmp) == CalculateReturnCode::OK) {
-            if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
+            if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog && (P180_CommandSource_e::PluginRead == _commandSource)) {
               addLog(LOG_LEVEL_INFO, strformat(F("P180 : Calculation: %s, result: %s"), toCalc.c_str(), doubleToString(tmp).c_str()));
             }
 
             if (P180_Command_e::If == _it->command) {
               if (essentiallyZero(tmp)) { // 0 = false => cancel execution
-                commandState = P180_CommandState_e::ConditionalExit;
-                result       = false;     // PLUGIN_READ failed
+                _commandState = P180_CommandState_e::ConditionalExit;
+                result        = false;    // PLUGIN_READ failed
               }
             } else {
               _value = tmp;
@@ -811,7 +863,7 @@ bool P180_data_struct::executeI2CCommands() {
           delay(ms);
           result = true;
         } else {
-          commandState = P180_CommandState_e::StartingDelay;
+          _commandState = P180_CommandState_e::StartingDelay;
           Scheduler.schedule_task_device_timer(_taskIndex, millis() + ms);
           result = false; // Don't publish result yet
         }
@@ -836,7 +888,7 @@ bool P180_data_struct::executeI2CCommands() {
             DIRECT_pinWrite(_rstPin, _it->reg ? LOW : HIGH); // Revert ResetGPIO state
             result = true;
           } else {
-            commandState = P180_CommandState_e::StartingDelay;
+            _commandState = P180_CommandState_e::StartingDelay;
             Scheduler.schedule_task_device_timer(_taskIndex, millis() + ms);
             result = false; // Don't publish result yet
           }
@@ -844,7 +896,7 @@ bool P180_data_struct::executeI2CCommands() {
         break;
     }
 
-    if ((P180_CommandState_e::Processing == commandState) && !_valueIsSet) {
+    if ((P180_CommandState_e::Processing == _commandState) && !_valueIsSet) {
       switch (_it->format) {
         case P180_DataFormat_e::undefined: break;
         case P180_DataFormat_e::uint8_t:
@@ -871,7 +923,7 @@ bool P180_data_struct::executeI2CCommands() {
       }
     }
 
-    if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog) {
+    if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog && (P180_CommandSource_e::PluginRead == _commandSource)) {
       # if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
       String valStr = doubleToString(_value, 2, true);
       # else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
@@ -884,50 +936,104 @@ bool P180_data_struct::executeI2CCommands() {
     ++_it; // Next command
   }
 
-  if ((P180_CommandState_e::Processing == commandState) &&
+  if ((P180_CommandState_e::Processing == _commandState) &&
       (_taskIndex != INVALID_TASK_INDEX) &&
       (_varIndex != INVALID_TASKVAR_INDEX) &&
-      !_valueIsSet) {
+      !_valueIsSet &&
+      (P180_CommandSource_e::PluginRead == _commandSource)) {
     UserVar.setFloat(_taskIndex, _varIndex, _value);
   }
 
   return result;
 }
 
+bool P180_data_struct::plugin_once_a_second(struct EventStruct *event) {
+  if (((P180_CommandSource_e::PluginIdle != _commandSource) &&
+       (P180_CommandSource_e::PluginOncePerSecond != _commandSource)) ||
+      !_has1ps) {
+    return false;
+  }
+  _commandSource = P180_CommandSource_e::PluginOncePerSecond;
+  return processCommands(event);
+}
+
+bool P180_data_struct::plugin_ten_per_second(struct EventStruct *event) {
+  if (((P180_CommandSource_e::PluginIdle != _commandSource) &&
+       (P180_CommandSource_e::PluginTenPerSecond != _commandSource)) ||
+      !_has10ps) {
+    return false;
+  }
+  _commandSource = P180_CommandSource_e::PluginTenPerSecond;
+  return processCommands(event);
+}
+
+bool P180_data_struct::plugin_fifty_per_second(struct EventStruct *event) {
+  if (((P180_CommandSource_e::PluginIdle != _commandSource) &&
+       (P180_CommandSource_e::PluginFiftyPerSecond != _commandSource)) ||
+      !_has50ps) {
+    return false;
+  }
+  _commandSource = P180_CommandSource_e::PluginFiftyPerSecond;
+  return processCommands(event);
+}
+
 bool P180_data_struct::plugin_read(struct EventStruct *event) {
+  if ((P180_CommandSource_e::PluginIdle != _commandSource) &&
+      (P180_CommandSource_e::PluginRead != _commandSource)) {
+    return false;
+  }
+  _commandSource = P180_CommandSource_e::PluginRead;
+  return processCommands(event);
+}
+
+bool P180_data_struct::processCommands(struct EventStruct *event) {
   bool result = true;
 
-  if (P180_CommandState_e::Idle == commandState) {
-    commandState = P180_CommandState_e::Processing;
-    _loop        = 0;
-    _loopMax     = P180_NR_OUTPUT_VALUES;
-    _value       = 0.0;
-    _valueIsSet  = false; // init
+  if (P180_CommandState_e::Idle == _commandState) {
+    _commandState = P180_CommandState_e::Processing;
+    _loop         = 0;
+    _loopMax      = P180_NR_OUTPUT_VALUES;
+    _value        = 0.0;
+    _valueIsSet   = false; // init
 
     loadStrings(event);
 
-    _commands = parseI2CCommands(_strings[P180_BUFFER_START_CACHE + _loop], _strings[P180_BUFFER_START_COMMANDS + _loop]);
+    const String cacheName = _strings[P180_BUFFER_START_CACHE + _loop].isEmpty()
+                                      ? EMPTY_STRING
+                                      : concat(_strings[P180_BUFFER_START_CACHE + _loop], cacheSuffix(_commandSource));
+
+    _commands = parseI2CCommands(cacheName, // PluginOnce/Ten/Fifty-PerSecond must come from cache
+                                 P180_CommandSource_e::PluginRead ==
+                                 _commandSource ? _strings[P180_BUFFER_START_COMMANDS + _loop] : EMPTY_STRING);
+
     _varIndex = _loop;
   }
 
-  while (P180_CommandState_e::StartingDelay != commandState && P180_CommandState_e::ConditionalExit != commandState && _loop < _loopMax) {
+  while (P180_CommandState_e::StartingDelay != _commandState && P180_CommandState_e::ConditionalExit != _commandState && _loop < _loopMax) {
     if (!_commands.empty()) {
       result &= executeI2CCommands();
     }
 
-    if (P180_CommandState_e::Processing == commandState) {
+    if (P180_CommandState_e::Processing == _commandState) {
       ++_loop;
-      _commands = parseI2CCommands(_strings[P180_BUFFER_START_CACHE + _loop], _strings[P180_BUFFER_START_COMMANDS + _loop]);
+      const String cacheName = _strings[P180_BUFFER_START_CACHE + _loop].isEmpty()
+                                        ? EMPTY_STRING
+                                        : concat(_strings[P180_BUFFER_START_CACHE + _loop], cacheSuffix(_commandSource));
+
+      _commands = parseI2CCommands(cacheName, // PluginOnce/Ten/Fifty-PerSecond must come from cache
+                                   P180_CommandSource_e::PluginRead ==
+                                   _commandSource ? _strings[P180_BUFFER_START_COMMANDS + _loop] : EMPTY_STRING);
       _varIndex = _loop;
     }
   }
 
-  if ((P180_CommandState_e::Processing == commandState) || (P180_CommandState_e::ConditionalExit == commandState)) {
-    commandState = P180_CommandState_e::Idle;
+  if ((P180_CommandState_e::Processing == _commandState) || (P180_CommandState_e::ConditionalExit == _commandState)) {
+    _commandState = P180_CommandState_e::Idle;
     _commands.clear();
-    _valueIsSet = false; // reset afterward
-  } else if (P180_CommandState_e::StartingDelay == commandState) {
-    commandState = P180_CommandState_e::WaitingForDelay;
+    _valueIsSet    = false; // reset afterward
+    _commandSource = P180_CommandSource_e::PluginIdle;
+  } else if (P180_CommandState_e::StartingDelay == _commandState) {
+    _commandState = P180_CommandState_e::WaitingForDelay;
   }
 
   return result;
@@ -968,38 +1074,25 @@ bool P180_data_struct::plugin_write(struct EventStruct *event,
       }
 
       cmds = parseI2CCommands(cacheName, par3, !cacheName.isEmpty());
-    } else if (equals(sub, F("exec")) && hasPar3) {                     // genI2c,exec,<cache_name>[,<TaskValueIndex>]
-      cmds = parseI2CCommands(par3, EMPTY_STRING);                      // Fetch commands from cache by name
+    } else if (equals(sub, F("exec")) && hasPar3) { // genI2c,exec,<cache_name>[,<TaskValueIndex>]
+      cmds = parseI2CCommands(par3, EMPTY_STRING);  // Fetch commands from cache by name
+    } else if (equals(sub, F("log")) && hasPar3) {  // genI2c,log,<1|0>
+      _showLog       = event->Par3 != 0;
+      P180_LOG_DEBUG = _showLog ? 1 : 0;
+      success        = true;
     }
 
-    if (!cmds.empty() && (P180_CommandState_e::Idle == commandState)) { // Execute commands when not busy
-      _commands    = cmds;
-      _varIndex    = taskVar;
-      _loop        = 0;
-      _loopMax     = _loop + 1; // Process single entry
-      commandState = P180_CommandState_e::Processing;
+    if (!cmds.empty() && (P180_CommandState_e::Idle == _commandState)) { // Execute commands when not busy
+      _commands     = cmds;
+      _varIndex     = taskVar;
+      _loop         = 0;
+      _loopMax      = _loop + 1; // Process single entry
+      _commandState = P180_CommandState_e::Processing;
       Scheduler.schedule_task_device_timer(_taskIndex, millis() + 5);
 
       success = true;
     }
   }
-
-  return success;
-}
-
-/*********************************************************************************************
- * Handle get config value processing
- ********************************************************************************************/
-bool P180_data_struct::plugin_get_config_value(struct EventStruct *event,
-                                               String            & string) {
-  bool success = false;
-
-  // const String val = parseString(string, 1);
-
-  // if (equals(val, F("?"))) {
-  //   const String sub    = parseString(string, 2);
-  //   const bool   hasPar = !parseString(string, 3).isEmpty();
-  // }
 
   return success;
 }

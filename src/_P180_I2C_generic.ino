@@ -6,6 +6,11 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-05-02 tonhuisman: Respond successful to PLUGIN_I2C_HAS_ADDRESS request, as we can (probably) handle any I2C device...
+ * 2025-05-01 tonhuisman: Suppress logging during handling of 1/sec, 10/sec and 50/sec events for better performance
+ *                        Add genI2c,log,<0|1> subcommand for disabling/enabling plugin logging
+ *                        Remove support for PLUGIN_GET_CONFIG as its not needed or useable and not implemented yet
+ * 2025-04-28 tonhuisman: Add support for processing during 1/sec, 10/sec and 50/sec plugin events
  * 2025-04-27 tonhuisman: Add support vor executing a command sequence from cache: getI2C,exec,<cache-name>[,<TaskVarIndex>]
  *                        Add support for selecting the Value-index either by number or name
  * 2025-04-21 tonhuisman: Add preliminary support for MQTT Discovery
@@ -63,6 +68,14 @@
  * 32le : int32_t (4 bytes, signed, little endian)
  * b[.<len>] : <len> uint8_t (bytes), <len> is needed for reading only
  * w[.<len>] : <len> uint16_t (words), <len> is needed for reading only
+ */
+
+/** 1/sec, 10/sec and 50/sec plugin event support:
+ * I2C Command sequences can be defined for PLUGIN_ONCE_A_SECOND, PLUGIN_TEN_PER_SECOND and PLUGIN_FIFTY_PER_SECOND by prefixing the
+ * command with 1ps, 10ps or 50ps, and a pipe-symbol | separator (the event separator).
+ * When a regular PLUGIN_READ event is also used, the previous commands must be postfixed with a pipe too, so that could look like this:
+ * <plugin_read_commands>|10ps|<plugin_ten_per_second_command_sequence>
+ * instead of 10ps also 1ps or 50ps could be used, though for 50ps that might incure some performance issues
  */
 
 /** Write commands supported:
@@ -150,7 +163,7 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {
-      success = (event->Par1 == P180_I2C_ADDRESS);
+      success = true;
       break;
     }
 
@@ -297,23 +310,42 @@ boolean Plugin_180(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
+    case PLUGIN_ONCE_A_SECOND:
+    {
+      P180_data_struct *P180_data = static_cast<P180_data_struct *>(getPluginTaskData(event->TaskIndex));
+
+      if (nullptr != P180_data) {
+        success = P180_data->plugin_once_a_second(event);
+      }
+      break;
+    }
+
+    case PLUGIN_TEN_PER_SECOND:
+    {
+      P180_data_struct *P180_data = static_cast<P180_data_struct *>(getPluginTaskData(event->TaskIndex));
+
+      if (nullptr != P180_data) {
+        success = P180_data->plugin_ten_per_second(event);
+      }
+      break;
+    }
+
+    case PLUGIN_FIFTY_PER_SECOND:
+    {
+      P180_data_struct *P180_data = static_cast<P180_data_struct *>(getPluginTaskData(event->TaskIndex));
+
+      if (nullptr != P180_data) {
+        success = P180_data->plugin_fifty_per_second(event);
+      }
+      break;
+    }
+
     case PLUGIN_WRITE:
     {
       P180_data_struct *P180_data = static_cast<P180_data_struct *>(getPluginTaskData(event->TaskIndex));
 
       if (nullptr != P180_data) {
         success = P180_data->plugin_write(event, string);
-      }
-
-      break;
-    }
-
-    case PLUGIN_GET_CONFIG_VALUE:
-    {
-      P180_data_struct *P180_data = static_cast<P180_data_struct *>(getPluginTaskData(event->TaskIndex));
-
-      if (nullptr != P180_data) {
-        success = P180_data->plugin_get_config_value(event, string);
       }
 
       break;

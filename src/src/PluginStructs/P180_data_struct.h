@@ -12,6 +12,7 @@
 # else // if FEATURE_EXTENDED_CUSTOM_SETTINGS
 #  define P180_MAX_COMMAND_LENGTH  175 // Max I2C command sequence length
 # endif // if FEATURE_EXTENDED_CUSTOM_SETTINGS
+# define P180_EVENT_SEPARATOR     '|'
 # define P180_COMMAND_SEPARATOR   ';'
 # define P180_ARGUMENT_SEPARATOR  '.'
 
@@ -84,6 +85,14 @@ enum class P180_CommandState_e :uint8_t {
   ConditionalExit, // Cancels further command execution
 };
 
+enum class P180_CommandSource_e : uint8_t {
+  PluginIdle = 0u,
+  PluginRead,
+  PluginOncePerSecond,
+  PluginTenPerSecond,
+  PluginFiftyPerSecond,
+};
+
 struct P180_Command_struct {
   ~P180_Command_struct();
 
@@ -144,13 +153,15 @@ struct P180_data_struct : public PluginTaskData_base {
   bool plugin_init(struct EventStruct *event);
   void plugin_exit(struct EventStruct *event);
   bool plugin_read(struct EventStruct *event);
+  bool plugin_once_a_second(struct EventStruct *event);
+  bool plugin_ten_per_second(struct EventStruct *event);
+  bool plugin_fifty_per_second(struct EventStruct *event);
   bool plugin_write(struct EventStruct *event,
                     String            & string);
-  bool plugin_get_config_value(struct EventStruct *event,
-                               String            & string);
 
 private:
 
+  bool                            processCommands(struct EventStruct *event);
   bool                            loadStrings(struct EventStruct *event);
 
   std::vector<P180_Command_struct>parseI2CCommands(const String& name,
@@ -159,6 +170,8 @@ private:
                                                    const String& line,
                                                    const bool    update);
   bool                            executeI2CCommands();
+
+  const __FlashStringHelper*      cacheSuffix(P180_CommandSource_e source);
 
   ESPEASY_RULES_FLOAT_TYPE _value{};
   int16_t                  _enPin;
@@ -171,13 +184,17 @@ private:
   bool                     _valueIsSet    = false;
   bool                     _evalIsSet     = false;
   bool                     _showLog       = false;
+  bool                     _has50ps       = false;
+  bool                     _has10ps       = false;
+  bool                     _has1ps        = false;
 
-  P180_CommandState_e commandState = P180_CommandState_e::Idle;
-  P180_Command_e      _lastCommand = P180_Command_e::NOP;
-  uint16_t            _lastReg{};
-  uint8_t             _loop{};
-  uint8_t             _loopMax = VARS_PER_TASK;
-  String              _strings[P180_CUSTOM_BUFFER_SIZE];
+  P180_CommandState_e  _commandState  = P180_CommandState_e::Idle;
+  P180_Command_e       _lastCommand   = P180_Command_e::NOP;
+  P180_CommandSource_e _commandSource = P180_CommandSource_e::PluginIdle;
+  uint16_t             _lastReg{};
+  uint8_t              _loop{};
+  uint8_t              _loopMax = VARS_PER_TASK;
+  String               _strings[P180_CUSTOM_BUFFER_SIZE];
   # if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER // When feature is available
   Sensor_VType _vTypes[VARS_PER_TASK];
   # endif // if defined(FEATURE_MQTT_DISCOVER) && FEATURE_MQTT_DISCOVER
