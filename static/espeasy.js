@@ -132,7 +132,7 @@ var commonPlugins = [
   //P178
   "lu9685", "lu9685,servo,", "lu9685,enable,", "lu9685,disable,", "lu9685,setrange,",
   //P180
-  "geni2c", "geni2c,cmd,",
+  "geni2c", "geni2c,cmd,", "geni2c,exec,", "geni2c,log,",
 ];
 var pluginDispKind = [
   //P095
