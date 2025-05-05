@@ -6,9 +6,12 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-05-05 tonhuisman: Change abbreviation for 'enable' from 'l' to 'a'
+ *                        Add 'let.<var>.<value>' I2C command, abbreviated to 'l'. Assigns <value> to a Rules global variable
+ *                        Limit max delay value to 10msec for 1/sec, 10/sec and 50/sec processing
  * 2025-05-02 tonhuisman: Respond successful to PLUGIN_I2C_HAS_ADDRESS request, as we can (probably) handle any I2C device...
  * 2025-05-01 tonhuisman: Suppress logging during handling of 1/sec, 10/sec and 50/sec events for better performance
- *                        Add genI2c,log,<0|1> subcommand for disabling/enabling plugin logging
+ *                        Add genI2C,log,<0|1> subcommand for disabling/enabling plugin logging
  *                        Remove support for PLUGIN_GET_CONFIG as its not needed or useable and not implemented yet
  * 2025-04-28 tonhuisman: Add support for processing during 1/sec, 10/sec and 50/sec plugin events
  * 2025-04-27 tonhuisman: Add support vor executing a command sequence from cache: getI2C,exec,<cache-name>[,<TaskVarIndex>]

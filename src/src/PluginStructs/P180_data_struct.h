@@ -52,9 +52,10 @@ enum class P180_Command_e : uint8_t {
   Calculate,       // 'c'
   Value,           // 'v'
   Delay,           // 'd'
-  EnableGPIO,      // 'l'
+  EnableGPIO,      // 'a'
   ResetGPIO,       // 'z'
   If,              // 'i'
+  Let,             // 'l'
 };
 
 enum class P180_DataFormat_e : uint8_t {
@@ -101,7 +102,8 @@ struct P180_Command_struct {
                       uint16_t          _reg,
                       int64_t           _data,
                       uint32_t          _len,
-                      String            _calculation);
+                      String            _calculation,
+                      String            _variable);
   # ifndef LIMIT_BUILD_SIZE
   String   toString();
   # endif // ifndef LIMIT_BUILD_SIZE
@@ -143,6 +145,7 @@ struct P180_Command_struct {
   std::vector<uint8_t> data_b;
   std::vector<uint16_t>data_w;
   String               calculation;
+  String               variable;
 };
 
 struct P180_data_struct : public PluginTaskData_base {
@@ -170,6 +173,7 @@ private:
                                                    const String& line,
                                                    const bool    update);
   bool                            executeI2CCommands();
+  String                          replacePluginValues(const String& inVar);
 
   const __FlashStringHelper*      cacheSuffix(P180_CommandSource_e source);
 

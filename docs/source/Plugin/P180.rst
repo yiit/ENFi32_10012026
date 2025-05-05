@@ -136,13 +136,14 @@ The commands available can either be used with the full command, or the 1 charac
 * ``value.<valueIndex>``: ``(v)``: (1..4 or a value name) Store the last calculated result, or last read value, in the specified Value field.
 * ``calc.<calculation>``: ``(c)``: Calculate a result, like Rules, extra available vars: ``%value%``, ``%pvalue%``, ``%h%``, ``%b0%..%b<n>%``, ``%bx0%..%bx<n>%``, ``%w0%..%w<n>%``, ``%wx0%..%wx<n>%``
 * ``if.<calculation>``: ``(i)``: Similar to ``calc`` command, when the calculation-result is 0 execution is cancelled
-* ``delay.<msec>``: ``(d)``: (range: 0..500) Some devices, after starting a read, require some time to process data. This can be handled by a delay. If the delay is < 10 msec, it will be handled immediately, longer delays are processed asynchronous to avoid blocking the ESP for too long.
-* ``enable.<state>``: ``(l)``: (0 or 1) Set the configured **'Enable' GPIO** pin to the provided state. If the pin is not configured, this command is ignored, and processing continues.
+* ``delay.<msec>``: ``(d)``: (range: 0..500, 0..10 for 1/sec, 10/sec, 50/sec events) Some devices, f.e. after starting a measurement, require some time to process data. This can be handled by a delay. If the delay is <= 10 msec, it will be handled immediately, longer delays are processed asynchronous to avoid blocking the ESP for too long.
+* ``enable.<state>``: ``(a)``: (0 or 1) Set the configured **'Enable' GPIO** pin to the provided state. If the pin is not configured, this command is ignored, and processing continues.
 * ``reset.<state>.<msec>``: ``(z)``: (state = 0 or 1, msec = range: 0..500) Pulse the configured **'Reset' GPIO** pin for the provided time (msec) to the state requested, to reset the device. If the pin is not configured, this command is ignored, and processing continues.
+* ``let.<variable>.<calculation>``: ``(l)``: Assign the result of a calculation to a global Rules variable. Can use the same plugin variables as available for ``calc`` and ``if``. The resulting variable can also be used from rules, or later in a ``calc``, ``if`` or ``let`` I2C command.
 
 During processing, the data has to be made available to some of the following steps to be able to calculate the outcome. The variables to insert the data are listed here:
 
-* ``%pvalue%``: The value currently in the Value field for this command sequence (when run during an Interval), can be read as 'previous-value'.
+* ``%pvalue%``: The value currently in the Value field for this command sequence (when run during an Interval or from Rules when a TaskValue index is specified), can be read as 'previous-value'.
 
 The next variables are only available after an ``eval`` I2C Command is executed:
 

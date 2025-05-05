@@ -6,9 +6,9 @@
 
 // These commands (not case-sensitive) must have the same order as the P180_Commands_e enum class
 const char P180_commands[] PROGMEM =
-  "n|g|p|r|w|s|t|e|c|v|d|l|z|i|";
+  "n|g|p|r|w|s|t|e|c|v|d|a|z|i|l|";
 const char P180_commandsLong[] PROGMEM =
-  "nop|get|put|read|write|read16|write16|eval|calc|value|delay|enable|reset|if|";
+  "nop|get|put|read|write|read16|write16|eval|calc|value|delay|enable|reset|if|let|";
 
 // Supported data formats, _ == undefined, not processed
 const char P180_dataFormats[] PROGMEM =
@@ -36,8 +36,9 @@ P180_Command_struct::P180_Command_struct(P180_Command_e    _command,
                                          uint16_t          _reg,
                                          int64_t           _data,
                                          uint32_t          _len,
-                                         String            _calculation)
-  :command(_command), format(_format), reg(_reg), len(_len), calculation(_calculation) {
+                                         String            _calculation,
+                                         String            _variable)
+  :command(_command), format(_format), reg(_reg), len(_len), calculation(_calculation), variable(_variable) {
   switch (format) {
     case P180_DataFormat_e::undefined: d0_uint32_t = static_cast<uint32_t>(_data); break; // Special case
     case P180_DataFormat_e::uint8_t: d0_uint8_t    = static_cast<uint8_t>(_data); break;
@@ -121,11 +122,22 @@ String P180_Command_struct::toString() {
     data = getHexValue(true);
   }
 
-  String result = strformat(F("cmd: '%s' (%s), fmt: '%s', reg: 0x%02x, data: %d (0x%x), len: %d"),
-                            cmd, cmdS, fmt, reg, getIntValue(), getUIntValue(), len);
+  int64_t val{};
+
+  if ((P180_Command_e::Delay == command) || (P180_Command_e::Value == command)) {
+    val = d0_uint32_t;
+  } else {
+    val = getIntValue();
+  }
+  String result = strformat(F("cmd: '%s' (%s), fmt: '%s', reg: 0x%x, data: %d (0x%llx), len: %d"),
+                            cmd, cmdS, fmt, reg, val, val, len);
 
   if (!data.isEmpty()) {
     result = concat(result, strformat(F(", data_b/w: %s"), data.c_str()));
+  }
+
+  if (!variable.isEmpty()) {
+    result = concat(result, strformat(F(", variable: %s"), variable.c_str()));
   }
 
   if (!calculation.isEmpty()) {
@@ -336,6 +348,7 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
           uint32_t len          = 0;
           P180_DataFormat_e fmt = P180_DataFormat_e::uint8_t;
           String calculation;
+          String variable;
 
           if (arg2i > -1) {
             fmt = static_cast<P180_DataFormat_e>(arg2i);
@@ -361,6 +374,14 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
                 fmt         = P180_DataFormat_e::undefined;
                 val         = 0;
                 calculation = args[arg - 1];
+                stripEscapeCharacters(calculation);
+                break;
+              case P180_Command_e::Let: // let - l.<variable>.<calculation>
+                fmt         = P180_DataFormat_e::undefined;
+                val         = 0;
+                variable    = args[arg - 1];
+                calculation = args[arg];
+                stripEscapeCharacters(variable);
                 stripEscapeCharacters(calculation);
                 break;
               case P180_Command_e::Eval:  // eval - e
@@ -416,7 +437,7 @@ std::vector<P180_Command_struct>P180_data_struct::parseI2CCommands(const String&
             }
 
             if (addCmd) {
-              commands.push_back(P180_Command_struct(cmd, fmt, reg, val, len, calculation));
+              commands.push_back(P180_Command_struct(cmd, fmt, reg, val, len, calculation, variable));
 
               if (((P180_Command_e::Write == cmd) || (P180_Command_e::RegisterWrite == cmd) || (P180_Command_e::Register16Write == cmd)) &&
                   ((P180_DataFormat_e::bytes == fmt) || (P180_DataFormat_e::words == fmt))) {
@@ -799,35 +820,13 @@ bool P180_data_struct::executeI2CCommands() {
         break;
       case P180_Command_e::Calculate:
       case P180_Command_e::If:
+      case P180_Command_e::Let:
 
         result = true;
 
         if (!_it->calculation.isEmpty()) {
-          String toCalc(_it->calculation);
-
-          toCalc.replace(F("%pvalue%"), toString(_value));                       // %pvalue%
-
-          if (_evalIsSet) {
-            toCalc.replace(F("%value%"), toString(_evalCommand->getIntValue())); // %value%
-            toCalc.replace(F("%h%"),     _evalCommand->getHexValue(true));       // %h%
-
-            if (P180_DataFormat_e::bytes == _evalCommand->format) {
-              if (toCalc.indexOf(F("%b")) > -1) {
-                for (uint8_t i = 0; i < _evalCommand->data_b.size(); ++i) {
-                  toCalc.replace(strformat(F("%%b%d%%"), i),  String(_evalCommand->data_b[i]));                   // %b<n>%
-                  toCalc.replace(strformat(F("%%bx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_b[i], 2)); // %bx<n>%
-                }
-              }
-            } else if (P180_DataFormat_e::words == _evalCommand->format) {
-              if (toCalc.indexOf(F("%w")) > -1) {
-                for (uint8_t i = 0; i < _evalCommand->data_w.size(); ++i) {
-                  toCalc.replace(strformat(F("%%w%d%%"), i),  String(_evalCommand->data_w[i]));                   // %w<n>%
-                  toCalc.replace(strformat(F("%%wx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_w[i], 4)); // %wx<n>%
-                }
-              }
-            }
-          }
-          String newCalc = parseTemplate(toCalc); // Process like rules
+          String toCalc(replacePluginValues(_it->calculation));
+          const String newCalc = parseTemplate(toCalc); // Process like rules
           ESPEASY_RULES_FLOAT_TYPE tmp{};
 
           if (Calculate(newCalc, tmp) == CalculateReturnCode::OK) {
@@ -839,6 +838,15 @@ bool P180_data_struct::executeI2CCommands() {
               if (essentiallyZero(tmp)) { // 0 = false => cancel execution
                 _commandState = P180_CommandState_e::ConditionalExit;
                 result        = false;    // PLUGIN_READ failed
+              }
+            } else if (P180_Command_e::Let == _it->command) {
+              String toVar(replacePluginValues(_it->variable));
+              const String newVar = parseTemplate(toVar); // Process like rules
+
+              if (!newVar.isEmpty() && ExtraTaskSettings.checkInvalidCharInNames(newVar.c_str())) {
+                setCustomFloatVar(newVar, tmp);
+              } else {
+                result = false;
               }
             } else {
               _value = tmp;
@@ -857,7 +865,10 @@ bool P180_data_struct::executeI2CCommands() {
         break;
       case P180_Command_e::Delay:
       {
-        const uint32_t ms = min(_it->d0_uint32_t, static_cast<uint32_t>(500u)); // Reasonable limit
+        const uint32_t mx = ((P180_CommandSource_e::PluginOncePerSecond == _commandSource) ||
+                             (P180_CommandSource_e::PluginTenPerSecond == _commandSource) ||
+                             (P180_CommandSource_e::PluginFiftyPerSecond == _commandSource)) ? 10u : 500u;
+        const uint32_t ms = min(_it->d0_uint32_t, mx); // Reasonable limit, max 10 msec for repeating events
 
         if (ms <= 10) {
           delay(ms);
@@ -942,6 +953,35 @@ bool P180_data_struct::executeI2CCommands() {
       !_valueIsSet &&
       (P180_CommandSource_e::PluginRead == _commandSource)) {
     UserVar.setFloat(_taskIndex, _varIndex, _value);
+  }
+
+  return result;
+}
+
+String P180_data_struct::replacePluginValues(const String& inVar) {
+  String result(inVar);
+
+  result.replace(F("%pvalue%"), toString(_value));                       // %pvalue%
+
+  if (_evalIsSet) {
+    result.replace(F("%value%"), toString(_evalCommand->getIntValue())); // %value%
+    result.replace(F("%h%"),     _evalCommand->getHexValue(true));       // %h%
+
+    if (P180_DataFormat_e::bytes == _evalCommand->format) {
+      if (result.indexOf(F("%b")) > -1) {
+        for (uint8_t i = 0; i < _evalCommand->data_b.size(); ++i) {
+          result.replace(strformat(F("%%b%d%%"), i),  String(_evalCommand->data_b[i]));                   // %b<n>%
+          result.replace(strformat(F("%%bx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_b[i], 2)); // %bx<n>%
+        }
+      }
+    } else if (P180_DataFormat_e::words == _evalCommand->format) {
+      if (result.indexOf(F("%w")) > -1) {
+        for (uint8_t i = 0; i < _evalCommand->data_w.size(); ++i) {
+          result.replace(strformat(F("%%w%d%%"), i),  String(_evalCommand->data_w[i]));                   // %w<n>%
+          result.replace(strformat(F("%%wx%d%%"), i), formatToHex_no_prefix(_evalCommand->data_w[i], 4)); // %wx<n>%
+        }
+      }
+    }
   }
 
   return result;
