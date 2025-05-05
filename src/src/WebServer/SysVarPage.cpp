@@ -378,8 +378,9 @@ void handle_sysvars() {
       F("Mins to hcm:  %c_m2hcm%(482)"),
       F("Secs to dhms: %c_s2dhms%(100000)"),
 
+#ifndef LIMIT_BUILD_SIZE
       F("Random: %c_random%(0, 100)"),
-
+#endif
       // addFormSeparator(3,
       F("To HEX: %c_2hex%(100000)"),
 
