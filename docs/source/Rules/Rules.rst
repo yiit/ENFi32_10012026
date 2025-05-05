@@ -1005,6 +1005,32 @@ For example (bit useless though, just for illustrative purposes):
  221351 : Info  : Command: logentry
  221353 : Info  : 87
 
+Translate the current day to a localized (German) 3 character abbreviation: (using named variables)
+
+.. code-block:: none
+
+  Let,idx,(%sysweekday%-1)*3 // 3 characters per value
+  Let,idx3,%v_idx%+3         // 3 characters to display
+  [DSPLeft].7dtext,{substring:%v_idx%:%v_idx3%:SONMONDIEMITDONFRESAM}~%syshour_0%.%sysmin_0%
+
+Or using 2-character Dutch abbreviations:
+
+.. code-block:: none
+
+  Let,idx,(%sysweekday%-1)*2 // 2 characters per value
+  Let,idx2,%v_idx%+2         // 2 characters to display
+  [DSPLeft].7dtext,{substring:%v_idx%:%v_idx2%:"ZOMADIWODOVRZA"}~%syshour_0%.%sysmin_0%
+
+Translate the current month to a Polish 3 character abbreviation, format DD MMM YY :
+
+.. code-block:: none
+
+  Let,idx,(%sysmonth%-1)*3 // 3 characters per value
+  Let,idx3,%v_idx%+3       // 3 characters to display
+  [DSPLeft].7dtext,%sysday_0%~{substring:%v_idx%:%v_idx3%:STYLUTMARKWIMAJCZELIPSIEWRZPAZLISGRU}~%sysyears%
+
+NB: Using all uppercase here as that shows most readable on a 7-segment display, for other purposes, CamelCase/lowercase can of course be used.
+
 IndexOf and IndexOf_ci
 ^^^^^^^^^^^^^^^^^^^^^^
 
