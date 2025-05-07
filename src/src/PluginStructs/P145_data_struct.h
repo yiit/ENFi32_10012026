@@ -10,28 +10,29 @@
 
 #include "../../_Plugin_Helper.h"
 #ifdef USES_P145
+# if SOC_ADC_SUPPORTED || defined(ESP8266)
 
-# include "../Helpers/OversamplingHelper.h"
+#  include "../Helpers/OversamplingHelper.h"
 
 // Maximum number of types that can be selected from
-# define P145_MAXTYPES  10
+#  define P145_MAXTYPES  10
 
 // Analog input pin for sensor value
-# define P145_SENSOR_PIN A0
+#  define P145_SENSOR_PIN A0
 
 // Supply voltage applied to the sensor
-# define P145_VCC        (5.0)
-# define P145_VCCLOW     (3.3)
+#  define P145_VCC        (5.0)
+#  define P145_VCCLOW     (3.3)
 
 // Max input scale voltage of the ADC
-# define P145_VMAX       (3.3)
+#  define P145_VMAX       (3.3)
 
 // Calibration interval in milli seconds (once per day)
-# define P145_CALIBRATION_INTERVAL (24 * 60 * 60 * 1000)
+#  define P145_CALIBRATION_INTERVAL (24 * 60 * 60 * 1000)
 
-# if FEATURE_MQTT_DISCOVER
+#  if FEATURE_MQTT_DISCOVER
 int Plugin_145_QueryVType(uint8_t value_nr);
-# endif // if FEATURE_MQTT_DISCOVER
+#  endif // if FEATURE_MQTT_DISCOVER
 
 // Selection of the conversion algorithm Rs/R0 => value
 enum P145_algorithm
@@ -147,5 +148,6 @@ private:
   void  resetOversampling();
 };
 
-#endif  // PLUGINSTRUCTS_P145_DATA_STRUCT_H
-#endif  // USES_P145
+# endif // if SOC_ADC_SUPPORTED || defined(ESP8266)
+#endif // ifdef USES_P145
+#endif // ifndef PLUGINSTRUCTS_P145_DATA_STRUCT_H

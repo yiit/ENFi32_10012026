@@ -8,6 +8,8 @@
 #  include "../Globals/MQTT.h"
 #  include "../Helpers/StringGenerator_System.h"
 # endif // if FEATURE_MQTT_DISCOVER
+#include "../Helpers/SystemVariables.h"
+
 
 /***************************************************************************************
  * Parse MQTT topic for /cmd and /set ending to handle commands or TaskValueSet
@@ -59,8 +61,9 @@ bool MQTT_handle_topic_commands(struct EventStruct *event,
         uint8_t valueNr;
 
         if (validDeviceIndex(deviceIndex) && validTaskVarIndex(taskVarIndex)) {
+#if defined(USES_P033) || defined(USES_P086)
           const int pluginID = Device[deviceIndex].Number;
-
+#endif
           # ifdef USES_P033
 
           if ((pluginID == 33) || // Plugin 33 Dummy Device,
@@ -191,10 +194,24 @@ void MQTT_execute_command(String& cmd,
 }
 
 bool MQTT_protocol_send(EventStruct *event,
-                        String       pubname,
+                        String pubname,
                         bool         retainFlag) {
   bool success                = false;
+
+  // Check for %valname%
   const bool contains_valname = pubname.indexOf(F("%valname%")) != -1;
+
+  #ifndef LIMIT_BUILD_SIZE
+  // Small speed-up as there are lots of system variables starting with "%sys" and this is used in quite a lot of MQTT topics.
+  // Not needed if build size really matters
+  if (pubname.indexOf(F("%sysname%")) != -1) {
+    pubname.replace(F("%sysname%"), SystemVariables::getSystemVariable(SystemVariables::SYSNAME));
+  }
+  // %tskname% will not change per taskvalue, so replace now
+  if (pubname.indexOf(F("%tskname%")) != -1) {
+    pubname.replace(F("%tskname%"), getTaskDeviceName(event->TaskIndex));
+  }
+  #endif
 
   const uint8_t valueCount = getValueCountForTask(event->TaskIndex);
 
@@ -219,7 +236,11 @@ bool MQTT_protocol_send(EventStruct *event,
     # ifndef BUILD_NO_DEBUG
 
     if (loglevelActiveFor(LOG_LEVEL_DEBUG)) {
-      addLog(LOG_LEVEL_DEBUG, strformat(F("MQTT C%03d : %s %s"), event->ControllerIndex, tmppubname.c_str(), value.c_str()));
+      addLog(LOG_LEVEL_DEBUG, strformat(
+        F("MQTT %s : %s %s"), 
+        get_formatted_Controller_number(getCPluginID_from_ControllerIndex(event->ControllerIndex)).c_str(), 
+        tmppubname.c_str(), 
+        value.c_str()));
     }
     # endif // ifndef BUILD_NO_DEBUG
 

@@ -7,12 +7,13 @@
 #include "../PluginStructs/P145_data_struct.h"
 
 #ifdef USES_P145
+# if SOC_ADC_SUPPORTED || defined(ESP8266)
 
 // Enable testing
 // #define P145_TEST
 // #define P145_CALIBRATION_INTERVAL (5*60*1000)
 
-# include "../Globals/ESPEasyWiFiEvent.h" // Need to know when WiFi is ruining the ADC measurements
+#  include "../Globals/ESPEasyWiFiEvent.h" // Need to know when WiFi is ruining the ADC measurements
 
 // The table sensorDefs[] contains string items for representation.
 // Storage is in PROGMEM where a (fixed format) C-style string does not fit well
@@ -20,27 +21,27 @@
 // Below the defines used to represent these enums
 
 // Gas type identifiers used to condense the sensorDefs table to fixed format
-# define P145_GASUSER    0
-# define P145_GASCO2     1
-# define P145_GASH2      2
-# define P145_GASALCOHOL 3
-# define P145_GASCH4     4
-# define P145_GASLPG     5
-# define P145_GASCO      6
+#  define P145_GASUSER    0
+#  define P145_GASCO2     1
+#  define P145_GASH2      2
+#  define P145_GASALCOHOL 3
+#  define P145_GASCH4     4
+#  define P145_GASLPG     5
+#  define P145_GASCO      6
 
 // Sensor type identifier used to condense the SensorDefs table to fixed format
-# define P145_SENSUSER   0
-# define P145_SENSMQ135  1
-# define P145_SENSMQ2    2
-# define P145_SENSMQ3    3
-# define P145_SENSMQ4    4
-# define P145_SENSMQ5    5
-# define P145_SENSMQ6    6
-# define P145_SENSMQ7    7
-# define P145_SENSMQ8    8
+#  define P145_SENSUSER   0
+#  define P145_SENSMQ135  1
+#  define P145_SENSMQ2    2
+#  define P145_SENSMQ3    3
+#  define P145_SENSMQ4    4
+#  define P145_SENSMQ5    5
+#  define P145_SENSMQ6    6
+#  define P145_SENSMQ7    7
+#  define P145_SENSMQ8    8
 
 
-# if FEATURE_MQTT_DISCOVER
+#  if FEATURE_MQTT_DISCOVER
 int Plugin_145_QueryVType(uint8_t value_nr) {
   const Sensor_VType vtypes[] = {
     Sensor_VType::SENSOR_TYPE_NONE,     // User defined
@@ -63,7 +64,7 @@ int Plugin_145_QueryVType(uint8_t value_nr) {
   return static_cast<int>(result);
 }
 
-# endif // if FEATURE_MQTT_DISCOVER
+#  endif // if FEATURE_MQTT_DISCOVER
 
 
 /******************************************************************************/
@@ -250,14 +251,14 @@ const P145_SENSORDEF sensorDefs[] PROGMEM
 constexpr const int nbrOfTypes = NR_ELEMENTS(sensorDefs);
 
 // Digital ouput value to swicth heater ON/OFF
-# define P145_HEATER_OFF  LOW
-# define P145_HEATER_ON   HIGH
+#  define P145_HEATER_OFF  LOW
+#  define P145_HEATER_ON   HIGH
 
 // Timeout values for Heater control
-# define HEATER_WARMUP_TIME (90 * 1000)
-# define HEATER_ON_TIME (60 * 1000)
-# define HEATER_OFF_TIME (60 * 1000)
-# define HEATER_MEAS_TIME (30 * 1000)
+#  define HEATER_WARMUP_TIME (90 * 1000)
+#  define HEATER_ON_TIME (60 * 1000)
+#  define HEATER_OFF_TIME (60 * 1000)
+#  define HEATER_MEAS_TIME (30 * 1000)
 
 /*****************************************************************************/
 
@@ -461,9 +462,9 @@ float P145_data_struct::getTempHumCorrection(float temperature, float humidity) 
   {
     c = 1.0f;
   }
-# ifdef P145_DEBUG
+#  ifdef P145_DEBUG
   addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: correction= "), c));
-# endif // ifdef P145_DEBUG
+#  endif // ifdef P145_DEBUG
   return c;
 }
 
@@ -558,10 +559,10 @@ float P145_data_struct::readValue(float temperature, float humidity)
   float rSensor = 0.0f; // Sensor resistance Rs
   float value   = 0.0f; // Return value
 
-# ifdef P145_DEBUG
+#  ifdef P145_DEBUG
   uint32_t ovs_cnt = 0; // Oversampling count (for debugging)
-# endif // ifdef P145_DEBUG
-# ifdef P145_TEST
+#  endif // ifdef P145_DEBUG
+#  ifdef P145_TEST
   static float injector = 50.0f;
   static float injstep  = 50.0f;
   ain       = injector;
@@ -576,7 +577,7 @@ float P145_data_struct::readValue(float temperature, float humidity)
   {
     injstep = 50.0f;
   }
-# else // ifdef P145_TEST
+#  else // ifdef P145_TEST
 
   if (validGpio(heaterPin))   // Check if heater control is enabled
   {
@@ -585,12 +586,12 @@ float P145_data_struct::readValue(float temperature, float humidity)
   else
   {
     ain = getAnalogValue(); // Use acually being measured value
-#  ifdef P145_DEBUG
+#   ifdef P145_DEBUG
     ovs_cnt = ovs.getCount();
-#  endif // ifdef P145_DEBUG
+#   endif // ifdef P145_DEBUG
     resetOversampling(); // Reset the oversampling variables.
   }
-# endif // ifdef P145_TEST
+#  endif // ifdef P145_TEST
 
   if (ain > 0.0f)                  // Skip unsuccesful measurements
   {
@@ -607,7 +608,7 @@ float P145_data_struct::readValue(float temperature, float humidity)
 
   if (loglevelActiveFor(LOG_LEVEL_INFO))
   {
-# ifdef P145_DEBUG
+#  ifdef P145_DEBUG
     addLog(LOG_LEVEL_INFO, concat(concat(F("MQ-xx: Sensor type= "), sensorType), concat(F(": "), getTypeName(sensorType))));
     addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: algorithm= "), algorithm));     // Conversion algorithm
     addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: Rload= "), rload));             // Load resistor Rload
@@ -624,7 +625,7 @@ float P145_data_struct::readValue(float temperature, float humidity)
     {
       addLog(LOG_LEVEL_INFO, F("MQ-xx: Calibration enabled"));
     }
-# endif // ifdef P145_DEBUG
+#  endif // ifdef P145_DEBUG
     addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: level= "), value));   // Calculated sensor value
     addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: Rcal= "), rcal_act)); // Fresh calibrated Rzero when at ref level
   }
@@ -724,7 +725,7 @@ float P145_data_struct::getAutoCalibrationValue() const
 /**************************************************************************/
 void P145_data_struct::dump() const
 {
-# ifdef P145_DEBUG
+#  ifdef P145_DEBUG
 
   if (loglevelActiveFor(LOG_LEVEL_INFO))
   {
@@ -746,7 +747,7 @@ void P145_data_struct::dump() const
     addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: analog PIN: "), analogPin));
     addLog(LOG_LEVEL_INFO, concat(F("MQ-xx: heater PIN: "), heaterPin));
   }
-# endif // ifdef P145_DEBUG
+#  endif // ifdef P145_DEBUG
 }
 
 /**************************************************************************/
@@ -846,12 +847,12 @@ void P145_data_struct::calibrate(float currentRcal)
 
   if (loglevelActiveFor(LOG_LEVEL_INFO))
   {
-# ifdef P145_DEBUG
+#  ifdef P145_DEBUG
 
     // Calculated Rzero if calibration concentration is applied
     // Rcal as calculated previous sample
     addLog(LOG_LEVEL_INFO, concat(concat(F("MQ-xx: Calibration with Rcal =  "), currentRcal), concat(F(" Rlast = "), lastRcal)));
-# endif // ifdef P145_DEBUG
+#  endif // ifdef P145_DEBUG
 
     if (doit)
     {
@@ -875,9 +876,9 @@ void P145_data_struct::heaterControl(void)
   unsigned long now = millis();
   long time         = timePassedSince(heaterChangeTime); // Time a state is active
 
-  # ifdef P145_DEBUG
+  #  ifdef P145_DEBUG
   P145_heaterState lastState = heaterState;              // To detect a state change
-  # endif // ifdef P145_DEBUG
+  #  endif // ifdef P145_DEBUG
 
   // Check if the heaterPin has been changed => change in controller
   if (heaterPin != lastHeaterPin)
@@ -957,14 +958,15 @@ void P145_data_struct::heaterControl(void)
       break;
   }
 
-# ifdef P145_DEBUG
+#  ifdef P145_DEBUG
 
   if (heaterState != lastState)
   {
     int x = time / 1000;
     addLog(LOG_LEVEL_INFO, concat(concat(F("MQ-xx: $$$ Heater state: "), heaterState), concat(F(", time: "), x)));
   }
-# endif  // P145_DEBUG
+#  endif  // P145_DEBUG
 }
 
+# endif // if SOC_ADC_SUPPORTED || defined(ESP8266)
 #endif // USES_P145

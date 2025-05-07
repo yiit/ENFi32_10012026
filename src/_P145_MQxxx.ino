@@ -78,6 +78,7 @@
 
 #include "_Plugin_Helper.h"
 #ifdef USES_P145
+#if SOC_ADC_SUPPORTED || defined(ESP8266)
 # include "src/PluginStructs/P145_data_struct.h"                    // MQ-xxx sensor specific data
 
 # define PLUGIN_145
@@ -208,7 +209,7 @@ boolean Plugin_145(byte function, struct EventStruct *event, String& string)
       selector.addFormSelector(F("Sensor type"), F(P145_GUID_TYPE), P145_PCONFIG_SENSORT);
 
 # ifdef ESP32
-
+#if SOC_ADC_SUPPORTED
       // Analog input selection
       addRowLabel(formatGpioName_input(F("Analog Pin ")));
 #  if HAS_HALL_EFFECT_SENSOR
@@ -216,6 +217,7 @@ boolean Plugin_145(byte function, struct EventStruct *event, String& string)
 #  else // if HAS_HALL_EFFECT_SENSOR
       addADC_PinSelect(AdcPinSelectPurpose::ADC_Touch,            F(P145_GUID_AINPIN), P145_CONFIG_PIN_AIN);
 #  endif // if HAS_HALL_EFFECT_SENSOR
+#endif
 # endif // ifdef ESP32
       addFormPinSelect(PinSelectPurpose::Generic_output,
                        formatGpioName_output_optional(F("Heater Pin ")),
@@ -393,4 +395,5 @@ boolean Plugin_145(byte function, struct EventStruct *event, String& string)
   return success;
 } // function Plugin_145()
 
+#endif
 #endif  // USES_P145
