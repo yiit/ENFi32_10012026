@@ -133,7 +133,7 @@ String toStringNoZero(int64_t value) {
 
 String doubleToString(const double& value, unsigned int decimalPlaces, bool trimTrailingZeros_b) {
   String res;
-  doubleToValidString(res, value, decimalPlaces, trimTrailingZeros);
+  doubleToValidString(res, value, decimalPlaces, trimTrailingZeros_b);
   return res;
 }
 
