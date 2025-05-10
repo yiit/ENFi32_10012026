@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-05-10 tonhuisman: Refactor I2C Command processor to BusCmd command processor helper (phase 1 refactor)
  * 2025-05-05 tonhuisman: Change abbreviation for 'enable' from 'l' to 'a'
  *                        Add 'let.<var>.<value>' I2C command, abbreviated to 'l'. Assigns <value> to a Rules global variable
  *                        Limit max delay value to 10msec for 1/sec, 10/sec and 50/sec processing
