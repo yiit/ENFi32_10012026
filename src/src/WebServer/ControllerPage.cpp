@@ -482,6 +482,8 @@ void handle_controllers_ControllerSettingsPage(controllerIndex_t controllerindex
               addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_OPTION);
               addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TRIGGER);
               addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TOPIC);
+              addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_CONFIG);
+              addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_RETAINED_DISCOVERY_OPTION);
             }
             #  endif // if FEATURE_MQTT_DISCOVER
           }

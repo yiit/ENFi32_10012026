@@ -67,6 +67,8 @@ const __FlashStringHelper* toString(ControllerSettingsStruct::VarType parameterI
     case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_OPTION:    return F("Enable Auto Discovery");
     case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TRIGGER:   return F("Discovery Trigger topic");
     case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TOPIC:     return F("Auto Discovery topic");
+    case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_CONFIG:    return F("Config suffix (/config)");
+    case ControllerSettingsStruct::CONTROLLER_RETAINED_DISCOVERY_OPTION: return F("Retain Discovery");
     # endif // if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
 
     case ControllerSettingsStruct::CONTROLLER_ENABLED:
@@ -388,6 +390,13 @@ void addControllerParameterForm(const ControllerSettingsStruct  & ControllerSett
       addFormTextBox(displayName, internalName, ControllerSettings.MqttAutoDiscoveryTopic,
                      sizeof(ControllerSettings.MqttAutoDiscoveryTopic) - 1);
       break;
+    case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_CONFIG:
+      addFormTextBox(displayName, internalName, ControllerSettings.MqttAutoDiscoveryConfig,
+                     sizeof(ControllerSettings.MqttAutoDiscoveryConfig) - 1);
+      break;
+    case ControllerSettingsStruct::CONTROLLER_RETAINED_DISCOVERY_OPTION:
+      addFormCheckBox(displayName, internalName, ControllerSettings.mqtt_retainDiscovery());
+      break;
     # endif // if FEATURE_MQTT_DISCOVER
 #endif // if FEATURE_MQTT
     case ControllerSettingsStruct::CONTROLLER_USE_EXTENDED_CREDENTIALS:
@@ -572,6 +581,12 @@ void saveControllerParameterForm(ControllerSettingsStruct        & ControllerSet
       break;
     case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TOPIC:
       strncpy_webserver_arg(ControllerSettings.MqttAutoDiscoveryTopic,   internalName);
+      break;
+    case ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_CONFIG:
+      strncpy_webserver_arg(ControllerSettings.MqttAutoDiscoveryConfig,  internalName);
+      break;
+    case ControllerSettingsStruct::CONTROLLER_RETAINED_DISCOVERY_OPTION:
+      ControllerSettings.mqtt_retainDiscovery(isFormItemChecked(internalName));
       break;
     # endif // if FEATURE_MQTT_DISCOVER
 #endif // if FEATURE_MQTT

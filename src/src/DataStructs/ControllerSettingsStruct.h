@@ -116,6 +116,8 @@ struct ControllerSettingsStruct
     CONTROLLER_AUTO_DISCOVERY_OPTION,
     CONTROLLER_AUTO_DISCOVERY_TRIGGER,
     CONTROLLER_AUTO_DISCOVERY_TOPIC,
+    CONTROLLER_AUTO_DISCOVERY_CONFIG,
+    CONTROLLER_RETAINED_DISCOVERY_OPTION,
     #endif
 
     // Keep this as last, is used to loop over all parameters
@@ -187,6 +189,8 @@ struct ControllerSettingsStruct
   #if FEATURE_MQTT_DISCOVER
   bool         mqtt_autoDiscovery() const { return VariousBits1.mqttAutoDiscovery; }
   void         mqtt_autoDiscovery(bool value) { VariousBits1.mqttAutoDiscovery = value; }
+  bool         mqtt_retainDiscovery() const { return VariousBits1.mqttRetainDiscovery; }
+  void         mqtt_retainDiscovery(bool value) { VariousBits1.mqttRetainDiscovery = value; }
   #endif
 
 #if FEATURE_MQTT_TLS
@@ -234,7 +238,7 @@ struct ControllerSettingsStruct
     uint32_t useLocalSystemTime               : 1; // Bit 11
     uint32_t TLStype                          : 4; // Bit 12...15: TLS type
     uint32_t mqttAutoDiscovery                : 1; // Bit 16
-    uint32_t unused_17                        : 1; // Bit 17
+    uint32_t mqttRetainDiscovery              : 1; // Bit 17
     uint32_t unused_18                        : 1; // Bit 18
     uint32_t unused_19                        : 1; // Bit 19
     uint32_t unused_20                        : 1; // Bit 20
@@ -251,7 +255,8 @@ struct ControllerSettingsStruct
     uint32_t unused_31                        : 1; // Bit 31
   }    VariousBits1;
   char ClientID[65];                                 // Used to define the Client ID used by the controller
-  char MqttAutoDiscoveryTopic[129];
+  char MqttAutoDiscoveryTopic[104];
+  char MqttAutoDiscoveryConfig[25];         // Alternative for /config suffix, defaults to /config
   char MqttAutoDiscoveryTrigger[65];
 
 private:
