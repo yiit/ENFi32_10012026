@@ -84,6 +84,7 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType)
     case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY:
     case Sensor_VType::SENSOR_TYPE_AQI_ONLY:
     case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
+    case Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED:
       return 1;
   }
   #ifndef BUILD_NO_DEBUG
@@ -159,6 +160,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY: return F("Reactive Power");
     case Sensor_VType::SENSOR_TYPE_AQI_ONLY:         return F("AQI");
     case Sensor_VType::SENSOR_TYPE_NOX_ONLY:         return F("NOx");
+    case Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED:  return F("Switch (inv.)");
     #else // if FEATURE_MQTT_DISCOVER
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:
@@ -190,6 +192,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY:
     case Sensor_VType::SENSOR_TYPE_AQI_ONLY:
     case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
+    case Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED:
       break;
     #endif // if FEATURE_MQTT_DISCOVER
   }

@@ -1328,6 +1328,18 @@ void parseDeviceClassVariable(String                   & s,
                               bool                       useURLencode) {
   SMART_REPL(F("%devclass%"), devclass);
 }
+
+void parseUniqueIdVariable(String      & s,
+                           const String& uniqueId,
+                           bool          useURLencode) {
+  SMART_REPL(F("%unique_id%"), uniqueId);
+}
+
+void parseElementIdVariable(String     & s,
+                           const String& elementId,
+                           bool          useURLencode) {
+  SMART_REPL(F("%element_id%"), elementId);
+}
 #endif
 
 void parseSystemVariables(String& s, bool useURLencode)

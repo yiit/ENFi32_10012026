@@ -11,7 +11,7 @@ bool MQTT_handle_topic_commands(struct EventStruct *event,
 void MQTT_execute_command(String& command,
                           bool    tryRemoteConfig = false);
 bool MQTT_protocol_send(EventStruct *event,
-                        String pubname,
+                        String       pubname,
                         bool         retainFlag);
 
 # if FEATURE_MQTT_DISCOVER
@@ -23,14 +23,19 @@ bool getDiscoveryVType(struct EventStruct *event,
                        uint8_t             pConfigOffset,
                        uint8_t             nrVars);
 
-int Plugin_QueryVType_Analog(uint8_t value_nr);
-int Plugin_QueryVType_CO2(uint8_t value_nr);
-int Plugin_QueryVType_Distance(uint8_t value_nr);
-int Plugin_QueryVType_DustPM2_5(uint8_t value_nr);
-int Plugin_QueryVType_Lux(uint8_t value_nr);
-int Plugin_QueryVType_Temperature(uint8_t value_nr);
-int Plugin_QueryVType_Weight(uint8_t value_nr);
+int    Plugin_QueryVType_BinarySensor(uint8_t value_nr);
+int    Plugin_QueryVType_BinarySensorInv(uint8_t value_nr);
+int    Plugin_QueryVType_Analog(uint8_t value_nr);
+int    Plugin_QueryVType_CO2(uint8_t value_nr);
+int    Plugin_QueryVType_Distance(uint8_t value_nr);
+int    Plugin_QueryVType_DustPM2_5(uint8_t value_nr);
+int    Plugin_QueryVType_Lux(uint8_t value_nr);
+int    Plugin_QueryVType_Temperature(uint8_t value_nr);
+int    Plugin_QueryVType_Weight(uint8_t value_nr);
 
+#  if FEATURE_MQTT_DEVICECLASS
+String MQTT_binary_deviceClassName(int devClassIndex);
+#  endif // if FEATURE_MQTT_DEVICECLASS
 struct DiscoveryItem {
   DiscoveryItem(Sensor_VType _VType, int _valueCount, taskVarIndex_t _varIndex)
     : VType(_VType), valueCount(_valueCount), varIndex(_varIndex) {}
@@ -40,33 +45,34 @@ struct DiscoveryItem {
   taskVarIndex_t varIndex;
 };
 
-bool   MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex,
-                              cpluginID_t       CPluginID);
-bool   MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIndex,
-                                            ControllerSettingsStruct& ControllerSettings);
-bool   MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
-                                    std::vector<DiscoveryItem>& discoveryItems,
-                                    int                         valueCount);
+bool MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex,
+                            cpluginID_t       CPluginID);
+bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIndex,
+                                          ControllerSettingsStruct& ControllerSettings);
+bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
+                                  std::vector<DiscoveryItem>& discoveryItems,
+                                  int                         valueCount,
+                                  String                    & deviceClass);
 String MQTT_TaskValueUniqueName(const String& taskName,
                                 const String& valueName);
 String MQTT_DiscoveryBuildValueTopic(const String            & topic,
                                      struct EventStruct       *event,
                                      uint8_t                   taskValueIndex,
-                                     const __FlashStringHelper*deviceClass);
+                                     const __FlashStringHelper*deviceClass,
+                                     const String            & uniqueId,
+                                     const String            & elementId);
 
 bool MQTT_DiscoveryPublish(controllerIndex_t ControllerIndex,
                            const String    & topic,
                            const String    & discoveryMessage,
                            taskIndex_t       x,
                            uint8_t           v,
-                           const String    & taskName);
+                           bool              retained = false);
 
 bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                            uint8_t                   taskValue,
-                                           String                    taskName,
                                            controllerIndex_t         ControllerIndex,
-                                           String                    publishTopic,
-                                           String                    discoveryTopic,
+                                           ControllerSettingsStruct& ControllerSettings,
                                            const __FlashStringHelper*componentClass,
                                            String                    deviceClass,
                                            String                    unitOfMeasure,
@@ -74,7 +80,9 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                            const String              deviceElement,
                                            bool                      success,
                                            bool                      hasSet,
-                                           bool                      hasIcon);
+                                           bool                      hasIcon,
+                                           const String            & elementId,
+                                           bool                      sendTrigger = false);
 # endif // if FEATURE_MQTT_DISCOVER
 #endif // if FEATURE_MQTT
 #endif // ifndef CPLUGIN_HELPER_MQTT_H

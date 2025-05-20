@@ -406,6 +406,14 @@ void parseSingleControllerVariable(String            & s,
 void parseDeviceClassVariable(String                   & s,
                               const __FlashStringHelper* devclass,
                               bool                       useURLencode);
+
+void parseUniqueIdVariable(String      & s,
+                           const String& uniqueId,
+                           bool          useURLencode);
+
+void parseElementIdVariable(String     & s,
+                           const String& elementId,
+                           bool          useURLencode);
 #endif
 
 void parseSystemVariables(String& s,

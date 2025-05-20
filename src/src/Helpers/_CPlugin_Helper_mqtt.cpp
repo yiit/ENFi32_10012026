@@ -8,7 +8,7 @@
 #  include "../Globals/MQTT.h"
 #  include "../Helpers/StringGenerator_System.h"
 # endif // if FEATURE_MQTT_DISCOVER
-#include "../Helpers/SystemVariables.h"
+# include "../Helpers/SystemVariables.h"
 
 
 /***************************************************************************************
@@ -61,9 +61,9 @@ bool MQTT_handle_topic_commands(struct EventStruct *event,
         uint8_t valueNr;
 
         if (validDeviceIndex(deviceIndex) && validTaskVarIndex(taskVarIndex)) {
-#if defined(USES_P033) || defined(USES_P086)
+# if defined(USES_P033) || defined(USES_P086)
           const int pluginID = Device[deviceIndex].Number;
-#endif
+# endif // if defined(USES_P033) || defined(USES_P086)
           # ifdef USES_P033
 
           if ((pluginID == 33) || // Plugin 33 Dummy Device,
@@ -194,24 +194,26 @@ void MQTT_execute_command(String& cmd,
 }
 
 bool MQTT_protocol_send(EventStruct *event,
-                        String pubname,
+                        String       pubname,
                         bool         retainFlag) {
-  bool success                = false;
+  bool success = false;
 
   // Check for %valname%
   const bool contains_valname = pubname.indexOf(F("%valname%")) != -1;
 
-  #ifndef LIMIT_BUILD_SIZE
+  # ifndef LIMIT_BUILD_SIZE
+
   // Small speed-up as there are lots of system variables starting with "%sys" and this is used in quite a lot of MQTT topics.
   // Not needed if build size really matters
   if (pubname.indexOf(F("%sysname%")) != -1) {
     pubname.replace(F("%sysname%"), SystemVariables::getSystemVariable(SystemVariables::SYSNAME));
   }
+
   // %tskname% will not change per taskvalue, so replace now
   if (pubname.indexOf(F("%tskname%")) != -1) {
     pubname.replace(F("%tskname%"), getTaskDeviceName(event->TaskIndex));
   }
-  #endif
+  # endif // ifndef LIMIT_BUILD_SIZE
 
   const uint8_t valueCount = getValueCountForTask(event->TaskIndex);
 
@@ -237,10 +239,10 @@ bool MQTT_protocol_send(EventStruct *event,
 
     if (loglevelActiveFor(LOG_LEVEL_DEBUG)) {
       addLog(LOG_LEVEL_DEBUG, strformat(
-        F("MQTT %s : %s %s"), 
-        get_formatted_Controller_number(getCPluginID_from_ControllerIndex(event->ControllerIndex)).c_str(), 
-        tmppubname.c_str(), 
-        value.c_str()));
+               F("MQTT %s : %s %s"),
+               get_formatted_Controller_number(getCPluginID_from_ControllerIndex(event->ControllerIndex)).c_str(),
+               tmppubname.c_str(),
+               value.c_str()));
     }
     # endif // ifndef BUILD_NO_DEBUG
 
@@ -280,6 +282,14 @@ bool getDiscoveryVType(struct EventStruct *event, QueryVType_ptr func_ptr, uint8
 }
 
 // helper functions to supply a single value VType to be used by getDiscoveryVType
+int Plugin_QueryVType_BinarySensor(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_SWITCH);
+}
+
+int Plugin_QueryVType_BinarySensorInv(uint8_t value_nr) {
+  return static_cast<int>(Sensor_VType::SENSOR_TYPE_SWITCH);
+}
+
 int Plugin_QueryVType_Analog(uint8_t value_nr) {
   return static_cast<int>(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY);
 }
@@ -307,6 +317,23 @@ int Plugin_QueryVType_Temperature(uint8_t value_nr) {
 int Plugin_QueryVType_Weight(uint8_t value_nr) {
   return static_cast<int>(Sensor_VType::SENSOR_TYPE_WEIGHT_ONLY);
 }
+
+#  if FEATURE_MQTT_DEVICECLASS
+const char mqtt_binary_deviceclass_names[] PROGMEM =
+  "power|light|plug|door|garage_door|cold|heat|lock|tamper|window|" // Guessed some often used options to be listed first
+  "battery|battery_charging|carbon_monoxide|connectivity|gas|"      // power is selected as the default
+  "moisture|motion|moving|occupancy|opening|presence|problem|"      // *** DO NOT CHANGE VALUE ORDER!!!
+  "running|safety|smoke|sound|update|vibration|";                   // *** Index is stored in task settings!!!
+
+String MQTT_binary_deviceClassName(int devClassIndex) {
+  char tmp[17]{};                                                   // length: battery_charging + \0
+
+  String result(GetTextIndexed(tmp, sizeof(tmp), devClassIndex, mqtt_binary_deviceclass_names));
+
+  return result;
+}
+
+#  endif // if FEATURE_MQTT_DEVICECLASS
 
 bool MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex, cpluginID_t CPluginID) {
   bool success = true;
@@ -373,8 +400,6 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
     if (validPluginID_fullcheck(pluginID)) {
       LoadTaskSettings(x);
       const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(x);
-      String discovery_topic(ControllerSettings.MqttAutoDiscoveryTopic);
-      String publish_topic(ControllerSettings.Publish);
 
       // Device is enabled so send information
       if (validDeviceIndex(DeviceIndex) &&
@@ -393,9 +418,10 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                            x + 1, taskName.c_str(), valueCount, 1 == valueCount ? 's' : ' '));
         }
         #  endif // ifndef BUILD_NO_DEBUG
+        String pluginDeviceClass;
 
-        // Translate Device[].VType to usable VType per value for MQTT AutoDiscovery
-        if (MQTT_DiscoveryGetDeviceVType(x, discoveryItems, valueCount)) {
+        // Translate Device[].VType to usable VType per value, and fetch optional deviceClass, for MQTT AutoDiscovery
+        if (MQTT_DiscoveryGetDeviceVType(x, discoveryItems, valueCount, pluginDeviceClass)) {
           const String hostName               = Settings.getHostname();
           const unsigned int groupId          = Settings.TaskDeviceID[ControllerIndex][x] & 0x3FFF; // Remove opt. flag bits
           const protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(ControllerIndex);
@@ -410,7 +436,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                      strformat(F("%s_%s"),    hostName.c_str(), taskName.c_str());
 
           // dev = device, ids = identifiers, mf = manufacturer, sw = sw_version
-          const String deviceElement = strformat(F(",\"dev\":{\"name\":\"%s\",\"ids\":\"%s\","
+          const String deviceElement = strformat(F(",\"dev\":{\"name\":\"%s\",\"ids\":[\"%s\"],"
                                                    "\"mf\":\"ESPEasy\",\"sw\":\"%s\"}"),
                                                  elementName.c_str(), elementIds.c_str(),
                                                  getSystemBuildString().c_str());
@@ -422,21 +448,42 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
             switch (discoveryItems[s].VType) {
               // VType values to support, mapped to device classes:
               case Sensor_VType::SENSOR_TYPE_SWITCH:
+              case Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED:
+              {
+                // FIXME Ensure this is the correct way of retrieval, will at least/only work for P001...
+                const bool inversedState = Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED == discoveryItems[s].VType;
+
+                if (pluginDeviceClass.isEmpty()) { pluginDeviceClass = F("power"); } // default
+                const String deviceClass = strformat(F("%s\",\"frc_upd\":true,\"pl_on\":\"%d\",\"pl_off\":\"%d"),
+                                                     pluginDeviceClass.c_str(), !inversedState, inversedState);
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
-                                                                   F("binary_sensor"),
-                                                                   F("switch"),
+                                                                   ControllerSettings,
+                                                                   F("device_automation"),
+
+                                                                                 // Use deviceClass to pass in TriggerState
+                                                                   !inversedState ? F("1") : F("0"),
                                                                    EMPTY_STRING, // No unit of measure
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   true, false);
+                                                                   true, false, elementIds,
+                                                                   true); // Send Trigger discovery
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
+                                                                   ControllerIndex,
+                                                                   ControllerSettings,
+                                                                   F("binary_sensor"),
+                                                                   deviceClass,
+                                                                   EMPTY_STRING, // No unit of measure
+                                                                   &TempEvent,
+                                                                   deviceElement,
+                                                                   success,
+                                                                   true, false, elementIds);
                 }
                 break;
+              }
               case Sensor_VType::SENSOR_TYPE_TEMP_HUM:
               case Sensor_VType::SENSOR_TYPE_TEMP_BARO:
               case Sensor_VType::SENSOR_TYPE_TEMP_HUM_BARO:
@@ -457,17 +504,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                   }
 
                   for (v = fromV; v < maxV; ++v) {
-                    success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                    success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                      ControllerIndex,
-                                                                     publish_topic,
-                                                                     discovery_topic,
+                                                                     ControllerSettings,
                                                                      F("sensor"),
                                                                      F("temperature"),
                                                                      F("°C"),
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     false, false);
+                                                                     false, false, elementIds);
                   }
                 }
 
@@ -483,17 +529,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                   }
 
                   for (v = fromV; v < maxV; ++v) {
-                    success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                    success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                      ControllerIndex,
-                                                                     publish_topic,
-                                                                     discovery_topic,
+                                                                     ControllerSettings,
                                                                      F("sensor"),
                                                                      F("humidity"),
                                                                      F("%"),
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     false, false);
+                                                                     false, false, elementIds);
                   }
                 }
 
@@ -505,17 +550,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                   if (Sensor_VType::SENSOR_TYPE_TEMP_EMPTY_BARO == discoveryItems[s].VType) {
                     v++; // Skip 2nd value = 'EMPTY'
                   }
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("pressure"),
                                                                    F("hPa"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                   v++;
                 }
                 break;
@@ -523,17 +567,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               case Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY:
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("distance"),
                                                                    F("cm"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
 
@@ -546,17 +589,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                  F("pm10"));
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    dev,
                                                                    F("µg/m³"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
               }
@@ -575,50 +617,47 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                 F("ppd");
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    dev,
                                                                    uom,
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
               }
               case Sensor_VType::SENSOR_TYPE_WEIGHT_ONLY:
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("mdi:scale"), // Icon
                                                                    F("kg"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, true);
+                                                                   false, true, elementIds);
                 }
                 break;
               case Sensor_VType::SENSOR_TYPE_MOISTURE_ONLY:
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("mdi:cup-water"), // Icon
                                                                    F("%"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, true);
+                                                                   false, true, elementIds);
                 }
                 break;
               case Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY:
@@ -630,17 +669,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                 F("V") : F("A");
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    dev,
                                                                    uom,
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
               }
@@ -657,34 +695,32 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                 F("VA");
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    dev,
                                                                    uom,
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
               }
               case Sensor_VType::SENSOR_TYPE_LUX_ONLY:
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("illuminance"),
                                                                    F("lx"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
 
@@ -697,34 +733,32 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                 F("B");
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("mdi:palette"),
                                                                    uom,
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, true);
+                                                                   false, true, elementIds);
                 }
                 break;
               }
               case Sensor_VType::SENSOR_TYPE_COLOR_TEMP_ONLY:
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("mdi:temperature-kelvin"),
                                                                    F("K"),
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, true);
+                                                                   false, true, elementIds);
                 }
                 break;
 
@@ -736,17 +770,16 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                  F("W/m²"));
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, taskName,
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v,
                                                                    ControllerIndex,
-                                                                   publish_topic,
-                                                                   discovery_topic,
+                                                                   ControllerSettings,
                                                                    F("sensor"),
                                                                    F("irradiance"),
                                                                    uom,
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false);
+                                                                   false, false, elementIds);
                 }
                 break;
               }
@@ -755,6 +788,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
               case Sensor_VType::SENSOR_TYPE_DIRECTION_ONLY:
               case Sensor_VType::SENSOR_TYPE_GPS_ONLY:
+              case Sensor_VType::SENSOR_TYPE_DIMMER: // Maybe implement?
                 // TODO
                 break;
 
@@ -764,7 +798,6 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               case Sensor_VType::SENSOR_TYPE_DUAL:
               case Sensor_VType::SENSOR_TYPE_TRIPLE:
               case Sensor_VType::SENSOR_TYPE_QUAD:
-              case Sensor_VType::SENSOR_TYPE_DIMMER: // Maybe implement?
               case Sensor_VType::SENSOR_TYPE_STRING:
               case Sensor_VType::SENSOR_TYPE_ULONG:
               #  if FEATURE_EXTENDED_TASK_VALUE_TYPES
@@ -796,7 +829,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
 
 bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
                                   std::vector<DiscoveryItem>& discoveryItems,
-                                  int                         valueCount) {
+                                  int                         valueCount,
+                                  String                    & deviceClass) {
   const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(TaskIndex);
   const size_t orgLen             = discoveryItems.size();
   Sensor_VType VType              = Device[DeviceIndex].VType;
@@ -837,12 +871,13 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
   // or have PLUGIN_GET_DISCOVERY_VTYPES implemented
 
   struct EventStruct TempEvent(TaskIndex);
-  String dummy;
+
+  deviceClass = EMPTY_STRING;
 
   TempEvent.Par5 = valueCount; // Pass in the provided value count, so we don't have to determine that again
 
-  // Get value VTypes from plugin
-  if (PluginCall(PLUGIN_GET_DISCOVERY_VTYPES, &TempEvent, dummy)) {
+  // Get value VTypes and deviceClass from plugin
+  if (PluginCall(PLUGIN_GET_DISCOVERY_VTYPES, &TempEvent, deviceClass)) {
     #  ifndef BUILD_NO_DEBUG
 
     // FIXME change this log to DEBUG level
@@ -903,11 +938,15 @@ String MQTT_TaskValueUniqueName(const String& taskName,
 String MQTT_DiscoveryBuildValueTopic(const String            & topic,
                                      struct EventStruct       *event,
                                      uint8_t                   taskValueIndex,
-                                     const __FlashStringHelper*deviceClass) {
+                                     const __FlashStringHelper*deviceClass,
+                                     const String            & uniqueId,
+                                     const String            & elementId) {
   String tmpTopic(topic);
 
   parseSingleControllerVariable(tmpTopic, event, taskValueIndex, false);
   parseDeviceClassVariable(tmpTopic, deviceClass, false);
+  parseUniqueIdVariable(tmpTopic, uniqueId, false);
+  parseElementIdVariable(tmpTopic, elementId, false);
   parseControllerVariables(tmpTopic, event, false); // Replace this last
 
   while (tmpTopic.endsWith(F("/"))) {
@@ -922,17 +961,17 @@ bool MQTT_DiscoveryPublish(controllerIndex_t ControllerIndex,
                            const String    & discoveryMessage,
                            taskIndex_t       x,
                            uint8_t           v,
-                           const String    & taskName) {
+                           bool              retainDsc) {
   bool result = false;
 
   // Send each discovery message separate
-  result = MQTTpublish(ControllerIndex, INVALID_TASK_INDEX, concat(topic, F("/config")).c_str(), discoveryMessage.c_str(), false);
+  result = MQTTpublish(ControllerIndex, INVALID_TASK_INDEX, topic.c_str(), discoveryMessage.c_str(), retainDsc);
   #  ifndef BUILD_NO_DEBUG
 
   // FIXME change this log to DEBUG level
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Discovery %d Task %d '%s': disc.topic: %s"),
-                                     result, x + 1, taskName.c_str(), concat(topic, F("/config")).c_str()));
+                                     result, x + 1, getTaskDeviceName(x).c_str(), topic.c_str()));
     addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Discovery payload: %s"),
                                      discoveryMessage.c_str()));
   }
@@ -942,10 +981,8 @@ bool MQTT_DiscoveryPublish(controllerIndex_t ControllerIndex,
 
 bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                            uint8_t                   taskValue,
-                                           String                    taskName,
                                            controllerIndex_t         ControllerIndex,
-                                           String                    publishTopic,
-                                           String                    discoveryTopic,
+                                           ControllerSettingsStruct& ControllerSettings,
                                            const __FlashStringHelper*componentClass,
                                            String                    deviceClass,
                                            String                    unitOfMeasure,
@@ -953,26 +990,45 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                            const String              deviceElement,
                                            bool                      success,
                                            bool                      hasSet,
-                                           bool                      hasIcon) {
-  const String withSet   = hasSet ? F(",\"cmd_t\":\"~/set\"") : EMPTY_STRING;
-  const String devOrIcon = hasIcon ? F("ic") : F("dev_cla");
-  const String withUoM   = !unitOfMeasure.isEmpty() ?
-                           strformat(F(",\"unit_of_meas\":\"%s\""), unitOfMeasure.c_str()) :
-                           EMPTY_STRING;
+                                           bool                      hasIcon,
+                                           const String            & elementId,
+                                           bool                      sendTrigger) {
   const String valuename = getTaskValueName(taskIndex, taskValue);
 
   if (!valuename.isEmpty()) {
+    const String withSet   = hasSet ? F(",\"cmd_t\":\"~/set\"") : EMPTY_STRING;
+    const String devOrIcon = hasIcon ? F("ic") : F("dev_cla");
+    const String withUoM   = !unitOfMeasure.isEmpty() ?
+                             strformat(F(",\"unit_of_meas\":\"%s\""), unitOfMeasure.c_str()) :
+                             EMPTY_STRING;
+    const String taskName  = getTaskDeviceName(taskIndex);
+    const bool   retainDsc = ControllerSettings.mqtt_retainDiscovery();
+    const String discoveryTopic(ControllerSettings.MqttAutoDiscoveryTopic);
+    const String publishTopic(ControllerSettings.Publish);
+    const String discoveryConfig(ControllerSettings.MqttAutoDiscoveryConfig);
+
     const String uniqueId         = MQTT_TaskValueUniqueName(taskName, valuename);
-    const String publish          = MQTT_DiscoveryBuildValueTopic(publishTopic, event, taskValue, componentClass);
-    const String discovery        = MQTT_DiscoveryBuildValueTopic(discoveryTopic, event, taskValue, componentClass);
+    const String publish          = MQTT_DiscoveryBuildValueTopic(publishTopic, event, taskValue, componentClass, uniqueId, elementId);
+    const String discoveryUrl     = MQTT_DiscoveryBuildValueTopic(discoveryTopic, event, taskValue, componentClass, uniqueId, elementId);
     const String discoveryMessage = strformat(F("{\"~\":\"%s\",\"name\":\"%s %s\",\"uniq_id\":\"%s\",\"schema\":\"basic\","
                                                 "\"%s\":\"%s\"%s%s,\"stat_t\":\"~\""
                                                 "%s}"), // deviceElement last
                                               publish.c_str(), taskName.c_str(), valuename.c_str(), uniqueId.c_str(),
                                               devOrIcon.c_str(), deviceClass.c_str(), withUoM.c_str(), withSet.c_str(),
                                               deviceElement.c_str());
+    const String triggerMessage = strformat(F("{\"atype\":\"trigger\",\"t\":\"%s\",\"pl\":\"{\\\"TRIG\\\":\\\"%s\\\"}\","
+                                              "\"p\":\"device_automation\","
+                                              "\"type\":\"button_short_press\"," // FIXME ?
+                                              "\"stype\":\"button_1\""           // FIXME ?
+                                              "%s}"),                            // deviceClass is used to pass in the TriggerState
+                                            publish.c_str(), deviceClass.c_str(), deviceElement.c_str());
 
-    return MQTT_DiscoveryPublish(ControllerIndex, discovery, discoveryMessage, taskIndex, taskValue, taskName);
+    return MQTT_DiscoveryPublish(ControllerIndex,
+                                 discoveryConfig.isEmpty() ? concat(discoveryUrl, F("/config")) : concat(discoveryUrl, discoveryConfig),
+                                 sendTrigger ? triggerMessage : discoveryMessage,
+                                 taskIndex,
+                                 taskValue,
+                                 retainDsc);
   }
   return success;
 }
