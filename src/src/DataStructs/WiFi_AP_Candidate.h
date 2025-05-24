@@ -93,12 +93,14 @@ struct WiFi_AP_Candidate {
       uint16_t phy_11g             : 1;
       uint16_t phy_11n             : 1;
       uint16_t phy_lr              : 1;
-      uint16_t phy_11ax            : 1;
+      uint16_t phy_11a             : 1; // traditional (old) 5 GHz
+      uint16_t phy_11ac            : 1; // 5 GHz WiFi 5, 802.11ac
+      uint16_t phy_11ax            : 1; // WiFi 6, both bands possible
       uint16_t wps                 : 1;
       uint16_t ftm_responder       : 1;
       uint16_t ftm_initiator       : 1;
 
-      uint16_t unused : 5;
+      uint16_t unused : 3;
 
     }        bits;
     uint16_t _allBits;

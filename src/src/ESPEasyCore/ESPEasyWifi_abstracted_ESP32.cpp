@@ -295,14 +295,19 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode) {
   // The response speed and stability is better at HT20 for ESP units.
   esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
 
-  uint8_t protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G; // Default to BG
+  // uint8_t protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G; // Default to BG
+  uint8_t protocol = 0;
 
   if (!ForceWiFi_bg_mode || (WiFiEventData.connectionFailures > 10)) {
     // Set to use BGN
     protocol |= WIFI_PROTOCOL_11N;
-    #  ifdef ESP32C6
+    #  if defined(ESP32C5) || defined(ESP32C6)
     protocol |= WIFI_PROTOCOL_11AX;
     #  endif
+    #ifdef ESP32C5
+    protocol |= WIFI_PROTOCOL_11A;
+    protocol |= WIFI_PROTOCOL_11AC;
+    #endif
   }
 
   const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
@@ -316,13 +321,25 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode) {
           protocol |= WIFI_PROTOCOL_11N;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11n only"));
         }
-#  ifdef ESP32C6
+#  if defined(ESP32C5) || defined(ESP32C6)
 
         if (candidate.bits.phy_11ax) {
           // Set to use WiFi6
           protocol |= WIFI_PROTOCOL_11AX;
-          addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11ax"));
+          addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11ax, Wi-Fi 6"));
         }
+#ifdef ESP32C5
+        if (candidate.bits.phy_11a) {
+          // Set to use 5 GHz WiFi
+          protocol |= WIFI_PROTOCOL_11A;
+          addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11a, 5 GHz"));
+        }
+        if (candidate.bits.phy_11ac) {
+          // Set to use 5 GHz WiFi-5
+          protocol |= WIFI_PROTOCOL_11AC;
+          addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11ac, 5 GHz Wi-Fi 5"));
+        }
+#endif
 #  endif // ifdef ESP32C6
       }
     }

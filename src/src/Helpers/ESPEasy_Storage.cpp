@@ -17,6 +17,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
 #include "../ESPEasyCore/Serial.h"
 
 #include "../Globals/CRCValues.h"
@@ -679,7 +680,7 @@ bool check_and_update_WiFi_Calibration() {
 bool Erase_WiFi_Calibration() {
   #ifdef ESP8266
   WifiDisconnect();
-  setWifiMode(WIFI_OFF);
+  ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   if (!ESP.eraseConfig())
     return false;
   #ifndef BUILD_MINIMAL_OTA
@@ -689,7 +690,7 @@ bool Erase_WiFi_Calibration() {
 
   #ifdef ESP32
   WifiDisconnect();
-  setWifiMode(WIFI_OFF);
+  ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   // Make sure power is stable, so wait a bit longer
   delay(1000);
   esp_phy_erase_cal_data_in_nvs();

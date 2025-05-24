@@ -379,7 +379,10 @@ void WifiScan(bool async, uint8_t channel) {
 # ifdef ESP32
     const bool passive             = Settings.PassiveWiFiScan();
     const uint32_t max_ms_per_chan = 120;
+#ifndef ESP32C5
+    // C5 scans both 2.4 and 5 GHz band, which takes much longer
     WiFi.setScanTimeout(14 * max_ms_per_chan * 2);
+#endif
     WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan /*, channel */);
 # endif // ifdef ESP32
 

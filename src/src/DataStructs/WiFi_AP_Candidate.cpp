@@ -115,6 +115,10 @@ WiFi_AP_Candidate::WiFi_AP_Candidate(uint8_t networkItem) : index(0) {
     bits.phy_11ax      = it->phy_11ax;
     bits.ftm_initiator = it->ftm_initiator;
     bits.ftm_responder = it->ftm_responder;
+#ifdef ESP32C5
+    bits.phy_11a       = it->phy_11a;
+    bits.phy_11ac      = it->phy_11ac;
+#endif
 # endif // if ESP_IDF_VERSION_MAJOR >= 5
     bits.wps = it->wps;
 
@@ -252,6 +256,14 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
     separator.c_str(),
     channel);
 
+#ifdef ESP32C5
+  if (channel < 36) {
+    result += F(" 2.4 GHz");
+  } else {
+    result += F(" 5 GHz");
+  }
+#endif
+
   if (rssi == -1) {
     result += F(" (RTC) ");
   } else {
@@ -292,7 +304,6 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
 
     if (bits.phy_11n) { phy_str += 'n'; }
 #ifdef ESP32
-
     if (bits.phy_11ax) { phy_str += F("/ax"); }
 
     if (bits.phy_lr) { phy_str += F("/lr"); }
@@ -300,6 +311,11 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
     if (bits.ftm_initiator) { phy_str += F("/FTM_i"); }
 
     if (bits.ftm_responder) { phy_str += F("/FTM_r"); }
+
+    // Add 5 GHz WiFi types as last in the list.
+    if (bits.phy_11a) { phy_str += F("/a"); }
+    if (bits.phy_11ac) { phy_str += F("/ac"); }
+
 #endif // ifdef ESP32
 
     if (phy_str.length()) {

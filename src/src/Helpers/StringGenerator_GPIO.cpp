@@ -195,6 +195,9 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
 
   // See Appendix A, page 71: https://www.espressif.com/sites/default/files/documentation/esp32-s3_datasheet_en.pdf
 
+  #elif defined(ESP32C5) 
+  // TODO TD-er: Must check if C5 has conflicts here
+
   #elif defined(ESP32C6) 
 
   if (gpio == 27) {
