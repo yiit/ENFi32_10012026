@@ -297,13 +297,32 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
 
   if (phy_known()) {
     String phy_str;
+    // Order of items is kinda in order of age, oldest first.
 
+    // first 2.4 GHz version
+    // Later called "Wi-Fi 1"
     if (bits.phy_11b) { phy_str += 'b'; }
 
+    // 2nd 2.4 GHz version to adopt the same 54 Mbps bandwidth as used in 802.11a
+    // Later called "Wi-Fi 3"
     if (bits.phy_11g) { phy_str += 'g'; }
 
+    // 3rd iteration for 2.4 GHz
+    // Also used for 5 GHz to make it even more confusing
+    // To top the naming confusion even worse, this is later called "Wi-Fi 4"
     if (bits.phy_11n) { phy_str += 'n'; }
 #ifdef ESP32
+    // Add 5 GHz WiFi types, oldest first.
+
+    // 802.11a was one of the first WiFi standards, using 5 GHz
+    // Later called "Wi-Fi 2"
+    if (bits.phy_11a) { phy_str += F("/a"); }
+
+    // 802.11ac was the significantly faster version for 5 GHz WiFi.
+    // Later called "Wi-Fi 5"
+    if (bits.phy_11ac) { phy_str += F("/ac"); }
+    
+    // AX is WiFi-6, on both frequencies
     if (bits.phy_11ax) { phy_str += F("/ax"); }
 
     if (bits.phy_lr) { phy_str += F("/lr"); }
@@ -311,10 +330,6 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
     if (bits.ftm_initiator) { phy_str += F("/FTM_i"); }
 
     if (bits.ftm_responder) { phy_str += F("/FTM_r"); }
-
-    // Add 5 GHz WiFi types as last in the list.
-    if (bits.phy_11a) { phy_str += F("/a"); }
-    if (bits.phy_11ac) { phy_str += F("/ac"); }
 
 #endif // ifdef ESP32
 
