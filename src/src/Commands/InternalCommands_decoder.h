@@ -77,6 +77,9 @@ enum class ESPEasy_cmd_e : uint8_t {
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
 
   let,
+  #if FEATURE_STRING_VARIABLES
+  letstr,
+  #endif // if FEATURE_STRING_VARIABLES
   load,
   logentry,
   looptimerset,

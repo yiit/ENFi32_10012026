@@ -1402,6 +1402,12 @@ bool getConvertArgument2(const __FlashStringHelper * marker, const String& s, fl
   return false;
 }
 
+#if FEATURE_STRING_VARIABLES
+bool getConvertArgumentStr(const __FlashStringHelper * marker, const String& s, String& argument, int& startIndex, int& endIndex) {
+  return getConvertArgumentString(marker, s, argument, startIndex, endIndex);
+}
+#endif // if FEATURE_STRING_VARIABLES
+
 bool getConvertArgumentString(const __FlashStringHelper * marker, const String& s, String& argumentString, int& startIndex, int& endIndex) {
   return getConvertArgumentString(String(marker), s, argumentString, startIndex, endIndex);
 }
@@ -1444,6 +1450,7 @@ struct ConvertArgumentData {
   ConvertArgumentData() = delete;
 
   String& str;
+  String& str1;
   float arg1, arg2;
   int   startIndex;
   int   endIndex;
@@ -1460,6 +1467,10 @@ bool getConvertArgument(const __FlashStringHelper * marker, ConvertArgumentData&
 
 bool getConvertArgument2(const __FlashStringHelper * marker, ConvertArgumentData& data) {
   return getConvertArgument2(marker, data.str, data.arg1, data.arg2, data.startIndex, data.endIndex);
+}
+
+bool getConvertArgumentStr(const __FlashStringHelper * marker, ConvertArgumentData& data) {
+  return getConvertArgumentStr(marker, data.str, data.str1, data.startIndex, data.endIndex);
 }
 
 // Parse conversions marked with "%conv_marker%(float)"
@@ -1516,6 +1527,14 @@ void parseStandardConversions(String& s, bool useURLencode) {
   #endif
   #endif
   #undef SMART_CONV
+  
+  #if FEATURE_STRING_VARIABLES
+  double tmp{};
+  #define SMART_CONV(T, FUN) \
+  while (getConvertArgumentStr((T), data)) { repl(data, (FUN)); }
+  SMART_CONV(F("%c_isnum%"),  String(validDoubleFromString(getCustomStringVar(data.str1), tmp) ? 1 : 0))
+  #undef SMART_CONV
+  #endif // if FEATURE_STRING_VARIABLES
 }
 
 /********************************************************************************************\

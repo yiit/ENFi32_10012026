@@ -100,13 +100,30 @@ String parseTemplate_padded(String& tmpString, uint8_t minimal_lineSize, bool us
 
       // deviceName is lower case, so we can compare literal string (no need for equalsIgnoreCase)
       const bool devNameEqInt = equals(deviceName, F("int"));
-      if (devNameEqInt || equals(deviceName, F("var")))
+      #if FEATURE_STRING_VARIABLES
+      const bool devNameEqStr    = equals(deviceName, F("str"));
+      const bool devNameEqLength = equals(deviceName, F("length"));
+      #endif // if FEATURE_STRING_VARIABLES
+      if (devNameEqInt || equals(deviceName, F("var"))
+         #if FEATURE_STRING_VARIABLES
+         || devNameEqStr || devNameEqLength
+         #endif // if FEATURE_STRING_VARIABLES
+         )
       {
         // Address an internal variable either as float or as int
         // For example: Let,10,[VAR#9]
         // For example: Let,10,[INT#bla]
 
         if (!valueName.isEmpty()) {
+         #if FEATURE_STRING_VARIABLES
+         if (devNameEqStr) {
+            newString = getCustomStringVar(valueName);
+         } else
+         if (devNameEqLength) {
+            newString = getCustomStringVar(valueName).length();
+         } else
+         #endif
+         {
           const ESPEASY_RULES_FLOAT_TYPE floatvalue = getCustomFloatVar(valueName);
           unsigned char nr_decimals = maxNrDecimals_fpType(floatvalue);
           bool trimTrailingZeros    = true;
@@ -129,6 +146,7 @@ String parseTemplate_padded(String& tmpString, uint8_t minimal_lineSize, bool us
             std::move(value), 
             format, 
             tmpString);
+         }
         }
       }
       else if (equals(deviceName, F("plugin")))

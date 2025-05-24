@@ -320,6 +320,9 @@ bool InternalCommands::executeInternalCommand()
     case ESPEasy_cmd_e::jsonportstatus:             COMMAND_CASE_A(Command_JSONPortStatus, -1);              // Diagnostic.h
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
     case ESPEasy_cmd_e::let:                        COMMAND_CASE_A(Command_Rules_Let,               2);      // Rules.h
+    #if FEATURE_STRING_VARIABLES
+    case ESPEasy_cmd_e::letstr:                     COMMAND_CASE_A(Command_Rules_LetStr,            2);      // Rules.h
+    #endif // if FEATURE_STRING_VARIABLES
     case ESPEasy_cmd_e::load:                       COMMAND_CASE_A(Command_Settings_Load,           0);      // Settings.h
     case ESPEasy_cmd_e::logentry:                   COMMAND_CASE_A(Command_logentry,               -1);      // Diagnostic.h
     case ESPEasy_cmd_e::looptimerset:               COMMAND_CASE_A(Command_Loop_Timer_Set,          3);      // Timers.h

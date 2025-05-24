@@ -13,6 +13,9 @@
 
 # include "../Helpers/Numerical.h"
 # include "../Helpers/StringConverter.h"
+# if FEATURE_STRING_VARIABLES
+#   include "../Helpers/StringParser.h"
+# endif // if 
 # include "../Helpers/SystemVariables.h"
 
 
@@ -63,6 +66,21 @@ void handle_sysvars() {
       addSysVar_html(strformat(F("%%%s%s%%"), FsP(isv_ ? F("v_") : F("v")), it->first.c_str()), false);
     }
   }
+  
+  #if FEATURE_STRING_VARIABLES
+  addTableSeparator(F("String Variables"), 3, 3);
+
+  if (customStringVar.empty()) {
+    html_TR_TD();
+    addHtml(F("No string variables set"));
+    html_TD();
+    html_TD();
+  } else {
+    for (auto it = customStringVar.begin(); it != customStringVar.end(); ++it) {
+      addSysVar_html(strformat(F("[str#%s]"), it->first.c_str()), false);
+    }
+  }
+  #endif // if FEATURE_STRING_VARIABLES
 
   addTableSeparator(F("Constants"), 3, 3);
   {
@@ -378,9 +396,9 @@ void handle_sysvars() {
       F("Mins to hcm:  %c_m2hcm%(482)"),
       F("Secs to dhms: %c_s2dhms%(100000)"),
 
+      // addFormSeparator(3,
       F("Random: %c_random%(0, 100)"),
 
-      // addFormSeparator(3,
       F("To HEX: %c_2hex%(100000)"),
 
       #if FEATURE_ESPEASY_P2P
@@ -394,6 +412,10 @@ void handle_sysvars() {
       F("Unit to ESP-type: %c_utype%(%unit%)"),
       F("Unit to ESP-type-string: %c_utypestr%(%unit%)"),
       #endif // if FEATURE_ESPEASY_P2P
+      #if FEATURE_STRING_VARIABLES
+      // addFormSeparator(3,
+      F("Check if numeric value: %c_isnum%(test)"),
+      #endif // if FEATURE_STRING_VARIABLES
     };
 
     for (unsigned int i = 0; i < NR_ELEMENTS(StdConversions); ++i) {
@@ -401,8 +423,15 @@ void handle_sysvars() {
           (i == 8) ||
           (i == 13)
           #if FEATURE_ESPEASY_P2P
-          || (i == 14)
+          || (i == 15)
           #endif // if FEATURE_ESPEASY_P2P
+          #if FEATURE_STRING_VARIABLES
+          #if FEATURE_ESPEASY_P2P
+          || (i == 23)
+          #else
+          || (i == 15)
+          #endif // if FEATURE_ESPEASY_P2P
+          #endif // if FEATURE_STRING_VARIABLES
           ) {
         addFormSeparator(3);
       }
@@ -453,6 +482,9 @@ void addSysVar_html(String input, bool isSpecialChar) {
 
       parseSystemVariables(input, URLencoded);
       parseStandardConversions(input, URLencoded);
+      #if FEATURE_STRING_VARIABLES
+      input = parseTemplate_padded(input, 0, URLencoded);
+      #endif // if FEATURE_STRING_VARIABLES
 
       html_TD();
       addHtml(input);

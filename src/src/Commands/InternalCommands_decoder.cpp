@@ -99,6 +99,9 @@ const char Internal_commands_fghij[] PROGMEM =
 #define Int_cmd_l_offset ESPEasy_cmd_e::let
 const char Internal_commands_l[] PROGMEM =
   "let|"
+  #if FEATURE_STRING_VARIABLES
+  "letstr|"
+  #endif
   "load|"
   "logentry|"
   "looptimerset|"

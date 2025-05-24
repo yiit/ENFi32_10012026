@@ -422,6 +422,12 @@ bool getConvertArgument2(const __FlashStringHelper * marker,
                          int         & startIndex,
                          int         & endIndex);
 
+bool getConvertArgumentStr(const __FlashStringHelper *marker,
+                           const String             & s,
+                           String                   & argument,
+                           int                      & startIndex,
+                           int                      & endIndex);
+
 bool getConvertArgumentString(const __FlashStringHelper * marker,
                               const String& s,
                               String      & argumentString,
