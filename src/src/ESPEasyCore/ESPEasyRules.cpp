@@ -1278,12 +1278,26 @@ bool conditionMatch(const String& check) {
     }
     balanceParentheses(tmpCheck1);
     balanceParentheses(tmpCheck2);
-    if (isError(Calculate(tmpCheck1, Value1)) ||
-        isError(Calculate(tmpCheck2, Value2)))
+    if (isError(Calculate(tmpCheck1, Value1
+                          #if FEATURE_STRING_VARIABLES
+                          , false // suppress logging specific errors when parsing strings
+                          #endif // if FEATURE_STRING_VARIABLES
+                         )) ||
+        isError(Calculate(tmpCheck2, Value2
+                          #if FEATURE_STRING_VARIABLES
+                          , false // suppress logging specific errors when parsing strings
+                          #endif // if FEATURE_STRING_VARIABLES
+                         )))
     {
+      #if FEATURE_STRING_VARIABLES
+      result = compareStringValues(compare, tmpCheck1, tmpCheck2);
+      #else // if FEATURE_STRING_VARIABLES
       return false;
+      #endif // if FEATURE_STRING_VARIABLES
     }
-    result = compareDoubleValues(compare, Value1, Value2);
+    else {
+      result = compareDoubleValues(compare, Value1, Value2);
+    }
   }
 
   #ifndef BUILD_NO_DEBUG
