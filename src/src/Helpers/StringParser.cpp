@@ -117,10 +117,22 @@ String parseTemplate_padded(String& tmpString, uint8_t minimal_lineSize, bool us
         if (!valueName.isEmpty()) {
          #if FEATURE_STRING_VARIABLES
          if (devNameEqStr) {
-            newString = getCustomStringVar(valueName);
+           String value(getCustomStringVar(valueName));
+           transformValue(
+              newString, 
+              minimal_lineSize, 
+              std::move(value), 
+              format, 
+              tmpString);
          } else
          if (devNameEqLength) {
-            newString = getCustomStringVar(valueName).length();
+           String value(getCustomStringVar(valueName).length());
+           transformValue(
+              newString, 
+              minimal_lineSize, 
+              std::move(value), 
+              format, 
+              tmpString);
          } else
          #endif
          {
