@@ -1393,7 +1393,9 @@ bool getConvertArgument2(const __FlashStringHelper * marker, const String& s, fl
   if (getConvertArgumentString(marker, s, argumentString, startIndex, endIndex)) {
     const int pos_comma = argumentString.indexOf(',');
 
-    if (pos_comma == -1) { return false; }
+    if (pos_comma == -1) { 
+      return validFloatFromString(argumentString, arg1); // Accept single argument, with second argument 0
+    }
 
     if (validFloatFromString(argumentString.substring(0, pos_comma), arg1)) {
       return validFloatFromString(argumentString.substring(pos_comma + 1), arg2);
@@ -1497,7 +1499,6 @@ void parseStandardConversions(String& s, bool useURLencode) {
   SMART_CONV(F("%c_m2dhm%"),  minutesToDayHourMinute(data.arg1))
   SMART_CONV(F("%c_m2hcm%"),  minutesToHourColonMinute(data.arg1))
   SMART_CONV(F("%c_s2dhms%"), secondsToDayHourMinuteSecond(data.arg1))
-  SMART_CONV(F("%c_2hex%"),   formatToHex_no_prefix(data.arg1))
   #if FEATURE_ESPEASY_P2P
   SMART_CONV(F("%c_uname%"),  getNameForUnit(data.arg1))
   SMART_CONV(F("%c_uage%"),   String(static_cast<int32_t>(getAgeForUnit(data.arg1) / 1000)))
@@ -1513,6 +1514,7 @@ void parseStandardConversions(String& s, bool useURLencode) {
   #define SMART_CONV(T, FUN) \
   while (getConvertArgument2((T), data)) { repl(data, (FUN)); }
   SMART_CONV(F("%c_dew_th%"), toString(compute_dew_point_temp(data.arg1, data.arg2), 2))
+  SMART_CONV(F("%c_2hex%"),   formatToHex_no_prefix(data.arg1, data.arg2))
   #if FEATURE_ESPEASY_P2P
   SMART_CONV(F("%c_u2ip%"),   formatUnitToIPAddress(data.arg1, data.arg2))
   #endif

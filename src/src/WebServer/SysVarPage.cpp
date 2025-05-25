@@ -399,7 +399,7 @@ void handle_sysvars() {
       // addFormSeparator(3,
       F("Random: %c_random%(0, 100)"),
 
-      F("To HEX: %c_2hex%(100000)"),
+      F("To HEX: %c_2hex%(100000) or: %c_2hex%(100000,6)"),
 
       #if FEATURE_ESPEASY_P2P
       // addFormSeparator(3,

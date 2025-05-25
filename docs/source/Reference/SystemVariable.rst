@@ -365,9 +365,9 @@ The conversion always outputs a string, but not all of these can be converted ba
    * - Random(L,H): ``%c_random%(0, 1)``
      - Random(L,H): ``0.123``
      - Generate random number in the given range L ... H (Added: 2025/04/29)
-   * - To HEX: ``%c_2hex%(100000)``
-     - To HEX: ``186A0``
-     - Convert integer value to HEX notation.  (Added: 2020/10/07)
+   * - To HEX: ``%c_2hex%(100000[,<minDigits>])``
+     - To HEX: ``186A0`` or with minDigits = 6 ``0186A0``
+     - Convert integer value to HEX notation.  (Added: 2020/10/07, 2025/05/25: optional minDigits)
    * - Unit to IP: ``%c_u2ip%(%unit%,0)``
      - Unit to IP: ``192.168.1.67``
      - Convert a (known) unit number to its IP Address. (Added: 2020/11/08)
