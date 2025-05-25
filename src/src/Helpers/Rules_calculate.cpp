@@ -716,10 +716,6 @@ const __FlashStringHelper* toString(UnaryOperator op)
       return F("map");
     case UnaryOperator::MapC:
       return F("mapc");
-    #if FEATURE_STRING_VARIABLES
-    case UnaryOperator::IsNum:
-      return F("isnum");
-    #endif // if FEATURE_STRING_VARIABLES
   }
   return F("");
 }
@@ -757,9 +753,6 @@ String RulesCalculate_t::preProces(const String& input)
     #endif // if FEATURE_TRIGONOMETRIC_FUNCTIONS_RULES
     ,UnaryOperator::Map
     ,UnaryOperator::MapC
-    #if FEATURE_STRING_VARIABLES
-    ,UnaryOperator::IsNum
-    #endif
 
   };
 

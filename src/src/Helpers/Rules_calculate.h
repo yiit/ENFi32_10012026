@@ -52,9 +52,6 @@ enum class UnaryOperator : uint8_t {
   ArcSin_d,  // Arc Sine (degree)
   ArcCos,    // Arc Cosine (radian)
   ArcCos_d,  // Arc Cosine (degree)
-  #if FEATURE_STRING_VARIABLES
-  IsNum,
-  #endif // if FEATURE_STRING_VARIABLES
   ArcTan,    // Arc Tangent (radian)
   ArcTan_d,  // Arc Tangent (degree)
   Map,       // Map (value, lowFrom, highFrom, lowTo, highTo) (not really unary...)
