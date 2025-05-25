@@ -1450,7 +1450,7 @@ struct ConvertArgumentData {
   ConvertArgumentData() = delete;
 
   String& str;
-  String& str1;
+  String str1;
   float arg1, arg2;
   int   startIndex;
   int   endIndex;
