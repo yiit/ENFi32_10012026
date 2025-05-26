@@ -789,6 +789,7 @@ If the value contains spaces or commas, the ``<value>`` must be wrapped in quote
 
 A string variable that was not set to any value is assumed to hold the pseudo-value of an empty string.
 
+For determining the length of the current content of a string variable, ``[length#<varname>]`` can be used. Formatting and justification can be applied if desired.
 
 
 
