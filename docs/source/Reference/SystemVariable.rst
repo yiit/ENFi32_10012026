@@ -434,7 +434,7 @@ The conversion always outputs a string, but not all of these can be converted ba
        ``specifier``:
 
        * ``f``: Decimal floating point, lowercase
-       * ``D``: Decimal floating point, uppercase
+       * ``F``: Decimal floating point, uppercase
        * ``e``: Scientific notation (mantissa/exponent), lowercase
        * ``E``: Scientific notation (mantissa/exponent), uppercase
        * ``g``: Use the shortest representation, $e or $f
