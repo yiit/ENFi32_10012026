@@ -441,7 +441,11 @@ bool parse_math_functions(const String& cmd_s_lower, const String& arg1, const S
   return true;
 }
 
-const char string_commands[] PROGMEM = "substring|indexof|indexof_ci|equals|equals_ci|timetomin|timetosec|strtol|tobin|tohex|ord|urlencode";
+const char string_commands[] PROGMEM = "substring|indexof|indexof_ci|equals|equals_ci|timetomin|timetosec|strtol|tobin|tohex|ord|urlencode"
+  #if FEATURE_STRING_VARIABLES
+  "|lookup"
+  #endif // if FEATURE_STRING_VARIABLES
+  ;
 enum class string_commands_e {
   substring,
   indexof,
@@ -454,7 +458,10 @@ enum class string_commands_e {
   tobin,
   tohex,
   ord,
-  urlencode
+  urlencode,
+  #if FEATURE_STRING_VARIABLES
+  lookup,
+  #endif // if FEATURE_STRING_VARIABLES
 };
 
 
@@ -534,6 +541,13 @@ void parse_string_commands(String& line) {
                 }
               }
               break;
+            #if FEATURE_STRING_VARIABLES
+            case string_commands_e::lookup:
+              if (arg1valid && arg2valid && startpos > -1 && endpos > -1) {
+                replacement = arg3.substring(startpos * endpos, (startpos + 1) * endpos);
+              }
+              break;
+            #endif // if FEATURE_STRING_VARIABLES
             case string_commands_e::indexof:
             case string_commands_e::indexof_ci:
               // indexOf arduino style (0-based position of first char returned, -1 if not found, case sensitive), 3rd argument is search-offset

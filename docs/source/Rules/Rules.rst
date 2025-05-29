@@ -1039,6 +1039,21 @@ For example (bit useless though, just for illustrative purposes):
  221351 : Info  : Command: logentry
  221353 : Info  : 87
 
+Lookup
+^^^^^^
+
+(Added: 2025/05/29, only available when String Variables feature is included in the build)
+
+With ``lookup`` you can look up a substring value, based on an index and a length, from a longer string, somewhat similar to ``substring``.
+
+Usage: ``{lookup:<index>:<length>:<string_with_lookup_values>}``
+
+``<index>``: The positive 0-based index value. If the index indicates a value out of range, the entire calculation is returned unaltered.
+
+``<length>``: The length of the value to retrieve. This implies that all values to lookup are required to have the same length. Shorter lookup values should be padded with spaces or another character to that length.
+
+``<string_with_lookup_values>``: The combined string with all lookup values padded to have the same length, f.e. ``"Off.Fan HeatCool"``, where all lookup values are of length 4. The index to retrieve the word ``Off.`` is 0, ``Fan`` (including a space) is index 1, etc. This string should be wrapped in quotes if it contains space or colon ``:`` character(s).
+
 IndexOf and IndexOf_ci
 ^^^^^^^^^^^^^^^^^^^^^^
 
