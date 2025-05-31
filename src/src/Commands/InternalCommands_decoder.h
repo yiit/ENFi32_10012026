@@ -204,6 +204,10 @@ enum class ESPEasy_cmd_e : uint8_t {
   taskrun,
   taskrunat,
   taskvalueset,
+  #if FEATURE_STRING_VARIABLES
+  taskvaluesetderived,
+  taskvaluesetpresentation,
+  #endif // if FEATURE_STRING_VARIABLES
   taskvaluetoggle,
   taskvaluesetandrun,
   timerpause,

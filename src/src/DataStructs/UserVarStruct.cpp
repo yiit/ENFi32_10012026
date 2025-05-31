@@ -431,7 +431,11 @@ bool UserVarStruct::applyFormula(taskIndex_t    taskIndex,
   String formula = getPreprocessedFormula(taskIndex, varNr);
   bool   res     = true;
 
-  if (!formula.isEmpty())
+  if (!formula.isEmpty()
+      #if FEATURE_STRING_VARIABLES
+      && formula[1] != TASK_VALUE_PRESENTATION_PREFIX_CHAR
+      #endif // FEATURE_STRING_VARIABLES
+     ) // Ignore display-formula
   {
     START_TIMER;
 

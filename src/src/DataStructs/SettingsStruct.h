@@ -216,6 +216,13 @@ class SettingsStruct_tmpl
   bool CombineTaskValues_SingleEvent(taskIndex_t taskIndex) const;
   void CombineTaskValues_SingleEvent(taskIndex_t taskIndex, bool value);
 
+  #if FEATURE_STRING_VARIABLES
+  bool ShowDerivedTaskValues(taskIndex_t taskIndex) const;
+  void ShowDerivedTaskValues(taskIndex_t taskIndex, bool value);
+  bool SendDerivedTaskValues(taskIndex_t taskIndex) const;
+  void SendDerivedTaskValues(taskIndex_t taskIndex, bool value);
+  #endif // if FEATURE_STRING_VARIABLES
+
   bool DoNotStartAP() const  { return VariousBits_1.DoNotStartAP; }
   void DoNotStartAP(bool value) { VariousBits_1.DoNotStartAP = value; }
 

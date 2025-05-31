@@ -184,6 +184,14 @@ String formatUserVar(struct EventStruct *event,
                      uint8_t                rel_index,
                      bool              & isvalid);
 
+#if FEATURE_STRING_VARIABLES
+String formatUserVarForPresentation(struct EventStruct *event,
+                                    taskVarIndex_t      varNr,
+                                    bool              & hasPresentation,
+                                    const String      & value,
+                                    const deviceIndex_t DeviceIndex,
+                                    String              valueName = EMPTY_STRING);
+#endif // if FEATURE_STRING_VARIABLES
 
 String get_formatted_Controller_number(cpluginID_t cpluginID);
 

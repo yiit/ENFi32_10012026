@@ -1057,6 +1057,20 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
           saveUserVarToRTC();
         }
 
+        #if FEATURE_STRING_VARIABLES
+        if ((Function == PLUGIN_GET_CONFIG_VALUE) && !retval) {
+          String       taskName  = getTaskDeviceName(event->TaskIndex);
+          const String valueName = parseString(str, 1);
+          taskName.toLowerCase();
+          String derived = getCustomStringVar(strformat(F(TASK_VALUE_DERIVED_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str()));
+          if (!derived.isEmpty()) {
+            stripEscapeCharacters(derived);
+            str = parseTemplate(derived);
+            retval = true;
+          }
+        }
+        #endif // if FEATURE_STRING_VARIABLES
+
         if ((Function == PLUGIN_GET_CONFIG_VALUE) && !retval) {
           // Try to match a statistical property of a task value.
           // e.g.: [taskname#valuename.avg]

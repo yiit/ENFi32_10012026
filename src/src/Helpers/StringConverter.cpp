@@ -541,6 +541,49 @@ String formatUserVar(struct EventStruct *event, uint8_t rel_index, bool& isvalid
   return doFormatUserVar(event, rel_index, true, isvalid);
 }
 
+#if FEATURE_STRING_VARIABLES
+String formatUserVarForPresentation(struct EventStruct *event,
+                                    taskVarIndex_t      varNr,
+                                    bool              & hasPresentation,
+                                    const String      & value,
+                                    const deviceIndex_t DeviceIndex,
+                                    String              valueName) {
+  const taskIndex_t taskIndex = event->TaskIndex;
+  String formula = Cache.getTaskDeviceFormula(taskIndex, varNr);
+  hasPresentation = Cache.hasFormula(taskIndex, varNr)
+                            && formula.startsWith(F(TASK_VALUE_PRESENTATION_PREFIX_STRING));
+  if (hasPresentation) {
+    formula.remove(0, 1);
+    formula.replace(F("%value%"), value);
+    if (Cache.hasFormula_with_prevValue(taskIndex, varNr)) {
+      event->sensorType = Device[DeviceIndex].VType;
+      String dummy;
+      PluginCall(PLUGIN_GET_DEVICEVTYPE, event, dummy);
+      const String prev_str = UserVar.getPreviousValue(taskIndex, varNr, event->sensorType);
+      formula.replace(F("%pvalue%"), prev_str.isEmpty() ? value : prev_str);
+    }
+    formula = parseTemplate(formula);
+    return formula;
+  } else {
+    String taskName = getTaskDeviceName(taskIndex);
+    taskName.toLowerCase();
+    if (valueName.isEmpty() && validTaskVarIndex(varNr)) {
+      valueName = getTaskValueName(taskIndex, varNr);
+    }
+    valueName.toLowerCase();
+    String presentation = getCustomStringVar(strformat(F(TASK_VALUE_PRESENTATION_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str()));
+    if (!presentation.isEmpty()) {
+      stripEscapeCharacters(presentation);
+      presentation.replace(F("%value%"), value);
+      presentation = parseTemplate(presentation);
+    }
+    hasPresentation = !presentation.isEmpty();
+    return presentation;
+  }
+  return EMPTY_STRING;
+}
+#endif // if FEATURE_STRING_VARIABLES
+
 String get_formatted_Controller_number(cpluginID_t cpluginID) {
   if (!validCPluginID(cpluginID)) {
     return F("C---");

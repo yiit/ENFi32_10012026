@@ -201,7 +201,11 @@ String parseTemplate_padded(String& tmpString, uint8_t minimal_lineSize, bool us
               String value = formatUserVar(taskIndex, valueNr, isvalid);
 
               if (isvalid) {
-                transformValue(newString, minimal_lineSize, std::move(value), format, tmpString);
+                transformValue(newString, minimal_lineSize, std::move(value), format, tmpString
+                               #if FEATURE_STRING_VARIABLES
+                               , taskIndex, valueNr, valueName // for handling $ format option
+                               #endif // if FEATURE_STRING_VARIABLES
+                              );
                 isHandled = true;
               }
             } else {
@@ -211,7 +215,11 @@ String parseTemplate_padded(String& tmpString, uint8_t minimal_lineSize, bool us
 
               if (PluginCall(PLUGIN_GET_CONFIG_VALUE, &TempEvent, tmpName))
               {
-                transformValue(newString, minimal_lineSize, std::move(tmpName), format, tmpString);
+                transformValue(newString, minimal_lineSize, std::move(tmpName), format, tmpString
+                               #if FEATURE_STRING_VARIABLES
+                               , taskIndex, INVALID_TASKVAR_INDEX, valueName // for handling $ format option
+                               #endif // if FEATURE_STRING_VARIABLES
+                              );
                 isHandled = true;
               }
             }
@@ -242,7 +250,11 @@ String parseTemplate_padded(String& tmpString, uint8_t minimal_lineSize, bool us
               }
             }
             if (!value.isEmpty()) {
-              transformValue(newString, minimal_lineSize, std::move(value), format, tmpString);
+              transformValue(newString, minimal_lineSize, std::move(value), format, tmpString
+                             #if FEATURE_STRING_VARIABLES
+                             , taskIndex, INVALID_TASKVAR_INDEX, valueName // for handling $ format option
+                             #endif // if FEATURE_STRING_VARIABLES
+                            );
               // isHandled = true;
             }
           }
@@ -368,10 +380,16 @@ bool isTransformString(char c, bool logicVal, String& strValue)
 // valueFormat="transformation#justification"
 void transformValue(
   String      & newString,
-  uint8_t          lineSize,
+  uint8_t       lineSize,
   String        value,
   String      & valueFormat,
-  const String& tmpString)
+  const String& tmpString
+  #if FEATURE_STRING_VARIABLES
+  , taskIndex_t taskIndex
+  , uint8_t     valueIndex
+  , String      valueName
+  #endif // if FEATURE_STRING_VARIABLES
+  )
 {
   // FIXME TD-er: This function does append to newString and uses its length to perform right aling.
   // Is this the way it is intended to use?
@@ -525,6 +543,21 @@ void transformValue(
               value = static_cast<int>(ceilf(valFloat));
             #endif
               break;
+            #if FEATURE_STRING_VARIABLES
+            case TASK_VALUE_PRESENTATION_PREFIX_CHAR: // '$' Apply presentation format
+            {
+              if (validTaskIndex(taskIndex) && (validTaskVarIndex(valueIndex) || !valueName.isEmpty())) {
+                const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(taskIndex);
+                bool hasPresentation = false;
+                EventStruct TempEvent(taskIndex);
+                const String presentation = formatUserVarForPresentation(&TempEvent, valueIndex, hasPresentation, value, DeviceIndex, valueName);
+                if (hasPresentation) {
+                  value = presentation;
+                }
+              }
+              break;
+            }
+            #endif // if FEATURE_STRING_VARIABLES
             default:
               value = F("ERR");
               break;

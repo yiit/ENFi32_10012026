@@ -447,6 +447,10 @@ bool InternalCommands::executeInternalCommand()
     case ESPEasy_cmd_e::taskrun:                    COMMAND_CASE_A(Command_Task_Run,            1);  // Tasks.h
     case ESPEasy_cmd_e::taskrunat:                  COMMAND_CASE_A(Command_Task_Run,            2);  // Tasks.h
     case ESPEasy_cmd_e::taskvalueset:               COMMAND_CASE_A(Command_Task_ValueSet,       3);  // Tasks.h
+    #if FEATURE_STRING_VARIABLES
+    case ESPEasy_cmd_e::taskvaluesetderived:        COMMAND_CASE_A(Command_Task_ValueSetDerived,      3); // Tasks.h
+    case ESPEasy_cmd_e::taskvaluesetpresentation:   COMMAND_CASE_A(Command_Task_ValueSetPresentation, 3); // Tasks.h
+    #endif // if FEATURE_STRING_VARIABLES
     case ESPEasy_cmd_e::taskvaluetoggle:            COMMAND_CASE_A(Command_Task_ValueToggle,    2);  // Tasks.h
     case ESPEasy_cmd_e::taskvaluesetandrun:         COMMAND_CASE_A(Command_Task_ValueSetAndRun, 3);  // Tasks.h
     case ESPEasy_cmd_e::timerpause:                 COMMAND_CASE_A(Command_Timer_Pause,  1);         // Timers.h
