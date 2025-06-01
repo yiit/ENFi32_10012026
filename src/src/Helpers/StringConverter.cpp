@@ -1475,8 +1475,8 @@ bool getConvertArgumentStrFormat(const __FlashStringHelper * marker, const Strin
       pos_dollar = argStr.indexOf('$', pos_dollar);
     }
 
-    // We only support, 1 or 2, $ formatting characters to avoid crashes and confusion with shorthand variables
-    if ((dollarCount == 0) || (dollarCount > _MAX_STRFORMAT_ARGUMENTS)) { return false; }
+    // We support, 0, 1 or 2, $ formatting characters to avoid crashes and confusion with shorthand variables
+    if (dollarCount > _MAX_STRFORMAT_ARGUMENTS) { return false; }
 
     argStr.replace('$', '%'); // Change to regular strformat() format specifiers
 
@@ -1610,6 +1610,9 @@ void parseStandardConversions(String& s, bool useURLencode) {
   #endif
   SMART_CONV(F("%c_alt_pres_sea%"), toString(altitudeFromPressure(data.arg1, data.arg2), 2))
   SMART_CONV(F("%c_sea_pres_alt%"), toString(pressureElevation(data.arg1, data.arg2), 2))
+  #if FEATURE_STRING_VARIABLES
+  SMART_CONV(F("%c_ts2date%"),      get_date_time_from_timestamp(static_cast<uint32_t>(data.arg1), !essentiallyZero(data.arg2)))
+  #endif // if FEATURE_STRING_VARIABLES
 
   #ifndef LIMIT_BUILD_SIZE
   #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
@@ -1633,6 +1636,15 @@ void parseStandardConversions(String& s, bool useURLencode) {
   #undef SMART_CONV
   #endif // if FEATURE_STRING_VARIABLES
 }
+
+#if FEATURE_STRING_VARIABLES
+String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm) {
+  struct tm ts;
+  ts = *localtime(&unix_timestamp);
+
+  return formatDateTimeString(ts, '-', ':', ' ', am_pm);
+}
+#endif // if FEATURE_STRING_VARIABLES
 
 /********************************************************************************************\
    Find positional parameter in a char string

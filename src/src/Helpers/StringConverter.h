@@ -463,6 +463,9 @@ bool getConvertArgumentString(const String& marker,
 void parseStandardConversions(String& s,
                               bool useURLencode);
 
+#if FEATURE_STRING_VARIABLES
+String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm);
+#endif // if FEATURE_STRING_VARIABLES
 
 bool HasArgv(const char  *string,
              unsigned int argc);

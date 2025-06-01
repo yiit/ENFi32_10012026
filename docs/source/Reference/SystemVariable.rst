@@ -175,11 +175,21 @@ More uses of these system variables can be seen in the rules section and formula
      - +0100
      - System time-zone offset from UTC, using ``[+|-]HHMM`` format, + or -, hours and minutes both in 2 digits, zero-prefixed. Does take DST into account.
      - 
+   * - ``%systzoffset_s%``
+     - 3600
+     - System time-zone offset from UTC in seconds, + or -. Does take DST into account. (Added: 2025/06/01, not available in Limited builds)
+     - 
    * - ``%unixtime%``
      - 1521731277
      - Unix time (seconds since epoch, 1970-01-01 00:00:00)
        
        Example: 1521731277 = 2018-03-22 15:07:57
+     - Yes
+   * - ``%localunixtime%``
+     - 1748813303
+     - Local Unix time (seconds since epoch, 1970-01-01 00:00:00) with Time-zone and DST applied. (Added: 2025/06/01)
+       
+       Example: 1748813303 = 2025-06-01 21:28:32
      - Yes
    * - ``%uptime%``
      - 3244
@@ -362,6 +372,13 @@ The conversion always outputs a string, but not all of these can be converted ba
    * - Secs to dhms: ``%c_s2dhms%(100000)``
      - Secs to dhms: ``1d03:46:40``
      - Seconds to days/hours/minutes/seconds notation
+   * - Unix Timestamp to date/time: ``%c_ts2date%(1748813303)``
+     - Unix Timestamp to date/time: ``2025-06-01 21:28:32``
+     - Unix Timestamp to year-month-day hour:minute:second notation (Default ``%unixtime%`` is UTC)
+     
+       Optionally takes a second argument <> 0 to use AM/PM time notation.
+
+       ``%c_ts2date%(1748813303, 1)`` -> ``2025-06-01 09:28:32 PM``
    * - Random(L,H): ``%c_random%(0, 1)``
      - Random(L,H): ``0.123``
      - Generate random number in the given range L ... H (Added: 2025/04/29)

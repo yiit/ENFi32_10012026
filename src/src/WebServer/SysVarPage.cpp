@@ -201,6 +201,7 @@ void handle_sysvars() {
       SystemVariables::UPTIME,
       SystemVariables::UPTIME_MS,
       SystemVariables::UNIXTIME,
+      SystemVariables::LOCALUNIXTIME,
       SystemVariables::UNIXDAY,
       SystemVariables::UNIXDAY_SEC,
     };
@@ -237,6 +238,9 @@ void handle_sysvars() {
       SystemVariables::SYSWEEKDAY,
       SystemVariables::SYSWEEKDAY_S,
       SystemVariables::SYSTZOFFSET,
+      #ifndef LIMIT_BUILD_SIZE
+      SystemVariables::SYSTZOFFSET_S,
+      #endif // ifndef LIMIT_BUILD_SIZE
     };
     addSysVar_enum_html(vars, NR_ELEMENTS(vars));
   }
@@ -395,6 +399,10 @@ void handle_sysvars() {
       F("Mins to dhm:  %c_m2dhm%(1900)"),
       F("Mins to hcm:  %c_m2hcm%(482)"),
       F("Secs to dhms: %c_s2dhms%(100000)"),
+      #if FEATURE_STRING_VARIABLES
+      F("Timestamp to date/time: %c_ts2date%(%localunixtime%)"),
+      F("Timestamp to date/time am/pm: %c_ts2date%(%localunixtime%,1)"),
+      #endif // if FEATURE_STRING_VARIABLES
 
       // addFormSeparator(3,
       F("Random: %c_random%(0, 100)"),
@@ -419,24 +427,27 @@ void handle_sysvars() {
       #endif // if FEATURE_STRING_VARIABLES
     };
 
+    uint16_t off = 0;
     #if FEATURE_STRING_VARIABLES
+    off = 2;
     const String test  = getCustomStringVar(F("test")); // Save current values
     const String testf = getCustomStringVar(F("testf"));
     setCustomStringVar(F("test"),  F("123"));
     setCustomStringVar(F("testf"), F("Out $6.2f M$g"));
     #endif // if FEATURE_STRING_VARIABLES
-    for (unsigned int i = 0; i < NR_ELEMENTS(StdConversions); ++i) {
-      if ((i == 6) ||
-          (i == 8) ||
-          (i == 13)
+    constexpr uint16_t nrStdConv = NR_ELEMENTS(StdConversions);
+    for (uint16_t i = 0; i < nrStdConv; ++i) {
+      if ((i == 6u) ||
+          (i == 8u) ||
+          (i == (13u + off))
           #if FEATURE_ESPEASY_P2P
-          || (i == 15)
+          || (i == (15u + off))
           #endif // if FEATURE_ESPEASY_P2P
           #if FEATURE_STRING_VARIABLES
           #if FEATURE_ESPEASY_P2P
-          || (i == 23)
+          || (i == (23u + off))
           #else
-          || (i == 15)
+          || (i == (15u + off))
           #endif // if FEATURE_ESPEASY_P2P
           #endif // if FEATURE_STRING_VARIABLES
           ) {

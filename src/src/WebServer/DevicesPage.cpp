@@ -828,7 +828,7 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
                 if (!it->second.isEmpty()) {
                   String value(it->second);
                   stripEscapeCharacters(value);
-                  value = parseTemplate(value);
+                  value = parseTemplateAndCalculate(value);
                   String presentation = getCustomStringVar(strformat(F(TASK_VALUE_PRESENTATION_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str()));
                   if (!presentation.isEmpty()) {
                     stripEscapeCharacters(presentation);
