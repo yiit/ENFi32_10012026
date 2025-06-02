@@ -219,6 +219,8 @@ class SettingsStruct_tmpl
   #if FEATURE_STRING_VARIABLES
   bool ShowDerivedTaskValues(taskIndex_t taskIndex) const;
   void ShowDerivedTaskValues(taskIndex_t taskIndex, bool value);
+  bool EventAndLogDerivedTaskValues(taskIndex_t taskIndex) const;
+  void EventAndLogDerivedTaskValues(taskIndex_t taskIndex, bool value);
   bool SendDerivedTaskValues(taskIndex_t taskIndex) const;
   void SendDerivedTaskValues(taskIndex_t taskIndex, bool value);
   #endif // if FEATURE_STRING_VARIABLES

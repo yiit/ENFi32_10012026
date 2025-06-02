@@ -225,7 +225,7 @@ void SettingsStruct_tmpl<N_TASKS>::ShowDerivedTaskValues(taskIndex_t taskIndex, 
 }
 
 template<unsigned int N_TASKS>
-bool SettingsStruct_tmpl<N_TASKS>::SendDerivedTaskValues(taskIndex_t taskIndex) const {
+bool SettingsStruct_tmpl<N_TASKS>::EventAndLogDerivedTaskValues(taskIndex_t taskIndex) const {
   if (validTaskIndex(taskIndex)) {
     return bitRead(TaskDeviceSendDataFlags[taskIndex], 2);
   }
@@ -233,9 +233,24 @@ bool SettingsStruct_tmpl<N_TASKS>::SendDerivedTaskValues(taskIndex_t taskIndex) 
 }
 
 template<unsigned int N_TASKS>
-void SettingsStruct_tmpl<N_TASKS>::SendDerivedTaskValues(taskIndex_t taskIndex, bool value) {
+void SettingsStruct_tmpl<N_TASKS>::EventAndLogDerivedTaskValues(taskIndex_t taskIndex, bool value) {
   if (validTaskIndex(taskIndex)) {
     bitWrite(TaskDeviceSendDataFlags[taskIndex], 2, value);
+  }
+}
+
+template<unsigned int N_TASKS>
+bool SettingsStruct_tmpl<N_TASKS>::SendDerivedTaskValues(taskIndex_t taskIndex) const {
+  if (validTaskIndex(taskIndex)) {
+    return bitRead(TaskDeviceSendDataFlags[taskIndex], 3);
+  }
+  return false;
+}
+
+template<unsigned int N_TASKS>
+void SettingsStruct_tmpl<N_TASKS>::SendDerivedTaskValues(taskIndex_t taskIndex, bool value) {
+  if (validTaskIndex(taskIndex)) {
+    bitWrite(TaskDeviceSendDataFlags[taskIndex], 3, value);
   }
 }
 #endif // if FEATURE_STRING_VARIABLES

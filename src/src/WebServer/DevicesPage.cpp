@@ -384,6 +384,7 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
   Settings.CombineTaskValues_SingleEvent(taskIndex, isFormItemChecked(F("TVSE")));
   #if FEATURE_STRING_VARIABLES
   Settings.ShowDerivedTaskValues(taskIndex, isFormItemChecked(F("TSDV")));
+  Settings.EventAndLogDerivedTaskValues(taskIndex, isFormItemChecked(F("TELD")));
   Settings.SendDerivedTaskValues(taskIndex, isFormItemChecked(F("TSND")));
   #endif // if FEATURE_STRING_VARIABLES
 
@@ -827,7 +828,6 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
                 }
                 if (!it->second.isEmpty()) {
                   String value(it->second);
-                  stripEscapeCharacters(value);
                   value = parseTemplateAndCalculate(value);
                   String presentation = getCustomStringVar(strformat(F(TASK_VALUE_PRESENTATION_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str()));
                   if (!presentation.isEmpty()) {
@@ -1502,8 +1502,9 @@ void devicePage_show_controller_config(taskIndex_t taskIndex, deviceIndex_t Devi
                   getTaskDeviceName(taskIndex).c_str()));
 
     #if FEATURE_STRING_VARIABLES
-    addFormCheckBox(F("Show derived values"), F("TSDV"), Settings.ShowDerivedTaskValues(taskIndex));
-    addFormCheckBox(F("Send derived values"), F("TSND"), Settings.SendDerivedTaskValues(taskIndex), true); // FIXME enable when SendDerivedTaskValues feature is implemented
+    addFormCheckBox(F("Show derived values"),            F("TSDV"), Settings.ShowDerivedTaskValues(taskIndex));
+    addFormCheckBox(F("Event &amp; Log derived values"), F("TELD"), Settings.EventAndLogDerivedTaskValues(taskIndex));
+    addFormCheckBox(F("Send derived values"),            F("TSND"), Settings.SendDerivedTaskValues(taskIndex), true); // FIXME enable when SendDerivedTaskValues feature is implemented
     #endif // if FEATURE_STRING_VARIABLES
 
     bool separatorAdded = false;

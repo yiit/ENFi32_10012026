@@ -8,7 +8,9 @@ This group of settings are standard available configuration items.
 
 * **Show derived values**: When checked, the Devices overview page, and the ``/json`` endpoint (used for updating the Devices overview page) will include any Derived values as defined. See the ``TaskValueSetDerived`` and ``TaskValueSetPresentation`` commands.
 
-* **Send derived values**: When checked, the Derived values will be sent to any enabled Controllers, and generated as Events, to be handled in Rules.
+* **Event & Log derived values**: When checked, the Derived values will be generated as Events, to be handled in Rules, and sent to logging devices like the Syslog server and/or SD-card logging.
+
+* **Send derived values**: When checked, the Derived values will be sent to any enabled Controllers that support extra values like MQTT and HTTP/string value controllers.
 
 (The derived values options are only available if String variables feature is included in the build.)
 

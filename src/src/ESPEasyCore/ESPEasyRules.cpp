@@ -1365,6 +1365,7 @@ void createRuleEvents(struct EventStruct *event) {
   if (!validDeviceIndex(DeviceIndex)) { return; }
 
   const uint8_t valueCount = getValueCountForTask(event->TaskIndex);
+  String taskName = getTaskDeviceName(event->TaskIndex);
 
   // Small optimization as sensor type string may result in large strings
   // These also only yield a single value, so no need to check for combining task values.
@@ -1382,7 +1383,7 @@ void createRuleEvents(struct EventStruct *event) {
       addLog(LOG_LEVEL_ERROR, F("Not enough memory for event"));
       return;
     }
-    eventString += getTaskDeviceName(event->TaskIndex);
+    eventString += taskName;
     eventString += '#';
     eventString += Cache.getTaskDeviceValueName(event->TaskIndex, 0);
     eventString += '=';
@@ -1400,16 +1401,67 @@ void createRuleEvents(struct EventStruct *event) {
     String eventvalues;
     reserve_special(eventvalues, 32); // Enough for most use cases, prevent lots of memory allocations.
 
-    for (uint8_t varNr = 0; varNr < valueCount; varNr++) {
+    uint8_t varNr = 0;
+    for (; varNr < valueCount; ++varNr) {
       if (varNr != 0) {
         eventvalues += ',';
       }
       eventvalues += formatUserVarNoCheck(event, varNr);
     }
+    #if FEATURE_STRING_VARIABLES
+    if (Settings.EventAndLogDerivedTaskValues(event->TaskIndex)) {
+      taskName.toLowerCase();
+      String search = strformat(F(TASK_VALUE_DERIVED_PREFIX_TEMPLATE), taskName.c_str(), FsP(F("X")));
+      const String postfix = search.substring(search.indexOf('X') + 1);
+      search = search.substring(0, search.indexOf('X')); // Cut off left of valuename
+
+      auto it = customStringVar.begin();
+      while (it != customStringVar.end()) {
+        if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
+          if (!it->second.isEmpty()) {
+            String value(it->second);
+            value = parseTemplateAndCalculate(value);
+            if (varNr != 0) {
+              eventvalues += ',';
+            }
+            eventvalues += value;
+            ++varNr;
+          }
+        }
+        ++it;
+      }
+    }
+    #endif // if FEATURE_STRING_VARIABLES
     eventQueue.add(event->TaskIndex, F("All"), eventvalues);
   } else {
     for (uint8_t varNr = 0; varNr < valueCount; varNr++) {
       eventQueue.add(event->TaskIndex, Cache.getTaskDeviceValueName(event->TaskIndex, varNr), formatUserVarNoCheck(event, varNr));
     }
+    #if FEATURE_STRING_VARIABLES
+    if (Settings.EventAndLogDerivedTaskValues(event->TaskIndex)) {
+      taskName.toLowerCase();
+      String search = strformat(F(TASK_VALUE_DERIVED_PREFIX_TEMPLATE), taskName.c_str(), FsP(F("X")));
+      const String postfix = search.substring(search.indexOf('X') + 1);
+      search = search.substring(0, search.indexOf('X')); // Cut off left of valuename
+
+      auto it = customStringVar.begin();
+      while (it != customStringVar.end()) {
+        if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
+          String valueName = it->first.substring(search.length(), it->first.indexOf('-'));
+          const String key2 = strformat(F(TASK_VALUE_NAME_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str());
+          const String vname2 = getCustomStringVar(key2);
+          if (!vname2.isEmpty()) {
+            valueName = vname2;
+          }
+          if (!it->second.isEmpty()) {
+            String value(it->second);
+            value = parseTemplateAndCalculate(value);
+            eventQueue.add(event->TaskIndex, valueName, value);
+          }
+        }
+        ++it;
+      }
+    }
+    #endif // if FEATURE_STRING_VARIABLES
   }
 }

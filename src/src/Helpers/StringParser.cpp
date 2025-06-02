@@ -45,6 +45,7 @@ void stripEscapeCharacters(String& str)
 
 #if FEATURE_STRING_VARIABLES
 String parseTemplateAndCalculate(String& tmpString) {
+  stripEscapeCharacters(tmpString);
   String str = parseTemplate(tmpString);
   ESPEASY_RULES_FLOAT_TYPE result{};
   if (!str.isEmpty() && (str[0] == '=') && !isError(Calculate(str.substring(1), result, true))) {
