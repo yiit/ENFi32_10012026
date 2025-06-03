@@ -8,7 +8,7 @@ var commonCommands = ["AccessInfo", "Background", "Build", "ClearAccessBlock", "
   "ControllerEnable", "DateTime", "Debug", "Dec", "DeepSleep", "DisablePriorityTask", "DNS", "DST", "EraseSDKWiFi", "ExecuteRules", "FactoryReset", "Gateway", "I2Cscanner", "Inc",
   "IP", "Let", "LetStr", "Load", "LogEntry", "LogPortStatus", "LoopTimerSet", "LoopTimerSet_ms", "LoopTimerSetAndRun", "LoopTimerSetAndRun_ms", "MemInfo", "MemInfoDetail", "Name", "Password", "PostToHTTP", "Publish", "PublishR",
   "Reboot", "Save", "SendTo", "SendToHTTP", "SendToUDP", "SendToUDPMix", "Settings", "Subnet", "Subscribe", "TaskClear", "TaskClearAll",
-  "TaskDisable", "TaskEnable", "TaskRun", "TaskValueSet", "TaskValueSetAndRun", "TimerPause", "TimerResume", "TimerSet", "TimerSet_ms", "TimeZone",
+  "TaskDisable", "TaskEnable", "TaskRun", "TaskValueSet", "TaskValueSetAndRun", "TaskValueSetDerived", "TaskValueSetPresentation", "TimerPause", "TimerResume", "TimerSet", "TimerSet_ms", "TimeZone",
   "UdpPort", "UdpTest", "Unit", "UseNTP", "WdConfig", "WdRead", "WiFi", "WiFiAllowAP", "WiFiAPMode", "WiFiConnect", "WiFiDisconnect", "WiFiKey",
   "WiFiKey2", "WiFiMode", "WiFiScan", "WiFiSSID", "WiFiSSID2", "WiFiSTAMode",
   "Event", "AsyncEvent",
@@ -169,18 +169,18 @@ var AnythingElse = [
   "%systm_hm_0%", "%systm_hm_sp%", "%systime_am%", "%systime_am_0%", "%systime_am_sp%", "%systm_hm_am%", "%systm_hm_am_0%", "%systm_hm_am_sp%",
   "%lcltime%", "%sunrise%", "%s_sunrise%", "%m_sunrise%", "%sunset%", "%s_sunset%", "%m_sunset%", "%lcltime_am%",
   "%syshour%", "%syshour_0%", "%sysmin%", "%sysmin_0%", "%syssec%", "%syssec_0%", "%sysday%", "%sysday_0%", "%sysmonth%",
-  "%sysmonth_0%", "%sysyear%", "%sysyear_0%", "%sysyears%", "%sysweekday%", "%sysweekday_s%", "%unixtime%", "%uptime%", "%uptime_ms%",
+  "%sysmonth_0%", "%systzoffset%", "%systzoffset_s%", "%sysyear%", "%sysyear_0%", "%sysyears%", "%sysweekday%", "%sysweekday_s%", "%unixtime%", "%unixtime_lcl%", "%uptime%", "%uptime_ms%",
   "%rssi%", "%ip%", "%unit%", "%unit_0%", "%ssid%", "%bssid%", "%wi_ch%", "%iswifi%", "%vcc%", "%mac%", "%mac_int%", "%isntp%", "%ismqtt%",
   "%dns%", "%dns1%", "%dns2%", "%flash_freq%", "%flash_size%", "%flash_chip_vendor%", "%flash_chip_model%", "%fs_free%", "%fs_size%",
   "%cpu_id%", "%cpu_freq%", "%cpu_model%", "%cpu_rev%", "%cpu_cores%", "%board_name%", "%inttemp%", "%islimited_build%", "%isvar_double%",
   //String Functions
-  "substring", "indexOf", "indexOf_ci", "equals", "equals_ci", "strtol", "timeToMin", "timeToSec",
+  "substring", "lookup", "indexOf", "indexOf_ci", "equals", "equals_ci", "strtol", "timeToMin", "timeToSec",
   //Ethernet
   "%ethwifimode%", "%ethconnected%", "%ethduplex%", "%ethspeed%", "%ethstate%", "%ethspeedstate%",
   //Standard Conversions
   "%c_w_dir%", "%c_c2f%", "%c_ms2Bft%", "%c_dew_th%", "%c_alt_pres_sea%", "%c_sea_pres_alt%", "%c_cm2imp%", "%c_isnum%", "%c_mm2imp%",
-  "%c_m2day%", "%c_m2dh%", "%c_m2dhm%", "%c_s2dhms%", "%c_random%", "%c_2hex%", "%c_u2ip%", "%c_uname%", "%c_uage%", "%c_ubuild%", "%c_ubuildstr%",
-  "%c_uload%", "%c_utype%", "%c_utypestr%",
+  "%c_m2day%", "%c_m2dh%", "%c_m2dhm%", "%c_s2dhms%", "%c_ts2date%", "%c_ts2wday%", "%c_random%", "%c_2hex%", "%c_u2ip%", "%c_uname%", "%c_uage%", "%c_ubuild%", "%c_ubuildstr%",
+  "%c_uload%", "%c_utype%", "%c_utypestr%", "%c_strf%",
   //Variables
   "var", "int", "str", "length"
 ];
