@@ -25,6 +25,7 @@ The included tools are all for Windows.
 * ``esptool.exe`` A command line ESP8266/ESP32 build and upload helper tool, `maintained by Ivan Grokhotkov <https://github.com/igrr/esptool-ck>`_
 * ``FlashESP8266.exe`` A very simple flash tool "ESPEasy Flasher" for ESP82xx. Should be called from the same directory as the compiled bin files: ``C:\Download\ESPEasy\bin> ..\FlashESP8266.exe``
 * ``Espressif Flash Download Tool`` located in the directory ``Espressif_flash_download_tool_v3.8.5``. New versions can be found `Espressif Download <https://www.espressif.com/en/support/download/other-tools>`_
+* ``ESPWebTool`` just use Chrome or Edge browser to flash usb connected ESP board. For Firefox you need to install extra addon. Can be found at `ESPWebTool <https://esp.huhn.me/>`_
 
 For Linux or Mac users, the recommended tool for ESP82xx/ESP32 is `esptool.py <https://github.com/espressif/esptool>`_
 
@@ -95,6 +96,7 @@ ESP82xx
 
 ESPEasy builds based on esp8266/Arduino library version 2.7.x and later can handle compressed ``.bin.gz`` files.
 When in doubt, just use the ``.bin`` files.
+If first time flash use ``.bin`` file at address 0.
 
 ESP32
 =====
