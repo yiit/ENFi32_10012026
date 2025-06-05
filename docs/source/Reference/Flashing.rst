@@ -28,8 +28,9 @@ The included tools are all for Windows.
 
 For Linux or Mac users, the recommended tool for ESP82xx/ESP32 is `esptool.py <https://github.com/espressif/esptool>`_
 
-Platform independent software (works also on Linux):
-* ``ESPWebTool`` just use Chrome or Edge browser to flash usb connected ESP board. For Firefox you need to install extra addon. Can be found at `ESPWebTool <https://esp.huhn.me/>`_
+Platform independent software in your browser (works also on Linux):
+
+* `ESPWebTool <https://esp.huhn.me/>`_ just use Chrome or Edge browser to flash usb connected ESP82xx/ESP32 board. For Firefox you need to install extra `addon <https://addons.mozilla.org/pl/firefox/addon/webserial-for-firefox/>`_.
 
 Flashing Parameters
 ===================
