@@ -464,6 +464,13 @@ void handle_json()
           stream_next_json_object_value(F("ValueNumber"), x + 1);
           stream_next_json_object_value(F("Name"),        Cache.getTaskDeviceValueName(TaskIndex, x));
           stream_next_json_object_value(F("NrDecimals"),  nrDecimals);
+          #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+          const uint8_t uomIndex = Cache.getTaskVarUnitOfMeasure(TaskIndex, x);
+          if (uomIndex != 0) {
+            const String uom = toUnitOfMeasureName(uomIndex);
+            stream_next_json_object_value(F("UoM"), uom);
+          }
+          #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
           stream_last_json_object_value(F("Value"), value);
 
           if (x < (valueCount - 1)) {
@@ -487,6 +494,9 @@ void handle_json()
 
       if (showSpecificTask) {
         stream_next_json_object_value(F("TTL"), ttl_json * 1000);
+        #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+        stream_next_json_object_value(F("ShowUoM"), jsonBool(Settings.ShowUnitOfMeasureOnDevicesPage()));
+        #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
       }
 
       if (showDataAcquisition) {
@@ -566,6 +576,9 @@ void handle_json()
 
   if (!showSpecificTask) {
     addHtml(F("],\n"));
+    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    stream_next_json_object_value(F("ShowUoM"), jsonBool(Settings.ShowUnitOfMeasureOnDevicesPage()));
+    #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     stream_last_json_object_value(F("TTL"), lowest_ttl_json * 1000);
   }
 
