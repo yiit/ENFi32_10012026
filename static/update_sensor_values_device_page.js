@@ -33,7 +33,7 @@ function loopDeLoop(timeForNext, activeRequests) {
                 }
                 response.json().then(function(data) {
                     timeForNext = data.TTL;
-                    var showUoM = data.ShowUoM && data.ShowUoM !== 'false';
+                    var showUoM = data.ShowUoM === undefined || (data.ShowUoM && data.ShowUoM !== 'false');
                     for (c = 0; c < data.Sensors.length; c++) {
                         if (data.Sensors[c].hasOwnProperty('TaskValues')) {
                             for (k = 0; k < data.Sensors[c].TaskValues.length; k++) {

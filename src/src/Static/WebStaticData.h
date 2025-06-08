@@ -373,7 +373,7 @@ static const char DATA_UPDATE_SENSOR_VALUES_DEVICE_PAGE_JS[] PROGMEM = {
   "++s>1||fetch('/json?view=sensorupdate').then(function(s){var n;if(200!==s.status){console.log('Looks like there was a problem. Status Code: '+s.status);return}"
   "s.json().then(function(s){e=s.TTL;"
   #if (defined(FEATURE_TASKVALUE_UNIT_OF_MEASURE) && FEATURE_TASKVALUE_UNIT_OF_MEASURE) || (defined(FEATURE_STRING_VARIABLES) && FEATURE_STRING_VARIABLES)
-  "var r=s.ShowUoM&&'false'!==s.ShowUoM;"
+  "var r=void 0===s.ShowUoM||s.ShowUoM&&'false'!==s.ShowUoM;"
   #endif // if (defined(FEATURE_TASKVALUE_UNIT_OF_MEASURE) && FEATURE_TASKVALUE_UNIT_OF_MEASURE) || (defined(FEATURE_STRING_VARIABLES) && FEATURE_STRING_VARIABLES)
   "for(o=0;o<s.Sensors.length;o++)if(s.Sensors[o].hasOwnProperty('TaskValues'))"
   "for(a=0;a<s.Sensors[o].TaskValues.length;a++)try{n=s.Sensors[o].TaskValues[a].Value}catch(l){n=l.name}"
