@@ -461,21 +461,19 @@ void handle_json()
           const String presentation = formatUserVarForPresentation(&TempEvent, x, hasPresentation, value, DeviceIndex);
           #endif // if FEATURE_STRING_VARIABLES
           
-          if (mustConsiderAsJSONString(value)
-              #if FEATURE_STRING_VARIABLES
-              || (hasPresentation && mustConsiderAsJSONString(presentation))
-              #endif // if FEATURE_STRING_VARIABLES
-             ) {
+          if (mustConsiderAsJSONString(value)) {
             // Flag as not to treat as a float
             nrDecimals = 255;
           }
           handle_json_stream_task_value_data(x + 1,
                                              Cache.getTaskDeviceValueName(TaskIndex, x),
                                              nrDecimals,
-                                             #if FEATURE_STRING_VARIABLES
-                                             hasPresentation ? presentation :
-                                             #endif // if FEATURE_STRING_VARIABLES
                                              value,
+                                             #if FEATURE_STRING_VARIABLES
+                                             presentation,
+                                             #else // if FEATURE_STRING_VARIABLES
+                                             EMPTY_STRING,
+                                             #endif // if FEATURE_STRING_VARIABLES
                                              x < (valueCount - 1));
         }
         #if FEATURE_STRING_VARIABLES
@@ -507,7 +505,7 @@ void handle_json()
                 }
                 bool hasPresentation;
                 const String presentation = formatUserVarForPresentation(&TempEvent, INVALID_TASKVAR_INDEX, hasPresentation, value, DeviceIndex, valueName);
-                if (mustConsiderAsJSONString(value) || (hasPresentation && mustConsiderAsJSONString(presentation))) {
+                if (mustConsiderAsJSONString(value)) {
                   // Flag as not to treat as a float
                   nrDecimals = 255;
                 }
@@ -516,7 +514,8 @@ void handle_json()
                 handle_json_stream_task_value_data(varNr + 1,
                                                   valueName,
                                                   nrDecimals,
-                                                  hasPresentation ? presentation : value,
+                                                  value,
+                                                  presentation,
                                                   false); // No comma here
                 ++varNr;
               }
@@ -632,10 +631,16 @@ void handle_json_stream_task_value_data(uint16_t       valueNumber,
                                         const String & valueName,
                                         uint8_t        nrDecimals,
                                         const String & value,
+                                        const String & presentation,
                                         bool           appendComma) {
   stream_next_json_object_value(F("ValueNumber"), valueNumber);
   stream_next_json_object_value(F("Name"),        valueName);
   stream_next_json_object_value(F("NrDecimals"),  nrDecimals);
+  #if FEATURE_STRING_VARIABLES
+  if (!presentation.isEmpty()) {
+    stream_next_json_object_value(F("Presentation"), presentation);
+  }
+  #endif // if FEATURE_STRING_VARIABLES
   stream_last_json_object_value(F("Value"),       value);
 
   if (appendComma) {
