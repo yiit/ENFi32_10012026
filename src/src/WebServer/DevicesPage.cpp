@@ -429,6 +429,10 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
 
     ExtraTaskSettings.setPluginStatsConfig(varNr, pluginStats_Config);
 # endif // if FEATURE_PLUGIN_STATS
+    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    ExtraTaskSettings.setTaskVarUnitOfMeasure(varNr, getFormItemInt(getPluginCustomArgName(F("TUOM"), varNr)));
+    #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
   }
   ExtraTaskSettings.clearUnusedValueNames(valueCount);
 
@@ -787,11 +791,22 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
           {
             if (validPluginID_fullcheck(Settings.getPluginID_for_task(x)))
             {
+              #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+              const uint8_t uomIndex = Cache.getTaskVarUnitOfMeasure(x, varNr);
+              String uom;
+              if (uomIndex != 0 && Settings.ShowUnitOfMeasureOnDevicesPage()) {
+                uom = concat(F(" "), toUnitOfMeasureName(uomIndex));
+              }
+              #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
               pluginWebformShowValue(
                 x,
                 varNr,
                 Cache.getTaskDeviceValueName(x, varNr),
-                formatUserVarNoCheck(&TempEvent, varNr));
+                formatUserVarNoCheck(&TempEvent, varNr)
+                #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+                + uom
+                #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+              );
             }
           }
         }
@@ -1553,6 +1568,11 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
     }
 # endif // if FEATURE_PLUGIN_STATS
 
+    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    html_table_header(F("Unit of Measure"), 50);
+    ++colCount;
+    #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
     // placeholder header
     html_table_header(F(""));
     ++colCount;
@@ -1622,6 +1642,11 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
           selected);
       }
 # endif // if FEATURE_PLUGIN_STATS
+
+      #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      html_TD();
+      addUnitOfMeasureSelector(getPluginCustomArgName(F("TUOM"), varNr), Cache.getTaskVarUnitOfMeasure(taskIndex, varNr));
+      #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     }
     addFormSeparator(colCount);
   }
