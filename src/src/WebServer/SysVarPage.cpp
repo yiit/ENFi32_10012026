@@ -410,6 +410,8 @@ void handle_sysvars() {
 
 #ifndef LIMIT_BUILD_SIZE
       F("Random: %c_random%(0, 100)"),
+#else
+      F(""),
 #endif
 
       F("To HEX: %c_2hex%(100000) or: %c_2hex%(100000,6)"),
@@ -432,10 +434,7 @@ void handle_sysvars() {
       #endif // if FEATURE_STRING_VARIABLES
     };
 
-    int16_t off = 0;
-    #ifdef LIMIT_BUILD_SIZE
-    off = -1;
-    #endif // ifdef LIMIT_BUILD_SIZE
+    uint16_t off = 0;
     #if FEATURE_STRING_VARIABLES
     off = 3;
     const String test  = getCustomStringVar(F("test")); // Save current values
@@ -444,7 +443,7 @@ void handle_sysvars() {
     setCustomStringVar(F("testf"), F("Out $6.2f M$g"));
     #endif // if FEATURE_STRING_VARIABLES
     constexpr uint16_t nrStdConv = NR_ELEMENTS(StdConversions);
-    for (int16_t i = 0; i < nrStdConv; ++i) {
+    for (uint16_t i = 0; i < nrStdConv; ++i) {
       if ((i == 6u) ||
           (i == 8u) ||
           (i == (13u + off))
