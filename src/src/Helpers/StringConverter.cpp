@@ -682,10 +682,12 @@ String to_json_value(const String& value, bool wrapInQuotes) {
     // Empty string
     return F("\"\"");
   }
-  if (value.length() > 2) {
+  const size_t val_length = value.length();
+
+  if (val_length > 2) {
     // Check for JSON objects or arrays
     const char firstchar = value[0];
-    const char lastchar = value[value.length() - 1];
+    const char lastchar = value[val_length - 1];
     if ((firstchar == '[' && lastchar == ']') ||
         (firstchar == '{' && lastchar == '}')) 
     {
@@ -698,26 +700,34 @@ String to_json_value(const String& value, bool wrapInQuotes) {
     // Is not a numerical value, or BIN/HEX notation, thus wrap with quotes
 
     // First we check for not allowed special characters.
-    const size_t val_length = value.length();
+
+    // Most frequently found in a string
+    const bool backslash_or_doubleQuote_found = 
+      value.indexOf('\\') != -1 ||
+      value.indexOf('"') != -1;
+    
     for (size_t i = 0; i < val_length; ++i) {
       const char c = value[i];
       // Special characters not allowed in JSON:
-      if (c == '\n'|| //  \n  New line
-          c == '\r'|| //  \r  Carriage return
-          c == '\t'|| //  \t  Tab
-          c == '\\'|| //  \\  Backslash character
+      if (backslash_or_doubleQuote_found ||
+          (c >= '\b' && c <= '\r')
+/*
           c == '\b'|| //  \b  Backspace (ascii code 08)
+          c == '\t'|| //  \t  Tab
+          c == '\n'|| //  \n  New line
           c == '\f'|| //  \f  Form feed (ascii code 0C)
-          c == '"') { //  \"  Double quote
+          c == '\r'|| //  \r  Carriage return
+*/
+          ) {
         // Must replace characters, so make a deepcopy
         String tmpValue(value);
-        tmpValue.replace('\n', '^');
-        tmpValue.replace('\r', '^');
-        tmpValue.replace('\t', ' ');
-        tmpValue.replace('\\', '^');
-        tmpValue.replace('\b', '^');
-        tmpValue.replace('\f', '^');
-        tmpValue.replace('"',  '\'');
+        tmpValue.replace('\b', '^');  //  \b  Backspace (ascii code 08)
+        tmpValue.replace('\t', ' ');  //  \t  Tab
+        tmpValue.replace('\n', '^');  //  \n  New line
+        tmpValue.replace('\f', '^');  //  \f  Form feed (ascii code 0C)
+        tmpValue.replace('\r', '^');  //  \r  Carriage return
+        tmpValue.replace('\\', '^');  //  Backslash
+        tmpValue.replace('"',  '\''); //  Double quote
         return wrap_String(tmpValue, '"');
       }
     }

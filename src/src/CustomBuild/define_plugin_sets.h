@@ -3534,7 +3534,11 @@ To create/register a plugin, you have to :
 #endif
 
 #ifndef FEATURE_TARSTREAM_SUPPORT
-  #define FEATURE_TARSTREAM_SUPPORT   1
+  #ifdef LIMIT_BUILD_SIZE
+    #define FEATURE_TARSTREAM_SUPPORT   0
+  #else
+    #define FEATURE_TARSTREAM_SUPPORT   1
+  #endif
 #endif // FEATURE_TARSTREAM_SUPPORT
 
 // Check for plugins that will use Extended Custom Settings storage when available

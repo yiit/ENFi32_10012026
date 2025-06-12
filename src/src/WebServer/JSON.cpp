@@ -696,10 +696,9 @@ void stream_to_json_object_value(const __FlashStringHelper *  object, const Stri
 }
 
 void stream_to_json_object_value(const String& object, const String& value) {
-  addHtml(strformat(
-    F("\"%s\":%s"),
-    object.c_str(),
-    to_json_value(value).c_str()));
+  addHtml(wrap_String(object, '"', '"'));
+  addHtml(':');
+  addHtml(to_json_value(value));
 }
 
 void stream_to_json_object_value(const __FlashStringHelper *  object, int value) {
@@ -707,10 +706,9 @@ void stream_to_json_object_value(const __FlashStringHelper *  object, int value)
 }
 
 void stream_to_json_object_value(const String& object, int value) {
-  addHtml(strformat(
-    F("\"%s\":%d"),
-    object.c_str(),
-    value));
+  addHtml(wrap_String(object, '"', '"'));
+  addHtml(':');
+  addHtmlInt(value);
 }
 
 String jsonBool(bool value) {
