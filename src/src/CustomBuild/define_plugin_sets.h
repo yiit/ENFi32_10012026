@@ -3555,7 +3555,11 @@ To create/register a plugin, you have to :
 #endif
 
 #ifndef FEATURE_TARSTREAM_SUPPORT
-  #define FEATURE_TARSTREAM_SUPPORT   1
+  #ifdef LIMIT_BUILD_SIZE
+    #define FEATURE_TARSTREAM_SUPPORT   0
+  #else
+    #define FEATURE_TARSTREAM_SUPPORT   1
+  #endif
 #endif // FEATURE_TARSTREAM_SUPPORT
 
 // Check for plugins that will use Extended Custom Settings storage when available
@@ -3652,6 +3656,20 @@ To create/register a plugin, you have to :
 #  define FEATURE_BUSCMD_STRING   1
 # endif // if defined(LIMIT_BUILD_SIZE) || defined(ESP8266)
 #endif // ifndef FEATURE_BUSCMD_STRING
+
+
+#ifndef FEATURE_STRING_VARIABLES
+  #ifdef ESP32
+    #define FEATURE_STRING_VARIABLES  1
+  #endif
+  #ifdef ESP8266
+    #define FEATURE_STRING_VARIABLES  0
+  #endif
+#endif // ifndef FEATURE_STRING_VARIABLES
+#if FEATURE_STRING_VARIABLES && defined(ESP8266) // NOT supported on ESP8266 because of limited available memory
+  #undef FEATURE_STRING_VARIABLES
+  #define FEATURE_STRING_VARIABLES  0
+#endif
   
   
 #if !defined(CUSTOM_BUILD_CDN_URL) && !defined(FEATURE_ALTERNATIVE_CDN_URL)
