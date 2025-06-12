@@ -382,7 +382,7 @@ void handle_sysvars() {
   }
 # endif // ifndef BUILD_NO_SPECIAL_CHARACTERS_STRINGCONVERTER
   {
-    addTableSeparator(F("Standard Conversions"), 3, 2);
+    addTableSeparator(F("Standard Conversions"), 3, 3);
 
     const __FlashStringHelper *StdConversions[] = {
       F("Wind Dir.:    %c_w_dir%(123.4)"),
