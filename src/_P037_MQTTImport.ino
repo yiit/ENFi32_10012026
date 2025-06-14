@@ -11,6 +11,7 @@
 // This task reads data from the MQTT Import input stream and saves the value
 
 /**
+ * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for MQTT Import)
  *                        Update changelog
  * 2025-01-03 tonhuisman: Small code cleanup
@@ -116,11 +117,12 @@ boolean Plugin_037(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_DEVICE_ADD:
     {
       auto& dev = Device[++deviceCount];
-      dev.Number       = PLUGIN_ID_037;
-      dev.Type         = DEVICE_TYPE_DUMMY;
-      dev.VType        = Sensor_VType::SENSOR_TYPE_SINGLE; // This means it has a single pin
-      dev.DecimalsOnly = true;                             // We only want to have the decimals option
-      dev.ValueCount   = VARS_PER_TASK;
+      dev.Number         = PLUGIN_ID_037;
+      dev.Type           = DEVICE_TYPE_DUMMY;
+      dev.VType          = Sensor_VType::SENSOR_TYPE_SINGLE; // This means it has a single pin
+      dev.DecimalsOnly   = true;                             // We only want to have the decimals option
+      dev.ValueCount     = VARS_PER_TASK;
+      dev.CustomVTypeVar = true;
       break;
     }
 
@@ -139,14 +141,21 @@ boolean Plugin_037(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_SET_DEFAULTS:
     {
@@ -212,8 +221,9 @@ boolean Plugin_037(uint8_t function, struct EventStruct *event, String& string)
 
       {
         P037_data_struct *P037_data = nullptr;
-        constexpr size_t size = sizeof(P037_data_struct);
-        void * ptr = special_calloc(1, size);
+        constexpr size_t  size      = sizeof(P037_data_struct);
+        void *ptr                   = special_calloc(1, size);
+
         if (ptr) {
           P037_data = new (ptr) P037_data_struct(event->TaskIndex);
         }
@@ -246,7 +256,8 @@ boolean Plugin_037(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_WEBFORM_SAVE:
     {
       P037_data_struct *P037_data = nullptr;
-      void * ptr = special_calloc(1, sizeof(P037_data_struct));
+      void *ptr                   = special_calloc(1, sizeof(P037_data_struct));
+
       if (ptr) {
         P037_data = new (ptr) P037_data_struct(event->TaskIndex);
       }
@@ -291,7 +302,8 @@ boolean Plugin_037(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_INIT:
     {
-      void * ptr = special_calloc(1, sizeof(P037_data_struct));
+      void *ptr = special_calloc(1, sizeof(P037_data_struct));
+
       if (ptr) {
         initPluginTaskData(event->TaskIndex, new (ptr) P037_data_struct(event->TaskIndex));
       }

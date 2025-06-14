@@ -7,6 +7,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Rotary encoder)
  * 2025-01-04 tonhuisman: Minor code cleanup
  */
@@ -47,6 +48,7 @@ boolean Plugin_059(uint8_t function, struct EventStruct *event, String& string)
       dev.SendDataOption = true;
       dev.TimerOption    = true;
       dev.TimerOptional  = true;
+      dev.CustomVTypeVar = true;
       break;
     }
 
@@ -62,14 +64,21 @@ boolean Plugin_059(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_GET_DEVICEGPIONAMES:
     {
@@ -87,8 +96,8 @@ boolean Plugin_059(uint8_t function, struct EventStruct *event, String& string)
       }
 
       {
-        const int optionValues[]             = { 1, 2, 4 };
-        constexpr size_t optionCount         = NR_ELEMENTS(optionValues);
+        const int optionValues[]     = { 1, 2, 4 };
+        constexpr size_t optionCount = NR_ELEMENTS(optionValues);
         const FormSelectorOptions selector(optionCount, optionValues);
         selector.addFormSelector(F("Mode"), F("mode"), PCONFIG(0));
         addUnit(F("pulses per cycle"));

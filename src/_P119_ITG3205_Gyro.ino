@@ -13,6 +13,7 @@
  */
 
 /** Changelog:
+ * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Gyro)
  * 2021-11-22 tonhuisman: Moved from DEVELOPMENT to TESTING 'status'
  * 2021-10-28 tonhuisman: Tested reading (chip) temperature measurement, but it isn't useful, so removed again.
@@ -57,6 +58,7 @@ boolean Plugin_119(uint8_t function, struct EventStruct *event, String& string)
       dev.TimerOption    = true;
       dev.TimerOptional  = true;
       dev.PluginStats    = true;
+      dev.CustomVTypeVar = true;
       break;
     }
 
@@ -74,14 +76,21 @@ boolean Plugin_119(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:
@@ -134,7 +143,7 @@ boolean Plugin_119(uint8_t function, struct EventStruct *event, String& string)
       const int frequencyValues[]  = { P119_FREQUENCY_10, P119_FREQUENCY_50 };
       constexpr size_t optionCount = NR_ELEMENTS(frequencyValues);
       const FormSelectorOptions selector(optionCount, frequencyOptions, frequencyValues);
-      selector.addFormSelector(F("Measuring frequency"), F("frequency"),  P119_FREQUENCY);
+      selector.addFormSelector(F("Measuring frequency"), F("frequency"), P119_FREQUENCY);
       addUnit(F("Hz"));
 
       success = true;

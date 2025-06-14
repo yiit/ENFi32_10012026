@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for VE.Direct)
  * 2024-11-24 tonhuisman: Add setting "Events only on updated data" to not generate events/Controller output if no new packets have been
  *                        received
@@ -55,6 +56,7 @@ boolean Plugin_176(uint8_t function, struct EventStruct *event, String& string)
       dev.TimerOption    = true;
       dev.TimerOptional  = true;
       dev.PluginStats    = true;
+      dev.CustomVTypeVar = true;
 
       break;
     }
@@ -76,14 +78,21 @@ boolean Plugin_176(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_SET_DEFAULTS:
     {

@@ -7,7 +7,9 @@
 
 // ESPEasy Plugin to scan a 12 key touch pad chip MPR121
 // written by Jochen Krapf (jk@nerd2nerd.org)
+
 /** Changelog:
+ * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Keypad)
  *                        Update changelog
  * 2021-12-29 tonhuisman: Add setting for panel sensitivity, as requested in https://github.com/letscontrolit/ESPEasy/issues/3828
@@ -57,6 +59,7 @@ boolean Plugin_062(uint8_t function, struct EventStruct *event, String& string)
       dev.TimerOption        = true;
       dev.TimerOptional      = true;
       dev.ExitTaskBeforeSave = false;
+      dev.CustomVTypeVar     = true;
       break;
     }
 
@@ -72,14 +75,21 @@ boolean Plugin_062(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_I2C_HAS_ADDRESS:
     case PLUGIN_WEBFORM_SHOW_I2C_PARAMS:

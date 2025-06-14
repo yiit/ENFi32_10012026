@@ -6,6 +6,7 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for RFID)
  */
 
@@ -94,6 +95,7 @@ boolean Plugin_017(uint8_t function, struct EventStruct *event, String& string)
       dev.ValueCount     = 1;
       dev.SendDataOption = true;
       dev.TimerOptional  = true;
+      dev.CustomVTypeVar = true;
       break;
     }
 
@@ -109,14 +111,21 @@ boolean Plugin_017(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_I2C_HAS_ADDRESS:
     {
@@ -254,11 +263,12 @@ bool P017_handle_timer_in(struct EventStruct *event)
         # endif // ifdef P017_DEBUG_LOGIC_ANALYZER_PIN
 
       // TODO: Clock stretching issue https://github.com/esp8266/Arduino/issues/1541
-      #if FEATURE_I2C_MULTIPLE
+      # if FEATURE_I2C_MULTIPLE
       const uint8_t i2cBus = Settings.getI2CInterface(event->TaskIndex);
-      #else
+      # else // if FEATURE_I2C_MULTIPLE
       const uint8_t i2cBus = 0;
-      #endif // if FEATURE_I2C_MULTIPLE
+      # endif // if FEATURE_I2C_MULTIPLE
+
       if (Settings.isI2CEnabled(i2cBus)
           && ((DIRECT_pinRead(Settings.getI2CSdaPin(i2cBus)) == 0) || (DIRECT_pinRead(Settings.getI2CSclPin(i2cBus)) == 0)))
       {

@@ -7,6 +7,7 @@
 
 /*
    History:
+   2025-06-14 tonhuisman: Add support for Custom Value Type per task value
    2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for RFID)
    2023-01-22 tonhuisman: Disable some strings in BUILD_NO_DEBUG builds to reduce size, minor optimizations
    2022-12-04 tonhuisman: Fix initialization issue (hanginging ESP...) when GPIO pins are not configured correctly
@@ -54,6 +55,7 @@ boolean Plugin_008(uint8_t function, struct EventStruct *event, String& string)
       dev.VType          = Sensor_VType::SENSOR_TYPE_ULONG;
       dev.ValueCount     = 1;
       dev.SendDataOption = true;
+      dev.CustomVTypeVar = true;
       break;
     }
 
@@ -76,14 +78,21 @@ boolean Plugin_008(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
-    # if FEATURE_MQTT_DISCOVER
+    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case PLUGIN_GET_DISCOVERY_VTYPES:
     {
+      #  if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      for (uint8_t i = 0; i < event->Par5; ++i) {
+        event->ParN[i] = ExtraTaskSettings.getTaskVarCustomVType(i);  // Custom/User selection
+      }
+      #  else // if FEATURE_CUSTOM_TASKVAR_VTYPE
       event->Par1 = static_cast<int>(Sensor_VType::SENSOR_TYPE_NONE); // Not yet supported
-      success     = true;
+      #  endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+      success = true;
       break;
     }
-    # endif // if FEATURE_MQTT_DISCOVER
+    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
 
     case PLUGIN_SET_DEFAULTS:
     {
