@@ -294,6 +294,20 @@ PluginStats_Config_t Caches::getPluginStatsConfig(taskIndex_t TaskIndex, taskVar
 
 #endif // if FEATURE_PLUGIN_STATS
 
+#if FEATURE_CUSTOM_TASKVAR_VTYPE
+uint8_t Caches::getTaskVarCustomVType(taskIndex_t    TaskIndex,
+                                      taskVarIndex_t taskVarIndex) {
+  if (validTaskIndex(TaskIndex) && (validTaskVarIndex(taskVarIndex))) {
+    auto it = getExtraTaskSettings(TaskIndex);
+
+    if (it != extraTaskSettings_cache.end()) {
+      return it->second.customVType[taskVarIndex];
+    }
+  }
+  return 0;
+}
+
+#endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
 
 void Caches::updateExtraTaskSettingsCache()
 {
@@ -338,6 +352,10 @@ void Caches::updateExtraTaskSettingsCache()
 
       tmp.pluginStatsConfig[i] = ExtraTaskSettings.getPluginStatsConfig(i);
       #endif // if FEATURE_PLUGIN_STATS
+
+      #if FEATURE_CUSTOM_TASKVAR_VTYPE
+      tmp.customVType[i] = ExtraTaskSettings.getTaskVarCustomVType(i);
+      #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
     }
     #ifdef ESP32
     tmp.TaskDevicePluginConfigLong_index_used = 0;

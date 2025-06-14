@@ -72,6 +72,12 @@ struct ExtraTaskSettingsStruct
   void          isDefaultTaskVarName(taskVarIndex_t taskVarIndex,
                                      bool           isDefault);
 
+  #if FEATURE_CUSTOM_TASKVAR_VTYPE
+  uint8_t       getTaskVarCustomVType(taskVarIndex_t taskVarIndex) const;
+  void          setTaskVarCustomVType(taskVarIndex_t taskVarIndex,
+                                      uint8_t        customVType);
+  #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+
 
   void          populateDeviceValueNamesSeq(const __FlashStringHelper *valuename,
                                             size_t                     nrValues,

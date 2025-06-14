@@ -7,7 +7,10 @@
    Only use this function to determine nr of output values when changing output type of a task
    To get the actual output values for a task, use getValueCountForTask
 \*********************************************************************************************/
-uint8_t getValueCountFromSensorType(Sensor_VType sensorType)
+uint8_t getValueCountFromSensorType(Sensor_VType sensorType) {
+  return getValueCountFromSensorType(sensorType, true);
+}
+uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log)
 {
   switch (sensorType)
   {
@@ -129,7 +132,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_NOT_SET:  break;
 
       // FIXME To be ignored?
-    #if FEATURE_MQTT_DISCOVER
+    #if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:      return F("Analog");
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:        return F("Temp");
     case Sensor_VType::SENSOR_TYPE_HUM_ONLY:         return F("Hum");
@@ -161,7 +164,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_AQI_ONLY:         return F("AQI");
     case Sensor_VType::SENSOR_TYPE_NOX_ONLY:         return F("NOx");
     case Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED:  return F("Switch (inv.)");
-    #else // if FEATURE_MQTT_DISCOVER
+    #else // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:
     case Sensor_VType::SENSOR_TYPE_HUM_ONLY:
@@ -194,7 +197,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
     case Sensor_VType::SENSOR_TYPE_SWITCH_INVERTED:
       break;
-    #endif // if FEATURE_MQTT_DISCOVER
+    #endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
   }
   return F("");
 }

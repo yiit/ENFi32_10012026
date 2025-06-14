@@ -3131,6 +3131,13 @@ To create/register a plugin, you have to :
   #define FEATURE_MQTT_DEVICECLASS 0
 #endif
 
+#ifndef FEATURE_CUSTOM_TASKVAR_VTYPE
+  #if defined(LIMIT_BUILD_SIZE) || defined(ESP8266) // Must enable this explicitly for ESP8266 Custom build
+    #define FEATURE_CUSTOM_TASKVAR_VTYPE 0
+  #else
+    #define FEATURE_CUSTOM_TASKVAR_VTYPE 1
+  #endif
+#endif // ifndef FEATURE_CUSTOM_TASKVAR_VTYPE
 
 #ifdef USES_ESPEASY_NOW
   #if defined(LIMIT_BUILD_SIZE) || defined(ESP8266_1M) || (defined(ESP8266) && defined(PLUGIN_BUILD_IR))

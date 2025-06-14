@@ -447,6 +447,10 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
 
     ExtraTaskSettings.setPluginStatsConfig(varNr, pluginStats_Config);
 # endif // if FEATURE_PLUGIN_STATS
+
+    #if FEATURE_CUSTOM_TASKVAR_VTYPE
+    ExtraTaskSettings.setTaskVarCustomVType(varNr, getFormItemInt(getPluginCustomArgName(F("TDTV"), varNr)));
+    #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
   }
   ExtraTaskSettings.clearUnusedValueNames(valueCount);
 
@@ -1670,9 +1674,33 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
     }
 # endif // if FEATURE_PLUGIN_STATS
 
+    #if FEATURE_CUSTOM_TASKVAR_VTYPE
+    if (device.CustomVTypeVar) {
+      html_table_header(F("Value Type"),  100);
+      ++colCount;
+    }
+    #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+
     // placeholder header
     html_table_header(F(""));
     ++colCount;
+
+    #if FEATURE_CUSTOM_TASKVAR_VTYPE
+    std::vector<uint8_t> singleOptions;
+    EventStruct TempEvent(taskIndex);
+    
+    if (device.CustomVTypeVar) {
+      // Build a list of all single-value available value VTypes from PR #5199
+      constexpr uint8_t    maxVType = static_cast<uint8_t>(Sensor_VType::SENSOR_TYPE_NOT_SET);
+      singleOptions.push_back(0); // Empty/None value
+      for (uint8_t i = 0; i < maxVType; ++i) {
+        if (getValueCountFromSensorType(static_cast<Sensor_VType>(i), false) == 1) {
+          singleOptions.push_back(i);
+        }
+      }
+    }
+    #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
 
     // table body
     for (uint8_t varNr = 0; varNr < valueCount; varNr++)
@@ -1739,6 +1767,17 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
           selected);
       }
 # endif // if FEATURE_PLUGIN_STATS
+
+      #if FEATURE_CUSTOM_TASKVAR_VTYPE
+      if (device.CustomVTypeVar) {
+        html_TD();
+        sensorTypeHelper_Selector(
+          getPluginCustomArgName(F("TDTV"), varNr),
+          singleOptions.size(),
+          &singleOptions[0],
+          static_cast<Sensor_VType>(Cache.getTaskVarCustomVType(taskIndex, varNr)));
+      }
+      #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
     }
     addFormSeparator(colCount);
   }
