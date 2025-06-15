@@ -91,7 +91,9 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log)
       return 1;
   }
   #ifndef BUILD_NO_DEBUG
-  addLog(LOG_LEVEL_ERROR, F("getValueCountFromSensorType: Unknown sensortype"));
+  if (log) {
+    addLog(LOG_LEVEL_ERROR, F("getValueCountFromSensorType: Unknown sensortype"));
+  }
   #endif // ifndef BUILD_NO_DEBUG
   return 0;
 }
