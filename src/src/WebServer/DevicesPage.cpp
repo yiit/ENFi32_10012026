@@ -894,6 +894,9 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
                   ++varNr;
                 }
               }
+              else if (it->first.substring(0, search.length()).compareTo(search) > 0) {
+                break;
+              }
               ++it;
             }
           }

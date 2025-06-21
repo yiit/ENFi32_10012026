@@ -24,6 +24,8 @@ String getDerivedValueNameUomAndVType(String  taskName,
                                       String  valueName,
                                       String& uom,
                                       String& vType);
+String getDerivedValueName(String taskName,
+                           String valueName);
 #endif // if FEATURE_STRING_VARIABLES
 
 String parseTemplate(String& tmpString);

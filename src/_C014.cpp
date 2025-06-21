@@ -607,6 +607,9 @@ bool CPlugin_014(CPlugin::Function function, struct EventStruct *event, String& 
 
                         ++varNr;
                       }
+                      else if (it->first.substring(0, search.length()).compareTo(search) > 0) {
+                        break;
+                      }
                       ++it;
                     }
                   }

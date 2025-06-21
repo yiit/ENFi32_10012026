@@ -523,6 +523,9 @@ void handle_json()
                 ++varNr;
               }
             }
+            else if (it->first.substring(0, search.length()).compareTo(search) > 0) {
+              break;
+            }
             ++it;
           }
         }

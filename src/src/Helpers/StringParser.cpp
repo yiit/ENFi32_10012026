@@ -69,6 +69,9 @@ uint8_t getDerivedValueCountForTask(taskIndex_t taskIndex) {
     if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
       ++derivedVars;
     }
+    else if (it->first.substring(0, search.length()).compareTo(search) > 0) {
+      break;
+    }
     ++it;
   }
   return derivedVars;
@@ -88,6 +91,13 @@ String getDerivedValueNameUomAndVType(String taskName, String valueName, String&
                                        taskName.c_str(), valueName.c_str()));
   uom   = getCustomStringVar(strformat(F(TASK_VALUE_UOM_PREFIX_TEMPLATE),
                                        taskName.c_str(), valueName.c_str()));
+  return  getCustomStringVar(strformat(F(TASK_VALUE_NAME_PREFIX_TEMPLATE), 
+                                       taskName.c_str(), valueName.c_str()));
+}
+
+String getDerivedValueName(String taskName, String valueName) {
+  taskName.toLowerCase();
+  valueName.toLowerCase();
   return  getCustomStringVar(strformat(F(TASK_VALUE_NAME_PREFIX_TEMPLATE), 
                                        taskName.c_str(), valueName.c_str()));
 }

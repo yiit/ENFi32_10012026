@@ -1447,8 +1447,7 @@ void parseEventVariables(String& s, struct EventStruct *event, bool useURLencode
     while (it != customStringVar.end()) {
       if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
         String valueName = it->first.substring(search.length(), it->first.indexOf('-'));
-        const String vname2 = getCustomStringVar(strformat(F(TASK_VALUE_NAME_PREFIX_TEMPLATE),
-                                                           taskName.c_str(), valueName.c_str()));
+        const String vname2 = getDerivedValueName(taskName, valueName);
         if (!vname2.isEmpty()) {
           valueName = vname2;
         }
@@ -1459,6 +1458,9 @@ void parseEventVariables(String& s, struct EventStruct *event, bool useURLencode
           strVarValues.insert(std::pair<uint8_t, String>(varNr, value));
           ++varNr; // increment after to keep the values & code below consistent
         }
+      }
+      else if (it->first.substring(0, search.length()).compareTo(search) > 0) {
+        break;
       }
       ++it;
     }

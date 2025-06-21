@@ -344,8 +344,7 @@ void SendValueLogger(taskIndex_t TaskIndex)
         while (it != customStringVar.end()) {
           if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
             String valueName    = it->first.substring(search.length(), it->first.indexOf('-'));
-            const String vname2 = getCustomStringVar(strformat(F(TASK_VALUE_NAME_PREFIX_TEMPLATE),
-                                                               taskName.c_str(), valueName.c_str()));
+            const String vname2 = getDerivedValueName(taskName, valueName);
 
             if (!vname2.isEmpty()) {
               valueName = vname2;
@@ -360,6 +359,9 @@ void SendValueLogger(taskIndex_t TaskIndex)
                                   , value.c_str()
                                   );
             }
+          }
+          else if (it->first.substring(0, search.length()).compareTo(search) > 0) {
+            break;
           }
           ++it;
         }
