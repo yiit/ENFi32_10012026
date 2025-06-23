@@ -14,7 +14,7 @@ The HTTP Response Parser are a set of parsers that can be used to parse the resp
 The Thingspeak Parser
 ---------------------
 
-* ``SendToHTTP`` generates an event with the response of a thingspeak request (https://de.mathworks.com/help/thingspeak/readlastfieldentry.html & https://de.mathworks.com/help/thingspeak/readdata.html)
+* ``SendToHTTP`` generates an event with the response of a thingspeak request (https://www.mathworks.com/help/thingspeak/readlastfieldentry.html & https://www.mathworks.com/help/thingspeak/readdata.html)
 * There are two options:
 
   1. Get the value of a single field: 
@@ -142,7 +142,7 @@ The gerneric JSON Parser
 
 1. Add either #json or ?json to the end of the URL (either will always work) to tell ESPEasy that the response is in JSON format. 
    
-   Example: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System?json"`` 
+   Example: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System#json"`` 
     .. code-block:: json
         :caption: Example response:
         :class: collapsible
@@ -203,7 +203,7 @@ The gerneric JSON Parser
 
 1. Add a number to #json or ?json:
      
-   e.g.: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System?json1"``
+   e.g.: ``SendToHTTP 192.168.1.199,80,"/solar_api/v1/GetInverterRealtimeData.cgi?Scope=System#json1"``
 
 2. Add the number + ":" to the key you want to group:
    
