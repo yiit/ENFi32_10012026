@@ -39,65 +39,26 @@
 // HSPI option is disabled for now on other than ESP32_CLASSIC.
 // Should be added later as "Custom HSPI" when we support multiple SPI busses.
 #ifdef ESP32
-# if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 0)
-#  if CONFIG_IDF_TARGET_ESP32S3 // ESP32-S3
-#   define VSPI_FSPI_SCK  36
-#   define VSPI_FSPI_MISO 37
-#   define VSPI_FSPI_MOSI 35
-#  elif CONFIG_IDF_TARGET_ESP32S2 // ESP32-S2
-#   define VSPI_FSPI_SCK  36
-#   define VSPI_FSPI_MISO 37
-#   define VSPI_FSPI_MOSI 35
-#  elif CONFIG_IDF_TARGET_ESP32C6 // ESP32-C6
-#   define VSPI_FSPI_SCK  21
-#   define VSPI_FSPI_MISO 20
-#   define VSPI_FSPI_MOSI 19
-#  elif CONFIG_IDF_TARGET_ESP32C5 // ESP32-C5
-#   define VSPI_FSPI_SCK  SPI2_IOMUX_PIN_NUM_CLK
-#   define VSPI_FSPI_MISO SPI2_IOMUX_PIN_NUM_MISO
-#   define VSPI_FSPI_MOSI SPI2_IOMUX_PIN_NUM_MOSI
-#  elif CONFIG_IDF_TARGET_ESP32C3 // ESP32-C3
-#   define VSPI_FSPI_SCK  4
-#   define VSPI_FSPI_MISO 5
-#   define VSPI_FSPI_MOSI 6
-#  elif CONFIG_IDF_TARGET_ESP32C2 // ESP32-C2
-#   define VSPI_FSPI_SCK  4
-#   define VSPI_FSPI_MISO 5
-#   define VSPI_FSPI_MOSI 6
-#  elif CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
-#   define VSPI_FSPI_SCK  18
-#   define VSPI_FSPI_MISO 19
-#   define VSPI_FSPI_MOSI 23
 
-#   define HSPI_SCLK   14
-#   define HSPI_MISO   12
-#   define HSPI_MOSI   13
-#   define HSPI_SS     15
+# if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
 
-#  else // if CONFIG_IDF_TARGET_ESP32S2
-#   error Target CONFIG_IDF_TARGET is not supported
-#  endif // if CONFIG_IDF_TARGET_ESP32S2
-# else // if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 0)
-#  if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
+#  define VSPI_FSPI_SCK  18
+#  define VSPI_FSPI_MISO 19
+#  define VSPI_FSPI_MOSI 23
 
-#   define VSPI_FSPI_SCK  18
-#   define VSPI_FSPI_MISO 19
-#   define VSPI_FSPI_MOSI 23
+#  define HSPI_SCLK   14
+#  define HSPI_MISO   12
+#  define HSPI_MOSI   13
+#  define HSPI_SS     15
 
-#   define HSPI_SCLK   14
-#   define HSPI_MISO   12
-#   define HSPI_MOSI   13
-#   define HSPI_SS     15
+# else // if CONFIG_IDF_TARGET_ESP32
+#  include <soc/spi_pins.h>
 
-#  else // if CONFIG_IDF_TARGET_ESP32
-#   include <soc/spi_pins.h>
+#  define VSPI_FSPI_SCK  SPI2_IOMUX_PIN_NUM_CLK
+#  define VSPI_FSPI_MISO SPI2_IOMUX_PIN_NUM_MISO
+#  define VSPI_FSPI_MOSI SPI2_IOMUX_PIN_NUM_MOSI
 
-#   define VSPI_FSPI_SCK  SPI2_IOMUX_PIN_NUM_CLK
-#   define VSPI_FSPI_MISO SPI2_IOMUX_PIN_NUM_MISO
-#   define VSPI_FSPI_MOSI SPI2_IOMUX_PIN_NUM_MOSI
-
-#  endif // if CONFIG_IDF_TARGET_ESP32
-# endif // if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 4, 0)
+# endif // if CONFIG_IDF_TARGET_ESP32
 #endif // ifdef ESP32
 enum class SPI_Options_e {
   // Do not change values as this is stored in the settings!

@@ -15,6 +15,7 @@ const __FlashStringHelper* toNodeTypeDisplayString(uint8_t nodeType) {
     case NODE_TYPE_ID_ESP_EASY32C6_STD:  return F("ESP Easy 32-C6");
     case NODE_TYPE_ID_ESP_EASY32C61_STD: return F("ESP Easy 32-C61");
     case NODE_TYPE_ID_ESP_EASY32H2_STD:  return F("ESP Easy 32-H2");
+    case NODE_TYPE_ID_ESP_EASY32H21_STD: return F("ESP Easy 32-H21");
     case NODE_TYPE_ID_ESP_EASY32P4_STD:  return F("ESP Easy 32-P4");
     case NODE_TYPE_ID_RPI_EASY_STD:      return F("RPI Easy");
     case NODE_TYPE_ID_ARDUINO_EASY_STD:  return F("Arduino Easy");

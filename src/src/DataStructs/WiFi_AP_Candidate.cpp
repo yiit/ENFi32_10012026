@@ -115,7 +115,7 @@ WiFi_AP_Candidate::WiFi_AP_Candidate(uint8_t networkItem) : index(0) {
     bits.phy_11ax      = it->phy_11ax;
     bits.ftm_initiator = it->ftm_initiator;
     bits.ftm_responder = it->ftm_responder;
-#ifdef ESP32C5
+#if CONFIG_SOC_WIFI_SUPPORT_5G
     bits.phy_11a       = it->phy_11a;
     bits.phy_11ac      = it->phy_11ac;
 #endif
@@ -256,7 +256,7 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
     separator.c_str(),
     channel);
 
-#ifdef ESP32C5
+#if CONFIG_SOC_WIFI_SUPPORT_5G
   if (channel < 36) {
     result += F(" 2.4 GHz");
   } else {
