@@ -119,7 +119,7 @@ In rules, you can grep the reply by the kind of weather variables with ``On Open
         LogEntry,'Values : Temp=%eventvalue1% Hum=%eventvalue2% Baro=%eventvalue3% UV=%eventvalue4%'
     Endon
 
-    //this is a gerneric approacht to grep all the different kinds of weather variables in one rules block
+    //this is a generic approach to grep all the different kinds of weather variables in one rules block
     On OpenMeteo* Do
         If {ord:%eventpar%} = 99 // the ordinal/integer value of the first character of "current" is 99
             LogEntry,'%eventpar% 1: %eventvalue1% 2: %eventvalue2% 3: %eventvalue3%'

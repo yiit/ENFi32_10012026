@@ -59,7 +59,7 @@ void eventFromResponse(const String& host, const int& httpCode, const String& ur
           result = parseStringKeepCase(uri, 4, '/').substring(0, 1) + "," + result; // since the field number is always the fourth part of
                                                                                     // the
                                                                                     // url and is always a single digit, we can use this to
-                                                                                    // extact the fieldnumber
+                                                                                    // extract the fieldnumber
         }
         eventQueue.addMove(strformat(
                              F("ThingspeakReply=%s,%s"),
@@ -273,13 +273,11 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
 #  endif // ifdef FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
 
   // Open the `json.keys` file
-  const String fileName = strformat(
-      #  ifdef ESP8266
-    F("json.keys")
-      #  else // ifdef ESP8266
-    F("/json.keys")
-      #  endif // ifdef ESP8266
-    );
+#  ifdef ESP8266
+  const String fileName = F("json.keys");
+#  else // ifdef ESP8266
+  const String fileName = F("/json.keys");
+#  endif // ifdef ESP8266
 
   if (!fileExists(fileName)) {
     addLogMove(LOG_LEVEL_ERROR, strformat(F("%s does not exist!"), fileName.c_str()));
@@ -359,23 +357,23 @@ void readAndProcessJsonKeys(DynamicJsonDocument *root, int numJson) {
           } else if (element.is<const char *>()) {
             csvOutput += String(element.as<const char *>());
           } else {
-            csvOutput += "unknown";
+            csvOutput += F("unknown");
           }
 
           // Add a comma unless it's the last element
           currentIndex++;
 
           if (currentIndex < arraySize) {
-            csvOutput += ",";
+            csvOutput += ',';
           }
         }
       } else {
-        csvOutput += "unknown";
+        csvOutput += F("unknown");
       }
     } else {
-      csvOutput += "null"; // Indicate missing value
+      csvOutput += F("null"); // Indicate missing value
     }
-    csvOutput += ",";
+    csvOutput += ',';
   }
 
   keyFile.close();
