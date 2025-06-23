@@ -3734,7 +3734,7 @@ To create/register a plugin, you have to :
   #endif
 #endif // if FEATURE_TASKVALUE_ATTRIBUTES
 
-  //-------------------HTTPResponseParser Section----------------
+//-------------------HTTPResponseParser Section----------------
 #ifndef FEATURE_THINGSPEAK_EVENT
   #if defined(PLUGIN_BUILD_MAX_ESP32)
     #define FEATURE_THINGSPEAK_EVENT 1

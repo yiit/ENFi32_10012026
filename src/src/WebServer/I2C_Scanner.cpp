@@ -287,6 +287,7 @@ String getKnownI2Cdevice(uint8_t address) {
     case 0x41:
     case 0x42:
     case 0x43:
+    case 0x47:
       result += F("INA219");
       break;
     case 0x44:
@@ -294,7 +295,7 @@ String getKnownI2Cdevice(uint8_t address) {
       result += F("SHT30/31/35,INA219,SHT4x");
       break;
     case 0x46:
-      result += F("SHT4x");
+      result += F("SHT4x,INA219");
       break;
     case 0x48:
       result += F("PCF8591,ADS1x15,LM75A,INA219,TMP117,VEML6030");
@@ -504,7 +505,7 @@ void handle_i2cscanner() {
   {
     html_table_class_multirow();
     #if FEATURE_I2C_MULTIPLE
-    html_table_header(strformat(F("I2C Bus %d"), i2cBus + 1));
+    html_table_header(strformat(F("I2C Bus %d"), i2cBus));
     html_TR();
     #endif // if FEATURE_I2C_MULTIPLE
     #if FEATURE_I2CMULTIPLEXER
@@ -556,7 +557,7 @@ void handle_i2cscanner() {
       nDevices = 0; // Reset for next interface
     } else {
       html_TR_TD();
-      addHtml(strformat(F("I2C pins not configured for bus %d"), i2cBus + 1));
+      addHtml(strformat(F("I2C pins not configured for bus %d"), i2cBus));
     }
     html_end_table();
     I2CSelectHighClockSpeed(0);   // By default the bus is in standard speed

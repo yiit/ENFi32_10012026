@@ -224,17 +224,23 @@ String SystemVariables::getSystemVariable(SystemVariables::Enum enumval) {
     case SYSTM_HM_AM_0:     return node_time.getTimeString_ampm(':', false, '0');
     case SYSTM_HM_AM_SP:    return node_time.getTimeString_ampm(':', false, ' ');
     case SYSTZOFFSET:       return node_time.getTimeZoneOffsetString();
+    #ifndef LIMIT_BUILD_SIZE
+    case SYSTZOFFSET_S:     intvalue = static_cast<int>(static_cast<int64_t>(node_time.getLocalUnixTime()) - static_cast<int64_t>(node_time.getUnixTime())); break;
+    #endif // ifndef LIMIT_BUILD_SIZE
     case SYSWEEKDAY:        intvalue = node_time.weekday(); break;
     case SYSWEEKDAY_S:      return node_time.weekday_str();
     case SYSYEAR_0:
     case SYSYEAR:           intvalue = node_time.year(); break;
     case SYSYEARS:          return timeReplacement_leadZero(node_time.year() % 100);
-    case SYS_MONTH_0:       return timeReplacement_leadZero(node_time.month());
+    case SYSMONTH_0:       return timeReplacement_leadZero(node_time.month());
     case S_CR:              return F("\\r");
     case S_LF:              return F("\\n");
     case UNIXDAY:           intvalue = node_time.getUnixTime() / 86400; break;
     case UNIXDAY_SEC:       intvalue = node_time.getUnixTime() % 86400; break;
     case UNIXTIME:          return String(node_time.getUnixTime());
+    #ifndef LIMIT_BUILD_SIZE
+    case UNIXTIME_LCL:      return String(node_time.getLocalUnixTime());
+    #endif // ifndef LIMIT_BUILD_SIZE
     case UPTIME:            intvalue = getUptimeMinutes(); break;
     case UPTIME_MS:         return ull2String(getMicros64() / 1000);
     #if FEATURE_ADC_VCC
@@ -296,26 +302,27 @@ bool parse_pct_v_num_pct(String& s, boolean useURLencode, int start_pos)
       String value;
       const int pos_closing_pct = s.indexOf('%', v_index + 1);
       const String arg = s.substring(v_index + 2 + (isv_ ? 1 : 0), pos_closing_pct);
+      String valArg(arg);
       const int32_t i = CalculateParam(arg, -1);
       // addLog(LOG_LEVEL_INFO, strformat(F("s: '%s', calc parse: %s => %d"), s.c_str(), arg.c_str(), i));
+      if (i != -1) { // We're calculating a numeric index like %v=1+%v2%%, so have to use the result for the value
+        valArg = String(i);
+      }
 
       // Need to replace the entire arg
       const String key = strformat(F("%%%s%s%%"), FsP(isv_ ? F("v_") : F("v")), arg.c_str());
-      // addLog(LOG_LEVEL_INFO, strformat(F("parsed, key: %s"), key.c_str()));
+      // addLog(LOG_LEVEL_INFO, strformat(F("parsed, key: %s (valArg: %s)"), key.c_str(), valArg.c_str()));
 
       if (s.indexOf(key) != -1) {
         const bool trimTrailingZeros = true;
-        const ESPEASY_RULES_FLOAT_TYPE floatvalue = getCustomFloatVar(arg);
+        const ESPEASY_RULES_FLOAT_TYPE floatvalue = getCustomFloatVar(valArg);
         const unsigned char nr_decimals = maxNrDecimals_fpType(floatvalue);
-        if (i != -1) { // We're calculating a numeric index like %v=1+%v2%%, so have to use the result for the value
-          value = String(i);
-        } else {
-          #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
-          value = doubleToString(floatvalue, nr_decimals, trimTrailingZeros);
-          #else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
-          value = floatToString(floatvalue, nr_decimals, trimTrailingZeros);
-          #endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
-        }
+        #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+        value = doubleToString(floatvalue, nr_decimals, trimTrailingZeros);
+        #else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+        value = floatToString(floatvalue, nr_decimals, trimTrailingZeros);
+        #endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+
         if (repl(key, value, s, useURLencode)) {
           somethingReplaced = true;
         }
@@ -412,7 +419,7 @@ SystemVariables::Enum SystemVariables::nextReplacementEnum(const String& str, Sy
       return Enum::UNKNOWN;
     }
 
-    nextTested = SystemVariables::startIndex_beginWith(str[percent_pos + 1]);
+    nextTested = SystemVariables::startIndex_beginWith(str.c_str() + percent_pos + 1);
   } while (Enum::UNKNOWN == nextTested);
 
   if (last_percent_pos < percent_pos) {
@@ -440,7 +447,7 @@ SystemVariables::Enum SystemVariables::nextReplacementEnum(const String& str, Sy
       return Enum::UNKNOWN;
     }
     last_percent_pos = percent_pos;
-    return SystemVariables::startIndex_beginWith(str[percent_pos + 1]);
+    return SystemVariables::startIndex_beginWith(str.c_str() + percent_pos + 1);
   }
 
   const __FlashStringHelper *fstr_sysvar = SystemVariables::toFlashString(nextTested);
@@ -479,9 +486,47 @@ String SystemVariables::toString(Enum enumval)
   return wrap_String(SystemVariables::toFlashString(enumval), '%');
 }
 
-SystemVariables::Enum SystemVariables::startIndex_beginWith(char beginchar)
+SystemVariables::Enum SystemVariables::startIndex_beginWith(const char* beginchar)
 {
-  switch (tolower(beginchar))
+  if (beginchar == nullptr || *beginchar == '\0')
+  {
+    return Enum::UNKNOWN;
+  }
+
+  const char ch = tolower(*beginchar);
+#ifndef LIMIT_BUILD_SIZE
+  // Speedup search for some variables starting with "%sys"
+  // Not needed if build size really matters
+  if (ch == 's') {
+    // Lots of system variables start with "%sys"
+    const char sys_str[] = {'s', 'y', 's'};
+    bool found = true;
+    const char* cur = beginchar;
+    for (size_t i = 0; found && i < NR_ELEMENTS(sys_str); ++i, ++cur) {
+      if (tolower(*cur) != sys_str[i]) {
+        found = false;
+      }
+    }
+    if (found) {
+      const char next_ch = tolower(*cur);
+      if (next_ch != '\0') {
+        switch (next_ch) {
+          case 'b': return Enum::SYSBUILD_DATE;
+          case 'd': return Enum::SYSDAY;
+          case 'h': return Enum::SYSHEAP;
+          case 'l': return Enum::SYSLOAD;
+          case 'm': return Enum::SYSMIN;
+          case 'n': return Enum::SYSNAME;
+          case 's': return Enum::SYSSEC;
+          case 't': return Enum::SYSTIME;
+          case 'w': return Enum::SYSWEEKDAY;
+          case 'y': return Enum::SYSYEAR;
+        }
+      }
+    }
+  }
+#endif
+  switch (ch)
   {
     case 'b': return Enum::BOARD_NAME;
     case 'c': return Enum::CLIENTIP;
@@ -589,6 +634,7 @@ const __FlashStringHelper * SystemVariables::toFlashString(SystemVariables::Enum
     case Enum::SYSMIN_0:           return F("sysmin_0");
     case Enum::SYSMONTH:           return F("sysmonth");
     case Enum::SYSMONTH_S:         return F("sysmonth_s");
+    case Enum::SYSMONTH_0:         return F("sysmonth_0");
     case Enum::SYSNAME:            return F("sysname");
     case Enum::SYSSEC:             return F("syssec");
     case Enum::SYSSEC_0:           return F("syssec_0");
@@ -605,12 +651,14 @@ const __FlashStringHelper * SystemVariables::toFlashString(SystemVariables::Enum
     case Enum::SYSTM_HM_AM_SP:     return F("systm_hm_am_sp");
     case Enum::SYSTM_HM_SP:        return F("systm_hm_sp");
     case Enum::SYSTZOFFSET:        return F("systzoffset");
+    #ifndef LIMIT_BUILD_SIZE
+    case Enum::SYSTZOFFSET_S:      return F("systzoffset_s");
+    #endif // ifndef LIMIT_BUILD_SIZE
     case Enum::SYSWEEKDAY:         return F("sysweekday");
     case Enum::SYSWEEKDAY_S:       return F("sysweekday_s");
     case Enum::SYSYEAR:            return F("sysyear");
     case Enum::SYSYEARS:           return F("sysyears");
     case Enum::SYSYEAR_0:          return F("sysyear_0");
-    case Enum::SYS_MONTH_0:        return F("sysmonth_0");
     case Enum::UNIT_sysvar:        return F("unit");
 #if FEATURE_ZEROFILLED_UNITNUMBER
     case Enum::UNIT_0_sysvar:      return F("unit_0");
@@ -618,6 +666,9 @@ const __FlashStringHelper * SystemVariables::toFlashString(SystemVariables::Enum
     case Enum::UNIXDAY:            return F("unixday");
     case Enum::UNIXDAY_SEC:        return F("unixday_sec");
     case Enum::UNIXTIME:           return F("unixtime");
+    #ifndef LIMIT_BUILD_SIZE
+    case Enum::UNIXTIME_LCL:       return F("unixtime_lcl");
+    #endif // ifndef LIMIT_BUILD_SIZE
     case Enum::UPTIME:             return F("uptime");
     case Enum::UPTIME_MS:          return F("uptime_ms");
     case Enum::VCC:                return F("vcc");

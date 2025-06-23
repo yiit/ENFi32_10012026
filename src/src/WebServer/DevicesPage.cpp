@@ -382,6 +382,11 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
   Settings.TaskDevicePort[taskIndex] = getFormItemInt(F("TDP"), 0);
   update_whenset_FormItemInt(F("remoteFeed"), Settings.TaskDeviceDataFeed[taskIndex]);
   Settings.CombineTaskValues_SingleEvent(taskIndex, isFormItemChecked(F("TVSE")));
+  #if FEATURE_STRING_VARIABLES
+  Settings.ShowDerivedTaskValues(taskIndex, isFormItemChecked(F("TSDV")));
+  Settings.EventAndLogDerivedTaskValues(taskIndex, isFormItemChecked(F("TELD")));
+  Settings.SendDerivedTaskValues(taskIndex, isFormItemChecked(F("TSND")));
+  #endif // if FEATURE_STRING_VARIABLES
 
   for (controllerIndex_t controllerNr = 0; controllerNr < CONTROLLER_MAX; controllerNr++)
   {
@@ -429,6 +434,10 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
 
     ExtraTaskSettings.setPluginStatsConfig(varNr, pluginStats_Config);
 # endif // if FEATURE_PLUGIN_STATS
+    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    ExtraTaskSettings.setTaskVarUnitOfMeasure(varNr, getFormItemInt(getPluginCustomArgName(F("TUOM"), varNr)));
+    #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
   }
   ExtraTaskSettings.clearUnusedValueNames(valueCount);
 
@@ -682,9 +691,11 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
               #  endif // if FEATURE_ADC_VCC
               # endif // ifdef ESP8266
               # ifdef ESP32
+              #if SOC_ADC_SUPPORTED
               showpin1 = true;
               addHtml(formatGpioName_ADC(Settings.TaskDevicePin1[x]));
               html_BR();
+              #endif
               # endif // ifdef ESP32
 
               break;
@@ -785,13 +796,78 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
           {
             if (validPluginID_fullcheck(Settings.getPluginID_for_task(x)))
             {
+              #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+              const uint8_t uomIndex = Cache.getTaskVarUnitOfMeasure(x, varNr);
+              String uom;
+              if ((uomIndex != 0) && Settings.ShowUnitOfMeasureOnDevicesPage()) {
+                uom = concat(F(" "), toUnitOfMeasureName(uomIndex));
+              }
+              #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+              const String value = formatUserVarNoCheck(&TempEvent, varNr);
+              #if FEATURE_STRING_VARIABLES
+              bool hasPresentation = false;
+              const String presentation = formatUserVarForPresentation(&TempEvent, varNr, hasPresentation, value, DeviceIndex);
+              #endif // if FEATURE_STRING_VARIABLES
               pluginWebformShowValue(
                 x,
                 varNr,
                 Cache.getTaskDeviceValueName(x, varNr),
-                formatUserVarNoCheck(&TempEvent, varNr));
+                #if FEATURE_STRING_VARIABLES
+                hasPresentation ? presentation :
+                #endif // if FEATURE_STRING_VARIABLES
+                #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+                concat(value, uom)
+                #else // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+                value
+                #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+              );
             }
           }
+
+          #if FEATURE_STRING_VARIABLES
+          int varNr = VARS_PER_TASK;
+          if (Settings.ShowDerivedTaskValues(x)) {
+            String taskName = getTaskDeviceName(x);
+            taskName.toLowerCase();
+            String search = strformat(F(TASK_VALUE_DERIVED_PREFIX_TEMPLATE), taskName.c_str(), FsP(F("X")));
+            const String postfix = search.substring(search.indexOf('X') + 1);
+            search = search.substring(0, search.indexOf('X')); // Cut off left of valuename
+
+            auto it = customStringVar.begin();
+            while (it != customStringVar.end()) {
+              if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
+                String valueName = it->first.substring(search.length(), it->first.indexOf('-'));
+                const String key2 = strformat(F(TASK_VALUE_NAME_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str());
+                const String vname2 = getCustomStringVar(key2);
+                const String keyUoM = strformat(F(TASK_VALUE_UOM_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str());
+                const String uom    = getCustomStringVar(keyUoM);
+                if (!vname2.isEmpty()) {
+                  valueName = vname2;
+                }
+                if (!it->second.isEmpty()) {
+                  String value(it->second);
+                  value = parseTemplateAndCalculate(value);
+                  String presentation = getCustomStringVar(strformat(F(TASK_VALUE_PRESENTATION_PREFIX_TEMPLATE), taskName.c_str(), valueName.c_str()));
+                  if (!uom.isEmpty()) {
+                    value = strformat(F("%s %s"), value.c_str(), uom.c_str());
+                  }
+                  if (!presentation.isEmpty()) {
+                    stripEscapeCharacters(presentation);
+                    presentation.replace(F("%value%"), value);
+                    value = parseTemplate(presentation);
+                  }
+                  pluginWebformShowValue(
+                    x,
+                    varNr,
+                    valueName,
+                    value);
+                  ++varNr;
+                }
+              }
+              ++it;
+            }
+          }
+          #endif // if FEATURE_STRING_VARIABLES
         }
       }
     }
@@ -840,7 +916,7 @@ void format_I2C_port_description(taskIndex_t x)
     html_BR();
     addHtml(F("I2C Bus"));
     addHtml(' ');
-    addHtmlInt(i2cBus + 1);
+    addHtmlInt(i2cBus);
   }
   #else
   const uint8_t i2cBus = 0;
@@ -994,16 +1070,23 @@ void handle_devices_TaskSettingsPage(taskIndex_t taskIndex, uint8_t page)
     }
     # endif // if FEATURE_PLUGIN_PRIORITY
 
-    const uint8_t remoteUnit = Settings.TaskDeviceDataFeed[taskIndex];
     # if FEATURE_ESPEASY_P2P
-
-    if (device.SendDataOption)
-    {
+    const controllerIndex_t p2p_controllerIndex = findFirstEnabledControllerWithId(13);
+    const uint8_t remoteUnit = 
+      (p2p_controllerIndex != INVALID_CONTROLLER_INDEX)
+      ? Settings.TaskDeviceDataFeed[taskIndex]
+      : 0;
+    #else
+    const uint8_t remoteUnit = 0;
+    #endif
+    # if FEATURE_ESPEASY_P2P
+    if (device.SendDataOption && p2p_controllerIndex != INVALID_CONTROLLER_INDEX)
+    {      
       // Show remote feed information.
       addFormSubHeader(F("Data Source"));
       addFormNumericBox(F("Remote Unit"), F("remoteFeed"), remoteUnit, 0, 255);
 
-      if (remoteUnit != 255) {
+      if (remoteUnit != 0 && remoteUnit != 255) {
         const NodeStruct*node = Nodes.getNode(remoteUnit);
 
         if (node != nullptr) {
@@ -1434,11 +1517,16 @@ void devicePage_show_controller_config(taskIndex_t taskIndex, deviceIndex_t Devi
       PluginCall(PLUGIN_WEBFORM_SHOW_ERRORSTATE_OPT, &TempEvent, dummy); // Show extra settings for Error State Value options
     }
 
-    addRowLabel(F("Single event with all values"));
-    addCheckBox(F("TVSE"), Settings.CombineTaskValues_SingleEvent(taskIndex));
+    addFormCheckBox(F("Single event with all values"), F("TVSE"), Settings.CombineTaskValues_SingleEvent(taskIndex));
     addFormNote(strformat(
                   F("Unchecked: Send event per value. Checked: Send single event (%s#All) containing all values"),
                   getTaskDeviceName(taskIndex).c_str()));
+
+    #if FEATURE_STRING_VARIABLES
+    addFormCheckBox(F("Show derived values"),            F("TSDV"), Settings.ShowDerivedTaskValues(taskIndex));
+    addFormCheckBox(F("Event &amp; Log derived values"), F("TELD"), Settings.EventAndLogDerivedTaskValues(taskIndex));
+    addFormCheckBox(F("Send derived values"),            F("TSND"), Settings.SendDerivedTaskValues(taskIndex), true); // FIXME enable when SendDerivedTaskValues feature is implemented
+    #endif // if FEATURE_STRING_VARIABLES
 
     bool separatorAdded = false;
 
@@ -1544,6 +1632,11 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
     }
 # endif // if FEATURE_PLUGIN_STATS
 
+    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    html_table_header(F("Unit of Measure"), 50);
+    ++colCount;
+    #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
     // placeholder header
     html_table_header(F(""));
     ++colCount;
@@ -1613,6 +1706,11 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
           selected);
       }
 # endif // if FEATURE_PLUGIN_STATS
+
+      #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      html_TD();
+      addUnitOfMeasureSelector(getPluginCustomArgName(F("TUOM"), varNr), Cache.getTaskVarUnitOfMeasure(taskIndex, varNr));
+      #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     }
     addFormSeparator(colCount);
   }
