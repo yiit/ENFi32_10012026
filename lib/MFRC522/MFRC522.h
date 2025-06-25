@@ -314,6 +314,7 @@ public:
 	void PCD_Init(uint8_t resetPowerDownPin);
 	void PCD_Init(uint8_t chipSelectPin, uint8_t resetPowerDownPin);
 	void PCD_Reset();
+	void PCD_HardReset();
 	void PCD_AntennaOn();
 	void PCD_AntennaOff();
 	uint8_t PCD_GetAntennaGain();
