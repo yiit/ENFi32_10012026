@@ -478,6 +478,8 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	uint8_t command,		///< The
 														uint8_t rxAlign,		///< In: Defines the bit position in backData[0] for the first bit received. Default 0.
 														bool checkCRC		///< In: True => The last two bytes of the response is assumed to be a CRC_A that must be validated.
 									 ) {
+    const long software_timeout_ms = 36; // 36ms
+
 	// Prepare values for BitFramingReg
 	uint8_t txLastBits = validBits ? *validBits : 0;
 	uint8_t bitFraming = (rxAlign << 4) + txLastBits;		// RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
@@ -496,8 +498,9 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	uint8_t command,		///< The
 	// In PCD_Init() we set the TAuto flag in TModeReg. This means the timer automatically starts when the PCD stops transmitting.
 	// Each iteration of the do-while-loop takes 17.86μs.
 	// TODO check/modify for other architectures than Arduino Uno 16bit
-	uint16_t i;
-	for (i = 2000; i > 0; i--) {
+    long t_delta=0;
+    long t_start=millis();
+    while(t_delta < software_timeout_ms) {
 		uint8_t n = PCD_ReadRegister(ComIrqReg);	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq HiAlertIRq LoAlertIRq ErrIRq TimerIRq
 		if (n & waitIRq) {					// One of the interrupts that signal success has been set.
 			break;
@@ -505,9 +508,11 @@ MFRC522::StatusCode MFRC522::PCD_CommunicateWithPICC(	uint8_t command,		///< The
 		if (n & 0x01) {						// Timer interrupt - nothing received in 25ms
 			return STATUS_TIMEOUT;
 		}
+		delay(1);   // prevents bus flood
+		t_delta = millis() - t_start;
 	}
 	// 35.7ms and nothing happend. Communication with the MFRC522 might be down.
-	if (i == 0) {
+	if(t_delta >= software_timeout_ms) {
 		return STATUS_TIMEOUT;
 	}
 	
