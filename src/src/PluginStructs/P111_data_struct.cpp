@@ -11,11 +11,16 @@
 # include <MFRC522.h>
 
 P111_data_struct::P111_data_struct(int8_t csPin,
-                                   int8_t rstPin)
-  : mfrc522(nullptr), _csPin(csPin), _rstPin(rstPin)
+                                   int8_t rstPin,
+                                   int8_t irqPin)
+  : mfrc522(nullptr), _csPin(csPin), _rstPin(rstPin), _irqPin(irqPin)
 {}
 
 P111_data_struct::~P111_data_struct() {
+  if (validGpio(_irqPin)) {
+    detachInterrupt(digitalPinToInterrupt(_irqPin));
+  }
+
   delete mfrc522;
   mfrc522 = nullptr;
 }
@@ -30,6 +35,15 @@ void P111_data_struct::init() {
     mfrc522->PCD_WriteRegister(MFRC522::ComIEnReg, 0b10100000); // enable receiver interrupt
     mfrc522->PCD_WriteRegister(MFRC522::DivIEnReg, 0x80); // Set as CMOS output pin
     initPhase = P111_initPhases::Ready;
+
+    if (validGpio(_irqPin)) {
+      pinMode(_irqPin, INPUT);
+
+      attachInterruptArg(
+        digitalPinToInterrupt(_irqPin),
+        reinterpret_cast<void (*)(void *)>(mfrc522_interrupt),
+        this, FALLING);
+    }
   }
 }
 
@@ -234,10 +248,19 @@ uint8_t P111_data_struct::readPassiveTargetID(uint8_t *uid,
   return P111_NO_ERROR;
 }
 
+void P111_data_struct::mfrc522_interrupt(P111_data_struct * self)
+{
+  self->_irq_pin_time_micros = getMicros64();
+}
+
 /*********************************************************************************************
  * Handle regular read and reset processing
  ********************************************************************************************/
 bool P111_data_struct::plugin_ten_per_second(struct EventStruct *event) {
+  return loop(event);
+}
+
+bool P111_data_struct::loop(struct EventStruct *event) {
   bool success = false;
 
   if (((initPhase == P111_initPhases::ResetDelay1) || // Whichever handler comes first
@@ -306,7 +329,7 @@ bool P111_data_struct::plugin_ten_per_second(struct EventStruct *event) {
 /*********************************************************************************************
  * Handle timers instead of using delay()
  ********************************************************************************************/
-bool P111_data_struct::plugin_fifty_per_second() {
+bool P111_data_struct::plugin_fifty_per_second(struct EventStruct *event) {
   if ((initPhase == P111_initPhases::ResetDelay1) ||
       (initPhase == P111_initPhases::ResetDelay2)) {
     timeToWait -= 20; // milliseconds
@@ -323,6 +346,12 @@ bool P111_data_struct::plugin_fifty_per_second() {
       }
     }
   }
+  if (_irq_pin_time_micros > _last_served_irq_pin_time_micros) {
+    _last_served_irq_pin_time_micros = _irq_pin_time_micros;
+    //addLog(LOG_LEVEL_INFO, F("P111: acting on interrupt"));
+    loop(event);
+  }
+
   return true;
 }
 

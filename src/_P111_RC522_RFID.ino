@@ -139,7 +139,7 @@ boolean Plugin_111(uint8_t function, struct EventStruct *event, String& string)
 
     case PLUGIN_INIT:
     {
-      initPluginTaskData(event->TaskIndex, new (std::nothrow) P111_data_struct(P111_CS_PIN, P111_RST_PIN));
+      initPluginTaskData(event->TaskIndex, new (std::nothrow) P111_data_struct(P111_CS_PIN, P111_RST_PIN, P111_IRQ_PIN));
       P111_data_struct *P111_data = static_cast<P111_data_struct *>(getPluginTaskData(event->TaskIndex));
 
       if (nullptr != P111_data) {
@@ -186,7 +186,7 @@ boolean Plugin_111(uint8_t function, struct EventStruct *event, String& string)
       P111_data_struct *P111_data = static_cast<P111_data_struct *>(getPluginTaskData(event->TaskIndex));
 
       if (nullptr != P111_data) {
-        success = P111_data->plugin_fifty_per_second();
+        success = P111_data->plugin_fifty_per_second(event);
       }
       break;
     }
