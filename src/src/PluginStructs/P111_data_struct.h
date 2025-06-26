@@ -39,6 +39,8 @@ struct P111_data_struct : public PluginTaskData_base {
   bool plugin_ten_per_second(struct EventStruct *event);
   bool plugin_fifty_per_second();
 
+  String PCD_getVersion(uint8_t& v);
+
 private:
 
   MFRC522 *mfrc522 = nullptr;

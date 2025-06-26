@@ -291,7 +291,7 @@ void MFRC522::PCD_AntennaOff() {
 
 /**
  * Get the current MFRC522 Receiver Gain (RxGain[2:0]) value.
- * See 9.3.3.6 / table 98 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+ * See 9.3.3.6 / table 98 in https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf
  * NOTE: Return value scrubbed with (0x07<<4)=01110000b as RCFfgReg may use reserved bits.
  * 
  * @return Value of the RxGain, scrubbed to the 3 bits used.
@@ -302,7 +302,7 @@ uint8_t MFRC522::PCD_GetAntennaGain() {
 
 /**
  * Set the MFRC522 Receiver Gain (RxGain) to value specified by given mask.
- * See 9.3.3.6 / table 98 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+ * See 9.3.3.6 / table 98 in https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf
  * NOTE: Given mask is scrubbed with (0x07<<4)=01110000b as RCFfgReg may use reserved bits.
  */
 void MFRC522::PCD_SetAntennaGain(uint8_t mask) {
@@ -314,7 +314,7 @@ void MFRC522::PCD_SetAntennaGain(uint8_t mask) {
 
 /**
  * Performs a self-test of the MFRC522
- * See 16.1.1 in http://www.nxp.com/documents/data_sheet/MFRC522.pdf
+ * See 16.1.1 in https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf
  * 
  * @return Whether or not the test passed. Or false if no firmware reference is available.
  */
@@ -368,21 +368,28 @@ bool MFRC522::PCD_PerformSelfTest() {
 	
 	// Pick the appropriate reference values
 	const uint8_t *reference;
-	switch (version) {
-		case 0x88:	// Fudan Semiconductor FM17522 clone
-			reference = FM17522_firmware_reference;
-			break;
-		case 0x90:	// Version 0.0
-			reference = MFRC522_firmware_referenceV0_0;
-			break;
-		case 0x91:	// Version 1.0
-			reference = MFRC522_firmware_referenceV1_0;
-			break;
-		case 0x92:	// Version 2.0
-			reference = MFRC522_firmware_referenceV2_0;
-			break;
-		default:	// Unknown version
-			return false; // abort test
+	switch(version) {
+      // Fudan Semiconductor clone:
+	  case 0xb2:  // FM17522
+		reference = FM17522_firmware_referenceB2;
+		break;
+	  case 0x88:  // FM17522
+		reference = FM17522_firmware_reference88;
+		break;
+	  case 0x89:  // FM17522E
+		reference = FM17522E_firmware_reference;
+		break;
+	  case 0x90:  // Version 0.0
+		reference = MFRC522_firmware_referenceV0_0;
+		break;
+	  case 0x91:  // Version 1.0
+		reference = MFRC522_firmware_referenceV1_0;
+		break;
+	  case 0x92:  // Version 2.0
+		reference = MFRC522_firmware_referenceV2_0;
+		break;
+	  default:  // Unknown version
+		return false; // abort test
 	}
 	
 	// Verify that the results match up to our expectations
@@ -868,7 +875,7 @@ MFRC522::StatusCode MFRC522::PICC_HaltA() {
 /**
  * Executes the MFRC522 MFAuthent command.
  * This command manages MIFARE authentication to enable a secure communication to any MIFARE Mini, MIFARE 1K and MIFARE 4K card.
- * The authentication is described in the MFRC522 datasheet section 10.3.1.9 and http://www.nxp.com/documents/data_sheet/MF1S503x.pdf section 10.1.
+ * The authentication is described in the MFRC522 datasheet section 10.3.1.9 and https://www.nxp.com/docs/en/data-sheet/MF1S503x.pdf section 10.1.
  * For use with MIFARE Classic PICCs.
  * The PICC must be selected - ie in state ACTIVE(*) - before calling this function.
  * Remember to call PCD_StopCrypto1() after communicating with the authenticated PICC - otherwise no new communications can start.

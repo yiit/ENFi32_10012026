@@ -26,6 +26,8 @@ void P111_data_struct::init() {
 
   if (mfrc522 != nullptr) {
     mfrc522->PCD_Init();                                 // Initialize MFRC522 reader
+    mfrc522->PCD_WriteRegister(MFRC522::ComIEnReg, 0b10100000); // enable receiver interrupt
+    mfrc522->PCD_WriteRegister(MFRC522::DivIEnReg, 0x80); // Set as CMOS output pin
     initPhase = P111_initPhases::Ready;
   }
 }
@@ -116,10 +118,15 @@ bool P111_data_struct::reset(int8_t csPin,
   if ((resetPin != -1) &&
       (initPhase == P111_initPhases::Ready)) {
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      String log = F("MFRC522: Reset on pin: ");
-      log += resetPin;
-      addLogMove(LOG_LEVEL_INFO, log);
+      addLogMove(
+        LOG_LEVEL_INFO, 
+        concat(F("MFRC522: Reset on pin: "), resetPin));
     }
+
+    init();
+    return true;
+
+    // FIXME TD-er: Remove the rest of this function.
     pinMode(resetPin, OUTPUT);
     digitalWrite(resetPin, LOW);
     timeToWait = 100;
@@ -140,6 +147,8 @@ bool P111_data_struct::reset(int8_t csPin,
   digitalWrite(csPin, LOW);
 
   mfrc522->PCD_Init(csPin, resetPin); // Init MFRC522 module
+  mfrc522->PCD_WriteRegister(MFRC522::ComIEnReg, 0b10100000); // enable receiver interrupt
+  mfrc522->PCD_WriteRegister(MFRC522::DivIEnReg, 0x80); // Set as CMOS output pin
 
   // If you set Antenna Gain to Max it will increase reading distance
   mfrc522->PCD_SetAntennaGain(mfrc522->RxGain_max);
@@ -226,8 +235,10 @@ bool P111_data_struct::plugin_ten_per_second(struct EventStruct *event) {
   }
 
   counter++;          // This variable replaces a static variable in the original implementation
+  const bool ComIrqReg_bits = (mfrc522->PCD_ReadRegister(MFRC522::ComIrqReg) & (1<<5)) != 0;
+  mfrc522->PCD_WriteRegister(MFRC522::ComIrqReg, 0x34);
 
-  if (counter == 3) { // Only every 3rd 0.1 second we do a read
+  if (counter >= 10 || ComIrqReg_bits) { // Only every 3rd 0.1 second we do a read
     counter = 0;
 
     uint32_t key        = P111_NO_KEY;
@@ -299,5 +310,46 @@ bool P111_data_struct::plugin_fifty_per_second() {
   }
   return true;
 }
+
+
+String P111_data_struct::PCD_getVersion(uint8_t& v) {
+  v = 0xFF;
+  if (mfrc522) {
+    v = mfrc522->PCD_ReadRegister(MFRC522::VersionReg);
+    if (v != 0xFF && v != 0) {
+      // Human readable version.
+      String res = concat(formatToHex(v, 2), F(" = "));
+      switch(v) {
+        case 0xb2:
+          res += F("FM17522_1");
+          break;
+        case 0x88:
+          res += F("FM17522");
+          break;
+        case 0x89:
+          res += F("FM17522E");
+          break;
+        case 0x90:
+          res += F("v0.0");
+          break;
+        case 0x91:
+          res += F("v1.0");
+          break;
+        case 0x92:
+          res += F("v2.0");
+          break;
+        case 0x12:
+          res += F("counterfeit chip");
+          break;
+        default:
+          res += F("(unknown)");
+          break;
+      }
+      return res;
+    }
+  }
+  return EMPTY_STRING;
+}
+
 
 #endif // ifdef USES_P111
