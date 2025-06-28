@@ -908,8 +908,33 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               }
 
               case Sensor_VType::SENSOR_TYPE_WIND:
-              case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
               case Sensor_VType::SENSOR_TYPE_DIRECTION_ONLY:
+              case Sensor_VType::SENSOR_TYPE_WIND_SPEED:
+              {
+                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_WIND_SPEED == discoveryItems[s].VType ? F("wind_speed") :
+                                                F("wind_direction");
+                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_WIND_SPEED == discoveryItems[s].VType ? F("m/s") :
+                                                    F("°"));
+
+                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
+                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
+                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
+                                                                   ControllerIndex,
+                                                                   ControllerSettings,
+                                                                   F("sensor"),
+                                                                   dev,
+                                                                   uom,
+                                                                   &TempEvent,
+                                                                   deviceElement,
+                                                                   success,
+                                                                   false, false, elementIds);
+                }
+                break;
+              }
+
+
+              case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
               case Sensor_VType::SENSOR_TYPE_GPS_ONLY:
               case Sensor_VType::SENSOR_TYPE_DIMMER: // Maybe implement?
                 // TODO
