@@ -511,6 +511,7 @@ bool PubSubClient::beginPublish(const char* topic, size_t plength, bool retained
 }
 
 bool PubSubClient::endPublish() {
+    flushBuffer();
     return connected();
 }
 
@@ -549,13 +550,19 @@ uint8_t PubSubClient::buildHeader(uint8_t header, uint8_t* buf, size_t length) {
 }
 
 size_t PubSubClient::write(uint8_t data) {
-    lastOutActivity = millis();
-    return _client->write(data);
+    const size_t rc = appendBuffer(data);
+    if (rc != 0) {
+        lastOutActivity = millis();
+    }
+    return rc;
 }
 
 size_t PubSubClient::write(const uint8_t* buffer, size_t size) {
-    lastOutActivity = millis();
-    return _client->write(buffer, size);
+    const size_t rc = appendBuffer(buffer, size);
+    if (rc != 0) {
+        lastOutActivity = millis();
+    }
+    return rc;
 }
 
 /**
@@ -636,6 +643,36 @@ size_t PubSubClient::writeString(const char* string, uint8_t* buf, size_t pos, s
         ERROR_PSC_PRINTF_P("writeString(): string (%zu) does not fit into buf (%zu)\n", pos + 2 + sLen, size);
     }
     return pos;
+}
+
+size_t PubSubClient::appendBuffer(uint8_t data) {
+    buffer[_bufferWritePos] = data;
+    ++_bufferWritePos;
+    if (_bufferWritePos >= bufferSize) {
+        if (flushBuffer() == 0) return 0;
+    }
+    return 1;
+}
+
+size_t PubSubClient::appendBuffer(const uint8_t *data, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        if (appendBuffer(data[i]) == 0) return i;
+    }
+    return size;
+}
+
+size_t PubSubClient::flushBuffer() {
+    size_t rc = 0;
+    if (_bufferWritePos > 0) {
+        if (connected()) {
+            rc = _client->write(buffer, _bufferWritePos);
+            if (rc != 0) {
+                lastOutActivity = millis();
+            }
+        }
+        _bufferWritePos = 0;
+    }
+    return rc;
 }
 
 bool PubSubClient::subscribe(const char* topic) {
