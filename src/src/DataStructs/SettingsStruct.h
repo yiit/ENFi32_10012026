@@ -217,6 +217,15 @@ class SettingsStruct_tmpl
   void ShowUnitOfMeasureOnDevicesPage(bool value) { VariousBits_2.ShowUnitOfMeasureOnDevicesPage = !value; }
   #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
 
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+  wifi_band_mode_t WiFi_band_mode() const { 
+    if (VariousBits_2.WiFi_band_mode == 0) return WIFI_BAND_MODE_AUTO;
+    return static_cast<wifi_band_mode_t>(VariousBits_2.WiFi_band_mode); 
+  }
+  void WiFi_band_mode(wifi_band_mode_t value) { VariousBits_2.WiFi_band_mode = value; }
+#endif
+
+
   // Flag indicating whether all task values should be sent in a single event or one event per task value (default behavior)
   bool CombineTaskValues_SingleEvent(taskIndex_t taskIndex) const;
   void CombineTaskValues_SingleEvent(taskIndex_t taskIndex, bool value);
@@ -568,7 +577,7 @@ public:
   int8_t        SPI_SCLK_pin = -1;
   int8_t        SPI_MISO_pin = -1;
   int8_t        SPI_MOSI_pin = -1;
-  int8_t        ForceESPEasyNOWchannel = 0;
+  uint8_t       ForceESPEasyNOWchannel = 0;
 
   // Do not rename or move this checksum.
   // Checksum calculation will work "around" this
@@ -584,8 +593,7 @@ public:
     uint32_t DisableSaveConfigAsTar           : 1; // Bit 05
     uint32_t PassiveWiFiScan                  : 1; // Bit 06  // inverted
     uint32_t ShowUnitOfMeasureOnDevicesPage   : 1; // Bit 07  // inverted
-    uint32_t unused_08                        : 1; // Bit 08
-    uint32_t unused_09                        : 1; // Bit 09
+    uint32_t WiFi_band_mode                   : 2; // Bit 08 & 09
     uint32_t unused_10                        : 1; // Bit 10
     uint32_t unused_11                        : 1; // Bit 11
     uint32_t unused_12                        : 1; // Bit 12

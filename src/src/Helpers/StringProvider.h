@@ -93,6 +93,9 @@ struct LabelType {
     #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     SHOW_UOM_ON_DEVICES_PAGE,
     #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+    WIFI_BAND_MODE,
+#endif
 
     BOOT_TYPE,               // Cold boot
     BOOT_COUNT,              // 0

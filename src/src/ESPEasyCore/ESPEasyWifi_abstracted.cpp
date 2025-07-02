@@ -26,6 +26,20 @@ const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode)
   return F("Unknown");
 }
 
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode)
+{
+  switch (wifiBandMode)
+  {
+    case WIFI_BAND_MODE_2G_ONLY: return F("2.4 GHz only");
+    case WIFI_BAND_MODE_5G_ONLY: return F("5 GHz only");
+    default:  break;
+  }
+  return F("2.4 GHz + 5 GHz");
+}
+#endif
+
+
 bool WiFiConnected()     { return ESPEasyWiFi.connected(); }
 
 bool setSTA(bool enable) { return setSTA_AP(enable,  WifiIsAP(WiFi.getMode())); }
@@ -143,7 +157,14 @@ int GetRSSI_quality() {
   return (rssi / 5) + 1;
 }
 
-void setConnectionSpeed() { setConnectionSpeed(Settings.ForceWiFi_bg_mode()); }
+void setConnectionSpeed() { 
+  setConnectionSpeed(
+    Settings.ForceWiFi_bg_mode()
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+    ,Settings.WiFi_band_mode()
+#endif
+  ); 
+}
 
 } // namespace wifi
 } // namespace net

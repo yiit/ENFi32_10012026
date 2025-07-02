@@ -294,134 +294,6 @@ bool WiFiScanAllowed() {
   return WiFiEventData.processedConnect;
 }
 
-void WifiScan(bool async, uint8_t channel) {
-  ESPEasy::net::wifi::setSTA(true);
-
-  if (!WiFiScanAllowed()) {
-    return;
-  }
-# ifdef ESP32
-
-  // TD-er: Don't run async scan on ESP32.
-  // Since IDF 4.4 it seems like the active channel may be messed up when running async scan
-  // Perform a disconnect after scanning.
-  // See: https://github.com/letscontrolit/ESPEasy/pull/3579#issuecomment-967021347
-  async = false;
-
-  if (Settings.IncludeHiddenSSID()) {
-    ESPEasy::net::wifi::setWiFiCountryPolicyManual();
-  }
-
-
-# endif // ifdef ESP32
-
-  START_TIMER;
-  WiFiEventData.lastScanMoment.setNow();
-  # ifndef BUILD_NO_DEBUG
-
-  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-    if (channel == 0) {
-      addLog(LOG_LEVEL_INFO, F("WiFi : Start network scan all channels"));
-    } else {
-      addLogMove(LOG_LEVEL_INFO, strformat(F("WiFi : Start network scan ch: %d "), channel));
-    }
-  }
-  # endif // ifndef BUILD_NO_DEBUG
-  bool show_hidden = true;
-  WiFiEventData.processedScanDone = false;
-  WiFiEventData.lastGetScanMoment.setNow();
-  WiFiEventData.lastScanChannel = channel;
-
-  unsigned int nrScans = 1 + (async ? 0 : Settings.NumberExtraWiFiScans);
-
-  while (nrScans > 0) {
-    if (!async) {
-      WiFi_AP_Candidates.begin_sync_scan();
-      FeedSW_watchdog();
-    }
-    --nrScans;
-# ifdef ESP8266
-#  if FEATURE_ESP8266_DIRECT_WIFI_SCAN
-    {
-      static bool FIRST_SCAN = true;
-
-      struct scan_config config;
-      memset(&config, 0, sizeof(config));
-      config.ssid        = nullptr;
-      config.bssid       = nullptr;
-      config.channel     = channel;
-      config.show_hidden = show_hidden ? 1 : 0;
-      config.scan_type   = WIFI_SCAN_TYPE_ACTIVE;
-
-      if (FIRST_SCAN) {
-        config.scan_time.active.min = 100;
-        config.scan_time.active.max = 200;
-      } else {
-        config.scan_time.active.min = 400;
-        config.scan_time.active.max = 500;
-      }
-      FIRST_SCAN = false;
-      wifi_station_scan(&config, &onWiFiScanDone);
-
-      if (!async) {
-        // will resume when SYSTEM_EVENT_SCAN_DONE event is fired
-        do
-        {
-          delay(0);
-        } while (!WiFiEventData.processedScanDone);
-      }
-
-    }
-#  else // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
-    WiFi.scanNetworks(async, show_hidden, channel);
-#  endif // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
-# endif // ifdef ESP8266
-# ifdef ESP32
-    const bool passive             = Settings.PassiveWiFiScan();
-    const uint32_t max_ms_per_chan = 120;
-#if CONFIG_SOC_WIFI_SUPPORT_5G
-    // ESP32-C5 scans both 2.4 and 5 GHz band, which takes much longer
-    // 14 channels on 2.4 GHz
-    // 36 channels on 5 GHz: 36~177 (36, 40, 44 ... 177)
-    WiFi.setScanTimeout(50 * (max_ms_per_chan + 10));
-#else
-//    WiFi.setScanTimeout(14 * (max_ms_per_chan + 10));
-#endif
-    WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan /*, channel */);
-# endif // ifdef ESP32
-
-    if (!async) {
-      FeedSW_watchdog();
-      processScanDone();
-    }
-  }
-# if FEATURE_TIMING_STATS
-
-  if (async) {
-    STOP_TIMER(WIFI_SCAN_ASYNC);
-  } else {
-    STOP_TIMER(WIFI_SCAN_SYNC);
-  }
-# endif // if FEATURE_TIMING_STATS
-
-# ifdef ESP32
-#  if ESP_IDF_VERSION_MAJOR < 5
-  RTC.clearLastWiFi();
-
-  if (WiFiConnected()) {
-    #   ifndef BUILD_NO_DEBUG
-    addLog(LOG_LEVEL_INFO, F("WiFi : Disconnect after scan"));
-    #   endif
-
-    const bool needReconnect = WiFiEventData.wifiConnectAttemptNeeded;
-    WifiDisconnect();
-    WiFiEventData.wifiConnectAttemptNeeded = needReconnect;
-  }
-#  endif // if ESP_IDF_VERSION_MAJOR < 5
-# endif // ifdef ESP32
-
-}
-
 // ********************************************************************************
 // Scan all Wifi Access Points
 // ********************************************************************************
@@ -432,7 +304,7 @@ void WiFiScan_log_to_serial()
 
   if (WiFi_AP_Candidates.scanComplete() <= 0) {
     WiFiMode_t cur_wifimode = WiFi.getMode();
-    WifiScan(false);
+    ESPEasy::net::wifi::WifiScan(false);
     ESPEasy::net::wifi::setWifiMode(cur_wifimode);
   }
 

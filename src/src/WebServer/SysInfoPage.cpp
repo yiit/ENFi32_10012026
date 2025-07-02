@@ -519,6 +519,9 @@ void handle_sysinfo_Network() {
   addRowLabel(getLabel(LabelType::CHANNEL));
   if (showWiFiConnectionInfo) {
     addHtml(getValue(LabelType::CHANNEL));
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+    addHtml(WiFi.channel() < 36 ? F(" (2.4 GHz)") : F(" (5 GHz)"));
+#endif
   } else addHtml('-');
 
   addRowLabel(getLabel(LabelType::ENCRYPTION_TYPE_STA));

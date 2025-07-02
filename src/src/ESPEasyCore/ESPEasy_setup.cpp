@@ -461,7 +461,7 @@ void ESPEasy_setup()
       RTC.clearLastWiFi(); // Must scan all channels
       // Wait until scan has finished to make sure as many as possible are found
       // We're still in the setup phase, so nothing else is taking resources of the ESP.
-      WifiScan(false);
+      ESPEasy::net::wifi::WifiScan(false);
       WiFiEventData.lastScanMoment.clear();
     }
 
@@ -469,7 +469,7 @@ void ESPEasy_setup()
     // It appears reconnecting from RTC may take just as long to be able to send first packet as performing a scan first and then connect.
     // Perhaps the WiFi radio needs some time to stabilize first?
     if (!WiFi_AP_Candidates.hasCandidates()) {
-      WifiScan(false, RTC.lastWiFiChannel);
+      ESPEasy::net::wifi::WifiScan(false, RTC.lastWiFiChannel);
     }
     WiFi_AP_Candidates.clearCache();
     processScanDone();
@@ -479,7 +479,7 @@ void ESPEasy_setup()
       #ifndef BUILD_MINIMAL_OTA
       addLog(LOG_LEVEL_INFO, F("Setup: Scan all channels"));
       #endif
-      WifiScan(false);
+      ESPEasy::net::wifi::WifiScan(false);
     }
 
     //    ESPEasy::net::wifi::setWifiMode(WIFI_OFF);

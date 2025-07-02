@@ -3,6 +3,8 @@
 #if FEATURE_WIFI
 # ifdef ESP32
 
+#  include "../DataStructs/TimingStats.h"
+
 #  include "../Globals/ESPEasyWiFiEvent.h"
 #  include "../Globals/EventQueue.h"
 #  include "../Globals/Settings.h"
@@ -192,6 +194,103 @@ bool setWifiMode(WiFiMode_t new_mode)
   return true;
 }
 
+void WifiScan(bool async, uint8_t channel) {
+  ESPEasy::net::wifi::setSTA(true);
+
+  if (!WiFiScanAllowed()) {
+    return;
+  }
+
+#  if CONFIG_SOC_WIFI_SUPPORT_5G
+  const wifi_band_mode_t current_wifi_band_mode = WiFi.getBandMode();
+  WiFi.setBandMode(Settings.WiFi_band_mode());
+#  endif
+
+  // TD-er: Don't run async scan on ESP32.
+  // Since IDF 4.4 it seems like the active channel may be messed up when running async scan
+  // Perform a disconnect after scanning.
+  // See: https://github.com/letscontrolit/ESPEasy/pull/3579#issuecomment-967021347
+  async = false;
+
+  if (Settings.IncludeHiddenSSID()) {
+    ESPEasy::net::wifi::setWiFiCountryPolicyManual();
+  }
+
+  START_TIMER;
+  WiFiEventData.lastScanMoment.setNow();
+  #  ifndef BUILD_NO_DEBUG
+
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    if (channel == 0) {
+      addLog(LOG_LEVEL_INFO, F("WiFi : Start network scan all channels"));
+    } else {
+      addLogMove(LOG_LEVEL_INFO, strformat(F("WiFi : Start network scan ch: %d "), channel));
+    }
+  }
+  #  endif // ifndef BUILD_NO_DEBUG
+  bool show_hidden = true;
+  WiFiEventData.processedScanDone = false;
+  WiFiEventData.lastGetScanMoment.setNow();
+  WiFiEventData.lastScanChannel = channel;
+
+  unsigned int nrScans = 1 + (async ? 0 : Settings.NumberExtraWiFiScans);
+
+  while (nrScans > 0) {
+    if (!async) {
+      WiFi_AP_Candidates.begin_sync_scan();
+      FeedSW_watchdog();
+    }
+    --nrScans;
+
+    const bool passive             = Settings.PassiveWiFiScan();
+    const uint32_t max_ms_per_chan = 120;
+#  if CONFIG_SOC_WIFI_SUPPORT_5G
+
+    // ESP32-C5 scans both 2.4 and 5 GHz band, which takes much longer
+    // 14 channels on 2.4 GHz
+    // 28 channels on 5 GHz: 36~177 (36, 40, 44 ... 177)
+    // Typically a scan takes 40 ... 60 msec per channel longer.
+    // To be safe, set the timeout to 2x max_ms_per_chan
+
+    WiFi.setScanTimeout((14 + 28) * max_ms_per_chan * 2);
+#  else // if CONFIG_SOC_WIFI_SUPPORT_5G
+    WiFi.setScanTimeout(14 * max_ms_per_chan * 2);
+#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+    WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan /*, channel */);
+
+    if (!async) {
+      FeedSW_watchdog();
+      processScanDone();
+    }
+  }
+#  if FEATURE_TIMING_STATS
+
+  if (async) {
+    STOP_TIMER(WIFI_SCAN_ASYNC);
+  } else {
+    STOP_TIMER(WIFI_SCAN_SYNC);
+  }
+#  endif // if FEATURE_TIMING_STATS
+
+#  if ESP_IDF_VERSION_MAJOR < 5
+  RTC.clearLastWiFi();
+
+  if (WiFiConnected()) {
+    #   ifndef BUILD_NO_DEBUG
+    addLog(LOG_LEVEL_INFO, F("WiFi : Disconnect after scan"));
+    #   endif
+
+    const bool needReconnect = WiFiEventData.wifiConnectAttemptNeeded;
+    WifiDisconnect();
+    WiFiEventData.wifiConnectAttemptNeeded = needReconnect;
+  }
+#  endif // if ESP_IDF_VERSION_MAJOR < 5
+#  if CONFIG_SOC_WIFI_SUPPORT_5G
+  // Restore band mode
+  WiFi.setBandMode(current_wifi_band_mode);
+#endif
+}
+
 void removeWiFiEventHandler()
 {
   WiFi.removeEvent(WiFiEventData.wm_event_id);
@@ -283,7 +382,44 @@ void doSetWiFiTXpower(float& dBm)
 
 #  endif // if FEATURE_SET_WIFI_TX_PWR
 
-void setConnectionSpeed(bool ForceWiFi_bg_mode) {
+#  if CONFIG_SOC_WIFI_SUPPORT_5G
+
+bool setProtocol(wifi_interface_t ifx, uint16_t protocol_2GHz, uint16_t protocol_5GHz)
+{
+  esp_err_t err;
+  switch (WiFi.getBandMode())
+  {
+    case WIFI_BAND_MODE_2G_ONLY: err = esp_wifi_set_protocol(ifx, protocol_2GHz); break;
+    case WIFI_BAND_MODE_5G_ONLY: err = esp_wifi_set_protocol(ifx, protocol_5GHz); break;
+    default: 
+    {
+      wifi_protocols_t protocols { .ghz_2g = protocol_2GHz, .ghz_5g = protocol_5GHz };
+      err = esp_wifi_set_protocols(WIFI_IF_STA, &protocols);
+      break;
+    }
+  }
+  if (err != ESP_OK) {
+    // TODO TD-er: Log
+  }
+  
+  return err == ESP_OK;
+}
+
+#  else // if CONFIG_SOC_WIFI_SUPPORT_5G
+
+bool setProtocol(wifi_interface_t ifx, uint8_t protocol_2GHz) { return esp_wifi_set_protocol(ifx, protocol_2GHz) == ESP_OK; }
+
+#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+
+
+#  if CONFIG_SOC_WIFI_SUPPORT_5G
+
+void setConnectionSpeed(bool ForceWiFi_bg_mode, wifi_band_mode_t WiFi_band_mode)
+#  else // if CONFIG_SOC_WIFI_SUPPORT_5G
+
+void setConnectionSpeed(bool ForceWiFi_bg_mode)
+#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+{
   // Does not (yet) work, so commented out.
 
   // HT20 = 20 MHz channel width.
@@ -294,22 +430,27 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode) {
   // The response speed and stability is better at HT20 for ESP units.
   esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
 
+#  if CONFIG_SOC_WIFI_SUPPORT_5G
+  WiFi.setBandMode(WiFi_band_mode);
+#   if CONFIG_SOC_WIFI_HE_SUPPORT
+  uint8_t protocol_5GHz = WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11A | WIFI_PROTOCOL_11AC | WIFI_PROTOCOL_11AX;
+#   else
+  uint8_t protocol_5GHz = WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11A | WIFI_PROTOCOL_11AC;
+#   endif // if CONFIG_SOC_WIFI_HE_SUPPORT
+#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+
   uint8_t protocol = 0;
 
   if (ForceWiFi_bg_mode) {
     protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G; // Default to BG
   }
 
-  if (!ForceWiFi_bg_mode || (WiFiEventData.connectionFailures > 10)) {
-    // Set to use BGN
-    protocol |= WIFI_PROTOCOL_11N;
+  if (WiFiEventData.connectionFailures > 10) {
+    // Set to allow all protocols
+    protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
 #  if CONFIG_SOC_WIFI_HE_SUPPORT
     protocol |= WIFI_PROTOCOL_11AX;
 #  endif
-#  if CONFIG_SOC_WIFI_SUPPORT_5G
-    protocol |= WIFI_PROTOCOL_11A;
-    protocol |= WIFI_PROTOCOL_11AC;
-#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
   }
 
   const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
@@ -326,12 +467,14 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode) {
 
       if (candidate.bits.phy_11ax) { protocol |= WIFI_PROTOCOL_11AX; }
 #  endif // if CONFIG_SOC_WIFI_HE_SUPPORT
+/*
 #  if CONFIG_SOC_WIFI_SUPPORT_5G
 
       if (candidate.bits.phy_11a) { protocol |= WIFI_PROTOCOL_11A; }
 
       if (candidate.bits.phy_11ac) { protocol |= WIFI_PROTOCOL_11AC; }
 #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+*/
     } else
 
     // Check to see if the access point is set to "N-only"
@@ -347,19 +490,20 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode) {
         if (candidate.bits.phy_11ax) {
           // Set to use WiFi6
           protocol |= WIFI_PROTOCOL_11AX;
+//          protocol_5GHz |= WIFI_PROTOCOL_11AX;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11ax, Wi-Fi 6"));
         }
 #   if CONFIG_SOC_WIFI_SUPPORT_5G
 
         if (candidate.bits.phy_11a) {
           // Set to use 5 GHz WiFi
-          protocol |= WIFI_PROTOCOL_11A;
+//          protocol_5GHz |= WIFI_PROTOCOL_11A;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11a, 5 GHz"));
         }
 
         if (candidate.bits.phy_11ac) {
           // Set to use 5 GHz WiFi-5
-          protocol |= WIFI_PROTOCOL_11AC;
+//          protocol_5GHz |= WIFI_PROTOCOL_11AC;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11ac, 5 GHz Wi-Fi 5"));
         }
 #   endif // if CONFIG_SOC_WIFI_SUPPORT_5G
@@ -373,11 +517,19 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode) {
     // Set to use "Long GI" making it more resilliant to reflections
     // See: https://www.tp-link.com/us/configuration-guides/q_a_basic_wireless_concepts/?configurationId=2958#_idTextAnchor038
     esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS3_LGI);
-    esp_wifi_set_protocol(WIFI_IF_STA, protocol);
+    #  if CONFIG_SOC_WIFI_SUPPORT_5G
+    setProtocol(WIFI_IF_STA, protocol, protocol_5GHz);
+    #  else
+    setProtocol(WIFI_IF_STA, protocol);
+    #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
   }
 
   if (WifiIsAP(WiFi.getMode())) {
-    esp_wifi_set_protocol(WIFI_IF_AP, protocol);
+    #  if CONFIG_SOC_WIFI_SUPPORT_5G
+    setProtocol(WIFI_IF_AP,  protocol, protocol_5GHz);
+    #  else
+    setProtocol(WIFI_IF_STA, protocol);
+    #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
   }
 }
 

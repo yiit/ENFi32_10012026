@@ -3,6 +3,8 @@
 #if FEATURE_WIFI
 # ifdef ESP8266
 
+#  include "../DataStructs/TimingStats.h"
+
 #  include "../Helpers/StringConverter.h"
 
 #  include "../Globals/ESPEasyWiFiEvent.h"
@@ -120,6 +122,90 @@ bool setWifiMode(WiFiMode_t new_mode)
   #   endif // ifdef ESP8266
   #  endif // if FEATURE_MDNS
   return true;
+}
+
+void WifiScan(bool async, uint8_t channel) {
+  ESPEasy::net::wifi::setSTA(true);
+
+  if (!WiFiScanAllowed()) {
+    return;
+  }
+
+  START_TIMER;
+  WiFiEventData.lastScanMoment.setNow();
+  # ifndef BUILD_NO_DEBUG
+
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    if (channel == 0) {
+      addLog(LOG_LEVEL_INFO, F("WiFi : Start network scan all channels"));
+    } else {
+      addLogMove(LOG_LEVEL_INFO, strformat(F("WiFi : Start network scan ch: %d "), channel));
+    }
+  }
+  # endif // ifndef BUILD_NO_DEBUG
+  bool show_hidden = true;
+  WiFiEventData.processedScanDone = false;
+  WiFiEventData.lastGetScanMoment.setNow();
+  WiFiEventData.lastScanChannel = channel;
+
+  unsigned int nrScans = 1 + (async ? 0 : Settings.NumberExtraWiFiScans);
+
+  while (nrScans > 0) {
+    if (!async) {
+      WiFi_AP_Candidates.begin_sync_scan();
+      FeedSW_watchdog();
+    }
+    --nrScans;
+#  if FEATURE_ESP8266_DIRECT_WIFI_SCAN
+    {
+      static bool FIRST_SCAN = true;
+
+      struct scan_config config;
+      memset(&config, 0, sizeof(config));
+      config.ssid        = nullptr;
+      config.bssid       = nullptr;
+      config.channel     = channel;
+      config.show_hidden = show_hidden ? 1 : 0;
+      config.scan_type   = WIFI_SCAN_TYPE_ACTIVE;
+
+      if (FIRST_SCAN) {
+        config.scan_time.active.min = 100;
+        config.scan_time.active.max = 200;
+      } else {
+        config.scan_time.active.min = 400;
+        config.scan_time.active.max = 500;
+      }
+      FIRST_SCAN = false;
+      wifi_station_scan(&config, &onWiFiScanDone);
+
+      if (!async) {
+        // will resume when SYSTEM_EVENT_SCAN_DONE event is fired
+        do
+        {
+          delay(0);
+        } while (!WiFiEventData.processedScanDone);
+      }
+
+    }
+#  else // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
+    WiFi.scanNetworks(async, show_hidden, channel);
+#  endif // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
+
+    if (!async) {
+      FeedSW_watchdog();
+      processScanDone();
+    }
+  }
+# if FEATURE_TIMING_STATS
+
+  if (async) {
+    STOP_TIMER(WIFI_SCAN_ASYNC);
+  } else {
+    STOP_TIMER(WIFI_SCAN_SYNC);
+  }
+# endif // if FEATURE_TIMING_STATS
+
+
 }
 
 void removeWiFiEventHandler() {

@@ -125,6 +125,7 @@ WiFi_AP_Candidate::WiFi_AP_Candidate(uint8_t networkItem) : index(0) {
     // FIXME TD-er: Maybe also add other info like 2nd channel, ftm and phy_lr support?
 # if ESP_IDF_VERSION_MAJOR >= 5
     memcpy(&country, &(it->country), sizeof(wifi_country_t));
+    bandwidth = it->bandwidth;
 # endif
   }
   #endif // ifdef ESP32
@@ -206,6 +207,7 @@ WiFi_AP_Candidate& WiFi_AP_Candidate::operator=(const WiFi_AP_Candidate& other)
   #ifdef ESP32
   # if ESP_IDF_VERSION_MAJOR >= 5
   memcpy(&this->country, &other.country, sizeof(wifi_country_t));
+  bandwidth = other.bandwidth;
   # endif
   #endif // ifdef ESP32
 
@@ -334,6 +336,19 @@ String WiFi_AP_Candidate::toString(const String& separator) const {
 #endif // ifdef ESP32
 
     if (phy_str.length()) {
+#ifdef ESP32
+      switch (bandwidth)
+      {
+        case WIFI_BW_HT20: break;
+        case WIFI_BW_HT40:   phy_str += F(" 40 MHz"); break;
+        case WIFI_BW80:      phy_str += F(" 80 MHz"); break;
+        case WIFI_BW160:     phy_str += F(" 160 MHz"); break;
+        case WIFI_BW80_BW80: phy_str += F(" 80+80 MHz"); break;
+        
+        default:
+          break;
+      }
+#endif
       result += strformat(F(" (%s)"), phy_str.c_str());
     }
   }

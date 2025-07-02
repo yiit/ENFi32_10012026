@@ -9,6 +9,7 @@
 #include "../WebServer/ESPEasy_WebServer.h"
 
 #include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
 
 #include "../Globals/ESPEasy_time.h"
 #include "../Globals/Settings.h"
@@ -146,6 +147,9 @@ void handle_advanced() {
     Settings.SDK_WiFi_autoreconnect(isFormItemChecked(LabelType::SDK_WIFI_AUTORECONNECT));
 #ifdef ESP32
     Settings.PassiveWiFiScan(isFormItemChecked(LabelType::WIFI_PASSIVE_SCAN));
+#endif
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+    Settings.WiFi_band_mode(static_cast<wifi_band_mode_t>(getFormItemInt(getInternalLabel(LabelType::WIFI_BAND_MODE))));
 #endif
 #if FEATURE_USE_IPV6
     Settings.EnableIPv6(isFormItemChecked(LabelType::ENABLE_IPV6));
@@ -359,21 +363,23 @@ void handle_advanced() {
   addFormCheckBox(LabelType::ALLOW_OTA_UNLIMITED, Settings.AllowOTAUnlimited());
   # endif // ifndef NO_HTTP_UPDATER
   #if FEATURE_AUTO_DARK_MODE
-  const __FlashStringHelper * cssModeNames[] = {
-    F("Auto"),
-    F("Light"),
-    F("Dark"),
-  };
-  //const int cssModeOptions[] = { 0, 1, 2};
-  constexpr int nrCssModeOptions = NR_ELEMENTS(cssModeNames);
-  const FormSelectorOptions selector(
-    nrCssModeOptions,
-    cssModeNames/*,
-    cssModeOptions*/);
-  selector.addFormSelector(
-    getLabel(LabelType::ENABLE_AUTO_DARK_MODE),
-    getInternalLabel(LabelType::ENABLE_AUTO_DARK_MODE),
-    Settings.getCssMode());
+  {
+    const __FlashStringHelper * cssModeNames[] = {
+      F("Auto"),
+      F("Light"),
+      F("Dark"),
+    };
+    //const int cssModeOptions[] = { 0, 1, 2};
+    constexpr int nrCssModeOptions = NR_ELEMENTS(cssModeNames);
+    const FormSelectorOptions selector(
+      nrCssModeOptions,
+      cssModeNames/*,
+      cssModeOptions*/);
+    selector.addFormSelector(
+      getLabel(LabelType::ENABLE_AUTO_DARK_MODE),
+      getInternalLabel(LabelType::ENABLE_AUTO_DARK_MODE),
+      Settings.getCssMode());
+  }
   #endif // FEATURE_AUTO_DARK_MODE
 
   #if FEATURE_RULES_EASY_COLOR_CODE
@@ -419,6 +425,26 @@ void handle_advanced() {
 #ifdef ESP32
   addFormCheckBox(LabelType::WIFI_PASSIVE_SCAN,        Settings.PassiveWiFiScan());
 #endif
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+  {
+    const __FlashStringHelper * wifiModeNames[] = {
+      ESPEasy::net::wifi::getWifiBandModeString(WIFI_BAND_MODE_2G_ONLY),
+      ESPEasy::net::wifi::getWifiBandModeString(WIFI_BAND_MODE_5G_ONLY),
+      ESPEasy::net::wifi::getWifiBandModeString(WIFI_BAND_MODE_AUTO),
+    };
+    const int wifiModeOptions[] = { WIFI_BAND_MODE_2G_ONLY, WIFI_BAND_MODE_5G_ONLY, WIFI_BAND_MODE_AUTO};
+    constexpr int nrWifiModeOptions = NR_ELEMENTS(wifiModeNames);
+    const FormSelectorOptions selector(
+      nrWifiModeOptions,
+      wifiModeNames,
+      wifiModeOptions);
+    selector.addFormSelector(
+      getLabel(LabelType::WIFI_BAND_MODE),
+      getInternalLabel(LabelType::WIFI_BAND_MODE),
+      Settings.WiFi_band_mode());
+  }
+#endif
+
 #if FEATURE_USE_IPV6
   addFormCheckBox(LabelType::ENABLE_IPV6,      Settings.EnableIPv6());
 #endif

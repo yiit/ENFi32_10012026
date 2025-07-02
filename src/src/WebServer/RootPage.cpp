@@ -304,7 +304,7 @@ void handle_root() {
       html_table_header(F("Type"));
     }
     html_table_header(F("IP"), 160); // Should fit "255.255.255.255"
-    html_table_header(F("Load"));
+    html_table_header(F("Load (%)"));
     html_table_header(F("Age (s)"));
     #  ifdef USES_ESPEASY_NOW
 

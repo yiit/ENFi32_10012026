@@ -31,7 +31,7 @@ void handle_wifiscanner_json() {
 
   if (WiFi_AP_Candidates.scanComplete() <= 0) {
     WiFiMode_t cur_wifimode = WiFi.getMode();
-    WifiScan(false);
+    ESPEasy::net::wifi::WifiScan(false);
     ESPEasy::net::wifi::setWifiMode(cur_wifimode);
   }
 
@@ -67,7 +67,7 @@ void handle_wifiscanner() {
   if (!isLoggedIn()) { return; }
 
   WiFiMode_t cur_wifimode = WiFi.getMode();
-  WifiScan(false);
+  ESPEasy::net::wifi::WifiScan(false);
   int8_t scanCompleteStatus = WiFi_AP_Candidates.scanComplete();
   ESPEasy::net::wifi::setWifiMode(cur_wifimode);
 

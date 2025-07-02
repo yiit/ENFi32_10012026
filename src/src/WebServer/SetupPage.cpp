@@ -92,7 +92,7 @@ void handle_setup() {
         const bool performRescan = hasArg(F("performrescan"));
         if (performRescan) {
           WiFiEventData.lastScanMoment.clear();
-          WifiScan(false);
+          ESPEasy::net::wifi::WifiScan(false);
         }
 
         if (!other.isEmpty())
@@ -249,7 +249,7 @@ void handle_setup_scan_and_show(const String& ssid, const String& other, const S
     && WiFiScanAllowed();
   if (needsRescan) {
     WiFiMode_t cur_wifimode = WiFi.getMode();
-    WifiScan(false);
+    ESPEasy::net::wifi::WifiScan(false);
     scanCompleteStatus = WiFi_AP_Candidates.scanComplete();
     ESPEasy::net::wifi::setWifiMode(cur_wifimode);
   }

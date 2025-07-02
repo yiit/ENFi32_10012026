@@ -520,7 +520,7 @@ void refreshNodeList()
 
   // FIXME TD-er: Do not perform regular scans on ESP32 as long as we cannot scan per channel
   if (!Nodes.isEndpoint()) {
-    WifiScan(true, Nodes.getESPEasyNOW_channel());
+    ESPEasy::net::wifi::WifiScan(true, Nodes.getESPEasyNOW_channel());
   }
   #  endif // ifdef ESP8266
   # endif // ifdef USES_ESPEASY_NOW

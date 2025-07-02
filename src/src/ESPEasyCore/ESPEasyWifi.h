@@ -65,8 +65,6 @@ int64_t WiFi_get_TSF_time();
 # endif // ifdef ESP32
 void    WifiDisconnect();
 bool    WiFiScanAllowed();
-void    WifiScan(bool    async,
-                 uint8_t channel = 0);
 void    WiFiScan_log_to_serial();
 
 void    setAPinternal(bool enable); // FIXME TD-er: Move to ESPEasyWifi_abstracted...

@@ -43,12 +43,20 @@ bool                       WifiIsSTA(WiFiMode_t wifimode);
 
 const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode);
 
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode);
+#endif
+
 bool                       setSTA(bool enable);
 bool                       setAP(bool enable);
 bool                       setSTA_AP(bool sta_enable,
                                      bool ap_enable);
 
 bool                       setWifiMode(WiFiMode_t new_mode);
+
+
+void    WifiScan(bool    async,
+                 uint8_t channel = 0);
 
 
 // ********************************************************************************
@@ -79,7 +87,11 @@ void doSetWiFiTXpower(float& dBm);
 int  GetRSSI_quality();
 
 void setConnectionSpeed();
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+void setConnectionSpeed(bool ForceWiFi_bg_mode, wifi_band_mode_t WiFi_band_mode);
+#else
 void setConnectionSpeed(bool ForceWiFi_bg_mode);
+#endif
 
 void setWiFiNoneSleep();
 void setWiFiEcoPowerMode();
