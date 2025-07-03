@@ -118,7 +118,7 @@
 #endif
 
 #define CHECK_STRING_LENGTH(l, s)                                  \
-    if (l + 2 + strnlen(s, this->bufferSize) > this->bufferSize) { \
+    if ((!s) || (l + 2 + strnlen(s, this->bufferSize) > this->bufferSize)) { \
         _client->stop();                                           \
         return false;                                              \
     }
