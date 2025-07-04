@@ -92,6 +92,10 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log)
     case Sensor_VType::SENSOR_TYPE_DURATION:
     case Sensor_VType::SENSOR_TYPE_DATE:
     case Sensor_VType::SENSOR_TYPE_TIMESTAMP:
+    case Sensor_VType::SENSOR_TYPE_DATA_RATE:
+    case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
+    case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
+    case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
       return 1;
   }
   #ifndef BUILD_NO_DEBUG
@@ -174,6 +178,10 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_DURATION:         return F("Duration");
     case Sensor_VType::SENSOR_TYPE_DATE:             return F("Date");
     case Sensor_VType::SENSOR_TYPE_TIMESTAMP:        return F("Timestamp");
+    case Sensor_VType::SENSOR_TYPE_DATA_RATE:        return F("Data rate");
+    case Sensor_VType::SENSOR_TYPE_DATA_SIZE:        return F("Data size");
+    case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:   return F("Sound pressure");
+    case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:  return F("Signal strength");
     #else // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:
@@ -210,6 +218,10 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_DURATION:
     case Sensor_VType::SENSOR_TYPE_DATE:
     case Sensor_VType::SENSOR_TYPE_TIMESTAMP:
+    case Sensor_VType::SENSOR_TYPE_DATA_RATE:
+    case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
+    case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
+    case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
       break;
     #endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
   }

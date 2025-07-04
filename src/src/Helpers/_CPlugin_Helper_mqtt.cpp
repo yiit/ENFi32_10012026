@@ -963,6 +963,56 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                 break;
               }
 
+              case Sensor_VType::SENSOR_TYPE_DATA_RATE:
+              case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
+              {
+                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_DATA_RATE == discoveryItems[s].VType ? F("data_rate") :
+                                                F("data_size");
+                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_DATA_RATE == discoveryItems[s].VType ? F("bit/s") :
+                                                    F("bit"));
+
+                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
+                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
+                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
+                                                                   ControllerIndex,
+                                                                   ControllerSettings,
+                                                                   F("sensor"),
+                                                                   dev,
+                                                                   uom,
+                                                                   &TempEvent,
+                                                                   deviceElement,
+                                                                   success,
+                                                                   false, false, elementIds);
+                }
+                break;
+              }
+
+              case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
+              case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
+              {
+                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE == discoveryItems[s].VType ? F("sound_pressure") :
+                                                F("signal_strength");
+                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE == discoveryItems[s].VType ? F("dB") :
+                                                    F("dBm"));
+
+                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
+                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
+                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
+                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
+                                                                   ControllerIndex,
+                                                                   ControllerSettings,
+                                                                   F("sensor"),
+                                                                   dev,
+                                                                   uom,
+                                                                   &TempEvent,
+                                                                   deviceElement,
+                                                                   success,
+                                                                   false, false, elementIds);
+                }
+                break;
+              }
+
 
               case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
               case Sensor_VType::SENSOR_TYPE_GPS_ONLY:

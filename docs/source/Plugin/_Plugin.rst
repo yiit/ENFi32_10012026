@@ -273,7 +273,7 @@ The options included here are all possible value types supported by ESPEasy that
 
 Available options: ``Single, Switch, Dimmer, UInt32 (1x), String, Int32 (1x), UInt64 (1x), Int64 (1x),`` ``Double (1x), Analog, Temp, Hum, Lux, Distance, Direction, Dust PM2.5,``
 ``Dust PM1.0, Dust PM10, Moisture, (e)CO2, GPS, UV, UV Index, IR, Weight, Voltage,`` ``Current, Power Usage, Power Factor, Apparent Power Usage, TVOC, Baro,``
-``Red, Green, Blue, Color temperature, Reactive Power, AQI, NOx, Switch (inv.),`` ``Wind speed, Duration, Date, Timestamp``
+``Red, Green, Blue, Color temperature, Reactive Power, AQI, NOx, Switch (inv.),`` ``Wind speed, Duration, Date, Timestamp, Data rate, Data size, Sound pressure, Signal strength``
 
 .. note:: When available, this setting is required for the Value to be included in the MQTT AutoDiscovery process.
 
