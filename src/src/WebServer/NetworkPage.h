@@ -1,0 +1,40 @@
+#ifndef WEBSERVER_WEBSERVER_NETWORKPAGE_H
+#define WEBSERVER_WEBSERVER_NETWORKPAGE_H
+
+#include "../WebServer/common.h"
+
+#ifdef WEBSERVER_NETWORK
+
+#include "../DataTypes/NetworkIndex.h"
+
+// ********************************************************************************
+// Web Interface Network page
+// ********************************************************************************
+void handle_networks();
+
+// ********************************************************************************
+// Selected network has changed.
+// Clear all Network settings and load some defaults
+// ********************************************************************************
+//void handle_networks_clearLoadDefaults(uint8_t networkindex, NetworkSettingsStruct& NetworkSettings);
+
+// ********************************************************************************
+// Collect all submitted form data and store in the NetworkSettings
+// ********************************************************************************
+//void handle_networks_CopySubmittedSettings(uint8_t networkindex, NetworkSettingsStruct& NetworkSettings);
+
+void handle_networks_CopySubmittedSettings_CPluginCall(uint8_t networkindex);
+
+// ********************************************************************************
+// Show table with all selected networks
+// ********************************************************************************
+void handle_networks_ShowAllNetworksTable();
+
+// ********************************************************************************
+// Show the network settings page
+// ********************************************************************************
+void handle_networks_NetworkSettingsPage(networkIndex_t networkindex);
+
+
+#endif
+#endif

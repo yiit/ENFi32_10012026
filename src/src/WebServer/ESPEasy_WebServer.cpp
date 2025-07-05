@@ -23,6 +23,7 @@
 #include "../WebServer/Markup.h"
 #include "../WebServer/Markup_Buttons.h"
 #include "../WebServer/Markup_Forms.h"
+#include "../WebServer/NetworkPage.h"
 #include "../WebServer/NotificationPage.h"
 #include "../WebServer/PinStates.h"
 #include "../WebServer/RootPage.h"
@@ -225,6 +226,9 @@ void WebServerInit()
   #ifdef WEBSERVER_CONFIG
   web_server.on(F("/config"),      handle_config);
   #endif // ifdef WEBSERVER_CONFIG
+  #ifdef WEBSERVER_NETWORK
+  web_server.on(F("/network"),     handle_networks);
+  #endif // ifdef WEBSERVER_NETWORK
   #ifdef WEBSERVER_CONTROL
   web_server.on(F("/control"),     handle_control);
   #endif // ifdef WEBSERVER_CONTROL

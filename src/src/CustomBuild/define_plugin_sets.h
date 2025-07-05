@@ -71,6 +71,9 @@ To create/register a plugin, you have to :
     #ifndef WEBSERVER_CONFIG
         #define WEBSERVER_CONFIG
     #endif
+    #ifndef WEBSERVER_NETWORK
+        #define WEBSERVER_NETWORK
+    #endif
     #ifndef WEBSERVER_CONTROL
         #define WEBSERVER_CONTROL
     #endif

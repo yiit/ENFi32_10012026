@@ -40,6 +40,9 @@
 
 #endif
 
+#ifndef NETWORK_MAX
+  #define NETWORK_MAX                      8
+#endif
 #ifndef CONTROLLER_MAX
   #define CONTROLLER_MAX                      3 // max 4!
 #endif
@@ -91,6 +94,9 @@
 #endif
 #ifndef CPLUGIN_MAX
   #define CPLUGIN_MAX                        255
+#endif
+#ifndef NWPLUGIN_MAX
+  #define NWPLUGIN_MAX                       255
 #endif
 #ifndef NPLUGIN_MAX
   #define NPLUGIN_MAX                         4

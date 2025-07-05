@@ -1,0 +1,1 @@
+#include "../DataStructs/NetworkAdapterStruct.h"

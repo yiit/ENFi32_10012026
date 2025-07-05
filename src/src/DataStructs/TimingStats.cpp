@@ -9,6 +9,7 @@
 
 std::map<int, TimingStats> pluginStats;
 std::map<int, TimingStats> controllerStats;
+std::map<int, TimingStats> networkStats;
 std::map<TimingStatsElements, TimingStats> miscStats;
 unsigned long timingstats_last_reset(0);
 
@@ -202,6 +203,14 @@ bool mustLogCFunction(CPlugin::Function function) {
   return false;
 }
 
+bool mustLogNWFunction(NWPlugin::Function function)
+{
+  if (!Settings.EnableTimingStats()) { return false; }
+
+  return true;
+}
+
+
 // Return flash string type to reduce bin size
 const __FlashStringHelper* getMiscStatsName_F(TimingStatsElements stat) {
   switch (stat) {
@@ -326,6 +335,12 @@ void stopTimerController(protocolIndex_t T, CPlugin::Function F, uint32_t statis
 {
   if (mustLogCFunction(F)) { controllerStats[static_cast<int>(T) * 256 + static_cast<int>(F)].add(usecPassedSince_fast(statisticsTimerStart)); }
 }
+
+void stopTimerNetwork(networkAdapterIndex_t T, NWPlugin::Function F, uint32_t statisticsTimerStart)
+{
+  if (mustLogNWFunction(F)) { networkStats[static_cast<int>(T) * 256 + static_cast<int>(F)].add(usecPassedSince_fast(statisticsTimerStart)); }
+}
+
 
 void stopTimer(TimingStatsElements L, uint32_t statisticsTimerStart)
 {
