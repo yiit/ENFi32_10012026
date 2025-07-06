@@ -84,10 +84,10 @@ void run_compiletime_checks() {
   check_size<SecurityStruct,                        593u>();
   check_max_size<SecurityStruct,                    DAT_SECURITYSETTINGS_SIZE>();
   #ifdef ESP32
-  constexpr unsigned int SettingsStructSize = (340 + 84 * TASKS_MAX);
+  constexpr unsigned int SettingsStructSize = (352 + 84 * TASKS_MAX);
   #endif
   #ifdef ESP8266
-  constexpr unsigned int SettingsStructSize = (316 + 84 * TASKS_MAX);
+  constexpr unsigned int SettingsStructSize = (328 + 84 * TASKS_MAX);
   #endif
   #if FEATURE_CUSTOM_PROVISIONING
   check_size<ProvisioningStruct,                    256u>();

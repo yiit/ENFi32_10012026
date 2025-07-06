@@ -206,7 +206,7 @@ protocolIndex_t getProtocolIndex_from_CPluginID(cpluginID_t cpluginID) {
 }
 
 cpluginID_t getCPluginID_from_ProtocolIndex(protocolIndex_t index) {
-  return getCPluginID_from_ProtocolIndex_(index);
+  return getCPluginID_from_ProtocolIndex(index);
 }
 
 cpluginID_t getCPluginID_from_ControllerIndex(controllerIndex_t index) {

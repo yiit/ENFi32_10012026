@@ -118,28 +118,35 @@ public:
   };
 };
 
-class NWPlugin {
+// ********************************************************************************
+//   NWPlugin (Network) function calls
+// ********************************************************************************
+class NWPlugin
+{
 public:
 
   // As these function values are also used in the timing stats, make sure there is no overlap with the PLUGIN_xxx numbering.
 
   enum class Function {
     NWPLUGIN_ADAPTER_ADD = 192, // Called at boot for letting a network adapter adding itself to list of available controllers
-    NWPLUGIN_CONNECT_SUCCESS,     // Only used for timing stats
-    NWPLUGIN_CONNECT_FAIL,        // Only used for timing stats
+    NWPLUGIN_CONNECT_SUCCESS,   // Only used for timing stats
+    NWPLUGIN_CONNECT_FAIL,      // Only used for timing stats
     NWPLUGIN_ADAPTER_TEMPLATE,
     NWPLUGIN_GET_DEVICENAME,
     NWPLUGIN_WEBFORM_SAVE,
     NWPLUGIN_WEBFORM_LOAD,
     NWPLUGIN_GET_ADAPTER_DISPLAY_NAME,
     NWPLUGIN_INIT,
-    NWPLUGIN_TEN_PER_SECOND,   // Called 10x per second (typical for checking new data instead of waiting)
-    NWPLUGIN_FIFTY_PER_SECOND, // Called 50x per second (typical for checking new data instead of waiting)
+    NWPLUGIN_TEN_PER_SECOND,          // Called 10x per second (typical for checking new data instead of waiting)
+    NWPLUGIN_FIFTY_PER_SECOND,        // Called 50x per second (typical for checking new data instead of waiting)
     NWPLUGIN_INIT_ALL,
     NWPLUGIN_EXIT,
-    NWPLUGIN_WRITE,            // Send commands to a network adapter.
+    NWPLUGIN_WRITE,                   // Send commands to a network adapter.
+    NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG // Used for showing host information for the network adapter.
+
   };
-};
+
+}; // class NWPlugin
 
 // ********************************************************************************
 //   NPlugin (Notification) function calls

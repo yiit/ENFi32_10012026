@@ -10,11 +10,14 @@
 #include "../DataTypes/ControllerIndex.h"
 #include "../DataTypes/EthernetParameters.h"
 #include "../DataTypes/NetworkMedium.h"
+#include "../DataTypes/NWPluginID.h"
+#include "../DataTypes/NetworkIndex.h"
 #include "../DataTypes/NPluginID.h"
 #include "../DataTypes/PluginID.h"
 //#include "../DataTypes/TaskEnabledState.h"
 #include "../DataTypes/TimeSource.h"
 #include "../Globals/Plugins.h"
+#include "../Globals/NWPlugins.h"
 
 #ifdef ESP32
 #include <hal/spi_types.h>
@@ -397,6 +400,21 @@ public:
     memcpy(&VariousBits_2, &value, sizeof(VariousBits_2));
   }
 
+  bool getNetworkEnabled(networkIndex_t index) const {
+    if (validNetworkIndex(index)) bitRead(NetworkEnabled_bits, index);
+    return false;
+  }
+
+  void setNetworkEnabled(networkIndex_t index, bool enabled) {
+    if (validNetworkIndex(index)) {
+      bitWrite(NetworkEnabled_bits, index, enabled);
+    }
+  }
+
+  nwpluginID_t getNWPluginID_for_network(networkIndex_t index) const;
+
+  void setNWPluginID_for_network(networkIndex_t index, nwpluginID_t id);
+
 
   unsigned long PID = 0;
   int           Version = 0;
@@ -625,7 +643,21 @@ public:
   int8_t        console_serial_txpin = DEFAULT_CONSOLE_PORT_TXPIN;
   uint8_t       console_serial0_fallback = DEFAULT_CONSOLE_SER0_FALLBACK;
   
+
+  // ********************************************************************************
+  //   NWPlugin (Network) settings
+  // ********************************************************************************
+  // FIXME TD-er: Must change to nwpluginID_t, but then also another check must be added since changing the pluginID_t will also render settings incompatible
+  uint8_t       NetworkAdapter[NETWORK_MAX] = {0};  // The NWPluginID number
+  uint8_t       NetworkEnabled_bits{};
+  uint8_t       NetworkUnused_1{};
+  uint8_t       NetworkUnused_2{};
+  uint8_t       NetworkUnused_3{};
+
+
+
   // Try to extend settings to make the checksum 4-uint8_t aligned.
+
 };
 
 /*

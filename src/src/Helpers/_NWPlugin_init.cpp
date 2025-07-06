@@ -11,8 +11,8 @@
 #include "../Helpers/Misc.h"
 
 // ********************************************************************************
-// Initialize all Controller NWPlugins that where defined earlier
-// and initialize the function call pointer into the CNWPlugin array
+// Initialize all Network NWPlugins that where defined earlier
+// and initialize the function call pointer into the NWPlugin array
 // ********************************************************************************
 
 constexpr nwpluginID_t NetworkAdapterIndex_to_NWPlugin_id[] PROGMEM =
@@ -2091,28 +2091,6 @@ NetworkAdapterStruct& getNetworkAdapterStruct(networkAdapterIndex_t networkAdapt
 }
 
 
-bool validNetworkAdapterIndex(networkAdapterIndex_t index)
-{
-  return validNetworkAdapterIndex_init(index);
-}
-
-/*
-   bool validControllerIndex(controllerIndex_t index)
-   {
-   return index < CONTROLLER_MAX;
-   }
- */
-bool validNWPluginID(nwpluginID_t nwpluginID)
-{
-  return getNetworkAdapterIndex_from_NWPluginID_(nwpluginID) != INVALID_PROTOCOL_INDEX;
-}
-
-bool supportedNWPluginID(nwpluginID_t nwpluginID)
-{
-  return validNetworkAdapterIndex(getNetworkAdapterIndex_from_NWPluginID_(nwpluginID));
-}
-
-
 
 networkAdapterIndex_t getNetworkAdapterIndex_from_NWPluginID_(nwpluginID_t nwpluginID)
 {
@@ -2140,7 +2118,7 @@ bool validNetworkAdapterIndex_init(networkAdapterIndex_t networkAdapterIndex)
 
 nwpluginID_t getHighestIncludedNWPluginID()
 { 
-  return Highest_NWPlugin_id;
+  return nwpluginID_t(Highest_NWPlugin_id);
 }
 
 
@@ -2170,9 +2148,9 @@ void NWPluginSetup()
 
   for (networkAdapterIndex_t networkAdapterIndex = 0; networkAdapterIndex < NetworkAdapterIndex_to_NWPlugin_id_size; ++networkAdapterIndex)
   {
-    const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkAdapterIndex_(networkAdapterIndex);
+    const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkAdapterIndex(networkAdapterIndex);
 
-    if (INVALID_NW_PLUGIN_ID != nwpluginID) {
+    if (nwpluginID) {
       NWPlugin_id_to_NetworkAdapterIndex[nwpluginID] = networkAdapterIndex;
       struct EventStruct TempEvent;
       TempEvent.idx = networkAdapterIndex;
@@ -2186,10 +2164,10 @@ void NWPluginSetup()
 void NWPluginInit()
 {
   // Set all not supported nwplugins to disabled.
-  for (controllerIndex_t controller = 0; controller < CONTROLLER_MAX; ++controller) {
-//    if (!supportedNWPluginID(Settings.NetworkAdapter[controller])) {
-//      Settings.ControllerEnabled[controller] = false;
-//    }
+  for (networkIndex_t network = 0; network < NETWORK_MAX; ++network) {
+    if (!supportedNWPluginID(Settings.getNWPluginID_for_network(network))) {
+      Settings.setNetworkEnabled(network, false);
+    }
   }
   NWPluginCall(NWPlugin::Function::NWPLUGIN_INIT_ALL, 0);
 }
