@@ -7,7 +7,7 @@
 
 # include "../DataTypes/DeviceIndex.h"
 # include "../DataTypes/ESPEasy_plugin_functions.h"
-# include "../DataTypes/NetworkAdapterIndex.h"
+# include "../DataTypes/NetworkDriverIndex.h"
 # include "../DataTypes/ProtocolIndex.h"
 # include "../Globals/Settings.h"
 # include "../Helpers/ESPEasy_time_calc.h"
@@ -175,7 +175,7 @@ void                       stopTimerTask(deviceIndex_t T,
 void                       stopTimerController(protocolIndex_t   T,
                                                CPlugin::Function F,
                                                uint32_t          statisticsTimerStart);
-void                       stopTimerNetwork(networkAdapterIndex_t T,
+void                       stopTimerNetwork(networkDriverIndex_t T,
                                                NWPlugin::Function F,
                                                uint32_t          statisticsTimerStart);
 void                       stopTimer(TimingStatsElements L,

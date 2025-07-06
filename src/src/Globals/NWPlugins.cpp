@@ -34,7 +34,7 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
   switch (Function)
   {
     case NWPlugin::Function::NWPLUGIN_ADAPTER_ADD:
-      // only called from NWPluginSetup() directly using networkAdapterIndex
+      // only called from NWPluginSetup() directly using networkDriverIndex
       break;
 
     // calls to all active networks
@@ -58,7 +58,7 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
   return false;
 }
 
-bool validNetworkAdapterIndex(networkAdapterIndex_t index) { return validNetworkAdapterIndex_init(index); }
+bool validNetworkDriverIndex(networkDriverIndex_t index) { return validNetworkDriverIndex_init(index); }
 
 /*
    bool validNetworkIndex(networkIndex_t index)
@@ -67,48 +67,48 @@ bool validNetworkAdapterIndex(networkAdapterIndex_t index) { return validNetwork
    }
  */
 bool validNWPluginID(nwpluginID_t nwpluginID) { 
-  return getNetworkAdapterIndex_from_NWPluginID_(nwpluginID) !=
-         INVALID_NETWORKADAPTER_INDEX;
+  return getNetworkDriverIndex_from_NWPluginID_(nwpluginID) !=
+         INVALID_NETWORKDRIVER_INDEX;
 }
 
 bool supportedNWPluginID(nwpluginID_t nwpluginID) { 
-  return validNetworkAdapterIndex(
-    getNetworkAdapterIndex_from_NWPluginID_(nwpluginID));
+  return validNetworkDriverIndex(
+    getNetworkDriverIndex_from_NWPluginID_(nwpluginID));
 }
 
-networkAdapterIndex_t getNetworkAdapterIndex_from_NetworkIndex(networkIndex_t index) {
+networkDriverIndex_t getNetworkDriverIndex_from_NetworkIndex(networkIndex_t index) {
   if (validNetworkIndex(index)) {
-    return getNetworkAdapterIndex_from_NWPluginID_(Settings.getNWPluginID_for_network(index));
+    return getNetworkDriverIndex_from_NWPluginID_(Settings.getNWPluginID_for_network(index));
   }
-  return INVALID_NETWORKADAPTER_INDEX;
+  return INVALID_NETWORKDRIVER_INDEX;
 }
 
-networkAdapterIndex_t getNetworkAdapterIndex_from_NWPluginID(nwpluginID_t nwpluginID) {
-  return getNetworkAdapterIndex_from_NWPluginID_(nwpluginID);
+networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID(nwpluginID_t nwpluginID) {
+  return getNetworkDriverIndex_from_NWPluginID_(nwpluginID);
 }
 
-nwpluginID_t getNWPluginID_from_NetworkAdapterIndex(networkAdapterIndex_t index) { return getNWPluginID_from_NetworkAdapterIndex(index); }
+nwpluginID_t getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t index) { return getNWPluginID_from_NetworkDriverIndex(index); }
 
 nwpluginID_t getNWPluginID_from_NetworkIndex(networkIndex_t index) {
-  const networkAdapterIndex_t networkAdapterIndex = getNetworkAdapterIndex_from_NetworkIndex(index);
+  const networkDriverIndex_t networkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(index);
 
-  return getNWPluginID_from_NetworkAdapterIndex(networkAdapterIndex);
+  return getNWPluginID_from_NetworkDriverIndex(networkDriverIndex);
 }
 
-String getNWPluginNameFromNetworkAdapterIndex(networkAdapterIndex_t NetworkAdapterIndex) {
+String getNWPluginNameFromNetworkDriverIndex(networkDriverIndex_t NetworkDriverIndex) {
   String networkName;
 
-  if (validNetworkAdapterIndex(NetworkAdapterIndex)) {
-    NWPluginCall(NetworkAdapterIndex, NWPlugin::Function::NWPLUGIN_GET_DEVICENAME, nullptr, networkName);
+  if (validNetworkDriverIndex(NetworkDriverIndex)) {
+    NWPluginCall(NetworkDriverIndex, NWPlugin::Function::NWPLUGIN_GET_DEVICENAME, nullptr, networkName);
   }
   return networkName;
 }
 
 String getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID) {
-  networkAdapterIndex_t networkAdapterIndex = getNetworkAdapterIndex_from_NWPluginID(nwpluginID);
+  networkDriverIndex_t networkDriverIndex = getNetworkDriverIndex_from_NWPluginID(nwpluginID);
 
-  if (!validNetworkAdapterIndex(networkAdapterIndex)) {
+  if (!validNetworkDriverIndex(networkDriverIndex)) {
     return strformat(F("NWPlugin %d not included in build"), nwpluginID);
   }
-  return getNWPluginNameFromNetworkAdapterIndex(networkAdapterIndex);
+  return getNWPluginNameFromNetworkDriverIndex(networkDriverIndex);
 }

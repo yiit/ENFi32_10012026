@@ -1254,7 +1254,7 @@ template<unsigned int N_TASKS>
 nwpluginID_t SettingsStruct_tmpl<N_TASKS>::getNWPluginID_for_network(networkIndex_t index) const
 {
   if (validNetworkIndex(index)) {
-    const uint8_t nwa = NetworkAdapter[index];
+    const uint8_t nwa = NWPluginID[index];
     if (nwa > 0) {
       return nwpluginID_t::toPluginID(nwa);
     }
@@ -1266,7 +1266,7 @@ template<unsigned int N_TASKS>
 void SettingsStruct_tmpl<N_TASKS>::setNWPluginID_for_network(networkIndex_t index, nwpluginID_t id)
 {
   if (validNetworkIndex(index)) {
-    NetworkAdapter[index] = id.value;
+    NWPluginID[index] = id.value;
   }
 }
 

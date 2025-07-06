@@ -15,7 +15,7 @@
 // and initialize the function call pointer into the NWPlugin array
 // ********************************************************************************
 
-constexpr nwpluginID_t NetworkAdapterIndex_to_NWPlugin_id[] PROGMEM =
+constexpr nwpluginID_t NetworkDriverIndex_to_NWPlugin_id[] PROGMEM =
 {
 #ifdef USES_NW001
   1,
@@ -2067,53 +2067,53 @@ const NWPlugin_ptr_t PROGMEM NWPlugin_ptr[] =
 };
 
 
-constexpr size_t NetworkAdapterIndex_to_NWPlugin_id_size = sizeof(NetworkAdapterIndex_to_NWPlugin_id);
+constexpr size_t NetworkDriverIndex_to_NWPlugin_id_size = sizeof(NetworkDriverIndex_to_NWPlugin_id);
 
 // Highest NWPlugin ID included in the build
-constexpr size_t Highest_NWPlugin_id = NetworkAdapterIndex_to_NWPlugin_id_size == 0 ? 0 : NetworkAdapterIndex_to_NWPlugin_id[NetworkAdapterIndex_to_NWPlugin_id_size - 1];
+constexpr size_t Highest_NWPlugin_id = NetworkDriverIndex_to_NWPlugin_id_size == 0 ? 0 : NetworkDriverIndex_to_NWPlugin_id[NetworkDriverIndex_to_NWPlugin_id_size - 1];
 
-constexpr size_t NWPlugin_id_to_NetworkAdapterIndex_size = Highest_NWPlugin_id + 1;
+constexpr size_t NWPlugin_id_to_NetworkDriverIndex_size = Highest_NWPlugin_id + 1;
 
 // Array filled during init.
 // Valid index: 1 ... Highest_NWPlugin_id
-// Returns index to the NetworkAdapterIndex_to_NWPlugin_id array
-networkAdapterIndex_t NWPlugin_id_to_NetworkAdapterIndex[NWPlugin_id_to_NetworkAdapterIndex_size]{};
+// Returns index to the NetworkDriverIndex_to_NWPlugin_id array
+networkDriverIndex_t NWPlugin_id_to_NetworkDriverIndex[NWPlugin_id_to_NetworkDriverIndex_size]{};
 
 
-NetworkAdapterStruct NetworkAdapterArray[NetworkAdapterIndex_to_NWPlugin_id_size + 1]{};
+NetworkDriverStruct NetworkDriverArray[NetworkDriverIndex_to_NWPlugin_id_size + 1]{};
 
-NetworkAdapterStruct& getNetworkAdapterStruct(networkAdapterIndex_t networkAdapterIndex)
+NetworkDriverStruct& getNetworkDriverStruct(networkDriverIndex_t networkDriverIndex)
 {
-  if (networkAdapterIndex >= NetworkAdapterIndex_to_NWPlugin_id_size) {
-    networkAdapterIndex = NetworkAdapterIndex_to_NWPlugin_id_size;
+  if (networkDriverIndex.value >= NetworkDriverIndex_to_NWPlugin_id_size) {
+    networkDriverIndex = NetworkDriverIndex_to_NWPlugin_id_size;
   }
-  return NetworkAdapterArray[networkAdapterIndex];
+  return NetworkDriverArray[networkDriverIndex.value];
 }
 
 
 
-networkAdapterIndex_t getNetworkAdapterIndex_from_NWPluginID_(nwpluginID_t nwpluginID)
+networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID_(nwpluginID_t nwpluginID)
 {
-  if (nwpluginID < NWPlugin_id_to_NetworkAdapterIndex_size)
+  if (nwpluginID < NWPlugin_id_to_NetworkDriverIndex_size)
   {
-    return static_cast<networkAdapterIndex_t>(NWPlugin_id_to_NetworkAdapterIndex[nwpluginID]);
+    return static_cast<networkDriverIndex_t>(NWPlugin_id_to_NetworkDriverIndex[nwpluginID]);
   }
-  return INVALID_NETWORKADAPTER_INDEX;
+  return INVALID_NETWORKDRIVER_INDEX;
 }
 
-nwpluginID_t getNWPluginID_from_NetworkAdapterIndex_(networkAdapterIndex_t networkAdapterIndex)
+nwpluginID_t getNWPluginID_from_NetworkDriverIndex_(networkDriverIndex_t networkDriverIndex)
 {
-  if (networkAdapterIndex < NetworkAdapterIndex_to_NWPlugin_id_size)
+  if (networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size)
   {
-    //    return static_cast<nwpluginID_t>(NetworkAdapterIndex_to_NWPlugin_id[networkAdapterIndex]);
-    return static_cast<nwpluginID_t>(pgm_read_byte(NetworkAdapterIndex_to_NWPlugin_id + networkAdapterIndex));
+    //    return static_cast<nwpluginID_t>(NetworkDriverIndex_to_NWPlugin_id[networkDriverIndex]);
+    return static_cast<nwpluginID_t>(pgm_read_byte(NetworkDriverIndex_to_NWPlugin_id + networkDriverIndex.value));
   }
   return INVALID_NW_PLUGIN_ID;
 }
 
-bool validNetworkAdapterIndex_init(networkAdapterIndex_t networkAdapterIndex)
+bool validNetworkDriverIndex_init(networkDriverIndex_t networkDriverIndex)
 {
-  return networkAdapterIndex < NetworkAdapterIndex_to_NWPlugin_id_size;
+  return networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size;
 }
 
 nwpluginID_t getHighestIncludedNWPluginID()
@@ -2122,14 +2122,14 @@ nwpluginID_t getHighestIncludedNWPluginID()
 }
 
 
-bool NWPluginCall(networkAdapterIndex_t networkAdapterIndex, NWPlugin::Function Function, struct EventStruct *event, String& string)
+bool NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, struct EventStruct *event, String& string)
 {
-  if (networkAdapterIndex < NetworkAdapterIndex_to_NWPlugin_id_size)
+  if (networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size)
   {
     START_TIMER;
-    NWPlugin_ptr_t nwplugin_call = (NWPlugin_ptr_t)pgm_read_ptr(NWPlugin_ptr + networkAdapterIndex);
+    NWPlugin_ptr_t nwplugin_call = (NWPlugin_ptr_t)pgm_read_ptr(NWPlugin_ptr + networkDriverIndex.value);
     const bool res = nwplugin_call(Function, event, string);
-    STOP_TIMER_NETWORK(networkAdapterIndex, Function);
+    STOP_TIMER_NETWORK(networkDriverIndex, Function);
     return res;
   }
   return false;
@@ -2141,21 +2141,22 @@ void NWPluginSetup()
 
   if (setupDone) { return; }
 
-  for (size_t id = 0; id < NWPlugin_id_to_NetworkAdapterIndex_size; ++id)
+  for (size_t id = 0; id < NWPlugin_id_to_NetworkDriverIndex_size; ++id)
   {
-    NWPlugin_id_to_NetworkAdapterIndex[id] = INVALID_NETWORKADAPTER_INDEX;
+    NWPlugin_id_to_NetworkDriverIndex[id] = INVALID_NETWORKDRIVER_INDEX;
   }
 
-  for (networkAdapterIndex_t networkAdapterIndex = 0; networkAdapterIndex < NetworkAdapterIndex_to_NWPlugin_id_size; ++networkAdapterIndex)
+  networkDriverIndex_t networkDriverIndex{};
+  for (; networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size; ++networkDriverIndex)
   {
-    const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkAdapterIndex(networkAdapterIndex);
+    const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkDriverIndex(networkDriverIndex);
 
     if (nwpluginID) {
-      NWPlugin_id_to_NetworkAdapterIndex[nwpluginID] = networkAdapterIndex;
+      NWPlugin_id_to_NetworkDriverIndex[nwpluginID] = networkDriverIndex;
       struct EventStruct TempEvent;
-      TempEvent.idx = networkAdapterIndex;
+      TempEvent.idx = networkDriverIndex.value;
       String dummy;
-      NWPluginCall(networkAdapterIndex, NWPlugin::Function::NWPLUGIN_ADAPTER_ADD, &TempEvent, dummy);
+      NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_ADAPTER_ADD, &TempEvent, dummy);
     }
   }
   setupDone = true;

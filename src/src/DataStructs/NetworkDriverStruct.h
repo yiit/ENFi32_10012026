@@ -1,15 +1,15 @@
-#ifndef DATASTRUCTS_NETWORKADAPTERSTRUCT_H
-#define DATASTRUCTS_NETWORKADAPTERSTRUCT_H
+#ifndef DATASTRUCTS_NETWORKDRIVERSTRUCT_H
+#define DATASTRUCTS_NETWORKDRIVERSTRUCT_H
 
 #include "../../ESPEasy_common.h"
 #include <vector>
 
 /*********************************************************************************************\
-* NetworkAdapterStruct
+* NetworkDriverStruct
 \*********************************************************************************************/
-struct NetworkAdapterStruct
+struct NetworkDriverStruct
 {
-  NetworkAdapterStruct() = default;
+  NetworkDriverStruct() = default;
 
 
 

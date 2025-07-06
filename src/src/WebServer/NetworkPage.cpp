@@ -34,10 +34,10 @@ void handle_networks()
   boolean networkNotSet = networkindex == 0;
   --networkindex; // Index in URL is starting from 1, but starting from 0 in the array.
 
-  const int networkAdapter_webarg_value = getFormItemInt(F("networkAdapter"), -1);
+  const int networkDriver_webarg_value = getFormItemInt(F("networkDriver"), -1);
 
   // submitted data
-  if ((networkAdapter_webarg_value != -1) && !networkNotSet)
+  if ((networkDriver_webarg_value != -1) && !networkNotSet)
   {
     // TODO TD-er: Implement saving submitted settings
 
@@ -124,10 +124,10 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex)
         html_TD();
         addHtml(getNWPluginNameFromNWPluginID(Settings.getNWPluginID_for_network(x)));
         html_TD();
-        const networkAdapterIndex_t NetworkAdapterIndex = getNetworkAdapterIndex_from_NetworkIndex(x);
+        const networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(x);
         {
           String hostDescription;
-          NWPluginCall(NetworkAdapterIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG, 0, hostDescription);
+          NWPluginCall(NetworkDriverIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG, 0, hostDescription);
 
           if (!hostDescription.isEmpty()) {
             addHtml(hostDescription);
@@ -136,9 +136,9 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex)
 
         html_TD();
         /*
-        const NetworkAdapterStruct& adapter = getNetworkAdapterStruct(NetworkAdapterIndex);
+        const NetworkDriverStruct& adapter = getNetworkDriverStruct(NetworkDriverIndex);
 
-        if ((INVALID_NETWORKADAPTER_INDEX == NetworkAdapterIndex) || adapter.usesPort) {
+        if ((INVALID_NETWORKDRIVER_INDEX == NetworkDriverIndex) || adapter.usesPort) {
           addHtmlInt(13 == nwpluginID ? Settings.UDPPort : NetworkSettings->Port); // P2P/C013 exception
         }
         */

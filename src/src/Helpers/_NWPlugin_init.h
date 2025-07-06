@@ -6,20 +6,20 @@
 #include "../DataTypes/ESPEasy_plugin_functions.h"
 
 #include "../DataTypes/NWPluginID.h"
-#include "../DataTypes/NetworkAdapterIndex.h"
-#include "../DataStructs/NetworkAdapterStruct.h"
+#include "../DataTypes/NetworkDriverIndex.h"
+#include "../DataStructs/NetworkDriverStruct.h"
 
 struct EventStruct;
 
-networkAdapterIndex_t getNetworkAdapterIndex_from_NWPluginID_(nwpluginID_t pluginID);
-nwpluginID_t getNWPluginID_from_NetworkAdapterIndex_(networkAdapterIndex_t networkAdapterIndex);
-bool validNetworkAdapterIndex_init(networkAdapterIndex_t networkAdapterIndex);
+networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID_(nwpluginID_t pluginID);
+nwpluginID_t getNWPluginID_from_NetworkDriverIndex_(networkDriverIndex_t networkDriverIndex);
+bool validNetworkDriverIndex_init(networkDriverIndex_t networkDriverIndex);
 
 nwpluginID_t getHighestIncludedNWPluginID();
 
-NetworkAdapterStruct& getNetworkAdapterStruct(networkAdapterIndex_t networkAdapterIndex);
+NetworkDriverStruct& getNetworkDriverStruct(networkDriverIndex_t networkDriverIndex);
 
-bool NWPluginCall(networkAdapterIndex_t networkAdapterIndex, NWPlugin::Function Function, struct EventStruct *event, String& string);
+bool NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, struct EventStruct *event, String& string);
 
 
 void NWPluginSetup();

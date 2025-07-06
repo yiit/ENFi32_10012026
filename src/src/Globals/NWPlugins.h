@@ -7,7 +7,7 @@
 #include "../DataTypes/ESPEasy_plugin_functions.h"
 #include "../DataTypes/NWPluginID.h"
 #include "../DataTypes/NetworkIndex.h"
-#include "../DataTypes/NetworkAdapterIndex.h"
+#include "../DataTypes/NetworkDriverIndex.h"
 
 
 
@@ -18,14 +18,14 @@ bool NWPluginCall(NWPlugin::Function   Function,
 bool NWPluginCall(NWPlugin::Function   Function,
                  struct EventStruct *event,
                  String            & str);
-bool NWPluginCall(networkAdapterIndex_t     networkAdapterIndex,
+bool NWPluginCall(networkDriverIndex_t     networkDriverIndex,
                  NWPlugin::Function   Function,
                  struct EventStruct *event,
                  String            & str);
 
 
                  
-bool              validNetworkAdapterIndex(networkAdapterIndex_t index);
+bool              validNetworkDriverIndex(networkDriverIndex_t index);
 
 
 // bool              validNetworkIndex(networkIndex_t index);
@@ -36,14 +36,14 @@ bool              validNWPluginID(nwpluginID_t nwpluginID);
 
 // Check if nwplugin is included in build.
 // N.B. Invalid nwplugin is also not considered supported.
-// This is essentially (validNWPluginID && validNetworkAdapterIndex)
+// This is essentially (validNWPluginID && validNetworkDriverIndex)
 bool            supportedNWPluginID(nwpluginID_t nwpluginID);
-networkAdapterIndex_t getNetworkAdapterIndex_from_NetworkIndex(networkIndex_t index);
-networkAdapterIndex_t getNetworkAdapterIndex_from_NWPluginID(nwpluginID_t nwpluginID);
-nwpluginID_t     getNWPluginID_from_NetworkAdapterIndex(networkAdapterIndex_t index);
+networkDriverIndex_t getNetworkDriverIndex_from_NetworkIndex(networkIndex_t index);
+networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID(nwpluginID_t nwpluginID);
+nwpluginID_t     getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t index);
 nwpluginID_t     getNWPluginID_from_NetworkIndex(networkIndex_t index);
 
-String          getNWPluginNameFromNetworkAdapterIndex(networkAdapterIndex_t NetworkAdapterIndex);
+String          getNWPluginNameFromNetworkDriverIndex(networkDriverIndex_t NetworkDriverIndex);
 String          getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID);
 
 

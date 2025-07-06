@@ -648,7 +648,7 @@ public:
   //   NWPlugin (Network) settings
   // ********************************************************************************
   // FIXME TD-er: Must change to nwpluginID_t, but then also another check must be added since changing the pluginID_t will also render settings incompatible
-  uint8_t       NetworkAdapter[NETWORK_MAX] = {0};  // The NWPluginID number
+  uint8_t       NWPluginID[NETWORK_MAX] = {0};
   uint8_t       NetworkEnabled_bits{};
   uint8_t       NetworkUnused_1{};
   uint8_t       NetworkUnused_2{};

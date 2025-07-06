@@ -95,6 +95,9 @@
 #ifndef CPLUGIN_MAX
   #define CPLUGIN_MAX                        255
 #endif
+#ifndef NETWORKDRIVER_INDEX_MAX
+  #define NETWORKDRIVER_INDEX_MAX            255
+#endif
 #ifndef NWPLUGIN_MAX
   #define NWPLUGIN_MAX                       255
 #endif
