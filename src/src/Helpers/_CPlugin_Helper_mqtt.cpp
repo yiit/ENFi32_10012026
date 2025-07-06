@@ -453,14 +453,11 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
         const int    valueCount = getValueCountForTask(x);
         std::vector<DiscoveryItem> discoveryItems;
 
-        #  ifndef BUILD_NO_DEBUG
-
-        // FIXME change this log to DEBUG
         if (loglevelActiveFor(LOG_LEVEL_INFO)) {
           addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Start AutoDiscovery for task %d, %s max. %d value%c"),
                                            x + 1, taskName.c_str(), valueCount, 1 == valueCount ? 's' : ' '));
         }
-        #  endif // ifndef BUILD_NO_DEBUG
+
         String pluginDeviceClass;
 
         // Translate Device[].VType to usable VType per value, and fetch optional deviceClass, for MQTT AutoDiscovery
@@ -603,12 +600,13 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
 
                   for (v = fromV; v < maxV; ++v) {
                     const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                    const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("°C"));
+                    const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s],
+                                                                             getValueType2DefaultHAUoM(Sensor_VType::SENSOR_TYPE_TEMP_ONLY));
                     success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
                                                                      ControllerIndex,
                                                                      ControllerSettings,
                                                                      F("sensor"),
-                                                                     F("temperature"),
+                                                                     getValueType2HADeviceClass(Sensor_VType::SENSOR_TYPE_TEMP_ONLY),
                                                                      uom,
                                                                      &TempEvent,
                                                                      deviceElement,
@@ -630,12 +628,13 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
 
                   for (v = fromV; v < maxV; ++v) {
                     const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                    const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("%"));
+                    const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s],
+                                                                             getValueType2DefaultHAUoM(Sensor_VType::SENSOR_TYPE_HUM_ONLY));
                     success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
                                                                      ControllerIndex,
                                                                      ControllerSettings,
                                                                      F("sensor"),
-                                                                     F("humidity"),
+                                                                     getValueType2HADeviceClass(Sensor_VType::SENSOR_TYPE_HUM_ONLY),
                                                                      uom,
                                                                      &TempEvent,
                                                                      deviceElement,
@@ -653,12 +652,13 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                     v++; // Skip 2nd value = 'EMPTY'
                   }
                   const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("hPa"));
+                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s],
+                                                                           getValueType2DefaultHAUoM(Sensor_VType::SENSOR_TYPE_BARO_ONLY));
                   success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
                                                                    ControllerIndex,
                                                                    ControllerSettings,
                                                                    F("sensor"),
-                                                                   F("pressure"),
+                                                                   getValueType2HADeviceClass(Sensor_VType::SENSOR_TYPE_BARO_ONLY),
                                                                    uom,
                                                                    &TempEvent,
                                                                    deviceElement,
@@ -669,332 +669,42 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                 break;
               }
               case Sensor_VType::SENSOR_TYPE_DISTANCE_ONLY:
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("cm"));
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("distance"),
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-
               case Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY:
               case Sensor_VType::SENSOR_TYPE_DUSTPM1_0_ONLY:
               case Sensor_VType::SENSOR_TYPE_DUSTPM10_ONLY:
-              {
-                const __FlashStringHelper*dev = (Sensor_VType::SENSOR_TYPE_DUSTPM2_5_ONLY == discoveryItems[s].VType ? F("pm25") :
-                                                 Sensor_VType::SENSOR_TYPE_DUSTPM1_0_ONLY == discoveryItems[s].VType ? F("pm1") :
-                                                 F("pm10"));
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("µg/m³"));
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
               case Sensor_VType::SENSOR_TYPE_CO2_ONLY:
               case Sensor_VType::SENSOR_TYPE_TVOC_ONLY:
               case Sensor_VType::SENSOR_TYPE_AQI_ONLY:
               case Sensor_VType::SENSOR_TYPE_NOX_ONLY:
-              {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_CO2_ONLY == discoveryItems[s].VType ? F("carbon_dioxide") :
-                                                Sensor_VType::SENSOR_TYPE_AQI_ONLY == discoveryItems[s].VType ? F("aqi") :
-                                                Sensor_VType::SENSOR_TYPE_NOX_ONLY == discoveryItems[s].VType ? F("nitrogen_dioxide") :
-                                                   F("volatile_organic_compounds");
-                const __FlashStringHelper*uomDef = Sensor_VType::SENSOR_TYPE_CO2_ONLY == discoveryItems[s].VType ? F("ppm") :
-                                                   Sensor_VType::SENSOR_TYPE_AQI_ONLY == discoveryItems[s].VType ? F("") :
-                                                   Sensor_VType::SENSOR_TYPE_NOX_ONLY == discoveryItems[s].VType ? F("µg/m³") :
-                                                   F("ppd");
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
               case Sensor_VType::SENSOR_TYPE_WEIGHT_ONLY:
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("kg"));
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("mdi:scale"), // Icon
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, true, elementIds);
-                }
-                break;
               case Sensor_VType::SENSOR_TYPE_MOISTURE_ONLY:
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("%"));
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("mdi:cup-water"), // Icon
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, true, elementIds);
-                }
-                break;
               case Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY:
               case Sensor_VType::SENSOR_TYPE_CURRENT_ONLY:
-              {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY == discoveryItems[s].VType ?
-                                                   F("voltage") : F("current");
-                const __FlashStringHelper*uomDef = Sensor_VType::SENSOR_TYPE_VOLTAGE_ONLY == discoveryItems[s].VType ?
-                                                   F("V") : F("A");
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
               case Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY:
               case Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY:
               case Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY:
               case Sensor_VType::SENSOR_TYPE_APPRNT_POWER_USG_ONLY:
-              {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY == discoveryItems[s].VType ?
-                                                   F("power_factor") : F("power");
-                const __FlashStringHelper*uomDef = Sensor_VType::SENSOR_TYPE_POWER_FACT_ONLY == discoveryItems[s].VType ? F("Cos φ") :
-                                                   Sensor_VType::SENSOR_TYPE_POWER_USG_ONLY == discoveryItems[s].VType ? F("kWh") :
-                                                   Sensor_VType::SENSOR_TYPE_REACTIVE_POWER_ONLY == discoveryItems[s].VType ? F("var") :
-                                                   F("VA");
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
               case Sensor_VType::SENSOR_TYPE_LUX_ONLY:
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("lx"));
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("illuminance"),
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-
               case Sensor_VType::SENSOR_TYPE_COLOR_RED_ONLY:
               case Sensor_VType::SENSOR_TYPE_COLOR_GREEN_ONLY:
               case Sensor_VType::SENSOR_TYPE_COLOR_BLUE_ONLY:
-              {
-                const __FlashStringHelper*uomDef = Sensor_VType::SENSOR_TYPE_COLOR_RED_ONLY == discoveryItems[s].VType ? F("R") :
-                                                   Sensor_VType::SENSOR_TYPE_COLOR_GREEN_ONLY == discoveryItems[s].VType ? F("G") :
-                                                   F("B");
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("mdi:palette"),
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, true, elementIds);
-                }
-                break;
-              }
               case Sensor_VType::SENSOR_TYPE_COLOR_TEMP_ONLY:
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], F("K"));
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("mdi:temperature-kelvin"),
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, true, elementIds);
-                }
-                break;
-
               case Sensor_VType::SENSOR_TYPE_UV_ONLY:
               case Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY:
               case Sensor_VType::SENSOR_TYPE_IR_ONLY:
-              {
-                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_UV_INDEX_ONLY == discoveryItems[s].VType ? F("UV index") :
-                                                    F("W/m²"));
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   F("irradiance"),
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
-
               case Sensor_VType::SENSOR_TYPE_WIND:
               case Sensor_VType::SENSOR_TYPE_DIRECTION_ONLY:
               case Sensor_VType::SENSOR_TYPE_WIND_SPEED:
-              {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_WIND_SPEED == discoveryItems[s].VType ? F("wind_speed") :
-                                                F("wind_direction");
-                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_WIND_SPEED == discoveryItems[s].VType ? F("m/s") :
-                                                    F("°"));
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
-
               case Sensor_VType::SENSOR_TYPE_DURATION:
               case Sensor_VType::SENSOR_TYPE_DATE:
               case Sensor_VType::SENSOR_TYPE_TIMESTAMP:
-              {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_DURATION == discoveryItems[s].VType ? F("duration") :
-                                                Sensor_VType::SENSOR_TYPE_DATE == discoveryItems[s].VType ? F("date") :
-                                                F("timestamp");
-                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_DURATION == discoveryItems[s].VType ? F("min") :
-                                                    F(""));
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
-
               case Sensor_VType::SENSOR_TYPE_DATA_RATE:
               case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
-              {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_DATA_RATE == discoveryItems[s].VType ? F("data_rate") :
-                                                F("data_size");
-                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_DATA_RATE == discoveryItems[s].VType ? F("bit/s") :
-                                                    F("bit"));
-
-                for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
-                  const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  const String uom       = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s], uomDef);
-                  success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
-                                                                   ControllerIndex,
-                                                                   ControllerSettings,
-                                                                   F("sensor"),
-                                                                   dev,
-                                                                   uom,
-                                                                   &TempEvent,
-                                                                   deviceElement,
-                                                                   success,
-                                                                   false, false, elementIds);
-                }
-                break;
-              }
-
               case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
               case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
               {
-                const __FlashStringHelper*dev = Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE == discoveryItems[s].VType ? F("sound_pressure") :
-                                                F("signal_strength");
-                const __FlashStringHelper*uomDef = (Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE == discoveryItems[s].VType ? F("dB") :
-                                                    F("dBm"));
+                const String dev    = getValueType2HADeviceClass(discoveryItems[s].VType);
+                const String uomDef = getValueType2DefaultHAUoM(discoveryItems[s].VType);
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
                   const String valuename = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
@@ -1100,7 +810,7 @@ bool MQTT_DiscoveryGetDeviceVType(taskIndex_t                 TaskIndex,
 
   struct EventStruct TempEvent(TaskIndex);
 
-  deviceClass = EMPTY_STRING;
+  deviceClass.clear();
 
   TempEvent.Par5 = valueCount; // Pass in the provided value count, so we don't have to determine that again
 

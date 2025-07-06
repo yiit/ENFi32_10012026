@@ -115,6 +115,10 @@ bool isIntegerOutputDataType(Sensor_VType sensorType);
 
 bool is32bitOutputDataType(Sensor_VType sensorType);
 
+# if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
+String getValueType2HADeviceClass(Sensor_VType sensorType);
+String getValueType2DefaultHAUoM(Sensor_VType sensorType);
+# endif // if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
 
 
 

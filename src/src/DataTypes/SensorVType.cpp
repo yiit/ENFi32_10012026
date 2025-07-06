@@ -1,4 +1,5 @@
 #include "../DataTypes/SensorVType.h"
+#include "../Helpers/StringConverter.h"
 
 
 /*********************************************************************************************\
@@ -312,3 +313,73 @@ bool is32bitOutputDataType(Sensor_VType sensorType)
 #endif // if FEATURE_EXTENDED_TASK_VALUE_TYPES
   return true;
 }
+
+# if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
+const char mqtt_valueType_ha_deviceclass_names[] PROGMEM = // !! Offset, starting from Sensor_VType::SENSOR_TYPE_ANALOG_ONLY !!
+  "|temperature|humidity|illuminance|distance|wind_direction|" // ANALOG_ONLY .. DIRECTION_ONLY
+  "pm25|pm1|pm10|mdi:cup-water|carbon_dioxide||" // DUSTPM2_5_ONLY .. GPS_ONLY
+  "irradiance|irradiance|irradiance|mdi:scale|" // UV_ONLY .. WEIGHT_ONLY
+  "voltage|current|power|power_factor|power|" // VOLTAGE_ONLY .. APPRNT_POWER_USG_ONLY
+  "volatile_organic_compounds|pressure|mdi:palette|mdi:palette|mdi:palette|" // TVOC_ONLY .. COLOR_BLUE_ONLY
+  "mdi:temperature-kelvin|power|aqi|nitrogen_dioxide|" // COLOR_TEMP_ONLY .. NOX_ONLY
+  "|wind_speed|duration|date|" // SWITCH_INVERTED .. DATE
+  "timestamp|data_rate|data_size|sound_pressure|signal_strength|" // TIMESTAMP .. SIGNAL_STRENGTH
+  ;
+
+/**
+ * getValueType2HADeviceClass: Convert the ValueType to a HA Device Class
+ */
+String getValueType2HADeviceClass(Sensor_VType sensorType) {
+  char tmp[27]{};                                                   // length: volatile_organic_compounds + \0
+  int devClassIndex = static_cast<int>(sensorType);
+  if (sensorType >= Sensor_VType::SENSOR_TYPE_ANALOG_ONLY) {
+    devClassIndex -= static_cast<int>(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY); // Subtract offset
+  // } else if (sensorType == Sensor_VType::SENSOR_TYPE_SWITCH) {
+  //   return F("");
+  } else if (sensorType == Sensor_VType::SENSOR_TYPE_WIND) {
+    return F("wind_speed");
+  // } else if (sensorType == Sensor_VType::SENSOR_TYPE_DIMMER) {
+  //   return EMPTY_STRING;
+  } else {
+    return EMPTY_STRING;
+  }
+
+  String result(GetTextIndexed(tmp, sizeof(tmp), devClassIndex, mqtt_valueType_ha_deviceclass_names));
+
+  return result;
+}
+
+const char mqtt_valueType_default_ha_uom_names[] PROGMEM = // !! Offset, starting from Sensor_VType::SENSOR_TYPE_ANALOG_ONLY !!
+  "|°C|%|lx|cm|°|" // ANALOG_ONLY .. DIRECTION_ONLY
+  "µg/m³|µg/m³|µg/m³|%|ppm||" // DUSTPM2_5_ONLY .. GPS_ONLY
+  "W/m²|UV Index|W/m²|kg|" // UV_ONLY .. WEIGHT_ONLY
+  "V|A|kWh|Cos φ|VA|" // VOLTAGE_ONLY .. APPRNT_POWER_USG_ONLY
+  "ppd|hPa|R|G|B|" // TVOC_ONLY .. COLOR_BLUE_ONLY
+  "K|var||µg/m³|" // COLOR_TEMP_ONLY .. NOX_ONLY
+  "|m/s|min||" // SWITCH_INVERTED .. DATE
+  "|bit/s|bit|dB|dBm|" // TIMESTAMP .. SIGNAL_STRENGTH
+  ;
+
+/**
+ * getValueType2DefaultHAUoM: Convert the Value Type to a default UoM for HA AutoDiscovery
+ */
+String getValueType2DefaultHAUoM(Sensor_VType sensorType) {
+  char tmp[9]{};                                                   // length: UV Index + \0
+  int devClassIndex = static_cast<int>(sensorType);
+  if (sensorType >= Sensor_VType::SENSOR_TYPE_ANALOG_ONLY) {
+    devClassIndex -= static_cast<int>(Sensor_VType::SENSOR_TYPE_ANALOG_ONLY); // Subtract offset
+  // } else if (sensorType == Sensor_VType::SENSOR_TYPE_SWITCH) {
+  //   return EMPTY_STRING;
+  } else if (sensorType == Sensor_VType::SENSOR_TYPE_WIND) {
+    return F("m/s");
+  // } else if (sensorType == Sensor_VType::SENSOR_TYPE_DIMMER) {
+  //   return F("");
+  } else {
+    return EMPTY_STRING;
+  }
+
+  String result(GetTextIndexed(tmp, sizeof(tmp), devClassIndex, mqtt_valueType_default_ha_uom_names));
+
+  return result;
+}
+# endif // if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
