@@ -3815,4 +3815,20 @@ To create/register a plugin, you have to :
   #endif
 
 
+#if FEATURE_WIFI
+  #ifndef USES_NW001
+    #define USES_NW001
+  #endif
+  #ifndef USES_NW002
+    #define USES_NW002
+  #endif
+#else
+  #ifdef USES_NW001
+    #undef USES_NW001
+  #endif
+  #ifdef USES_NW002
+    #undef USES_NW002
+  #endif
+#endif
+
 #endif // CUSTOMBUILD_DEFINE_PLUGIN_SETS_H

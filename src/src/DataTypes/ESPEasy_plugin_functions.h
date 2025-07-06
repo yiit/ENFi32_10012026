@@ -128,10 +128,10 @@ public:
   // As these function values are also used in the timing stats, make sure there is no overlap with the PLUGIN_xxx numbering.
 
   enum class Function {
-    NWPLUGIN_ADAPTER_ADD = 192, // Called at boot for letting a network adapter adding itself to list of available controllers
+    NWPLUGIN_DRIVER_ADD = 192,  // Called at boot for letting a network adapter adding itself to list of available controllers
     NWPLUGIN_CONNECT_SUCCESS,   // Only used for timing stats
     NWPLUGIN_CONNECT_FAIL,      // Only used for timing stats
-    NWPLUGIN_ADAPTER_TEMPLATE,
+    NWPLUGIN_DRIVER_TEMPLATE,
     NWPLUGIN_GET_DEVICENAME,
     NWPLUGIN_WEBFORM_SAVE,
     NWPLUGIN_WEBFORM_LOAD,

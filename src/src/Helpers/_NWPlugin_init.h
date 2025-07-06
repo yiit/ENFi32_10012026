@@ -35,7 +35,6 @@ void NWPluginInit();
 // Uncrustify must not be used on macros, but we're now done, so turn Uncrustify on again.
 // *INDENT-ON*
 
-
 #ifdef USES_NW001
   ADDNWPLUGIN_H(001)
 #endif

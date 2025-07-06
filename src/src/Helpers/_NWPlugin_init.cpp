@@ -15,7 +15,7 @@
 // and initialize the function call pointer into the NWPlugin array
 // ********************************************************************************
 
-constexpr nwpluginID_t NetworkDriverIndex_to_NWPlugin_id[] PROGMEM =
+constexpr /*nwpluginID_t*/ uint8_t NetworkDriverIndex_to_NWPlugin_id[] PROGMEM =
 {
 #ifdef USES_NW001
   1,
@@ -2156,7 +2156,7 @@ void NWPluginSetup()
       struct EventStruct TempEvent;
       TempEvent.idx = networkDriverIndex.value;
       String dummy;
-      NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_ADAPTER_ADD, &TempEvent, dummy);
+      NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_DRIVER_ADD, &TempEvent, dummy);
     }
   }
   setupDone = true;

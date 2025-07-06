@@ -33,7 +33,7 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
 
   switch (Function)
   {
-    case NWPlugin::Function::NWPLUGIN_ADAPTER_ADD:
+    case NWPlugin::Function::NWPLUGIN_DRIVER_ADD:
       // only called from NWPluginSetup() directly using networkDriverIndex
       break;
 
@@ -87,12 +87,14 @@ networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID(nwpluginID_t nwplugin
   return getNetworkDriverIndex_from_NWPluginID_(nwpluginID);
 }
 
-nwpluginID_t getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t index) { return getNWPluginID_from_NetworkDriverIndex(index); }
+nwpluginID_t getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t index) { 
+  return getNWPluginID_from_NetworkDriverIndex_(index); 
+}
 
 nwpluginID_t getNWPluginID_from_NetworkIndex(networkIndex_t index) {
   const networkDriverIndex_t networkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(index);
 
-  return getNWPluginID_from_NetworkDriverIndex(networkDriverIndex);
+  return getNWPluginID_from_NetworkDriverIndex_(networkDriverIndex);
 }
 
 String getNWPluginNameFromNetworkDriverIndex(networkDriverIndex_t NetworkDriverIndex) {
