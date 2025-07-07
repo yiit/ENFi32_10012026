@@ -23,6 +23,8 @@
     #include <esp32c5/rom/rtc.h>
   #elif defined(ESP32C6)
     #include <esp32c6/rom/rtc.h>
+  #elif defined(ESP32P4)
+    #include <esp32p4/rom/rtc.h>
   # elif defined(ESP32_CLASSIC)
     #include <esp32/rom/rtc.h>
   # else
@@ -229,6 +231,30 @@ const __FlashStringHelper * getResetReasonString_f(uint8_t icore, bool& isDEEPSL
     case USB_UART_CHIP_RESET    : return F("usb uart reset digital core (hp system)");
     case USB_JTAG_CHIP_RESET    : return F("usb jtag reset digital core (hp system)");
     case JTAG_RESET             : return F("jtag reset CPU");
+  }
+
+  #elif defined(ESP32P4)
+
+  // See tools\sdk\esp32\include\esp_rom\include\esp32p4\rom\rtc.h
+  switch (rtc_get_reset_reason(icore)) {
+    case NO_MEAN                : break;
+    case POWERON_RESET          : return F("Vbat power on reset");
+    case SW_SYS_RESET           : return F("Software reset digital core");
+    case PMU_SYS_PWR_DOWN_RESET : return F("PMU HP system power down reset");
+    case HP_SYS_HP_WDT_RESET    : return F("HP system reset from HP watchdog");
+    case HP_SYS_LP_WDT_RESET    : return F("HP system reset from LP watchdog");
+    case HP_CORE_HP_WDT_RESET   : return F("HP core reset from HP watchdog");
+    case SW_CPU_RESET           : return F("software reset cpu");
+    case HP_CORE_LP_WDT_RESET   : return F("HP core reset from LP watchdog");
+    case BROWN_OUT_RESET        : return F("Reset when the vdd voltage is not stable");
+    case CHIP_LP_WDT_RESET      : return F("LP watchdog chip reset");
+    case SUPER_WDT_RESET        : return F("super watchdog reset");
+    case GLITCH_RTC_RESET       : return F("glitch reset");
+    case EFUSE_CRC_ERR_RESET    : return F("efuse ecc error reset");
+    case CHIP_USB_JTAG_RESET    : return F("HP usb jtag chip reset");
+    case CHIP_USB_UART_RESET    : return F("HP usb uart chip reset");
+    case JTAG_RESET             : return F("jtag reset");
+    case CPU_LOCKUP_RESET       : return F("cpu lockup reset");
   }
 
 

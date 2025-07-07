@@ -596,6 +596,7 @@ Datasheets
 * `DS:ESP32-C5 <https://www.espressif.com/sites/default/files/documentation/esp32-c5_datasheet_en.pdf>`_
 * `DS:ESP32-C6 <https://www.espressif.com/sites/default/files/documentation/esp32-c6_datasheet_en.pdf>`_
 * `DS:ESP32-H2 <https://cdn-shop.adafruit.com/product-files/5715/esp32-h2_datasheet_en.pdf>`_
+* `DS:ESP32-P4 <https://www.espressif.com/sites/default/files/documentation/esp32-p4_datasheet_en.pdf>`_
 
 
 Technical Reference Manuals
@@ -610,6 +611,7 @@ Technical Reference Manuals
 * `TR:ESP32-C5 <https://www.espressif.com/sites/default/files/documentation/esp32-c5_technical_reference_manual_en.pdf>`_
 * `TR:ESP32-C6 <https://www.espressif.com/sites/default/files/documentation/esp32-c6_technical_reference_manual_en.pdf>`_
 * `TR:ESP32-H2 <https://www.espressif.com/sites/default/files/documentation/esp32-h2_technical_reference_manual_en.pdf>`_
+* `TR:ESP32-P4 <https://www.espressif.com/sites/default/files/documentation/esp32-p4_technical_reference_manual_en.pdf>`_
 
 
 ESP8266/ESP8285

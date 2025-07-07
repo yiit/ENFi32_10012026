@@ -831,6 +831,22 @@ bool SettingsStruct_tmpl<N_TASKS>::getPinBootStateIndex(
     index_high = gpio_pin - maxStates + 22 - 33;
     return true;
   }
+
+#  elif defined(ESP32P4)
+
+  // GPIO 27 ... 39 should never be used.
+  // Thus:
+  //  - map <maxStates> ... <27> to the beginning of PinBootStates_ESP32
+  //  - map <40> ... <54> to the end of PinBootStates_ESP32
+  if (gpio_pin < 27) {
+    return true;
+  }
+
+  if (gpio_pin >= 40) {
+    index_high = gpio_pin - maxStates + 27 - 39;
+    return true;
+  }
+
 #  else // if defined(ESP32_CLASSIC) || defined(ESP32C3)
 
   static_assert(false, "Implement processor architecture");

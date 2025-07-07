@@ -149,7 +149,7 @@ constexpr unsigned CEIL_LOG2(unsigned x)
 # endif // ifdef ESP8266
 
 # ifdef ESP32
-  #  if defined(ESP32C2) || defined(ESP32C3) || defined(ESP32C5) || defined(ESP32C6)
+  #  if defined(ESP32C2) || defined(ESP32C3) || defined(ESP32C5) || defined(ESP32C6) || defined(ESP32C61) || defined(ESP32P4)
 
     // (ESP32) FsP: FlashstringHelper to String-Pointer
     #   define FsP

@@ -6,7 +6,9 @@
 #  include <WiFiGeneric.h>
 #  include <esp_wifi.h> // Needed to call ESP-IDF functions like esp_wifi_....
 
+#ifndef ESP32P4
 #  include <esp_phy_init.h>
+#endif
 
 #  include <WiFi.h>
 #  include <WiFiSTA.h>

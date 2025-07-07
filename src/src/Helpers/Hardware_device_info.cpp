@@ -113,6 +113,9 @@ uint32_t getFlashChipId() {
 
   if (flashChipId == 0) {
   #ifdef ESP32
+  #ifdef ESP32P4
+  // TODO TD-er: Implement
+  #else
     uint32_t tmp = g_rom_flashchip.device_id;
 
     for (int i = 0; i < 3; ++i) {
@@ -122,6 +125,7 @@ uint32_t getFlashChipId() {
     }
 
     //    esp_flash_read_id(nullptr, &flashChipId);
+    #endif
   #elif defined(ESP8266)
     flashChipId = ESP.getFlashChipId();
   #endif // ifdef ESP32
@@ -135,7 +139,12 @@ uint32_t getFlashRealSizeInBytes() {
 
   if (res == 0) {
     #if defined(ESP32)
+    #ifdef ESP32P4
+    // TODO TD-er: Implement
+    res = 1 << 24;
+    #else
     res = (1 << ((getFlashChipId() >> 16) & 0xFF));
+    #endif
     #else // if defined(ESP32)
     res = ESP.getFlashChipRealSize(); // ESP.getFlashChipSize();
     #endif // if defined(ESP32)
@@ -258,8 +267,11 @@ uint32_t getFlashChipSpeed() {
 }
 
 const __FlashStringHelper* getFlashChipMode() {
-  #ifdef ESP32
+  #ifdef ESP32P4
+  // TODO TD-er: Implement
+  #else
 
+  #ifdef ESP32
   if (getFlashChipOPI_wired()) {
     switch (ESP.getFlashChipMode()) {
       case FM_QIO:     return F("QIO (OPI Wired)");
@@ -273,7 +285,6 @@ const __FlashStringHelper* getFlashChipMode() {
       case FM_UNKNOWN: break;
     }
   }
-
   #endif // ifdef ESP32
 
   switch (ESP.getFlashChipMode()) {
@@ -287,6 +298,7 @@ const __FlashStringHelper* getFlashChipMode() {
 #endif // ifdef ESP32
     case FM_UNKNOWN: break;
   }
+#endif
   return F("Unknown");
 }
 

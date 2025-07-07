@@ -23,7 +23,10 @@
 #  include <WiFiGeneric.h>
 #  include <esp_wifi.h> // Needed to call ESP-IDF functions like esp_wifi_....
 
+#ifndef ESP32P4
 #  include <esp_phy_init.h>
+#endif
+
 
 namespace ESPEasy {
 namespace net {
@@ -125,6 +128,8 @@ bool setWifiMode(WiFiMode_t new_mode)
   }
 
   if (WiFi.getMode() != new_mode) {
+    WiFi.mode(WIFI_OFF);
+    delay(100);
     addLog(LOG_LEVEL_ERROR, F("WIFI : Cannot set mode!!!!!"));
     return false;
   }
@@ -138,7 +143,9 @@ bool setWifiMode(WiFiMode_t new_mode)
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
     delay(100);
+#ifndef ESP32P4
     esp_wifi_set_ps(WIFI_PS_NONE);
+#endif
 
     //    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     delay(1);
@@ -344,6 +351,7 @@ float GetRSSIthreshold(float& maxTXpwr) {
 
 WiFiConnectionProtocol getConnectionProtocol()
 {
+  #ifndef ESP32P4
   if (WiFi.RSSI() < 0) {
     wifi_phy_mode_t phymode;
     esp_wifi_sta_get_negotiated_phymode(&phymode);
@@ -364,6 +372,7 @@ WiFiConnectionProtocol getConnectionProtocol()
 #  endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
     }
   }
+  #endif
   return WiFiConnectionProtocol::Unknown;
 }
 
@@ -407,7 +416,13 @@ bool setProtocol(wifi_interface_t ifx, uint16_t protocol_2GHz, uint16_t protocol
 
 #  else // if CONFIG_SOC_WIFI_SUPPORT_5G
 
-bool setProtocol(wifi_interface_t ifx, uint8_t protocol_2GHz) { return esp_wifi_set_protocol(ifx, protocol_2GHz) == ESP_OK; }
+bool setProtocol(wifi_interface_t ifx, uint8_t protocol_2GHz) { 
+  #ifdef ESP32P4
+  return false;
+  #else
+  return esp_wifi_set_protocol(ifx, protocol_2GHz) == ESP_OK; 
+  #endif
+}
 
 #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 
@@ -428,7 +443,11 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode)
   // However since HT40 is using nearly all channels on 2.4 GHz WiFi,
   // Thus you are more likely to experience disturbances.
   // The response speed and stability is better at HT20 for ESP units.
+  #ifdef ESP32P4
+  return;
+  #else
   esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+
 
 #  if CONFIG_SOC_WIFI_SUPPORT_5G
   WiFi.setBandMode(WiFi_band_mode);
@@ -531,23 +550,32 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode)
     setProtocol(WIFI_IF_STA, protocol);
     #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
   }
+  #endif
 }
 
-void setWiFiNoneSleep() { WiFi.setSleep(WIFI_PS_NONE); }
+void setWiFiNoneSleep() { 
+  #ifndef ESP32P4
+  WiFi.setSleep(WIFI_PS_NONE); 
+  #endif
+}
 
 void setWiFiEcoPowerMode()
 {
   // Maximum modem power saving.
   // In this mode, interval to receive beacons is determined by the listen_interval parameter in wifi_sta_config_t
   // FIXME TD-er: Must test if this is desired behavior in ESP32.
+  #ifndef ESP32P4
   WiFi.setSleep(WIFI_PS_MAX_MODEM);
+  #endif
 }
 
 void setWiFiDefaultPowerMode()
 {
   // Minimum modem power saving.
   // In this mode, station wakes up to receive beacon every DTIM period
+  #ifndef ESP32P4
   WiFi.setSleep(WIFI_PS_MIN_MODEM);
+  #endif
 }
 
 void setWiFiCountryPolicyManual()

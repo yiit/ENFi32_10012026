@@ -45,6 +45,10 @@
 
 #endif // __riscv
 
+#ifdef ESP32
+#include <soc/soc_caps.h>
+#endif
+
 // alias, deprecated for the chips after esp32s2
 #ifdef CONFIG_IDF_TARGET_ESP32
 # define SPI_HOST    SPI1_HOST

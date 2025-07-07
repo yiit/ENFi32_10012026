@@ -33,7 +33,10 @@
 #  include <WiFiGeneric.h>
 #  include <esp_wifi.h> // Needed to call ESP-IDF functions like esp_wifi_....
 
+#ifndef ESP32P4
 #  include <esp_phy_init.h>
+#endif
+
 # endif // ifdef ESP32
 
 
@@ -275,7 +278,13 @@ WiFiConnectionProtocol getConnectionProtocol() { return ESPEasy::net::wifi::getC
 
 # ifdef ESP32
 
-int64_t WiFi_get_TSF_time() { return esp_wifi_get_tsf_time(WIFI_IF_STA); }
+int64_t WiFi_get_TSF_time() { 
+  #ifdef ESP32P4
+  return 0;
+  #else
+  return esp_wifi_get_tsf_time(WIFI_IF_STA); 
+  #endif
+}
 
 # endif // ifdef ESP32
 

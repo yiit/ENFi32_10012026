@@ -722,6 +722,29 @@ void readBootCause() {
     case JTAG_RESET             : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<24, jtag reset CPU*/
   }
 
+#elif defined(ESP32P4)
+  switch (rtc_get_reset_reason(0)) {
+    case NO_MEAN                : break;
+    case POWERON_RESET          : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<1, Vbat power on reset*/
+    case SW_SYS_RESET           : lastBootCause = BOOT_CAUSE_SOFT_RESTART;     break; /**<3, Software reset digital core*/
+    case PMU_SYS_PWR_DOWN_RESET : lastBootCause = BOOT_CAUSE_DEEP_SLEEP;       break; /**<5, PMU HP system power down reset*/
+    case HP_SYS_HP_WDT_RESET    : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<7, HP system reset from HP watchdog*/
+    case HP_SYS_LP_WDT_RESET    : lastBootCause = BOOT_CAUSE_EXT_WD;           break; /**<9, HP system reset from LP watchdog*/
+    case HP_CORE_HP_WDT_RESET   : lastBootCause = BOOT_CAUSE_EXT_WD;           break; /**<11, HP core reset from HP watchdog*/
+    case SW_CPU_RESET           : lastBootCause = BOOT_CAUSE_EXT_WD;           break; /**<12, software reset cpu*/
+    case HP_CORE_LP_WDT_RESET   : lastBootCause = BOOT_CAUSE_EXT_WD;           break; /**<13, HP core reset from LP watchdog*/
+    case BROWN_OUT_RESET        : lastBootCause = BOOT_CAUSE_POWER_UNSTABLE;   break; /**<15, Reset when the vdd voltage is not stable*/
+    case CHIP_LP_WDT_RESET      : lastBootCause = BOOT_CAUSE_EXT_WD;           break; /**<16, LP watchdog chip reset*/
+    case SUPER_WDT_RESET        : lastBootCause = BOOT_CAUSE_EXT_WD;           break; /**<18, super watchdog reset*/
+    case GLITCH_RTC_RESET       : lastBootCause = BOOT_CAUSE_POWER_UNSTABLE;   break; /**<19, glitch reset*/
+    case EFUSE_CRC_ERR_RESET    : lastBootCause = BOOT_CAUSE_POWER_UNSTABLE;   break; /**<20, efuse ecc error reset*/
+    case CHIP_USB_JTAG_RESET    : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<22, HP usb jtag chip reset*/
+    case CHIP_USB_UART_RESET    : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<23, HP usb uart chip reset*/
+    case JTAG_RESET             : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<24, jtag reset*/
+    case CPU_LOCKUP_RESET       : lastBootCause = BOOT_CAUSE_MANUAL_REBOOT;    break; /**<26, cpu lockup reset*/
+  }
+
+
 # elif defined(ESP32_CLASSIC)
   switch (rtc_get_reset_reason(0)) {
     case NO_MEAN                : break;

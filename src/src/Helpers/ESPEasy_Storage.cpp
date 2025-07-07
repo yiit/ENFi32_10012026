@@ -62,7 +62,10 @@
 
 #ifdef ESP32
 # include <esp_partition.h>
-# include <esp_phy_init.h>
+#ifndef ESP32P4
+#  include <esp_phy_init.h>
+#endif
+
 
 String patch_fname(const String& fname) {
   if (fname.startsWith(F("/"))) {
@@ -689,6 +692,9 @@ bool Erase_WiFi_Calibration() {
   #endif
 
   #ifdef ESP32
+  #ifdef ESP32P4
+  return false;
+  #else
   WifiDisconnect();
   ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   // Make sure power is stable, so wait a bit longer
@@ -700,6 +706,7 @@ bool Erase_WiFi_Calibration() {
   addLog(LOG_LEVEL_INFO, F("WiFi : Performed WiFi RF calibration"));
   delay(200);  
   setWiFi_CalibrationVersion();
+  #endif
   #endif
   return true;
 }
@@ -936,7 +943,9 @@ void afterloadSettings() {
   applyFactoryDefaultPref();
   Scheduler.setEcoMode(Settings.EcoPowerMode());
   #ifdef ESP32
+  #ifndef ESP32P4
   setCpuFrequencyMhz(Settings.EcoPowerMode() ? getCPU_MinFreqMHz() : getCPU_MaxFreqMHz());
+  #endif
   #endif // ifdef ESP32
 
   if (!Settings.UseRules) {

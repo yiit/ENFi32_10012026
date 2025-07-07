@@ -364,7 +364,7 @@ void ESPEasy_setup()
   #endif // ifndef BUILD_NO_RAM_TRACKER
 
 #ifdef ESP32
-#ifndef CORE32SOLO1
+#if !defined(CORE32SOLO1) && !defined(ESP32P4)
 
   // Configure dynamic frequency scaling:
   // maximum and minimum frequencies are set in sdkconfig,
