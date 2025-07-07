@@ -9,6 +9,10 @@ const __FlashStringHelper* ILI9xxx_type_toString(const ILI9xxx_type_e& device) {
   switch (device) {
     case ILI9xxx_type_e::ILI9341_240x320: return F("ILI9341 240 x 320px");
     case ILI9xxx_type_e::ILI9342_240x320: return F("ILI9342 240 x 320px (M5Stack)");
+    # if P095_ENABLE_ILI9342_2
+    case ILI9xxx_type_e::ILI9342_CYD_AF_240x320: return F("ILI9342 240 x 320px (CYD-1)");
+    case ILI9xxx_type_e::ILI9342_CYD_BD_240x320: return F("ILI9342 240 x 320px (CYD-2)");
+    # endif // if P095_ENABLE_ILI9342_2
     case ILI9xxx_type_e::ILI9481_320x480: return F("ILI9481 320 x 480px");
     case ILI9xxx_type_e::ILI9481_CPT29_320x480: return F("ILI9481 320 x 480px (CPT29)");
     case ILI9xxx_type_e::ILI9481_PVI35_320x480: return F("ILI9481 320 x 480px (PVI35)");
