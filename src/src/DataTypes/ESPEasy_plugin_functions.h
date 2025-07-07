@@ -135,7 +135,7 @@ public:
     NWPLUGIN_GET_DEVICENAME,
     NWPLUGIN_WEBFORM_SAVE,
     NWPLUGIN_WEBFORM_LOAD,
-    NWPLUGIN_GET_ADAPTER_DISPLAY_NAME,
+    NWPLUGIN_GET_PARAMETER_DISPLAY_NAME,
     NWPLUGIN_INIT,
     NWPLUGIN_TEN_PER_SECOND,          // Called 10x per second (typical for checking new data instead of waiting)
     NWPLUGIN_FIFTY_PER_SECOND,        // Called 50x per second (typical for checking new data instead of waiting)

@@ -28,6 +28,11 @@ struct __attribute__((__packed__)) nwpluginID_t {
     return value != 0;
   }
 
+  operator int() const
+  {
+    return value;
+  }
+
   operator bool() const
   {
     return isValid();

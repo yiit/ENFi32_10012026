@@ -23,6 +23,11 @@ struct __attribute__((__packed__)) pluginID_t {
     return res;
   }
 
+  operator int() const
+  {
+    return value;
+  }
+
   operator bool() const
   {
     return value != 0;

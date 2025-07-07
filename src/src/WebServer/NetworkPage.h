@@ -5,7 +5,9 @@
 
 #ifdef WEBSERVER_NETWORK
 
-#include "../DataTypes/NetworkIndex.h"
+# include "../DataTypes/NetworkIndex.h"
+# include "../DataStructs/NetworkSettingsStruct.h"
+
 
 // ********************************************************************************
 // Web Interface Network page
@@ -16,14 +18,14 @@ void handle_networks();
 // Selected network has changed.
 // Clear all Network settings and load some defaults
 // ********************************************************************************
-//void handle_networks_clearLoadDefaults(uint8_t networkindex, NetworkSettingsStruct& NetworkSettings);
+void handle_networks_clearLoadDefaults(networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings);
 
 // ********************************************************************************
 // Collect all submitted form data and store in the NetworkSettings
 // ********************************************************************************
-//void handle_networks_CopySubmittedSettings(uint8_t networkindex, NetworkSettingsStruct& NetworkSettings);
+void handle_networks_CopySubmittedSettings(networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings);
 
-void handle_networks_CopySubmittedSettings_CPluginCall(uint8_t networkindex);
+void handle_networks_CopySubmittedSettings_NWPluginCall(networkIndex_t networkindex);
 
 // ********************************************************************************
 // Show table with all selected networks
@@ -36,5 +38,5 @@ void handle_networks_ShowAllNetworksTable();
 void handle_networks_NetworkSettingsPage(networkIndex_t networkindex);
 
 
-#endif
-#endif
+#endif // ifdef WEBSERVER_NETWORK
+#endif // ifndef WEBSERVER_WEBSERVER_NETWORKPAGE_H

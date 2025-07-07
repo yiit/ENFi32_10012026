@@ -22,6 +22,7 @@
 #include "../Globals/Statistics.h"
 #include "../Globals/WiFi_AP_Candidates.h"
 #include "../Helpers/_CPlugin_init.h"
+#include "../Helpers/_NWPlugin_init.h"
 #include "../Helpers/_NPlugin_init.h"
 #include "../Helpers/_Plugin_init.h"
 #include "../Helpers/DeepSleep.h"
@@ -226,6 +227,7 @@ void ESPEasy_setup()
 
   PluginSetup();
   CPluginSetup();
+  NWPluginSetup();
 
   initWiFi();
   WiFiEventData.clearAll();
@@ -531,6 +533,10 @@ void ESPEasy_setup()
   CPluginInit();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("CPluginInit()"));
+  #endif // ifndef BUILD_NO_RAM_TRACKER
+  NWPluginInit();
+  #ifndef BUILD_NO_RAM_TRACKER
+  logMemUsageAfter(F("NWPluginInit()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
   #if FEATURE_NOTIFIER
   NPluginInit();

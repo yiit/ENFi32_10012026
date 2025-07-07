@@ -49,8 +49,56 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
         Function = NWPlugin::Function::NWPLUGIN_INIT;
       }
 
-      // TODO TD-er: Implement
+            for (networkIndex_t x = 0; x < CONTROLLER_MAX; x++) {
+        if (Settings.getNWPluginID_for_network(x) && Settings.getNetworkEnabled(x)) {
+          event->NetworkIndex = x;
+          String command;
 
+          if (Function == NWPlugin::Function::NWPLUGIN_WRITE) {
+            command = str;
+          }
+
+          if (NWPluginCall(
+                getNetworkDriverIndex_from_NetworkIndex(x),
+                Function,
+                event,
+                command)) {
+            if (Function == NWPlugin::Function::NWPLUGIN_WRITE) {
+              // Need to stop when write call was handled
+              return true;
+            }
+          }
+        }
+      }
+      break;
+    }
+    // calls to specific network
+    case NWPlugin::Function::NWPLUGIN_INIT:
+    case NWPlugin::Function::NWPLUGIN_EXIT:
+    case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG:
+    {
+      const networkIndex_t networkIndex = event->NetworkIndex;
+      bool success                            = false;
+
+      if (validNetworkIndex(networkIndex)) {
+        if (Settings.getNetworkEnabled(networkIndex) && supportedNWPluginID(Settings.getNWPluginID_for_network(networkIndex)))
+        {
+          success = NWPluginCall(
+            getNetworkDriverIndex_from_NetworkIndex(networkIndex),
+            Function,
+            event,
+            str);
+        }
+        #ifdef ESP32
+
+        if (Function == NWPlugin::Function::NWPLUGIN_EXIT) {
+//          Cache.clearNetworkSettings(networkIndex);
+        }
+        #endif // ifdef ESP32
+      }
       return success;
     }
 
@@ -110,7 +158,7 @@ String getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID) {
   networkDriverIndex_t networkDriverIndex = getNetworkDriverIndex_from_NWPluginID(nwpluginID);
 
   if (!validNetworkDriverIndex(networkDriverIndex)) {
-    return strformat(F("NWPlugin %d not included in build"), nwpluginID);
+    return strformat(F("NWPlugin %d not included in build"), nwpluginID.value);
   }
   return getNWPluginNameFromNetworkDriverIndex(networkDriverIndex);
 }

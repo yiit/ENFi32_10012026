@@ -4,6 +4,7 @@
 #include "../WebServer/common.h"
 #include "../DataTypes/ProtocolIndex.h"
 #include "../DataTypes/CPluginID.h"
+#include "../DataTypes/NWPluginID.h"
 #include "../DataTypes/PluginID.h"
 #include "../Globals/Plugins.h"
 #include "../Helpers/StringGenerator_GPIO.h"
@@ -299,6 +300,7 @@ void   addHelpButton(const String& url,
 void   addRTDPluginButton(pluginID_t pluginID);
 #ifndef LIMIT_BUILD_SIZE
 void   addRTDControllerButton(cpluginID_t cpluginID);
+void   addRTDNetworkDriverButton(nwpluginID_t nwpluginID);
 #endif // ifndef LIMIT_BUILD_SIZE
 
 String makeDocLink(const String& url,

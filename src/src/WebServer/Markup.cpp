@@ -1004,6 +1004,14 @@ void addRTDControllerButton(cpluginID_t cpluginID) {
       F("Controller/%s.html"),
       get_formatted_Controller_number(cpluginID).c_str()));
 }
+
+void   addRTDNetworkDriverButton(nwpluginID_t nwpluginID)
+{
+  addRTDHelpButton(
+    strformat(
+      F("NetworkDriver/%s.html"),
+      nwpluginID.toDisplayString().c_str()));
+}
 # endif // ifndef LIMIT_BUILD_SIZE
 
 String makeDocLink(const String& url, bool isRTD) {

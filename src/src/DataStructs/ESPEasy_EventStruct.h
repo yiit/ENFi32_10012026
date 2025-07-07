@@ -7,6 +7,7 @@
 #include "../DataTypes/EventValueSource.h"
 #include "../DataTypes/TaskIndex.h"
 #include "../DataTypes/NotifierIndex.h"
+#include "../DataTypes/NetworkIndex.h"
 #include "../DataStructs/DeviceStruct.h"
 
 
@@ -78,6 +79,7 @@ public:
 #if FEATURE_NOTIFIER
   notifierIndex_t        NotificationIndex = INVALID_NOTIFIER_INDEX;   // index position in Settings.Notification, 0-3
 #endif
+  networkIndex_t         NetworkIndex      = INVALID_NETWORK_INDEX;    // index position in Settings.NWPluginID, 0-7
   uint8_t                BaseVarIndex      = 0;
   Sensor_VType           sensorType        = Sensor_VType::SENSOR_TYPE_NOT_SET;
   uint8_t                OriginTaskIndex   = 0;

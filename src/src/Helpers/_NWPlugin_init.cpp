@@ -2094,37 +2094,37 @@ NetworkDriverStruct& getNetworkDriverStruct(networkDriverIndex_t networkDriverIn
 
 networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID_(nwpluginID_t nwpluginID)
 {
-  if (nwpluginID < NWPlugin_id_to_NetworkDriverIndex_size)
+  if (nwpluginID.value < NWPlugin_id_to_NetworkDriverIndex_size)
   {
-    return static_cast<networkDriverIndex_t>(NWPlugin_id_to_NetworkDriverIndex[nwpluginID]);
+    return static_cast<networkDriverIndex_t>(NWPlugin_id_to_NetworkDriverIndex[nwpluginID.value]);
   }
   return INVALID_NETWORKDRIVER_INDEX;
 }
 
 nwpluginID_t getNWPluginID_from_NetworkDriverIndex_(networkDriverIndex_t networkDriverIndex)
 {
-  if (networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size)
+  if (networkDriverIndex.value < NetworkDriverIndex_to_NWPlugin_id_size)
   {
     //    return static_cast<nwpluginID_t>(NetworkDriverIndex_to_NWPlugin_id[networkDriverIndex]);
-    return static_cast<nwpluginID_t>(pgm_read_byte(NetworkDriverIndex_to_NWPlugin_id + networkDriverIndex.value));
+    return nwpluginID_t::toPluginID(pgm_read_byte(NetworkDriverIndex_to_NWPlugin_id + networkDriverIndex.value));
   }
   return INVALID_NW_PLUGIN_ID;
 }
 
 bool validNetworkDriverIndex_init(networkDriverIndex_t networkDriverIndex)
 {
-  return networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size;
+  return networkDriverIndex.value < NetworkDriverIndex_to_NWPlugin_id_size;
 }
 
 nwpluginID_t getHighestIncludedNWPluginID()
 { 
-  return nwpluginID_t(Highest_NWPlugin_id);
+  return nwpluginID_t::toPluginID(Highest_NWPlugin_id);
 }
 
 
 bool NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, struct EventStruct *event, String& string)
 {
-  if (networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size)
+  if (networkDriverIndex.value < NetworkDriverIndex_to_NWPlugin_id_size)
   {
     START_TIMER;
     NWPlugin_ptr_t nwplugin_call = (NWPlugin_ptr_t)pgm_read_ptr(NWPlugin_ptr + networkDriverIndex.value);
@@ -2147,12 +2147,12 @@ void NWPluginSetup()
   }
 
   networkDriverIndex_t networkDriverIndex{};
-  for (; networkDriverIndex < NetworkDriverIndex_to_NWPlugin_id_size; ++networkDriverIndex)
+  for (; networkDriverIndex.value < NetworkDriverIndex_to_NWPlugin_id_size; ++networkDriverIndex)
   {
     const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkDriverIndex(networkDriverIndex);
 
     if (nwpluginID) {
-      NWPlugin_id_to_NetworkDriverIndex[nwpluginID] = networkDriverIndex;
+      NWPlugin_id_to_NetworkDriverIndex[nwpluginID.value] = networkDriverIndex;
       struct EventStruct TempEvent;
       TempEvent.idx = networkDriverIndex.value;
       String dummy;
