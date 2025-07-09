@@ -27,6 +27,10 @@
 #include "include/esp32x_fixes.h"
 #endif
 
+#if CONFIG_ETH_USE_ESP32_EMAC
+#include <pins_arduino.h>
+#endif
+
 /*
 // VariousBits1 defaults to 0, keep in mind when adding bit lookups.
 template<unsigned int N_TASKS>
@@ -1207,12 +1211,31 @@ bool SettingsStruct_tmpl<N_TASKS>::isEthernetPin(int8_t pin) const {
   if (pin < 0) return false;
   if (NetworkMedium == NetworkMedium_t::Ethernet &&
       !isSPI_EthernetType(ETH_Phy_Type)) {
+  #if CONFIG_ETH_USE_ESP32_EMAC
+  #ifdef ESP32P4
+  switch (pin) {
+    // MDC/MDIO/Power can be configured by user
+    //case ETH_PHY_MDC     :
+    //case ETH_PHY_MDIO    :
+    //case ETH_PHY_POWER   :
+    case ETH_RMII_TX_EN  :
+    case ETH_RMII_TX0    :
+    case ETH_RMII_TX1    :
+    case ETH_RMII_RX0    :
+    case ETH_RMII_RX1_EN :
+    case ETH_RMII_CRS_DV :
+    case ETH_RMII_CLK    :
+      return true;
+  }
+  #else
     if (19 == pin) return true; // ETH TXD0
     if (21 == pin) return true; // ETH TX EN
     if (22 == pin) return true; // ETH TXD1
     if (25 == pin) return true; // ETH RXD0
     if (26 == pin) return true; // ETH RXD1
     if (27 == pin) return true; // ETH CRS_DV
+  #endif
+  #endif
   }
   #endif // if FEATURE_ETHERNET
   return false;

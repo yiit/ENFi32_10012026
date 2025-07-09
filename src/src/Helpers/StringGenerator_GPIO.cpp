@@ -6,6 +6,11 @@
 #include "../Helpers/StringConverter.h"
 #include "../../ESPEasy_common.h"
 
+#ifdef ESP32P4
+#include <pins_arduino.h>
+
+#endif
+
 /*********************************************************************************************\
    Device GPIO name functions to share flash strings
 \*********************************************************************************************/
@@ -361,6 +366,20 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
     if (Settings.isEthernetPin(gpio)) {
       return F("Eth");
     }
+    #ifdef ESP32P4
+    #ifdef BOARD_HAS_SDIO_ESP_HOSTED
+    // TODO TD-er: Make this configurable as we can set this via WiFi.setPins
+    switch (gpio) {
+      case BOARD_SDIO_ESP_HOSTED_CLK   : return F("SDIO_CLK");
+      case BOARD_SDIO_ESP_HOSTED_CMD   : return F("SDIO_CMD");
+      case BOARD_SDIO_ESP_HOSTED_D0    : return F("SDIO_D0");
+      case BOARD_SDIO_ESP_HOSTED_D1    : return F("SDIO_D1");
+      case BOARD_SDIO_ESP_HOSTED_D2    : return F("SDIO_D2");
+      case BOARD_SDIO_ESP_HOSTED_D3    : return F("SDIO_D3");
+      case BOARD_SDIO_ESP_HOSTED_RESET : return F("SDIO_RESET");
+    }
+    #endif
+    #endif
 
     if (includeEthernet && Settings.isEthernetPinOptional(gpio)) {
       if (isGpioUsedInETHClockMode(Settings.ETH_Clock_Mode, gpio)) { return F("Eth Clock"); }

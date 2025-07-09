@@ -150,6 +150,9 @@ void WiFiEvent(WiFiEvent_t event_id, arduino_event_info_t info) {
       addLog(LOG_LEVEL_INFO, F("WIFI : AP got IP6"));
       break;
     # endif // if FEATURE_USE_IPV6
+    case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
+      addLog(LOG_LEVEL_INFO, F("WIFI : AP assigned IP to STA"));
+      break;
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
       WiFiEventData.markConnectedAPmode(info.wifi_ap_staconnected.mac);
       break;
