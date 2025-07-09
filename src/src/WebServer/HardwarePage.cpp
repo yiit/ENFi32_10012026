@@ -121,6 +121,7 @@ void handle_hardware() {
       Settings.InitSPI                = isFormItemChecked(F("initspi")); // SPI Init
     #endif
     Settings.Pin_sd_cs                = getFormItemInt(F("sd"));
+#ifndef WEBSERVER_NETWORK
     #if FEATURE_ETHERNET
     Settings.ETH_Phy_Addr             = getFormItemInt(F("ethphy"));
     Settings.ETH_Pin_mdc_cs              = getFormItemInt(F("ethmdc"));
@@ -132,6 +133,7 @@ void handle_hardware() {
 #endif
     Settings.NetworkMedium            = static_cast<NetworkMedium_t>(getFormItemInt(F("ethwifi")));
     #endif // if FEATURE_ETHERNET
+#endif
     int gpio = 0;
 
     while (gpio <= MAX_GPIO) {
@@ -328,7 +330,7 @@ void handle_hardware() {
   addFormSubHeader(F("SD Card"));
   addFormPinSelect(PinSelectPurpose::SD_Card, formatGpioName_output(F("SD Card CS")), F("sd"), Settings.Pin_sd_cs);
 #endif // if FEATURE_SD
-  
+#ifndef WEBSERVER_NETWORK
 #if FEATURE_ETHERNET
   addFormSubHeader(F("Ethernet"));
   addRowLabel_tr_id(F("Preferred network medium"), F("ethwifi"));
@@ -457,6 +459,7 @@ void handle_hardware() {
   }
 #endif
 #endif // if FEATURE_ETHERNET
+#endif
 
   addFormSubHeader(F("GPIO boot states"));
 

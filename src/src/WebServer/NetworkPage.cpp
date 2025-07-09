@@ -45,6 +45,8 @@ void handle_networks()
     // TODO TD-er: Implement saving submitted settings
     const nwpluginID_t nwpluginID = nwpluginID_t::toPluginID(networkDriver_webarg_value);
 
+    MakeNetworkSettings(NetworkSettings);
+
     if (Settings.getNWPluginID_for_network(networkindex) != nwpluginID)
     {
       // NetworkDriver has changed.
@@ -55,7 +57,7 @@ void handle_networks()
       {
         mustInit = true;
 
-        // handle_networks_clearLoadDefaults(networkindex, *NetworkSettings);
+        handle_networks_clearLoadDefaults(networkindex, *NetworkSettings);
       }
     }
 
@@ -67,7 +69,7 @@ void handle_networks()
       {
         mustInit = true;
 
-        // handle_networks_CopySubmittedSettings(networkindex, *NetworkSettings);
+        handle_networks_CopySubmittedSettings(networkindex, *NetworkSettings);
         mustCallNWpluginSave = true;
       }
     }
@@ -142,12 +144,12 @@ void handle_networks_ShowAllNetworksTable()
 {
   html_table_class_multirow();
   html_TR();
-  html_table_header(F(""),          70);
-  html_table_header(F("Nr"),        50);
-  html_table_header(F("Order"),     50);
-  html_table_header(F("Enabled"),   100);
-  html_table_header(F("Connected"), 100);
+  html_table_header(F(""),        70);
+  html_table_header(F("Order"),   50);
+  html_table_header(F("Enabled"), 100);
   html_table_header(F("Network Adapter"));
+  html_table_header(F("Connected"));
+  html_table_header(F("Hostname/SSID"));
   html_table_header(F("MAC"));
   html_table_header(F("IP"));
   html_table_header(F("Port"));
@@ -176,26 +178,42 @@ void handle_networks_ShowAllNetworksTable()
       }
       addHtml(F("</a><TD>"));
     }
-    html_TD();
 
     if (nwplugin_set)
     {
+      // order
+      html_TD();
       addEnabled(Settings.getNetworkEnabled(x));
-
       html_TD();
+
+      // Network Adapter
       addHtml(getNWPluginNameFromNWPluginID(Settings.getNWPluginID_for_network(x)));
-      html_TD();
+
+      const NWPlugin::Function functions[] {
+        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED,
+        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME,
+        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC,
+        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP,
+        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT
+      };
       const networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(x);
-      {
-        String hostDescription;
-        NWPluginCall(NetworkDriverIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG, 0, hostDescription);
 
-        if (!hostDescription.isEmpty()) {
-          addHtml(hostDescription);
+      for (uint8_t i = 0; i < NR_ELEMENTS(functions); ++i) {
+        html_TD();
+        String str;
+        const bool res = NWPluginCall(NetworkDriverIndex, functions[i], 0, str);
+
+        if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED) {
+          if (!res || str.isEmpty()) {
+            addEnabled(res);
+          }
         }
-      }
 
-      html_TD();
+        if (!str.isEmpty()) {
+          addHtml(str);
+        }
+
+      }
 
       /*
          const NetworkDriverStruct& adapter = getNetworkDriverStruct(NetworkDriverIndex);
@@ -204,12 +222,11 @@ void handle_networks_ShowAllNetworksTable()
          addHtmlInt(13 == nwpluginID ? Settings.UDPPort : NetworkSettings->Port); // P2P/C013 exception
          }
        */
+
     }
     else {
-      html_TD(3);
+      html_TD(7);
     }
-    html_TD(3);
-
   }
 
   html_end_table();

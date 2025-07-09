@@ -72,7 +72,7 @@ void handle_config() {
 
     // Password
     copyFormPassword(F("password"), SecuritySettings.Password, sizeof(SecuritySettings.Password));
-
+#ifndef WEBSERVER_NETWORK
     // SSID 1
     safe_strncpy(SecuritySettings.WifiSSID, webArg(F("ssid")).c_str(), sizeof(SecuritySettings.WifiSSID));
     copyFormPassword(F("key"), SecuritySettings.WifiKey, sizeof(SecuritySettings.WifiKey));
@@ -97,7 +97,7 @@ void handle_config() {
 
     // Usually the AP will be started when no WiFi is defined, or the defined one cannot be found. This flag may prevent it.
     Settings.DoNotStartAP(isFormItemChecked(F("DoNotStartAP")));
-
+#endif
 
     // TD-er Read access control from form.
     SecuritySettings.IPblockLevel = getFormItemInt(F("ipblocklevel"));
@@ -143,6 +143,7 @@ void handle_config() {
     #endif
 
     Settings.deepSleepOnFail = isFormItemChecked(F("deepsleeponfail"));
+#ifndef WEBSERVER_NETWORK
     webArg2ip(F("espip"),      Settings.IP);
     webArg2ip(F("espgateway"), Settings.Gateway);
     webArg2ip(F("espsubnet"),  Settings.Subnet);
@@ -153,6 +154,7 @@ void handle_config() {
     webArg2ip(F("espethsubnet"),  Settings.ETH_Subnet);
     webArg2ip(F("espethdns"),     Settings.ETH_DNS);
 #endif // if FEATURE_ETHERNET
+#endif
     #if FEATURE_ALTERNATIVE_CDN_URL
     set_CDN_url_custom(webArg(F("alturl")));
     #endif // if FEATURE_ALTERNATIVE_CDN_URL
@@ -172,6 +174,7 @@ void handle_config() {
   addFormCheckBox(F("Append Unit Number to hostname"), F("appendunittohostname"), Settings.appendUnitToHostname());
   addFormPasswordBox(F("Admin Password"), F("password"), SecuritySettings.Password, 25);
 
+#ifndef WEBSERVER_NETWORK
   addFormSubHeader(F("Wifi Settings"));
 
   addFormTextBox(getLabel(LabelType::SSID), F("ssid"), SecuritySettings.WifiSSID, 31);
@@ -201,7 +204,7 @@ void handle_config() {
   #else // if FEATURE_ETHERNET
   addFormNote(F("Do not allow to start an AP when configured WiFi cannot be found"));
   #endif // if FEATURE_ETHERNET
-
+#endif
 
   // TD-er add IP access box F("ipblocklevel")
   addFormSubHeader(F("Client IP filtering"));
@@ -219,7 +222,7 @@ void handle_config() {
     addFormIPBox(F("Access IP lower range"), F("iprangelow"),  iplow);
     addFormIPBox(F("Access IP upper range"), F("iprangehigh"), iphigh);
   }
-
+#ifndef WEBSERVER_NETWORK
   addFormSubHeader(F("WiFi IP Settings"));
 
   addFormIPBox(F("ESP WiFi IP"),         F("espip"),      Settings.IP);
@@ -227,7 +230,6 @@ void handle_config() {
   addFormIPBox(F("ESP WiFi Subnetmask"), F("espsubnet"),  Settings.Subnet);
   addFormIPBox(F("ESP WiFi DNS"),        F("espdns"),     Settings.DNS);
   addFormNote(F("Leave empty for DHCP"));
-
 #if FEATURE_ETHERNET
   addFormSubHeader(F("Ethernet IP Settings"));
 
@@ -237,6 +239,7 @@ void handle_config() {
   addFormIPBox(F("ESP Ethernet DNS"),        F("espethdns"),     Settings.ETH_DNS);
   addFormNote(F("Leave empty for DHCP"));
 #endif // if FEATURE_ETHERNET
+#endif
 
 #ifdef USES_ESPEASY_NOW
   addFormSubHeader(F("ESPEasy-NOW"));

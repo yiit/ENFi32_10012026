@@ -10,6 +10,7 @@
 # define NWPLUGIN_ID_002         2
 # define NWPLUGIN_NAME_002       "WiFi AP"
 
+# include "src/ESPEasyCore/ESPEasyNetwork.h"
 # include "src/DataStructs/ESPEasy_EventStruct.h"
 # include "src/Globals/NWPlugins.h"
 # include "src/Helpers/ESPEasy_Storage.h"
@@ -41,6 +42,59 @@ bool NWPlugin_002(NWPlugin::Function function, struct EventStruct *event, String
       string = F(NWPLUGIN_NAME_002);
       break;
     }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
+    {
+# ifdef ESP32
+      const uint8_t num = WiFi.AP.stationCount();
+# else
+      const uint8_t num = WiFi.softAPgetStationNum();
+# endif // ifdef ESP32
+
+      if (num > 0) {
+        success = true;
+        string  = concat(num, F(" client"));
+
+        if (num > 1) { string += 's'; }
+      }
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
+    {
+# ifdef ESP32
+      string = WiFi.AP.getHostname();
+# else
+      string = WiFi.softAPSSID();
+# endif // ifdef ESP32
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    {
+# ifdef ESP32
+      string = WiFi.AP.macAddress();
+# else
+      string = WiFi.softAPmacAddress();
+# endif // ifdef ESP32
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
+    {
+# ifdef ESP32
+      string = WiFi.AP.localIP().toString();
+# else
+      string = WiFi.softAPIP().toString();
+# endif // ifdef ESP32
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
+    {
+      break;
+    }
+
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
     {

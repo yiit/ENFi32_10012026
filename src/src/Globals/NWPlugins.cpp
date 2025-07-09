@@ -79,7 +79,10 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
     case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
-    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
       const networkIndex_t networkIndex = event->NetworkIndex;
       bool success                      = false;

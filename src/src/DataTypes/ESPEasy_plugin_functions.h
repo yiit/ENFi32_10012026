@@ -142,7 +142,11 @@ public:
     NWPLUGIN_INIT_ALL,
     NWPLUGIN_EXIT,
     NWPLUGIN_WRITE,                   // Send commands to a network adapter.
-    NWPLUGIN_WEBFORM_SHOW_HOST_CONFIG // Used for showing host information for the network adapter.
+    NWPLUGIN_WEBFORM_SHOW_CONNECTED,  // Used for showing connected state/speed
+    NWPLUGIN_WEBFORM_SHOW_HOSTNAME,   // Used for showing hostname
+    NWPLUGIN_WEBFORM_SHOW_MAC,        // Used for showing MAC
+    NWPLUGIN_WEBFORM_SHOW_IP ,        // Used for showing IP
+    NWPLUGIN_WEBFORM_SHOW_PORT // Used for showing host information for the network adapter.
 
   };
 

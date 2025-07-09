@@ -72,7 +72,9 @@ To create/register a plugin, you have to :
         #define WEBSERVER_CONFIG
     #endif
     #ifndef WEBSERVER_NETWORK
-        #define WEBSERVER_NETWORK
+//        #ifdef ESP32
+            #define WEBSERVER_NETWORK
+//        #endif
     #endif
     #ifndef WEBSERVER_CONTROL
         #define WEBSERVER_CONTROL
@@ -3834,5 +3836,15 @@ To create/register a plugin, you have to :
     #undef USES_NW002
   #endif
 #endif
+#if FEATURE_ETHERNET
+  #ifndef USES_NW003
+    #define USES_NW003
+  #endif
+#else
+  #ifdef USES_NW003
+    #undef USES_NW003
+  #endif
+#endif
+
 
 #endif // CUSTOMBUILD_DEFINE_PLUGIN_SETS_H

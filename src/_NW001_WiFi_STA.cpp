@@ -10,6 +10,8 @@
 # define NWPLUGIN_ID_001         1
 # define NWPLUGIN_NAME_001       "WiFi Station"
 
+# include "src/ESPEasyCore/ESPEasyNetwork.h"
+# include "src/ESPEasyCore/ESPEasyWifi.h"
 # include "src/DataStructs/ESPEasy_EventStruct.h"
 # include "src/Globals/NWPlugins.h"
 # include "src/Helpers/ESPEasy_Storage.h"
@@ -39,6 +41,66 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
     case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
     {
       string = F(NWPLUGIN_NAME_001);
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
+    {
+# ifdef ESP32
+      success = WiFi.STA.connected();
+
+      if (success) {
+        string = strformat(F("%s (ch: %d)<br>%s"),
+                           WiFi.STA.SSID().c_str(),
+                           WiFi.channel(),
+                           WiFi.STA.BSSIDstr().c_str());
+      }
+# else // ifdef ESP32
+      success = WiFi.isConnected();
+
+      if (success) {
+        string = strformat(F("%s (ch: %d)<br>%s"),
+                           WiFi.SSID().c_str(),
+                           WiFi.channel(),
+                           WiFi.BSSIDstr().c_str());
+      }
+# endif // ifdef ESP32
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
+    {
+# ifdef ESP32
+      string = WiFi.STA.getHostname();
+# else
+      string = WiFi.hostname();
+# endif // ifdef ESP32
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    {
+# ifdef ESP32
+      string = WiFi.STA.macAddress();
+# else
+      string = WiFi.macAddress();
+# endif // ifdef ESP32
+
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
+    {
+# ifdef ESP32
+      string = WiFi.STA.localIP().toString();
+# else
+      string = WiFi.localIP().toString();
+# endif // ifdef ESP32
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
+    {
       break;
     }
 
@@ -92,10 +154,12 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
 # if CONFIG_SOC_WIFI_SUPPORT_5G
       Settings.WiFi_band_mode(static_cast<wifi_band_mode_t>(getFormItemInt(getInternalLabel(LabelType::WIFI_BAND_MODE))));
 # endif
-# if FEATURE_USE_IPV6
-      Settings.EnableIPv6(isFormItemChecked(LabelType::ENABLE_IPV6));
-# endif
 
+      /*
+       # if FEATURE_USE_IPV6
+            Settings.EnableIPv6(isFormItemChecked(LabelType::ENABLE_IPV6));
+       # endif
+       */
 
       break;
     }
@@ -126,10 +190,11 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
       addFormIPBox(F("ESP WiFi DNS"),        F("espdns"),     Settings.DNS);
       addFormNote(F("Leave empty for DHCP"));
 
-# if FEATURE_USE_IPV6
-      addFormCheckBox(LabelType::ENABLE_IPV6, Settings.EnableIPv6());
-# endif
-
+      /*
+       # if FEATURE_USE_IPV6
+            addFormCheckBox(LabelType::ENABLE_IPV6, Settings.EnableIPv6());
+       # endif
+       */
 
       addFormSubHeader(F("WiFi Mode"));
       addFormCheckBox(LabelType::FORCE_WIFI_BG, Settings.ForceWiFi_bg_mode());
