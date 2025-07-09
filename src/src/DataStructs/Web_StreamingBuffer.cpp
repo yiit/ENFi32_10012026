@@ -270,7 +270,7 @@ void Web_StreamingBuffer::endStream() {
   if (!lowMemorySkip) {
     if (buf.length() > 0) { sendContentBlocking(buf); }
     buf.clear();
-//    sendContentBlocking(buf);
+    sendContentBlocking(buf);
 
     web_server.client().PR_9453_FLUSH_TO_CLEAR();
 
@@ -293,8 +293,6 @@ void Web_StreamingBuffer::endStream() {
       addLog(LOG_LEVEL_ERROR, concat("Webpage skipped: low memory: ", finalRam));
     lowMemorySkip = false;
   }
-  const char *footer_empty = "0\r\n\r\n";
-  web_server.client().write(footer_empty, 5);
 
   delay(5);
   web_server.client().stop();
