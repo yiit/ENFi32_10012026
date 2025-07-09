@@ -294,8 +294,8 @@ void Web_StreamingBuffer::endStream() {
     lowMemorySkip = false;
   }
   delay(5);
-  #ifdef ESP8266
   web_server.client().stop();
+  #ifdef ESP8266
   tcpCleanup();
   #endif
 }
