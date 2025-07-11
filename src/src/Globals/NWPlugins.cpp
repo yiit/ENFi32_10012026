@@ -113,6 +113,10 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
 
 bool validNetworkDriverIndex(networkDriverIndex_t index) { return validNetworkDriverIndex_init(index); }
 
+
+//bool getIP(networkDriverIndex_t index, NWPlugin::IP_type ip_type){}
+
+
 /*
    bool validNetworkIndex(networkIndex_t index)
    {

@@ -27,6 +27,8 @@ bool NWPluginCall(networkDriverIndex_t     networkDriverIndex,
                  
 bool              validNetworkDriverIndex(networkDriverIndex_t index);
 
+//bool getIP(networkDriverIndex_t index, NWPlugin::IP_type ip_type);
+
 
 // bool              validNetworkIndex(networkIndex_t index);
 #define validNetworkIndex(C_X)  ((C_X) < NETWORK_MAX)

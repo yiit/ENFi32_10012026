@@ -143,6 +143,9 @@ public:
     NWPLUGIN_INIT_ALL,
     NWPLUGIN_EXIT,
     NWPLUGIN_WRITE,                   // Send commands to a network adapter.
+    #ifdef ESP32
+    NWPLUGIN_GET_INTERFACE,
+    #endif
     NWPLUGIN_WEBFORM_SHOW_CONNECTED,  // Used for showing connected state/speed
     NWPLUGIN_WEBFORM_SHOW_HOSTNAME,   // Used for showing hostname
     NWPLUGIN_WEBFORM_SHOW_MAC,        // Used for showing MAC
@@ -150,6 +153,26 @@ public:
     NWPLUGIN_WEBFORM_SHOW_PORT // Used for showing host information for the network adapter.
 
   };
+
+  enum class IP_type {
+   inet,
+   netmask,
+   broadcast,
+   gateway,
+   dns1,
+   dns2,
+# if CONFIG_LWIP_IPV6
+   ipv6_unknown,
+   ipv6_global,
+   ipv6_link_local,
+   ipv6_site_local,
+   ipv6_unique_local,
+   ipv4_mapped_ipv6
+# endif
+
+  };
+
+  static const __FlashStringHelper* toString(IP_type ip_type);
 
 }; // class NWPlugin
 

@@ -197,29 +197,66 @@ void saveNetworkParameterForm(NetworkSettingsStruct        & NetworkSettings,
 
     case NetworkSettingsStruct::NETWORK_ENABLED:
       Settings.setNetworkEnabled(networkindex, isFormItemChecked(internalName));
-      addLog(LOG_LEVEL_INFO, concat(F("Save NW_Enabled: "), internalName) + ' ' + isFormItemChecked(internalName) + ' ' + Settings.getNetworkEnabled(networkindex));
+      addLog(LOG_LEVEL_INFO,
+             concat(F("Save NW_Enabled: "),
+                    internalName) + ' ' + isFormItemChecked(internalName) + ' ' + Settings.getNetworkEnabled(networkindex));
       break;
   }
 }
 
 #ifdef ESP32
-bool printAllIpAddresses(NetworkInterface* networkInterface, Print &out)
+bool print_IP_address(NWPlugin::IP_type ip_type, NetworkInterface* networkInterface, Print &out)
 {
-  if (!networkInterface) return false;
-   out.println(networkInterface->localIP());
-
-  #if CONFIG_LWIP_IPV6
-  static const char *types[] = {"UNKNOWN", "GLOBAL", "LINK_LOCAL", "SITE_LOCAL", "UNIQUE_LOCAL", "IPV4_MAPPED_IPV6"};
-  esp_ip6_addr_t if_ip6[CONFIG_LWIP_IPV6_NUM_ADDRESSES];
-  int v6addrs = esp_netif_get_all_ip6(networkInterface->netif(), if_ip6);
-  for (int i = 0; i < v6addrs; ++i) {
-   out.print(types[esp_netif_ip6_get_addr_type(&if_ip6[i])]);
-   out.print(": ");
-   IPAddress(IPv6, (const uint8_t *)if_ip6[i].addr, if_ip6[i].zone).printTo(out, true);
-   out.println();
+  const IPAddress ip(get_IP_address(ip_type, networkInterface));
+  const size_t nrBytes = ip.printTo(out, true) > 0;
+  if (ip.type() == IPv4) {
+    const uint32_t val(ip);
+    if (val == 0) return false;
   }
-#endif
-  
-  return true;
+  return nrBytes > 0;
 }
+
+IPAddress get_IP_address(NWPlugin::IP_type ip_type, NetworkInterface*networkInterface)
+{
+  IPAddress ip;
+
+  if (networkInterface) {
+# if CONFIG_LWIP_IPV6
+    esp_ip6_addr_type_t ip6_addr_type = ESP_IP6_ADDR_IS_UNKNOWN;
 #endif
+    switch (ip_type)
+    {
+      case NWPlugin::IP_type::inet:        return networkInterface->localIP();
+      case NWPlugin::IP_type::netmask:     return networkInterface->subnetMask();
+      case NWPlugin::IP_type::broadcast:   return networkInterface->broadcastIP();
+      case NWPlugin::IP_type::gateway:     return networkInterface->gatewayIP();
+      case NWPlugin::IP_type::dns1:        return networkInterface->dnsIP(0);
+      case NWPlugin::IP_type::dns2:        return networkInterface->dnsIP(1);
+# if CONFIG_LWIP_IPV6
+      case NWPlugin::IP_type::ipv6_unknown:      ip6_addr_type = ESP_IP6_ADDR_IS_UNKNOWN; break;
+      case NWPlugin::IP_type::ipv6_global:       ip6_addr_type = ESP_IP6_ADDR_IS_GLOBAL; break;
+      case NWPlugin::IP_type::ipv6_link_local:   ip6_addr_type = ESP_IP6_ADDR_IS_LINK_LOCAL; break;
+      case NWPlugin::IP_type::ipv6_site_local:   ip6_addr_type = ESP_IP6_ADDR_IS_SITE_LOCAL; break;
+      case NWPlugin::IP_type::ipv6_unique_local: ip6_addr_type = ESP_IP6_ADDR_IS_UNIQUE_LOCAL; break;
+      case NWPlugin::IP_type::ipv4_mapped_ipv6:  ip6_addr_type = ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6; break;
+# endif // if CONFIG_LWIP_IPV6
+      default: 
+        return ip;
+    }
+# if CONFIG_LWIP_IPV6
+    if (networkInterface->netif()) {
+      esp_ip6_addr_t if_ip6[CONFIG_LWIP_IPV6_NUM_ADDRESSES];
+      int v6addrs = esp_netif_get_all_ip6(networkInterface->netif(), if_ip6);
+      for (int i = 0; i < v6addrs; ++i) {
+        if (esp_netif_ip6_get_addr_type(&if_ip6[i]) == ip6_addr_type) {
+          return IPAddress(IPv6, (const uint8_t *)if_ip6[i].addr, if_ip6[i].zone);
+        }
+      }
+    }
+# endif
+  }
+
+  return ip;
+}
+
+#endif // ifdef ESP32

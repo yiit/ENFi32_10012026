@@ -91,7 +91,7 @@ bool NWPlugin_002(NWPlugin::Function function, struct EventStruct *event, String
     {
 # ifdef ESP32
       PrintToString str;
-      printAllIpAddresses(&WiFi.AP, str);
+      success = print_IP_address(static_cast<NWPlugin::IP_type>(event->Par1), &WiFi.AP, str);
       string = str.get();
 
       //      string = WiFi.AP.localIP().toString();

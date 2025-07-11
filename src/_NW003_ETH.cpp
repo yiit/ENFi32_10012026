@@ -94,7 +94,7 @@ bool NWPlugin_003(NWPlugin::Function function, struct EventStruct *event, String
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
     {
       PrintToString str;
-      printAllIpAddresses(&ETH, str);
+      success = print_IP_address(static_cast<NWPlugin::IP_type>(event->Par1), &ETH, str);
       string = str.get();
 
       // string = ETH.localIP().toString();

@@ -223,8 +223,11 @@ void handle_networks_ShowAllNetworksTable()
 
       for (uint8_t i = 0; i < NR_ELEMENTS(functions); ++i) {
         html_TD();
+        struct EventStruct TempEvent;
+        TempEvent.NetworkIndex = x;
+
         String str;
-        const bool res = NWPluginCall(NetworkDriverIndex, functions[i], 0, str);
+        const bool res = NWPluginCall(NetworkDriverIndex, functions[i], &TempEvent, str);
 
         if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED) {
           if (!res || str.isEmpty()) {
@@ -300,11 +303,37 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
     struct EventStruct TempEvent;
     TempEvent.NetworkIndex = networkindex;
 
-    String webformLoadString;
-    NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD, &TempEvent, webformLoadString);
+    String str;
+    NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD, &TempEvent, str);
 
-    if (webformLoadString.length() > 0) {
-      addHtmlError(F("Bug in NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD, should not append to string, use addHtml() instead"));
+    addFormSubHeader(F("IP Config"));
+
+    const NWPlugin::IP_type ip_types[] = {
+      NWPlugin::IP_type::inet,
+      NWPlugin::IP_type::netmask,
+      NWPlugin::IP_type::broadcast,
+      NWPlugin::IP_type::gateway,
+      NWPlugin::IP_type::dns1,
+      NWPlugin::IP_type::dns2,
+# if CONFIG_LWIP_IPV6
+      NWPlugin::IP_type::ipv6_unknown,
+      NWPlugin::IP_type::ipv6_global,
+      NWPlugin::IP_type::ipv6_link_local,
+      NWPlugin::IP_type::ipv6_site_local,
+      NWPlugin::IP_type::ipv6_unique_local,
+      NWPlugin::IP_type::ipv4_mapped_ipv6,
+# endif // if CONFIG_LWIP_IPV6
+
+    };
+
+    for (size_t i = 0; i < NR_ELEMENTS(ip_types); ++i) {
+      TempEvent.Par1 = static_cast<int>(ip_types[i]);
+
+      if (NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP, &TempEvent, str))
+      {
+        addRowLabel(NWPlugin::toString(ip_types[i]));
+        addHtml(str);
+      }
     }
 
     addFormSeparator(2);
