@@ -1,0 +1,104 @@
+#include "ESPEasy_common.h"
+
+#ifdef USES_NW005
+
+// #######################################################################################################
+// ########################### Network Plugin 005: PPP modem #############################################
+// #######################################################################################################
+
+# define NWPLUGIN_005
+# define NWPLUGIN_ID_005         5
+# define NWPLUGIN_NAME_005       "PPP modem"
+
+# include "src/ESPEasyCore/ESPEasyNetwork.h"
+# include "src/DataStructs/ESPEasy_EventStruct.h"
+# include "src/Globals/NWPlugins.h"
+# include "src/Helpers/ESPEasy_Storage.h"
+# include "src/Helpers/_NWPlugin_init.h"
+
+# include "src/Globals/SecuritySettings.h"
+# include "src/WebServer/common.h"
+# include "src/Helpers/StringConverter.h"
+# include "src/WebServer/ESPEasy_WebServer.h"
+# include "src/Globals/Settings.h"
+# include "src/WebServer/Markup_Forms.h"
+# include "src/WebServer/Markup.h"
+# include "src/ESPEasyCore/ESPEasyWifi_abstracted.h"
+
+# include "src/Helpers/_NWPlugin_Helper_webform.h"
+# include "src/Helpers/PrintToString.h"
+
+# include "src/WebServer/HTML_Print.h"
+# include "src/WebServer/HTML_wrappers.h"
+
+#include <PPP.h>
+
+bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String& string)
+{
+  bool success = false;
+
+  switch (function)
+  {
+    case NWPlugin::Function::NWPLUGIN_DRIVER_ADD:
+    {
+      NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
+    {
+      string = F(NWPLUGIN_NAME_005);
+      break;
+    }
+
+# ifdef ESP32
+    case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
+    {
+      event->networkInterface = &PPP;
+      success                 = event->networkInterface != nullptr;
+      break;
+    }
+# endif // ifdef ESP32
+
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
+    {
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
+    {
+      break;
+    }
+
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
+    {
+
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
+    {
+
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_INIT:
+    {
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_EXIT:
+    {
+      break;
+    }
+
+    default:
+      break;
+
+  }
+  return success;
+}
+
+#endif // ifdef USES_NW005

@@ -3231,6 +3231,14 @@ To create/register a plugin, you have to :
 #define FEATURE_ETHERNET                      0
 #endif
 
+#ifndef FEATURE_PPP_MODEM
+#ifdef ESP32
+#define FEATURE_PPP_MODEM                     1
+#else
+#define FEATURE_PPP_MODEM                     0
+#endif
+#endif
+
 #ifndef FEATURE_WIFI
 #ifdef ESP8266
 #define FEATURE_WIFI                          1
@@ -3820,6 +3828,10 @@ To create/register a plugin, you have to :
     #endif
   #endif
 
+#if FEATURE_PPP_MODEM && !defined(ESP32)
+#undef FEATURE_PPP_MODEM
+#define FEATURE_PPP_MODEM  0
+#endif
 
 #if FEATURE_WIFI
   #ifndef USES_NW001
@@ -3843,6 +3855,16 @@ To create/register a plugin, you have to :
 #else
   #ifdef USES_NW003
     #undef USES_NW003
+  #endif
+#endif
+
+#if FEATURE_PPP_MODEM
+  #ifndef USES_NW005
+    #define USES_NW005
+  #endif
+#else
+  #ifdef USES_NW005
+    #undef USES_NW005
   #endif
 #endif
 
