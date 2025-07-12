@@ -716,7 +716,6 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
               case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
               case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
               case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
-              case Sensor_VType::SENSOR_TYPE_DATETIME:
               {
                 const String dev    = getValueType2HADeviceClass(discoveryItems[s].VType);
                 const String uomDef = getValueType2DefaultHAUoM(discoveryItems[s].VType);

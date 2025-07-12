@@ -97,7 +97,6 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log)
     case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
     case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
     case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
-    case Sensor_VType::SENSOR_TYPE_DATETIME:
       return 1;
   }
   #ifndef BUILD_NO_DEBUG
@@ -184,7 +183,6 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_DATA_SIZE:        return F("Data size");
     case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:   return F("Sound pressure");
     case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:  return F("Signal strength");
-    case Sensor_VType::SENSOR_TYPE_DATETIME:         return F("Date/Time");
     #else // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:
@@ -225,7 +223,6 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
     case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
     case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
-    case Sensor_VType::SENSOR_TYPE_DATETIME:
       break;
     #endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
   }
