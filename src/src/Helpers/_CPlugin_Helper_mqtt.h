@@ -33,6 +33,8 @@ int    Plugin_QueryVType_Lux(uint8_t value_nr);
 int    Plugin_QueryVType_Temperature(uint8_t value_nr);
 int    Plugin_QueryVType_Weight(uint8_t value_nr);
 
+String makeHomeAssistantCompliantName(const String& name);
+
 #  if FEATURE_MQTT_DEVICECLASS
 String MQTT_binary_deviceClassName(int devClassIndex);
 #  endif // if FEATURE_MQTT_DEVICECLASS

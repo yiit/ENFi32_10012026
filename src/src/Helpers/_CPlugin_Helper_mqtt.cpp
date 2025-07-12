@@ -362,6 +362,10 @@ int Plugin_QueryVType_Weight(uint8_t value_nr) {
   return static_cast<int>(Sensor_VType::SENSOR_TYPE_WEIGHT_ONLY);
 }
 
+String makeHomeAssistantCompliantName(const String& name) {
+  return makeRFCCompliantName(name, '_', '_', 0);
+}
+
 #  if FEATURE_MQTT_DEVICECLASS
 const char mqtt_binary_deviceclass_names[] PROGMEM =
   "|"                                                               // Default/0 is empty value
@@ -930,31 +934,32 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
     const String withUoM   = !unitOfMeasure.isEmpty() ?
                              strformat(F(",\"unit_of_meas\":\"%s\""), unitOfMeasure.c_str()) :
                              EMPTY_STRING;
-    const String taskName  = getTaskDeviceName(taskIndex);
+    const String taskName  = makeHomeAssistantCompliantName(getTaskDeviceName(taskIndex));
+    const String valName   = makeHomeAssistantCompliantName(valueName);
     const bool   retainDsc = ControllerSettings.mqtt_retainDiscovery();
     const String discoveryTopic(ControllerSettings.MqttAutoDiscoveryTopic);
     const String publishTopic(ControllerSettings.Publish);
     const String discoveryConfig(parseStringKeepCase(ControllerSettings.MqttAutoDiscoveryConfig, 1, '|'));
 
-    const String uniqueId = MQTT_TaskValueUniqueName(taskName, valueName);
+    const String uniqueId = MQTT_TaskValueUniqueName(taskName, valName);
     const String publish  = MQTT_DiscoveryBuildValueTopic(publishTopic,
                                                           event,
                                                           taskValue,
                                                           componentClass,
                                                           uniqueId,
                                                           elementId,
-                                                          valueName);
+                                                          valName);
     const String discoveryUrl = MQTT_DiscoveryBuildValueTopic(discoveryTopic,
                                                               event,
                                                               taskValue,
                                                               componentClass,
                                                               uniqueId,
                                                               elementId,
-                                                              valueName);
+                                                              valName);
     const String discoveryMessage = strformat(F("{\"~\":\"%s\",\"name\":\"%s %s\",\"uniq_id\":\"%s\",%s"
                                                 "\"%s\":\"%s\"%s%s,\"stat_t\":\"~\""
                                                 "%s}"), // deviceElement last
-                                              publish.c_str(), taskName.c_str(), valueName.c_str(), uniqueId.c_str(), schema.c_str(),
+                                              publish.c_str(), taskName.c_str(), valName.c_str(), uniqueId.c_str(), schema.c_str(),
                                               devOrIcon.c_str(), deviceClass.c_str(), withUoM.c_str(), withSet.c_str(),
                                               deviceElement.c_str());
     const String triggerMessage = strformat(F("{\"atype\":\"trigger\",\"t\":\"%s\",\"pl\":\"{\\\"TRIG\\\":\\\"%s\\\"}\","
