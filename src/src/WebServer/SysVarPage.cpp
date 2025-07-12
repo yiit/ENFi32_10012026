@@ -406,6 +406,7 @@ void handle_sysvars() {
       F("Timestamp to date/time: %c_ts2date%(%unixtime_lcl%)"),
       F("Timestamp to date/time am/pm: %c_ts2date%(%unixtime_lcl%,1)"),
       F("Timestamp to weekday: %c_ts2wday%(%unixtime_lcl%)"),
+      F("Timestamp to ISO date/time: %c_ts2isodate%(%unixtime_lcl%)"),
 # endif // if FEATURE_STRING_VARIABLES
 
 
