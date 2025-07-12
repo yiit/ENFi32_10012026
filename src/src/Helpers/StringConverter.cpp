@@ -1741,7 +1741,8 @@ String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm, bool iso_
   struct tm ts;
   ts = *localtime(&unix_timestamp);
 
-  return formatDateTimeString(ts, '-', ':', iso_format ? 'T' : ' ', am_pm && !iso_format);
+  return formatDateTimeString(ts, '-', ':', iso_format ? 'T' : ' ', am_pm && !iso_format)
+          + (iso_format ? node_time.getTimeZoneOffsetString() : EMPTY_STRING);
 }
 
 String get_weekday_from_timestamp(time_t unix_timestamp) {
