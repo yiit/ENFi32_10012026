@@ -97,6 +97,7 @@ uint8_t getValueCountFromSensorType(Sensor_VType sensorType, bool log)
     case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
     case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
     case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
+    case Sensor_VType::SENSOR_TYPE_DATETIME:
       return 1;
   }
   #ifndef BUILD_NO_DEBUG
@@ -183,6 +184,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_DATA_SIZE:        return F("Data size");
     case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:   return F("Sound pressure");
     case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:  return F("Signal strength");
+    case Sensor_VType::SENSOR_TYPE_DATETIME:         return F("Date/Time");
     #else // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
     case Sensor_VType::SENSOR_TYPE_ANALOG_ONLY:
     case Sensor_VType::SENSOR_TYPE_TEMP_ONLY:
@@ -223,6 +225,7 @@ const __FlashStringHelper* getSensorTypeLabel(Sensor_VType sensorType) {
     case Sensor_VType::SENSOR_TYPE_DATA_SIZE:
     case Sensor_VType::SENSOR_TYPE_SOUND_PRESSURE:
     case Sensor_VType::SENSOR_TYPE_SIGNAL_STRENGTH:
+    case Sensor_VType::SENSOR_TYPE_DATETIME:
       break;
     #endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
   }
@@ -323,7 +326,7 @@ const char mqtt_valueType_ha_deviceclass_names[] PROGMEM = // !! Offset, startin
   "volatile_organic_compounds|pressure|mdi:palette|mdi:palette|mdi:palette|" // TVOC_ONLY .. COLOR_BLUE_ONLY
   "mdi:temperature-kelvin|power|aqi|nitrogen_dioxide|" // COLOR_TEMP_ONLY .. NOX_ONLY
   "|wind_speed|duration|date|" // SWITCH_INVERTED .. DATE
-  "timestamp|data_rate|data_size|sound_pressure|signal_strength|" // TIMESTAMP .. SIGNAL_STRENGTH
+  "timestamp|data_rate|data_size|sound_pressure|signal_strength|datetime|" // TIMESTAMP .. DATETIME
   ;
 
 /**
@@ -357,7 +360,7 @@ const char mqtt_valueType_default_ha_uom_names[] PROGMEM = // !! Offset, startin
   "ppd|hPa|lx|lx|lx|" // TVOC_ONLY .. COLOR_BLUE_ONLY
   "K|var||µg/m³|" // COLOR_TEMP_ONLY .. NOX_ONLY
   "|m/s|min||" // SWITCH_INVERTED .. DATE
-  "|bit/s|B|dB|dBm|" // TIMESTAMP .. SIGNAL_STRENGTH
+  "|bit/s|B|dB|dBm||" // TIMESTAMP .. DATETIME
   ;
 
 /**
