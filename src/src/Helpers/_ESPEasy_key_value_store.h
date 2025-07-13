@@ -52,7 +52,7 @@ public:
   bool   store(SettingsType::Enum settingsType, int index, uint32_t offset_in_block); 
 
   // Count all data to estimate how much storage space it would require to store everything in a somewhat compact form.
-  size_t getStorageSize() const;
+  size_t getPayloadStorageSize() const;
 
   // Check to see if there is a key stored with given storage type
   bool   hasKey(StorageType storageType,
