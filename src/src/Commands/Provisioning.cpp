@@ -102,6 +102,9 @@ String Command_Provisioning_NotificationFallback(struct EventStruct *event, cons
   return Command_Provisioning_Notification();
 }
 
+#  endif // if FEATURE_NOTIFIER
+
+
 String Command_Provisioning_ProvisionFallback(struct EventStruct *event, const char *Line)
 {
   Command_Provisioning_DeprecatedMessage(F("Provision"));
@@ -130,7 +133,6 @@ String Command_Provisioning_FirmwareFallback(struct EventStruct *event, const ch
   return error;
 }
 
-#  endif // if FEATURE_NOTIFIER
 
 # endif // ifdef PLUGIN_BUILD_MAX_ESP32
 

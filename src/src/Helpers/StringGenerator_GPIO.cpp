@@ -183,7 +183,7 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
   if (gpio == PIN_USB_D_PLUS) { return F("USB_D+"); }
 #endif
 
-  if (isFlashInterfacePin_ESPEasy(gpio)) {
+  if (!ignorePSRAMpins && isFlashInterfacePin_ESPEasy(gpio)) {
     return F("Flash");
   }
 

@@ -27,6 +27,9 @@ const __FlashStringHelper * SettingsType::getSettingsTypeString(Enum settingsTyp
     #if FEATURE_ALTERNATIVE_CDN_URL
     case Enum::CdnSettings_Type:               return F("CDN_url");
     #endif
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+    case Enum::NetworkInterfaceSettings_Type:  return F("NetworkInterface");
+#endif
 
     case Enum::SettingsType_MAX: break;
   }
@@ -118,6 +121,18 @@ bool SettingsType::getSettingsParameters(Enum settingsType, int index, int& max_
       struct_size = 0;
       break;
     }
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+    case Enum::NetworkInterfaceSettings_Type:
+    {
+      max_index = NETWORK_MAX;
+      offset    = DAT_NETWORK_INTERFACES_OFFSET + index * (DAT_NETWORK_INTERFACE_SIZE);
+      max_size  = DAT_NETWORK_INTERFACE_SIZE;
+
+      // struct_size may differ.
+      struct_size = 0;
+      break;
+    }
+#endif
 #if FEATURE_ALTERNATIVE_CDN_URL
     case Enum::CdnSettings_Type:
     {
@@ -195,6 +210,10 @@ unsigned int SettingsType::getSVGcolor(Enum settingsType) {
       return 0xFAC05E;
     case Enum::NotificationSettings_Type:
       return 0xF79D84;
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+    case Enum::NetworkInterfaceSettings_Type:
+      return 0x84F79D;
+#endif
 
     case Enum::SecuritySettings_Type:
       return 0xff00a2;
@@ -223,7 +242,10 @@ SettingsType::SettingsFileEnum SettingsType::getSettingsFile(Enum settingsType)
 #if FEATURE_ALTERNATIVE_CDN_URL
     case Enum::CdnSettings_Type:
 #endif
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+    case Enum::NetworkInterfaceSettings_Type:
       return SettingsFileEnum::FILE_CONFIG_type;
+#endif
     case Enum::NotificationSettings_Type:
       return SettingsFileEnum::FILE_NOTIFICATION_type;
     case Enum::SecuritySettings_Type:

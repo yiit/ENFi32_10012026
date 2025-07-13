@@ -19,6 +19,8 @@ public:
 #if FEATURE_ALTERNATIVE_CDN_URL
     CdnSettings_Type,
 #endif
+    NetworkInterfaceSettings_Type,
+
 
     SettingsType_MAX
   };
