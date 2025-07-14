@@ -20,17 +20,26 @@ public:
 
 
   int32_t                               getInt32() const;
-  void                                  setInt32(int32_t value);
+
+  // Return true when content has changed
+  bool                                  setInt32(int32_t value);
 
   uint32_t                              getUint32() const;
-  void                                  setUint32(uint32_t value);
+
+  // Return true when content has changed
+  bool                                  setUint32(uint32_t value);
 
   float                                 getFloat() const;
-  void                                  setFloat(float value);
+
+  // Return true when content has changed
+  bool                                  setFloat(float value);
 
   uint8_t*                              getBinary()       { return binary; }
 
   const uint8_t*                        getBinary() const { return binary; }
+
+  // Return true when content has changed
+  bool                                  set(const void*value);
 
 private:
 
@@ -54,17 +63,27 @@ public:
 
 
   int64_t                               getInt64() const;
-  void                                  setInt64(int64_t value);
+
+  // Return true when content has changed
+  bool                                  setInt64(int64_t value);
 
   uint64_t                              getUint64() const;
-  void                                  setUint64(uint64_t value);
+
+  // Return true when content has changed
+  bool                                  setUint64(uint64_t value);
 
   double                                getDouble() const;
-  void                                  setDouble(double value);
+
+  // Return true when content has changed
+  bool                                  setDouble(double value);
 
   uint8_t*                              getBinary()       { return binary; }
 
   const uint8_t*                        getBinary() const { return binary; }
+
+
+  // Return true when content has changed
+  bool set(const void*value);
 
 private:
 

@@ -10,6 +10,8 @@
 # define NWPLUGIN_ID_005         5
 # define NWPLUGIN_NAME_005       "PPP modem"
 
+#include "src/NWPluginStructs/NW005_data_struct_PPP_modem.h"
+
 # include "src/DataStructs/ESPEasy_EventStruct.h"
 
 # include "src/ESPEasyCore/ESPEasyNetwork.h"
@@ -137,6 +139,11 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
+      initNWPluginData(event->NetworkIndex, new (std::nothrow) NW005_data_struct_PPP_modem);
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      if (NW_data) {
+        
+      }
       break;
     }
 

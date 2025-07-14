@@ -47,13 +47,28 @@ public:
 
   };
 
+  enum class State {
+    Empty,
+    NotChanged, // Not changed since last load/save
+    Changed,
+    ErrorOnLoad,
+    ErrorOnSave
 
-  bool load(SettingsType::Enum settingsType,
-            int                index,
-            uint32_t           offset_in_block);
-  bool store(SettingsType::Enum settingsType,
+  };
+
+  State getState() const { return _state; }
+
+  bool  isEmpty() const;
+
+  void  clear();
+
+
+  bool  load(SettingsType::Enum settingsType,
              int                index,
              uint32_t           offset_in_block);
+  bool  store(SettingsType::Enum settingsType,
+              int                index,
+              uint32_t           offset_in_block);
 
   // Count all data to estimate how much storage space it would require to store everything in a somewhat compact form.
   size_t getPayloadStorageSize() const;
@@ -76,6 +91,8 @@ public:
                 String & value) const;
   void setValue(uint32_t      key,
                 const String& value);
+  void setValue(uint32_t                  key,
+                const __FlashStringHelper*value);
   void setValue(uint32_t key,
                 String&& value);
 
@@ -175,15 +192,26 @@ private:
   // Update cache to indicate we have at least one of the given storage type
   void setHasStorageType(StorageType storageType);
 
+  typedef std::map<uint32_t, ESPEasy_key_value_store_4byte_data_t>map_4byte_data;
+  typedef std::map<uint32_t, ESPEasy_key_value_store_8byte_data_t>map_8byte_data;
+
+  map_4byte_data::const_iterator get4byteIterator(
+    ESPEasy_key_value_store::StorageType storageType,
+    uint32_t                             key) const;
+  map_8byte_data::const_iterator get8byteIterator(
+    ESPEasy_key_value_store::StorageType storageType,
+    uint32_t                             key) const;
+
   String _lastError;
 
   std::map<uint32_t, String>_string_data{};
-  std::map<uint32_t, ESPEasy_key_value_store_4byte_data_t>_4byte_data{};
-  std::map<uint32_t, ESPEasy_key_value_store_8byte_data_t>_8byte_data{};
+  map_4byte_data _4byte_data{};
+  map_8byte_data _8byte_data{};
 
   uint32_t _storage_type_present_cache{};
 
   // TODO TD-er: Add checksum and invalidate whenever anyting is being stored.
+  State _state{ State::Empty };
 
 }; // class ESPEasy_key_value_store
 

@@ -54,6 +54,22 @@ size_t getStorageSizePerType(ESPEasy_key_value_store::StorageType storageType)
   return 0;
 }
 
+bool ESPEasy_key_value_store::isEmpty() const
+{
+  return
+    _4byte_data.empty() &&
+    _8byte_data.empty() &&
+    _string_data.empty();
+}
+
+void ESPEasy_key_value_store::clear()
+{
+  _4byte_data.clear();
+  _8byte_data.clear();
+  _string_data.clear();
+  _state = State::Empty;
+}
+
 bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, uint32_t offset_in_block)
 {
   int offset, max_size;
@@ -66,6 +82,8 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
     #endif // ifndef BUILD_NO_DEBUG
     return false;
   }
+
+  clear();
 
   const uint32_t bufferSize = 128;
 
@@ -94,6 +112,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
   const size_t startChecksumPos = offset_in_block + 4 + payloadSize;
 
   if ((offset_in_block + totalSize) > static_cast<size_t>(max_size)) {
+    _state     = State::ErrorOnLoad;
     _lastError = strformat(F("KVS: Total size %d + offset %d exceeds max size %d"), totalSize, offset_in_block, max_size);
     #ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_DEBUG, _lastError);
@@ -136,6 +155,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
 
         if ((sizePerType < 4) && (storageType != ESPEasy_key_value_store::StorageType::string_type)) {
           // Should not happen as those should not be stored in the file
+          _state     = State::ErrorOnLoad;
           _lastError = strformat(F("KVS: Invalid storage type %d at readPos %d"), static_cast<int>(storageType), LOG_READPOS_OFFSET);
           addLog(LOG_LEVEL_ERROR, _lastError);
           return false;
@@ -170,6 +190,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
 
               if (!partialString.reserve(bytesLeftPartialString))
               {
+                _state     = State::ErrorOnLoad;
                 _lastError = strformat(F("KVS: Could not allocate string size %d at readPos %d"), bytesLeftPartialString, LOG_READPOS_OFFSET);
                 addLog(LOG_LEVEL_ERROR, _lastError);
                 return false;
@@ -186,6 +207,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
               partialString += c;
             } else if (bytesLeftPartialString > 0) {
               // What to do here if bytesLeftPartialString != 0 ????
+              _state     = State::ErrorOnLoad;
               _lastError = strformat(F("KVS: Unexpected end-of-string, expected %d more at readPos %d"),
                                      bytesLeftPartialString,
                                      LOG_READPOS_OFFSET);
@@ -235,6 +257,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
       }
 
       if ((bufPos_start_loop == bufPos) && !loadNextFromFile) {
+        _state     = State::ErrorOnLoad;
         _lastError = strformat(F("KVS: BUG! Did not increment bufPos while processing StorageType %d at readPos %d"),
                                static_cast<int>(storageType), LOG_READPOS_OFFSET);
         addLog(LOG_LEVEL_ERROR, _lastError);
@@ -246,16 +269,23 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
   }
 
   // TODO TD-er: Read checksum
+  _state = State::NotChanged;
   return true;
 }
 
 bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, uint32_t offset_in_block)
 {
+  if (getState() == State::NotChanged) {
+    addLog(LOG_LEVEL_INFO, F("KVS: Content not changed, no need to save"));
+    return true;
+  }
+
   // FIXME TD-er: Must add some check to see if the existing data has changed before saving.
   int offset, max_size;
 
   if (!SettingsType::getSettingsParameters(settingsType, index, offset, max_size))
   {
+    _state     = State::ErrorOnSave;
     _lastError = F("KVS: Invalid index");
     #ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_DEBUG, _lastError);
@@ -290,6 +320,7 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
   const size_t startChecksumPos = offset_in_block + 4 + payloadSize;
 
   if ((offset_in_block + totalSize) > static_cast<size_t>(max_size)) {
+    _state     = State::ErrorOnSave;
     _lastError = strformat(F("KVS: Total size %d + offset %d exceeds max size %d"), totalSize, offset_in_block, max_size);
     #ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_DEBUG, _lastError);
@@ -425,6 +456,7 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
 
         }
       } else {
+        _state     = State::ErrorOnSave;
         _lastError = strformat(F("KVS: BUG! Should not have storage type %d stored with 0 bytes at writePos %d"),
                                static_cast<int>(storageType), writePos + bufPos);
         addLog(LOG_LEVEL_ERROR, _lastError);
@@ -457,7 +489,10 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
     bufPos          = 0;
   }
 
+  // Consider a successful save the same as a fresh load.
+  // The data is now the same as what is stored
 
+  _state = State::NotChanged;
   return true;
 }
 
@@ -528,67 +563,84 @@ ESPEasy_key_value_store::StorageType ESPEasy_key_value_store::getStorageType(uin
 
 bool ESPEasy_key_value_store::getValue(uint32_t key, String& value) const
 {
-  auto it = _string_data.find(key);
+  const uint32_t combined_key = combine_StorageType_and_key(
+    ESPEasy_key_value_store::StorageType::string_type,
+    key);
+
+  auto it = _string_data.find(combined_key);
 
   if (it == _string_data.end()) { return false; }
   value = it->second;
   return true;
 }
 
-void ESPEasy_key_value_store::setValue(uint32_t key, const String& value)
-{
-  _string_data[key] = value;
-  setHasStorageType(ESPEasy_key_value_store::StorageType::string_type);
-}
+void ESPEasy_key_value_store::setValue(uint32_t key, const String& value) { setValue(key, String(value)); }
+
+void ESPEasy_key_value_store::setValue(uint32_t                  key,
+                                       const __FlashStringHelper*value) { setValue(key, String(value)); }
 
 void ESPEasy_key_value_store::setValue(uint32_t key, String&& value)
 {
-  auto it = _string_data.find(key);
+  const uint32_t combined_key = combine_StorageType_and_key(
+    ESPEasy_key_value_store::StorageType::string_type,
+    key);
+  auto it = _string_data.find(combined_key);
 
   if (it == _string_data.end()) {
     // Does not yet exist.
-    _string_data.emplace(key, std::move(value));
+    _string_data.emplace(combined_key, std::move(value));
+    _state = State::Changed;
   } else {
-    it->second = std::move(value);
+    if (!it->second.equals(value)) {
+      it->second = std::move(value);
+      _state     = State::Changed;
+    }
   }
+  setHasStorageType(ESPEasy_key_value_store::StorageType::string_type);
 }
 
-#define GET_4BYTE_TYPE(T, GF)                                        \
-        if (hasStorageType(ESPEasy_key_value_store::StorageType::T)) \
-        { const uint32_t combined_key = combine_StorageType_and_key( \
-            ESPEasy_key_value_store::StorageType::T, key);           \
-          auto it = _4byte_data.find(combined_key);                  \
-          if (it != _4byte_data.end()) {                             \
-            value = it->second.GF();                                 \
-            return true;                                             \
-          }                                                          \
-        }                                                            \
-        return false;
+ESPEasy_key_value_store::map_4byte_data::const_iterator ESPEasy_key_value_store::get4byteIterator(
+  ESPEasy_key_value_store::StorageType storageType,
+  uint32_t                             key) const
+{
+  if (!hasStorageType(storageType)) { return _4byte_data.end(); }
+  const uint32_t combined_key = combine_StorageType_and_key(storageType, key);
+  return _4byte_data.find(combined_key);
+}
 
-#define GET_8BYTE_TYPE(T, GF)                                        \
-        if (hasStorageType(ESPEasy_key_value_store::StorageType::T)) \
-        { const uint32_t combined_key = combine_StorageType_and_key( \
-            ESPEasy_key_value_store::StorageType::T, key);           \
-          auto it = _8byte_data.find(combined_key);                  \
-          if (it != _8byte_data.end()) {                             \
-            value = it->second.GF();                                 \
-            return true;                                             \
-          }                                                          \
-        }                                                            \
-        return false;
+ESPEasy_key_value_store::map_8byte_data::const_iterator ESPEasy_key_value_store::get8byteIterator(
+  ESPEasy_key_value_store::StorageType storageType,
+  uint32_t                             key) const
+{
+  if (!hasStorageType(storageType)) { return _8byte_data.end(); }
+  const uint32_t combined_key = combine_StorageType_and_key(storageType, key);
+  return _8byte_data.find(combined_key);
+}
+
+#define GET_4BYTE_TYPE(T, GF)                                                     \
+        auto it = get4byteIterator(ESPEasy_key_value_store::StorageType::T, key); \
+        if (it == _4byte_data.end()) return false;                                \
+        value = it->second.GF();                                                  \
+        return true;                                                              \
+
+#define GET_8BYTE_TYPE(T, GF)                                                     \
+        auto it = get8byteIterator(ESPEasy_key_value_store::StorageType::T, key); \
+        if (it == _8byte_data.end()) return false;                                \
+        value = it->second.GF();                                                  \
+        return true;                                                              \
 
 
-#define SET_4BYTE_TYPE(T, SF)                                      \
-        const uint32_t combined_key = combine_StorageType_and_key( \
-          ESPEasy_key_value_store::StorageType::T, key);           \
-        _4byte_data[combined_key].SF(value);                       \
+#define SET_4BYTE_TYPE(T, SF)                                             \
+        const uint32_t combined_key = combine_StorageType_and_key(        \
+          ESPEasy_key_value_store::StorageType::T, key);                  \
+        if (_4byte_data[combined_key].SF(value)) _state = State::Changed; \
         setHasStorageType(ESPEasy_key_value_store::StorageType::T);
 
 
-#define SET_8BYTE_TYPE(T, SF)                                      \
-        const uint32_t combined_key = combine_StorageType_and_key( \
-          ESPEasy_key_value_store::StorageType::T, key);           \
-        _8byte_data[combined_key].SF(value);                       \
+#define SET_8BYTE_TYPE(T, SF)                                             \
+        const uint32_t combined_key = combine_StorageType_and_key(        \
+          ESPEasy_key_value_store::StorageType::T, key);                  \
+        if (_8byte_data[combined_key].SF(value)) _state = State::Changed; \
         setHasStorageType(ESPEasy_key_value_store::StorageType::T);
 
 bool ESPEasy_key_value_store::getValue(uint32_t key, int8_t& value) const
@@ -767,8 +819,9 @@ void ESPEasy_key_value_store::setValue(
   if (it == _4byte_data.end()) {
     // new entry
     _4byte_data.emplace(combined_key, value);
+    _state = State::Changed;
   } else {
-    memcpy(it->second.getBinary(), value.getBinary(), 4);
+    if (it->second.set(value.getBinary())) { _state = State::Changed; }
   }
 }
 
@@ -795,8 +848,9 @@ void ESPEasy_key_value_store::setValue(
   if (it == _8byte_data.end()) {
     // new entry
     _8byte_data.emplace(combined_key, value);
+    _state = State::Changed;
   } else {
-    memcpy(it->second.getBinary(), value.getBinary(), 8);
+    if (it->second.set(value.getBinary())) { _state = State::Changed; }
   }
 }
 
@@ -815,7 +869,10 @@ void ESPEasy_key_value_store::setHasStorageType(StorageType storageType)
   constexpr uint32_t max_bitnr = static_cast<uint32_t>(StorageType::MAX_Type);
 
   if (bitnr < max_bitnr) {
-    bitSet(_storage_type_present_cache, bitnr);
+    if (!bitRead(_storage_type_present_cache, bitnr)) {
+      _state = State::Changed;
+      bitSet(_storage_type_present_cache, bitnr);
+    }
   }
 
   // TODO TD-er: Whenever this is called, there has been a change, so invalidate checksum

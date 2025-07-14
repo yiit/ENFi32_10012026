@@ -32,7 +32,7 @@ int32_t ESPEasy_key_value_store_4byte_data_t::getInt32() const
   return res;
 }
 
-void     ESPEasy_key_value_store_4byte_data_t::setInt32(int32_t value) { memcpy(binary, &value, size_32bit); }
+bool     ESPEasy_key_value_store_4byte_data_t::setInt32(int32_t value) { return set(&value); }
 
 uint32_t ESPEasy_key_value_store_4byte_data_t::getUint32() const
 {
@@ -42,7 +42,7 @@ uint32_t ESPEasy_key_value_store_4byte_data_t::getUint32() const
   return res;
 }
 
-void  ESPEasy_key_value_store_4byte_data_t::setUint32(uint32_t value) { memcpy(binary, &value, size_32bit); }
+bool  ESPEasy_key_value_store_4byte_data_t::setUint32(uint32_t value) { return set(&value); }
 
 float ESPEasy_key_value_store_4byte_data_t::getFloat() const
 {
@@ -52,4 +52,11 @@ float ESPEasy_key_value_store_4byte_data_t::getFloat() const
   return res;
 }
 
-void ESPEasy_key_value_store_4byte_data_t::setFloat(float value) { memcpy(binary, &value, size_32bit); }
+bool ESPEasy_key_value_store_4byte_data_t::setFloat(float value) { return set(&value); }
+
+bool ESPEasy_key_value_store_4byte_data_t::set(const void*value)
+{
+  if (memcmp(binary, value, size_32bit) == 0) { return false; }
+  memcpy(binary, value, size_32bit);
+  return true;
+}
