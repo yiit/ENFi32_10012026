@@ -1,9 +1,11 @@
 #include "../src/_NWPlugin_Helper.h"
 
-#include "src/CustomBuild/ESPEasyLimits.h"
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
-#include "src/Globals/NWPlugins.h"
-#include "src/Globals/Settings.h"
+# include "src/CustomBuild/ESPEasyLimits.h"
+
+# include "src/Globals/NWPlugins.h"
+# include "src/Globals/Settings.h"
 
 NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];
 
@@ -32,9 +34,9 @@ bool initNWPluginData(networkIndex_t networkIndex, NWPluginData_base *data) {
   }
 
   // 2nd heap may have been active to allocate the NWPluginData, but here we need to keep the default heap active
-  #ifdef USE_SECOND_HEAP
+  # ifdef USE_SECOND_HEAP
   HeapSelectDram ephemeral;
-  #endif // ifdef USE_SECOND_HEAP
+  # endif // ifdef USE_SECOND_HEAP
 
 
   clearNWPluginData(networkIndex);
@@ -45,9 +47,7 @@ bool initNWPluginData(networkIndex_t networkIndex, NWPluginData_base *data) {
         delete data;
         data = nullptr;
       } else {
-        NWPlugin_task_data[networkIndex]                    = data;
-        NWPlugin_task_data[networkIndex]->_nw_data_pluginID = Settings.getNWPluginID_for_network(networkIndex);
-        NWPlugin_task_data[networkIndex]->_networkIndex     = networkIndex;
+        NWPlugin_task_data[networkIndex] = data;
       }
     } else {
       delete data;
@@ -79,5 +79,7 @@ bool nwpluginTaskData_initialized(networkIndex_t networkIndex) {
     return false;
   }
   return NWPlugin_task_data[networkIndex] != nullptr &&
-         (NWPlugin_task_data[networkIndex]->_nw_data_pluginID == Settings.getNWPluginID_for_network(networkIndex));
+         (NWPlugin_task_data[networkIndex]->getNWWPluginID() == Settings.getNWPluginID_for_network(networkIndex));
 }
+
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

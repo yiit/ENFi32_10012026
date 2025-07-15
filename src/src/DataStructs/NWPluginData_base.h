@@ -3,10 +3,11 @@
 
 #include "../../ESPEasy_common.h"
 
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
-#include "../DataTypes/NWPluginID.h"
-#include "../DataTypes/NetworkIndex.h"
-#include "../Helpers/_ESPEasy_key_value_store.h"
+# include "../DataTypes/NWPluginID.h"
+# include "../DataTypes/NetworkIndex.h"
+# include "../Helpers/_ESPEasy_key_value_store.h"
 
 // ==============================================
 // Data used by instances of NW-plugins.
@@ -16,7 +17,7 @@
 // N.B. in order to use this, a data object must inherit from this base class.
 //      This is a compile time check.
 struct NWPluginData_base {
-  NWPluginData_base();
+  NWPluginData_base(nwpluginID_t nwpluginID, networkIndex_t networkIndex);
 
   virtual ~NWPluginData_base();
 
@@ -28,14 +29,10 @@ struct NWPluginData_base {
                          const String      & string);
 
 
-  // We cannot use dynamic_cast, so we must keep track of the plugin ID to
-  // perform checks on the casting.
-  // This is also a check to only use these functions and not to insert pointers
-  // at random in the Plugin_task_data array.
-  nwpluginID_t _nw_data_pluginID = INVALID_NW_PLUGIN_ID;
-  networkIndex_t _networkIndex = INVALID_NETWORK_INDEX;
+  // Should only be called from initNWPluginData
+  bool         init_KVS();
 
-  bool init_KVS();
+  nwpluginID_t getNWWPluginID() const { return _nw_data_pluginID; }
 
 protected:
 
@@ -47,12 +44,20 @@ protected:
   // Save settings from the _kvs to the settings
   bool _store();
 
-  ESPEasy_key_value_store *_kvs=nullptr;
+  ESPEasy_key_value_store *_kvs = nullptr;
+
+  // We cannot use dynamic_cast, so we must keep track of the plugin ID to
+  // perform checks on the casting.
+  // This is also a check to only use these functions and not to insert pointers
+  // at random in the Plugin_task_data array.
+  nwpluginID_t   _nw_data_pluginID = INVALID_NW_PLUGIN_ID;
+  networkIndex_t _networkIndex     = INVALID_NETWORK_INDEX;
 
   bool _baseClassOnly = false;
+
 };
 
 
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
-
-#endif
+#endif // ifndef DATASTRUCTS_NWPLUGINDATA_BASE_H

@@ -10,7 +10,7 @@
 # define NWPLUGIN_ID_005         5
 # define NWPLUGIN_NAME_005       "PPP modem"
 
-#include "src/NWPluginStructs/NW005_data_struct_PPP_modem.h"
+# include "src/NWPluginStructs/NW005_data_struct_PPP_modem.h"
 
 # include "src/DataStructs/ESPEasy_EventStruct.h"
 
@@ -35,9 +35,9 @@
 # include "src/WebServer/Markup_Forms.h"
 # include "src/WebServer/common.h"
 
-#include <ESPEasySerialPort.h>
+# include <ESPEasySerialPort.h>
 
-#include <PPP.h>
+# include <PPP.h>
 
 bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String& string)
 {
@@ -80,69 +80,51 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
     {
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      bool mustCleanup                     = NW_data == nullptr;
+
+      if (mustCleanup) {
+        NW_data = new (std::nothrow) NW005_data_struct_PPP_modem(event->NetworkIndex);
+        NW_data->init_KVS();
+      }
+
+      if (NW_data) {
+        NW_data->webform_save(event);
+
+        if (mustCleanup) { delete NW_data; }
+
+      }
 
       break;
     }
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
-      // TODO TD-er: We cannot use ESPEasySerialPort here as PPPClass needs to handle the pins using periman
-{
-    const int ids[] = {
-    static_cast<int>(ESPEasySerialPort::serial0)
-#if USABLE_SOC_UART_NUM > 1
-    ,static_cast<int>(ESPEasySerialPort::serial1)
-#endif
-#if USABLE_SOC_UART_NUM > 2
-    ,static_cast<int>(ESPEasySerialPort::serial2)
-#endif 
-#if USABLE_SOC_UART_NUM > 3
-    ,static_cast<int>(ESPEasySerialPort::serial3)
-#endif 
-#if USABLE_SOC_UART_NUM > 4
-    ,static_cast<int>(ESPEasySerialPort::serial4)
-#endif 
-#if USABLE_SOC_UART_NUM > 5
-    ,static_cast<int>(ESPEasySerialPort::serial5)
-#endif 
-  };
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      bool mustCleanup                     = NW_data == nullptr;
 
-  constexpr int NR_ESPEASY_SERIAL_TYPES = NR_ELEMENTS(ids);
-  const __FlashStringHelper* options[] = {
-    serialHelper_getSerialTypeLabel(ESPEasySerialPort::serial0)
-#if USABLE_SOC_UART_NUM > 1
-    ,serialHelper_getSerialTypeLabel(ESPEasySerialPort::serial1)
-#endif
-#if USABLE_SOC_UART_NUM > 2
-    ,serialHelper_getSerialTypeLabel(ESPEasySerialPort::serial2)
-#endif 
-#if USABLE_SOC_UART_NUM > 3
-    ,serialHelper_getSerialTypeLabel(ESPEasySerialPort::serial3)
-#endif 
-#if USABLE_SOC_UART_NUM > 4
-    ,serialHelper_getSerialTypeLabel(ESPEasySerialPort::serial4)
-#endif 
-#if USABLE_SOC_UART_NUM > 5
-    ,serialHelper_getSerialTypeLabel(ESPEasySerialPort::serial5)
-#endif 
-  };
-  FormSelectorOptions selector(NR_ESPEASY_SERIAL_TYPES, options, ids);
+      if (mustCleanup) {
+        NW_data = new (std::nothrow) NW005_data_struct_PPP_modem(event->NetworkIndex);
+        NW_data->init_KVS();
+      }
 
-//  selector.addFormSelector(F("Serial Port"), F("serPort"), port);
+      if (NW_data) {
+        NW_data->webform_load(event);
 
-}
+        if (mustCleanup) { delete NW_data; }
 
-
+      }
 
       break;
     }
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
-      initNWPluginData(event->NetworkIndex, new (std::nothrow) NW005_data_struct_PPP_modem);
+      initNWPluginData(event->NetworkIndex, new (std::nothrow) NW005_data_struct_PPP_modem(event->NetworkIndex));
       NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+
       if (NW_data) {
-        NW_data->testWrite();
+        //        NW_data->testWrite();
 
       }
       break;
@@ -151,8 +133,9 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
     case NWPlugin::Function::NWPLUGIN_EXIT:
     {
       NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+
       if (NW_data) {
-        NW_data->testRead();        
+        //        NW_data->testRead();
       }
       break;
     }

@@ -11,6 +11,7 @@
 // Generic storage layer, which on a low level will store everything as a string.
 // Low level storage structure:
 // - uint8_t:    version of storage layer
+// - uint8_t[2]: ID to match, if not matched, then stop loading
 // - uint8_t[3]: rawSize (offset to start of checksum)
 // - List of key/value pairs:
 //   - uint8_t:    storage type
@@ -75,10 +76,12 @@ public:
 
   bool                                        load(SettingsType::Enum settingsType,
                                                    int                index,
-                                                   uint32_t           offset_in_block);
-  bool                                        store(SettingsType::Enum settingsType,
-                                                    int                index,
-                                                    uint32_t           offset_in_block);
+                                                   uint32_t           offset_in_block,
+                                                   uint16_t           id_to_match);
+  bool store(SettingsType::Enum settingsType,
+             int                index,
+             uint32_t           offset_in_block,
+             uint16_t           id_to_match);
 
   // Count all data to estimate how much storage space it would require to store everything in a somewhat compact form.
   size_t getPayloadStorageSize() const;
@@ -165,15 +168,21 @@ public:
   // Generic get function for any given storageType/key and represent its value as a string.
   // Return false when storageType/key is not present.
   bool getValueAsString(const StorageType& storageType,
-                        uint32_t     key,
-                        String     & value) const;
+                        uint32_t           key,
+                        String           & value) const;
+
+  bool getValueAsString(uint32_t key,
+                        String & value) const;
+
+  bool getValueAsInt(uint32_t key,
+                        int64_t & value) const;
 
   // Generic set function for any given storageType/key.
   // Given value is a string representation of that storage type.
   // TODO TD-er: Implement
-  void setValue(const StorageType & storageType,
-                uint32_t      key,
-                const String& value);
+  void setValue(const StorageType& storageType,
+                uint32_t           key,
+                const String     & value);
 
   String getLastError() const { return _lastError; }
 

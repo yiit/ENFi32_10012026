@@ -8,8 +8,11 @@
 
 struct NW005_data_struct_PPP_modem : public NWPluginData_base {
 
-  NW005_data_struct_PPP_modem();
+  NW005_data_struct_PPP_modem(networkIndex_t networkIndex);
   ~NW005_data_struct_PPP_modem();
+
+  void webform_load(struct EventStruct *event);
+  void webform_save(struct EventStruct *event);
 
   void testWrite();
 
