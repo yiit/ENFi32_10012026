@@ -11,7 +11,7 @@ NW005_data_struct_PPP_modem::~NW005_data_struct_PPP_modem() {}
 
 struct testStruct {
   String   foo1 = F("test123");
-  int32_t  foo2 = -123;
+  int64_t  foo2 = -123;
   uint32_t foo3 = 123;
 
 
@@ -20,9 +20,7 @@ struct testStruct {
 void NW005_data_struct_PPP_modem::testWrite()
 {
   if (!_KVS_initialized()) { return; }
-  _load();
-
-  for (int i = 0; i < 30; ++i) {
+  for (int i = 0; i < 5; ++i) {
     testStruct _test{ .foo1=concat(F("str_"), (3 * (i) + 1)), .foo2=-1l * (3 * (i) + 2), .foo3=3 * (i) + 3 };
     _kvs->setValue(3 * (i) + 1, _test.foo1);
     _kvs->setValue(3 * (i) + 2, _test.foo2);
@@ -31,7 +29,14 @@ void NW005_data_struct_PPP_modem::testWrite()
 
   _kvs->dump();
 
+
+//  _kvs->clear();
   _store();
+
+    _load();
+
+    _kvs->dump();
+
 }
 
 void NW005_data_struct_PPP_modem::testRead()

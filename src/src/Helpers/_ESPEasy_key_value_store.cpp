@@ -36,20 +36,20 @@ size_t getStorageSizePerType(ESPEasy_key_value_store::StorageType storageType)
   {
     case ESPEasy_key_value_store::StorageType::not_set:      break;
     case ESPEasy_key_value_store::StorageType::string_type:  break;
-    case ESPEasy_key_value_store::StorageType::int8_type:    return 4 + 1;
-    case ESPEasy_key_value_store::StorageType::uint8_type:   return 4 + 1;
-    case ESPEasy_key_value_store::StorageType::int16_type:   return 4 + 2;
-    case ESPEasy_key_value_store::StorageType::uint16_type:  return 4 + 2;
-    case ESPEasy_key_value_store::StorageType::int32_type:   return 4 + 4;
-    case ESPEasy_key_value_store::StorageType::uint32_type:  return 4 + 4;
-    case ESPEasy_key_value_store::StorageType::int64_type:   return 4 + 8;
-    case ESPEasy_key_value_store::StorageType::uint64_type:  return 4 + 8;
-    case ESPEasy_key_value_store::StorageType::float_type:   return 4 + 4;
-    case ESPEasy_key_value_store::StorageType::double_type:  return 4 + 8;
-    case ESPEasy_key_value_store::StorageType::bool_type:    return 4 + 0;
+    case ESPEasy_key_value_store::StorageType::int8_type:    return (4 + 1);
+    case ESPEasy_key_value_store::StorageType::uint8_type:   return (4 + 1);
+    case ESPEasy_key_value_store::StorageType::int16_type:   return (4 + 2);
+    case ESPEasy_key_value_store::StorageType::uint16_type:  return (4 + 2);
+    case ESPEasy_key_value_store::StorageType::int32_type:   return (4 + 4);
+    case ESPEasy_key_value_store::StorageType::uint32_type:  return (4 + 4);
+    case ESPEasy_key_value_store::StorageType::int64_type:   return (4 + 8);
+    case ESPEasy_key_value_store::StorageType::uint64_type:  return (4 + 8);
+    case ESPEasy_key_value_store::StorageType::float_type:   return (4 + 4);
+    case ESPEasy_key_value_store::StorageType::double_type:  return (4 + 8);
+    case ESPEasy_key_value_store::StorageType::bool_type:    return (4 + 0);
     case ESPEasy_key_value_store::StorageType::MAX_Type:     break;
     case ESPEasy_key_value_store::StorageType::bool_true:
-    case ESPEasy_key_value_store::StorageType::bool_false:   return 4 + 0;
+    case ESPEasy_key_value_store::StorageType::bool_false:   return (4 + 0);
   }
   return 0;
 }
@@ -78,7 +78,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
   {
     _lastError = F("KVS: Invalid index");
     #ifndef BUILD_NO_DEBUG
-    addLog(LOG_LEVEL_DEBUG, _lastError);
+    addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
     #endif // ifndef BUILD_NO_DEBUG
     return false;
   }
@@ -115,10 +115,12 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
     _state     = State::ErrorOnLoad;
     _lastError = strformat(F("KVS: Total size %d + offset %d exceeds max size %d"), totalSize, offset_in_block, max_size);
     #ifndef BUILD_NO_DEBUG
-    addLog(LOG_LEVEL_DEBUG, _lastError);
+    addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
     #endif // ifndef BUILD_NO_DEBUG
     return false;
   }
+
+  addLog(LOG_LEVEL_INFO, strformat(F("KVS Load : Total size %d + offset %d, max size %d"), totalSize, offset_in_block, max_size));
 
   size_t bytesLeftPartialString{};
   String partialString;
@@ -129,7 +131,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
   while (readPos < startChecksumPos) {
     // This loop always starts at the beginning of a key/value type,
     // except when we're parsing a string which may be longer than the buffer
-    const uint32_t readSize = std::min(bufferSize, max_size - readPos);
+    const uint32_t readSize = std::min(bufferSize, startChecksumPos - readPos);
     result += LoadFromFile(settingsType,
                            index,
                            reinterpret_cast<uint8_t *>(&buffer),
@@ -219,6 +221,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
           if ((bytesLeftPartialString == 0) && (partialString.length() > 0)) {
             setValue(key, std::move(partialString));
             partialString.clear();
+            ++bufPos; // Skip over nul-termination char
           }
           break;
 
@@ -288,7 +291,7 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
     _state     = State::ErrorOnSave;
     _lastError = F("KVS: Invalid index");
     #ifndef BUILD_NO_DEBUG
-    addLog(LOG_LEVEL_DEBUG, _lastError);
+    addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
     #endif // ifndef BUILD_NO_DEBUG
     return false;
   }
@@ -323,7 +326,7 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
     _state     = State::ErrorOnSave;
     _lastError = strformat(F("KVS: Total size %d + offset %d exceeds max size %d"), totalSize, offset_in_block, max_size);
     #ifndef BUILD_NO_DEBUG
-    addLog(LOG_LEVEL_DEBUG, _lastError);
+    addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
     #endif // ifndef BUILD_NO_DEBUG
     return false;
   }
@@ -492,6 +495,8 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
   // Consider a successful save the same as a fresh load.
   // The data is now the same as what is stored
 
+  addLog(LOG_LEVEL_INFO, strformat(F("KVS: Written %d bytes"), writePos));
+
   _state = State::NotChanged;
   return true;
 }
@@ -510,13 +515,13 @@ size_t ESPEasy_key_value_store::getPayloadStorageSize() const
   for (auto it = _4byte_data.begin(); it != _4byte_data.end(); ++it)
   {
     res += getStorageSizePerType(
-      static_cast<ESPEasy_key_value_store::StorageType>(it->first));
+      get_StorageType_from_combined_key(it->first));
   }
 
   for (auto it = _8byte_data.begin(); it != _8byte_data.end(); ++it)
   {
     res += getStorageSizePerType(
-      static_cast<ESPEasy_key_value_store::StorageType>(it->first));
+      get_StorageType_from_combined_key(it->first));
   }
   return res;
 }
@@ -741,8 +746,7 @@ bool ESPEasy_key_value_store::getValueAsString(const StorageType& storageType, u
   switch (storageType)
   {
     case ESPEasy_key_value_store::StorageType::string_type:
-      getValue(key, value);
-      break;
+      return getValue(key, value);
       GET_4BYTE_TYPE_AS_STRING(bool_type,   bool)
       GET_4BYTE_TYPE_AS_STRING(int8_type,   int8_t)
       GET_4BYTE_TYPE_AS_STRING(uint8_type,  uint8_t)
@@ -923,6 +927,33 @@ void ESPEasy_key_value_store::dump() const
              it->second.getBinary()[1],
              it->second.getBinary()[2],
              it->second.getBinary()[3],
+             val.c_str()
+             ));
+
+  }
+  for (auto it = _8byte_data.begin(); it != _8byte_data.end(); ++it)
+  {
+    String val;
+
+    if (!getValueAsString(
+          get_StorageType_from_combined_key(it->first),
+          getKey_from_combined_key(it->first),
+          val)) {
+      val = '-';
+    }
+
+    addLog(LOG_LEVEL_INFO, strformat(
+             F("KVS: type: %d, comb: %x, key: %d, val: '%x %x %x %x  %x %x %x %x' strval: '%s'"),
+             get_StorageType_from_combined_key(it->first),
+             it->first, getKey_from_combined_key(it->first),
+             it->second.getBinary()[0],
+             it->second.getBinary()[1],
+             it->second.getBinary()[2],
+             it->second.getBinary()[3],
+             it->second.getBinary()[4],
+             it->second.getBinary()[5],
+             it->second.getBinary()[6],
+             it->second.getBinary()[7],
              val.c_str()
              ));
 
