@@ -221,7 +221,7 @@ bool ESPEasy_key_value_store::load(SettingsType::Enum settingsType, int index, u
           if ((bytesLeftPartialString == 0) && (partialString.length() > 0)) {
             setValue(key, std::move(partialString));
             partialString.clear();
-            ++bufPos; // Skip over nul-termination char
+//            ++bufPos; // Skip over nul-termination char
           }
           break;
 
@@ -387,7 +387,7 @@ bool ESPEasy_key_value_store::store(SettingsType::Enum settingsType, int index, 
             !mustFlushToFile)
         {
           // Write 0-termination + move to next string
-          buffer[bufPos++]      = 0;
+//          buffer[bufPos++]      = 0;
           pos_in_partial_string = -1;
           ++it_str;
         }
@@ -509,7 +509,7 @@ size_t ESPEasy_key_value_store::getPayloadStorageSize() const
   {
     res += 4;                       // key size
     res += 2;                       // string length
-    res += it->second.length() + 1; // include 0-termination
+    res += it->second.length(); // + 1; // include 0-termination
   }
 
   for (auto it = _4byte_data.begin(); it != _4byte_data.end(); ++it)

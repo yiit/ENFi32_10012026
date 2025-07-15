@@ -15,7 +15,9 @@
 // - List of key/value pairs:
 //   - uint8_t:    storage type
 //   - uint8_t[3]: key
-//   - zero-terminated string or shortened binary form
+//   - N bytes value; either:
+//     - String: 2 bytes length + string (without 0-termination)
+//     - shortened binary form
 //   ...
 // - uint8_t[16] checksum
 
