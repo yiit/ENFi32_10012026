@@ -11,6 +11,11 @@ struct NW005_data_struct_PPP_modem : public NWPluginData_base {
   NW005_data_struct_PPP_modem(networkIndex_t networkIndex);
   ~NW005_data_struct_PPP_modem();
 
+  static String getRSSI();
+  static String getBER();
+
+  void webform_load_UE_system_information();
+
   void webform_load(struct EventStruct *event);
   void webform_save(struct EventStruct *event);
 

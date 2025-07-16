@@ -13,8 +13,8 @@
 # include <ESPEasySerialPort.h>
 # include <PPP.h>
 
-//# include <esp_modem_api.h>
-//#include <esp_modem_c_api_types.h>
+// # include <esp_modem_api.h>
+// #include <esp_modem_c_api_types.h>
 
 // Keys as used in the Key-value-store
 # define NW005_KEY_SERIAL_PORT          1
@@ -120,6 +120,132 @@ ppp_modem_model_t to_ppp_modem_model_t(NW005_modem_model NW005_modemmodel)
     case NW005_modem_model::SIM800:  return PPP_MODEM_SIM800;
   }
   return PPP_MODEM_GENERIC;
+}
+
+String NW005_data_struct_PPP_modem::getRSSI()
+{
+  const int rssi_raw = PPP.RSSI();
+
+  if (rssi_raw == 99) { return F("-"); } // Not known or not detectable
+
+  if (rssi_raw == 0) { return F("<= -113"); }
+
+  if (rssi_raw >= 31) { return F(">= -51"); }
+  return String(map(rssi_raw, 2, 30, -109, -53));
+}
+
+String NW005_data_struct_PPP_modem::getBER()
+{
+  switch (PPP.BER())
+  {
+    case 0: return F("<0.01 %");
+    case 1: return F("0.01 % ... 0.1 %");
+    case 2: return F("0.1 % ... 0.5 %");
+    case 3: return F("0.5 % ... 1 %");
+    case 4: return F("1 % ... 2 %");
+    case 5: return F("2 % ... 4 %");
+    case 6: return F("4 % ... 8 %");
+    case 7: return F(">= 8 %");
+    case 99: break; // Not known or not detectable
+  }
+  return F("-");
+}
+
+const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i)
+{
+  const __FlashStringHelper*res = F("");
+
+  switch (sysmode_index)
+  {
+    case 0:
+    {
+      // No service system mode
+      const __FlashStringHelper*labels[]
+      {
+        F("System Mode"), F("Operation Mode")
+      };
+
+      if (i < NR_ELEMENTS(labels)) { res = labels[i]; }
+      break;
+    }
+    case 1:
+    {
+      // GSM system mode
+      const __FlashStringHelper*labels[]
+      {
+        F("System Mode"), F("Operation Mode"), F("MCC-MNC"), F("LAC"), F("Cell ID"), F("Absolute RF Ch Num"), F("RxLev"),
+        F("Track LO Adjust"), F("C1-C2")
+      };
+
+      if (i < NR_ELEMENTS(labels)) { res = labels[i]; }
+      break;
+    }
+    case 2:
+    {
+      // WCDMA system mode
+      const __FlashStringHelper*labels[]
+      {
+        F("System Mode"), F("Operation Mode"), F("MCC-MNC"), F("LAC"), F("Cell ID"), F("Frequency Band"), F("PSC"), F("Freq"), F("SSC"),
+        F("EC/IO"), F("RSCP"), F("Qual"), F("RxLev"), F("TXPWR")
+      };
+
+      if (i < NR_ELEMENTS(labels)) { res = labels[i]; }
+      break;
+    }
+    case 3:
+    {
+      // LTE system mode
+      const __FlashStringHelper*labels[]
+      {
+        F("System Mode"), F("Operation Mode"), F("MCC-MNC"), F("TAC"), F("SCellID"), F("PCellID"), F("Frequency Band"), F("earfcn"),
+        F("dlbw"), F("ulbw"), F("RSRQ"), F("RSRP"), F("RSSI"), F("RSSNR")
+      };
+
+      if (i < NR_ELEMENTS(labels)) { res = labels[i]; }
+      break;
+    }
+  }
+  return res;
+}
+
+void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
+{
+  String res = PPP.cmd("AT+CPSI?", 1000);
+
+  if (!res.isEmpty()/* && res.startsWith(F("+CPSI"))*/) {
+    int start_index                         = 0;
+    int end_index                           = res.indexOf(',');
+    const String systemMode                 = res.substring(start_index, end_index);
+    const __FlashStringHelper*sysmode_str[] = {
+      F("NO SERVICE"), F("GSM"), F("WCDMA"), F("LTE")
+    };
+    int sysmode_index = -1;
+
+    for (int i = 0; i < NR_ELEMENTS(sysmode_str) && sysmode_index != -1; ++i) {
+      if (systemMode.endsWith(sysmode_str[i])) { sysmode_index = i; }
+
+    }
+
+//    if (sysmode_index == -1) { return; }
+
+    addFormSubHeader(F("UE System Information"));
+
+    res += ','; // Add trailing comma so we're not missing the last element
+    for (int i = 0; end_index != -1; ++i)
+    {
+        const String label = NW005_decode_label(sysmode_index, i);
+        if (!label.isEmpty()) {
+            addRowLabel(label);
+            if (i == 0) addHtml(sysmode_str[sysmode_index]);
+            else
+            addHtml_pre(res.substring(start_index, end_index));
+        }
+            start_index = end_index;
+    end_index   = res.indexOf(',', start_index);
+    }
+
+  }
+
 }
 
 void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
@@ -292,15 +418,43 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
   addHtml_pre(PPP.IMSI());
 
   if (PPP.attached()) {
-    addRowLabel(F("Operator Name"));
-    addHtml_pre(PPP.operatorName());
+    addRowLabel(F("Mobile Country Code (MCC)"));
+    addHtml_pre(PPP.operatorName().substring(0, 3));
+    addRowLabel(F("Mobile Network Code (MNC)"));
+    addHtml_pre(PPP.operatorName().substring(3));
+    addFormNote(F("See <a href=\"https://en.wikipedia.org/wiki/Mobile_country_code\">Wikipedia - Mobile Country Code</a>"));
+
+    if (PPP.mode() != ESP_MODEM_MODE_CMUX) {
+      PPP.mode(ESP_MODEM_MODE_CMUX);
+    }
+    /*
+    {
+      String res = PPP.cmd("AT+CPSI?", 1000);
+
+      if (!res.isEmpty()) {
+        addRowLabel(F("AT+CPSI?"));
+        addHtml_pre(res);
+      }
+    }*/
+   /*
+    {
+      String res = PPP.cmd("AT+CPSITD?", 1000);
+
+      if (!res.isEmpty()) {
+        addRowLabel(F("AT+CPSITD?"));
+        addHtml_pre(res);
+      }
+    }
+      */
+
   }
 
   addRowLabel(F("RSSI"));
-  addHtmlInt(PPP.RSSI());
+  addHtml(NW005_data_struct_PPP_modem::getRSSI());
+  addUnit(F("dBm"));
 
   addRowLabel(F("BER"));
-  addHtmlInt(PPP.BER());
+  addHtml(NW005_data_struct_PPP_modem::getBER());
 
   addRowLabel(F("Radio State"));
   addHtml((PPP.radioState() == 0) ? F("Minimal") : F("Full"));
@@ -310,39 +464,75 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
   if (networkMode >= 0) {
     addRowLabel(F("Network Mode"));
 
-    // TODO TD-er: Must 'decode' the mode into GSM, LTE, etc.
-    addHtmlInt(networkMode);
+    // Result from AT+CNSMOD Show network system mode
+    switch (networkMode)
+    {
+      case 0: addHtml(F("no service"));
+        break;
+      case 1: addHtml(F("GSM"));
+        break;
+      case 2: addHtml(F("GPRS"));
+        break;
+      case 3: addHtml(F("EGPRS (EDGE)"));
+        break;
+      case 4: addHtml(F("WCDMA"));
+        break;
+      case 5: addHtml(F("HSDPA only(WCDMA)"));
+        break;
+      case 6: addHtml(F("HSUPA only(WCDMA)"));
+        break;
+      case 7: addHtml(F("HSPA (HSDPA and HSUPA, WCDMA)"));
+        break;
+      case 8: addHtml(F("LTE"));
+        break;
+      default: addHtmlInt(networkMode);
+        break;
+    }
   }
 
-  int batVolt = PPP.batteryVoltage();
-
-  if (batVolt >= 0) {
-    addRowLabel(F("Battery Voltage"));
-    addHtmlInt(batVolt);
-  }
-
-  int batLevel = PPP.batteryLevel();
-
-  if (batLevel >= 0) {
-    addRowLabel(F("Battery Level"));
-    addHtmlInt(batLevel);
-  }
-
-  int batStatus = PPP.batteryStatus();
-
-  if (batStatus >= 0) {
+  {
+    int batStatus = PPP.batteryStatus();
     addRowLabel(F("Battery Status"));
-    addHtmlInt(batStatus);
+    const __FlashStringHelper*str = F("Not Available");
+
+    switch (batStatus)
+    {
+      case 0: str = F("Not Charging");
+        break;
+      case 1: str = F("Charging");
+        break;
+      case 2: str = F("Charging Done");
+        break;
+    }
+    addHtml(str);
+
+    if (batStatus >= 0) {
+      int batVolt = PPP.batteryVoltage();
+
+      if (batVolt >= 0) {
+        addRowLabel(F("Battery Voltage"));
+        addHtmlInt(batVolt);
+        addUnit(F("mV"));
+      }
+
+      int batLevel = PPP.batteryLevel();
+
+      if (batLevel >= 0) {
+        addRowLabel(F("Battery Level"));
+        addHtmlInt(batLevel);
+      }
+    }
   }
 
   // TODO TD-er: Disabled for now, missing PdpContext
+
   /*
-  esp_modem_dce_t *handle = PPP.handle();
+     esp_modem_dce_t *handle = PPP.handle();
 
-  if (handle) {
-    int state{};
+     if (handle) {
+     int state{};
 
-    if (esp_modem_get_network_registration_state(handle, state) == ESP_OK) {
+     if (esp_modem_get_network_registration_state(handle, state) == ESP_OK) {
       addRowLabel(F("Network Registration State"));
       const __FlashStringHelper*str = F("Unknown");
 
@@ -372,10 +562,11 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
           break;
       }
       addHtml(str);
-    }
-  }
-*/
+     }
+     }
+   */
 
+//   webform_load_UE_system_information();
 }
 
 void NW005_data_struct_PPP_modem::webform_save(struct EventStruct *event)

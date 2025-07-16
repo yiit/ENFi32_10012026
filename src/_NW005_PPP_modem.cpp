@@ -69,13 +69,13 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
     {
-      success = PPP.connected();
+      success = PPP.attached();
 
       if (success) {
         string = strformat(
-          F("%s (%d dBm)"),
+          F("%s (%s dBm)"),
           PPP.operatorName().c_str(),
-          PPP.RSSI());
+          NW005_data_struct_PPP_modem::getRSSI().c_str());
       }
 
       break;
