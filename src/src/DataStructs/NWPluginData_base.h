@@ -17,7 +17,8 @@
 // N.B. in order to use this, a data object must inherit from this base class.
 //      This is a compile time check.
 struct NWPluginData_base {
-  NWPluginData_base(nwpluginID_t nwpluginID, networkIndex_t networkIndex);
+  NWPluginData_base(nwpluginID_t   nwpluginID,
+                    networkIndex_t networkIndex);
 
   virtual ~NWPluginData_base();
 

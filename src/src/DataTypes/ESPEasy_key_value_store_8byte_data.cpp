@@ -1,5 +1,7 @@
 #include "../DataTypes/ESPEasy_key_value_store_data.h"
 
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
 constexpr unsigned int size_64bit = sizeof(double);
 
 ESPEasy_key_value_store_8byte_data_t::ESPEasy_key_value_store_8byte_data_t() {
@@ -60,3 +62,5 @@ bool ESPEasy_key_value_store_8byte_data_t::set(const void*value)
   memcpy(binary, value, size_64bit);
   return true;
 }
+
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

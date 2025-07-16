@@ -30,9 +30,10 @@ bool NWPluginData_base::plugin_write_base(struct EventStruct *event,
                                           const String      & string) { return false; }
 
 bool NWPluginData_base::init_KVS()
-{ 
+{
   if (!_KVS_initialized()) { return false; }
-//  _load();
+
+  //  _load();
 
   // TODO TD-er: load() can also return false when some other data used to be present. Have to think about how to handle this.
   return true;

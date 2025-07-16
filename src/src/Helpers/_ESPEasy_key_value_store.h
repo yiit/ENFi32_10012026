@@ -3,10 +3,12 @@
 
 #include "../../ESPEasy_common.h"
 
-#include "../DataTypes/ESPEasy_key_value_store_data.h"
-#include "../DataTypes/SettingsType.h"
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
-#include <map>
+# include "../DataTypes/ESPEasy_key_value_store_data.h"
+# include "../DataTypes/SettingsType.h"
+
+# include <map>
 
 // Generic storage layer, which on a low level will store everything as a string.
 // Low level storage structure:
@@ -171,13 +173,14 @@ public:
                         uint32_t           key,
                         String           & value) const;
 
-  bool getValueAsString(uint32_t key,
-                        String & value) const;
+  bool    getValueAsString(uint32_t key,
+                           String & value) const;
 
-  bool getValueAsInt(uint32_t key,
-                        int64_t & value) const;
+  bool    getValueAsInt(uint32_t key,
+                        int64_t& value) const;
 
-  int64_t getValueAsInt_or_default(uint32_t key, int64_t default_value) const;
+  int64_t getValueAsInt_or_default(uint32_t key,
+                                   int64_t  default_value) const;
   int64_t getValueAsInt(uint32_t key) const;
 
   // Generic set function for any given storageType/key.
@@ -238,5 +241,7 @@ private:
   State _state{ State::Empty };
 
 }; // class ESPEasy_key_value_store
+
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
 #endif // ifndef HELPERS_ESPEASY_KEY_VALUE_STORE_H

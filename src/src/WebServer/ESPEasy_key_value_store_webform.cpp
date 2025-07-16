@@ -1,8 +1,9 @@
 #include "../WebServer/ESPEasy_key_value_store_webform.h"
 
-#include "../Helpers/StringConverter.h"
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+# include "../Helpers/StringConverter.h"
 
-#include "../WebServer/Markup_Forms.h"
+# include "../WebServer/Markup_Forms.h"
 
 WebFormItemParams::WebFormItemParams(
   const String                       & label,
@@ -18,7 +19,7 @@ WebFormItemParams::WebFormItemParams(
   uint32_t                             key)
   : _label(label), _id(id), _storageType(storageType), _key(key) {}
 
-#define CORRECT_RANGE(T, CT)                                                                  \
+# define CORRECT_RANGE(T, CT)                                                                 \
           case ESPEasy_key_value_store::StorageType::T:                                       \
             if (_max > std::numeric_limits<CT>::max()) _max = std::numeric_limits<CT>::max(); \
             if (_min < std::numeric_limits<CT>::min()) _min = std::numeric_limits<CT>::min(); \
@@ -64,9 +65,9 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
         params._readOnly,
         params._required,
         params._pattern
-#if FEATURE_TOOLTIPS
+# if FEATURE_TOOLTIPS
         , params._tooltip
-#endif // if FEATURE_TOOLTIPS
+# endif // if FEATURE_TOOLTIPS
         );
       return true;
     }
@@ -86,9 +87,9 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
         value,
         params._min,
         params._max,
-#if FEATURE_TOOLTIPS
+# if FEATURE_TOOLTIPS
         params._tooltip,
-#endif // if FEATURE_TOOLTIPS
+# endif // if FEATURE_TOOLTIPS
         params._disabled
         );
 
@@ -120,9 +121,9 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
         params._nrDecimals,
         params._stepsize,
 
-#if FEATURE_TOOLTIPS
+# if FEATURE_TOOLTIPS
         params._tooltip
-#endif // if FEATURE_TOOLTIPS
+# endif // if FEATURE_TOOLTIPS
         );
 
 
@@ -148,15 +149,15 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
 }
 
 void showFormSelector(const ESPEasy_key_value_store& store,
-    FormSelectorOptions& selector,
-    const WebFormItemParams&       params)
+                      FormSelectorOptions          & selector,
+                      const WebFormItemParams      & params)
 {
-    int64_t value{};
-    if (!store.getValueAsInt(params._key, value)) { value = params._defaultIntValue; }
+  int64_t value{};
 
-    selector.addFormSelector(params._label, params._id, value);    
+  if (!store.getValueAsInt(params._key, value)) { value = params._defaultIntValue; }
+
+  selector.addFormSelector(params._label, params._id, value);
 }
-
 
 void storeWebformItem(ESPEasy_key_value_store            & store,
                       uint32_t                             key,
@@ -176,3 +177,5 @@ void storeWebformItem(ESPEasy_key_value_store            & store,
   }
   store.setValue(storageType, key, webArg(_id));
 }
+
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

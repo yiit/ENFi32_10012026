@@ -418,10 +418,11 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
   addHtml_pre(PPP.IMSI());
 
   if (PPP.attached()) {
+    const String operatorName = PPP.operatorName();
     addRowLabel(F("Mobile Country Code (MCC)"));
-    addHtml_pre(PPP.operatorName().substring(0, 3));
+    addHtml_pre(operatorName.substring(0, 3));
     addRowLabel(F("Mobile Network Code (MNC)"));
-    addHtml_pre(PPP.operatorName().substring(3));
+    addHtml_pre(operatorName.substring(3));
     addFormNote(F("See <a href=\"https://en.wikipedia.org/wiki/Mobile_country_code\">Wikipedia - Mobile Country Code</a>"));
 
     if (PPP.mode() != ESP_MODEM_MODE_CMUX) {

@@ -3,8 +3,10 @@
 
 #include "../WebServer/common.h"
 
-#include "../DataTypes/FormSelectorOptions.h"
-#include "../Helpers/_ESPEasy_key_value_store.h"
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
+# include "../DataTypes/FormSelectorOptions.h"
+# include "../Helpers/_ESPEasy_key_value_store.h"
 
 struct WebFormItemParams {
   WebFormItemParams(const String                       & label,
@@ -22,9 +24,9 @@ struct WebFormItemParams {
 
   String _label;
   String _id;
-#if FEATURE_TOOLTIPS
+# if FEATURE_TOOLTIPS
   String _tooltip;
-#endif // if FEATURE_TOOLTIPS
+# endif // if FEATURE_TOOLTIPS
   float                                _min = INT_MIN;
   float                                _max = INT_MAX;
   uint8_t                              _nrDecimals{};
@@ -38,18 +40,18 @@ struct WebFormItemParams {
   String                               _pattern;
 
   int64_t _defaultIntValue{};
-  double _defaultFloatValue{};
-  String _defaultStringValue;
+  double  _defaultFloatValue{};
+  String  _defaultStringValue;
 
 
 };
 
 bool showWebformItem(const ESPEasy_key_value_store& store,
-                      WebFormItemParams       params);
+                     WebFormItemParams              params);
 
 void showFormSelector(const ESPEasy_key_value_store& store,
-    FormSelectorOptions& selector,
-    const WebFormItemParams&       params);
+                      FormSelectorOptions          & selector,
+                      const WebFormItemParams      & params);
 
 void storeWebformItem(ESPEasy_key_value_store            & store,
                       uint32_t                             key,
@@ -61,5 +63,5 @@ void storeWebformItem(ESPEasy_key_value_store            & store,
                       ESPEasy_key_value_store::StorageType storageType,
                       const String                       & id = EMPTY_STRING);
 
-
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 #endif // ifndef WEBSERVER_ESPEASY_KEY_VALUE_STORE_WEBFORM_H

@@ -1,9 +1,11 @@
 #include "../Helpers/_ESPEasy_key_value_store.h"
 
-#include "../Helpers/StringConverter_Numerical.h"
-#include "../Helpers/ESPEasy_Storage.h"
-#include "../Helpers/ESPEasy_time_calc.h"
-#include "../Helpers/StringConverter.h"
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
+# include "../Helpers/StringConverter_Numerical.h"
+# include "../Helpers/ESPEasy_Storage.h"
+# include "../Helpers/ESPEasy_time_calc.h"
+# include "../Helpers/StringConverter.h"
 
 uint32_t ESPEasy_key_value_store::combine_StorageType_and_key(
   ESPEasy_key_value_store::StorageType storageType,
@@ -83,9 +85,9 @@ bool ESPEasy_key_value_store::load(
   if (!SettingsType::getSettingsParameters(settingsType, index, offset, max_size))
   {
     _lastError = F("KVS: Invalid index");
-    #ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
-    #endif // ifndef BUILD_NO_DEBUG
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
 
@@ -117,10 +119,10 @@ bool ESPEasy_key_value_store::load(
   const uint16_t id = (buffer[2] << 8) | buffer[1];
 
   if (id != id_to_match) {
-    #ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     _lastError = strformat(F("KVS: Stored ID %d != expected ID %d, stop loading"), id, id_to_match);
     addLog(LOG_LEVEL_DEBUG, _lastError);
-    #endif // ifndef BUILD_NO_DEBUG
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
 
@@ -130,15 +132,15 @@ bool ESPEasy_key_value_store::load(
 
   if ((offset_in_block + totalSize) > static_cast<size_t>(max_size)) {
     _state = State::ErrorOnLoad;
-    #ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     _lastError = strformat(F("KVS: Total size %d + offset %d exceeds max size %d"), totalSize, offset_in_block, max_size);
     addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
-    #endif // ifndef BUILD_NO_DEBUG
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
   addLog(LOG_LEVEL_INFO, strformat(F("KVS Load : Total size %d + offset %d, max size %d"), totalSize, offset_in_block, max_size));
-#endif
+# endif
 
   size_t bytesLeftPartialString{};
   String partialString;
@@ -169,7 +171,7 @@ bool ESPEasy_key_value_store::load(
       // as it might be easy to forget adding the same to both bufPos and readPos
       // However in logs we might need to refer to the actual pos in the file/block
       // For this the following define is used
-      #define LOG_READPOS_OFFSET (readPos + (bufPos - bufPos_start_loop))
+      # define LOG_READPOS_OFFSET (readPos + (bufPos - bufPos_start_loop))
       const uint32_t bufPos_start_loop = bufPos;
 
       if (!bytesLeftPartialString) {
@@ -187,10 +189,10 @@ bool ESPEasy_key_value_store::load(
           if ((sizePerType < 4) && (storageType != ESPEasy_key_value_store::StorageType::string_type)) {
             // Should not happen as those should not be stored in the file
             _state = State::ErrorOnLoad;
-            #ifndef BUILD_NO_DEBUG
+            # ifndef BUILD_NO_DEBUG
             _lastError = strformat(F("KVS: Invalid storage type %d at readPos %d"), static_cast<int>(storageType), LOG_READPOS_OFFSET);
             addLog(LOG_LEVEL_ERROR, _lastError);
-            #endif // ifndef BUILD_NO_DEBUG
+            # endif // ifndef BUILD_NO_DEBUG
             return false;
           }
         }
@@ -226,11 +228,11 @@ bool ESPEasy_key_value_store::load(
                 if (!partialString.reserve(bytesLeftPartialString))
                 {
                   _state = State::ErrorOnLoad;
-                #ifndef BUILD_NO_DEBUG
+                # ifndef BUILD_NO_DEBUG
                   _lastError = strformat(F("KVS: Could not allocate string size %d at readPos %d"), bytesLeftPartialString,
                                          LOG_READPOS_OFFSET);
                   addLog(LOG_LEVEL_ERROR, _lastError);
-                #endif // ifndef BUILD_NO_DEBUG
+                # endif // ifndef BUILD_NO_DEBUG
                   return false;
                 }
               }
@@ -246,12 +248,12 @@ bool ESPEasy_key_value_store::load(
               } else if (bytesLeftPartialString > 0) {
                 // What to do here if bytesLeftPartialString != 0 ????
                 _state = State::ErrorOnLoad;
-              #ifndef BUILD_NO_DEBUG
+              # ifndef BUILD_NO_DEBUG
                 _lastError = strformat(F("KVS: Unexpected end-of-string, expected %d more at readPos %d"),
                                        bytesLeftPartialString,
                                        LOG_READPOS_OFFSET);
                 addLog(LOG_LEVEL_ERROR, _lastError);
-              #endif // ifndef BUILD_NO_DEBUG
+              # endif // ifndef BUILD_NO_DEBUG
                 return false;
               }
             }
@@ -301,27 +303,27 @@ bool ESPEasy_key_value_store::load(
 
       if ((bufPos_start_loop == bufPos) && !loadNextFromFile) {
         _state = State::ErrorOnLoad;
-        #ifndef BUILD_NO_DEBUG
+        # ifndef BUILD_NO_DEBUG
         _lastError = strformat(F("KVS: BUG! Did not increment bufPos while processing StorageType %d at readPos %d"),
                                static_cast<int>(storageType), LOG_READPOS_OFFSET);
         addLog(LOG_LEVEL_ERROR, _lastError);
-        #endif // ifndef BUILD_NO_DEBUG
+        # endif // ifndef BUILD_NO_DEBUG
         return false;
       }
       readPos += (bufPos - bufPos_start_loop);
-      #undef LOG_READPOS_OFFSET
+      # undef LOG_READPOS_OFFSET
     }
   }
 
   if (timePassedSince(start) >= 1000) {
     _state = State::ErrorOnLoad;
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
     _lastError = strformat(
       F("KVS: Timeout! bufPos while processing StorageType %d at readPos %d, startChecksumPos: %d"),
       static_cast<int>(storageType), readPos, startChecksumPos);
     addLog(LOG_LEVEL_ERROR, _lastError);
     dump();
-#endif // ifndef BUILD_NO_DEBUG
+# endif // ifndef BUILD_NO_DEBUG
     return false;
 
   }
@@ -338,9 +340,9 @@ bool ESPEasy_key_value_store::store(
   uint16_t           id_to_match)
 {
   if (getState() == State::NotChanged) {
-    #ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_INFO, F("KVS: Content not changed, no need to save"));
-    #endif
+    # endif
     return true;
   }
 
@@ -350,19 +352,19 @@ bool ESPEasy_key_value_store::store(
   if (!SettingsType::getSettingsParameters(settingsType, index, offset, max_size))
   {
     _state = State::ErrorOnSave;
-    #ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     _lastError = F("KVS: Invalid index");
     addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
-    #endif // ifndef BUILD_NO_DEBUG
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
 
-  #ifdef ESP8266
+  # ifdef ESP8266
   uint16_t bufferSize = 256;
-  #endif // ifdef ESP8266
-  #ifdef ESP32
+  # endif // ifdef ESP8266
+  # ifdef ESP32
   uint16_t bufferSize = 1024;
-  #endif // ifdef ESP32
+  # endif // ifdef ESP32
 
   if (bufferSize > max_size) {
     bufferSize = max_size;
@@ -387,10 +389,10 @@ bool ESPEasy_key_value_store::store(
 
   if ((offset_in_block + totalSize) > static_cast<size_t>(max_size)) {
     _state = State::ErrorOnSave;
-    #ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     _lastError = strformat(F("KVS: Total size %d + offset %d exceeds max size %d"), totalSize, offset_in_block, max_size);
     addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
-    #endif // ifndef BUILD_NO_DEBUG
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
 
@@ -523,11 +525,11 @@ bool ESPEasy_key_value_store::store(
         }
       } else {
         _state = State::ErrorOnSave;
-        #ifndef BUILD_NO_DEBUG
+        # ifndef BUILD_NO_DEBUG
         _lastError = strformat(F("KVS: BUG! Should not have storage type %d stored with 0 bytes at writePos %d"),
                                static_cast<int>(storageType), writePos + bufPos);
         addLog(LOG_LEVEL_ERROR, _lastError);
-        #endif // ifndef BUILD_NO_DEBUG
+        # endif // ifndef BUILD_NO_DEBUG
         return false;
       }
     } else {
@@ -559,9 +561,9 @@ bool ESPEasy_key_value_store::store(
 
   // Consider a successful save the same as a fresh load.
   // The data is now the same as what is stored
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
   addLog(LOG_LEVEL_INFO, strformat(F("KVS: Written %d bytes"), writePos));
-#endif
+# endif
   _state = State::NotChanged;
   dump();
   return true;
@@ -689,27 +691,27 @@ ESPEasy_key_value_store::map_8byte_data::const_iterator ESPEasy_key_value_store:
   return _8byte_data.find(combined_key);
 }
 
-#define GET_4BYTE_TYPE(T, GF)                                                     \
+# define GET_4BYTE_TYPE(T, GF)                                                    \
         auto it = get4byteIterator(ESPEasy_key_value_store::StorageType::T, key); \
         if (it == _4byte_data.end()) return false;                                \
         value = it->second.GF();                                                  \
         return true;                                                              \
 
-#define GET_8BYTE_TYPE(T, GF)                                                     \
+# define GET_8BYTE_TYPE(T, GF)                                                    \
         auto it = get8byteIterator(ESPEasy_key_value_store::StorageType::T, key); \
         if (it == _8byte_data.end()) return false;                                \
         value = it->second.GF();                                                  \
         return true;                                                              \
 
 
-#define SET_4BYTE_TYPE(T, SF)                                             \
+# define SET_4BYTE_TYPE(T, SF)                                            \
         const uint32_t combined_key = combine_StorageType_and_key(        \
           ESPEasy_key_value_store::StorageType::T, key);                  \
         if (_4byte_data[combined_key].SF(value)) _state = State::Changed; \
         setHasStorageType(ESPEasy_key_value_store::StorageType::T);
 
 
-#define SET_8BYTE_TYPE(T, SF)                                             \
+# define SET_8BYTE_TYPE(T, SF)                                            \
         const uint32_t combined_key = combine_StorageType_and_key(        \
           ESPEasy_key_value_store::StorageType::T, key);                  \
         if (_8byte_data[combined_key].SF(value)) _state = State::Changed; \
@@ -867,7 +869,7 @@ bool ESPEasy_key_value_store::getValueAsString(uint32_t key, String& value) cons
   return getValueAsString(getStorageType(key), key, value);
 }
 
-#define GET_TYPE_AS_INT64(T, CT)                        \
+# define GET_TYPE_AS_INT64(T, CT)                       \
           case ESPEasy_key_value_store::StorageType::T: \
             {                                           \
               CT v{};                                   \
@@ -906,19 +908,20 @@ bool ESPEasy_key_value_store::getValueAsInt(
   return false;
 }
 
-  int64_t ESPEasy_key_value_store::getValueAsInt_or_default(uint32_t key, int64_t default_value) const
-  {
-    int64_t value = default_value;
-    if (getValueAsInt(key, value)) return value;
-    return default_value;
-  }
-  int64_t ESPEasy_key_value_store::getValueAsInt(uint32_t key) const
-  {
-    return getValueAsInt_or_default(key, 0);
-  }
+int64_t ESPEasy_key_value_store::getValueAsInt_or_default(uint32_t key, int64_t default_value) const
+{
+  int64_t value = default_value;
 
+  if (getValueAsInt(key, value)) { return value; }
+  return default_value;
+}
 
-#define GET_4BYTE_INT_TYPE_FROM_STRING(T, CT)           \
+int64_t ESPEasy_key_value_store::getValueAsInt(uint32_t key) const
+{
+  return getValueAsInt_or_default(key, 0);
+}
+
+# define GET_4BYTE_INT_TYPE_FROM_STRING(T, CT)          \
           case ESPEasy_key_value_store::StorageType::T: \
             {                                           \
               CT v(value.toInt());                      \
@@ -1127,3 +1130,5 @@ void ESPEasy_key_value_store::dump() const
   }
 
 }
+
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
