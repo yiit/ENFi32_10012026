@@ -3869,11 +3869,17 @@ To create/register a plugin, you have to :
 #endif
 
 
-#if FEATURE_PPP_MODEM
+
+#if FEATURE_PPP_MODEM && defined __has_include && __has_include("esp_modem_c_api_types.h")
+
   #ifndef USES_NW005
     #define USES_NW005
   #endif
 #else
+  #if FEATURE_PPP_MODEM
+  #undef FEATURE_PPP_MODEM
+  #define FEATURE_PPP_MODEM  0
+  #endif
   #ifdef USES_NW005
     #undef USES_NW005
   #endif
