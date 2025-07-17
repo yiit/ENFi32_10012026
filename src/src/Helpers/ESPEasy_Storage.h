@@ -153,6 +153,12 @@ uint8_t disableAllNotifications(uint8_t bootFailedCount);
  \*********************************************************************************************/
 uint8_t disableRules(uint8_t bootFailedCount);
 
+/********************************************************************************************\
+   Disable Network Interfaces, based on bootFailedCount
+ \*********************************************************************************************/
+uint8_t disableNetwork(uint8_t bootFailedCount);
+uint8_t disableAllNetworkss(uint8_t bootFailedCount);
+
 
 bool getAndLogSettingsParameters(bool read, SettingsType::Enum settingsType, int index, int& offset, int& max_size);
 

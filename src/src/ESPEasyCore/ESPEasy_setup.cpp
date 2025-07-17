@@ -411,6 +411,9 @@ void ESPEasy_setup()
       toDisable = disableNotification(toDisable);
     }
     #endif // if FEATURE_NOTIFIER
+    if (toDisable != 0) {
+      toDisable = disableNetwork(toDisable);
+    }
 
     if (toDisable != 0) {
       toDisable = disableRules(toDisable);
@@ -429,6 +432,9 @@ void ESPEasy_setup()
       toDisable = disableAllNotifications(toDisable);
     }
 #endif // if FEATURE_NOTIFIER
+    if (toDisable != 0) {
+      toDisable = disableAllNetworkss(toDisable);
+    }
   }
   #if FEATURE_ETHERNET
 

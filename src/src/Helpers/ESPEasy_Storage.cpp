@@ -1118,6 +1118,36 @@ uint8_t disableAllNotifications(uint8_t bootFailedCount) {
 #endif // if FEATURE_NOTIFIER
 
 /********************************************************************************************\
+   Disable Network Interfaces, based on bootFailedCount
+ \*********************************************************************************************/
+uint8_t disableNetwork(uint8_t bootFailedCount)
+{
+  for (networkIndex_t i = 0; i < NETWORK_MAX && bootFailedCount > 0; ++i) {
+    if (Settings.getNetworkEnabled(i)) {
+      --bootFailedCount;
+
+      if (bootFailedCount == 0) {
+        Settings.setNetworkEnabled(i, false);
+      }
+    }
+  }
+  return bootFailedCount;
+}
+
+uint8_t disableAllNetworkss(uint8_t bootFailedCount)
+{
+    if (bootFailedCount > 0) {
+    --bootFailedCount;
+
+    for (networkIndex_t i = 0; i < NETWORK_MAX; ++i) {
+      Settings.setNetworkEnabled(i, false);
+    }
+  }
+  return bootFailedCount;
+}
+
+
+/********************************************************************************************\
    Disable Rules, based on bootFailedCount
  \*********************************************************************************************/
 uint8_t disableRules(uint8_t bootFailedCount) {
