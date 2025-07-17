@@ -119,10 +119,10 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
         params._min,
         params._max,
         params._nrDecimals,
-        params._stepsize,
+        params._stepsize
 
 # if FEATURE_TOOLTIPS
-        params._tooltip
+        ,params._tooltip
 # endif // if FEATURE_TOOLTIPS
         );
 
