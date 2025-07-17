@@ -274,6 +274,8 @@
 #ifndef DEFAULT_ETH_PHY_TYPE
 #ifdef ESP32P4
 #define DEFAULT_ETH_PHY_TYPE             EthPhyType_t::TLK110
+#elif defined(ESP32C2)
+#define DEFAULT_ETH_PHY_TYPE             0
 #else
 #define DEFAULT_ETH_PHY_TYPE             EthPhyType_t::notSet
 #endif

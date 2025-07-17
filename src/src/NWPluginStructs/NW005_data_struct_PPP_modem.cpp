@@ -151,7 +151,7 @@ String NW005_data_struct_PPP_modem::getBER()
   return F("-");
 }
 
-const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i)
+const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str)
 {
   const __FlashStringHelper*res = F("");
 
@@ -201,7 +201,30 @@ const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i)
         F("dlbw"), F("ulbw"), F("RSRQ"), F("RSRP"), F("RSSI"), F("RSSNR")
       };
 
-      if (i < NR_ELEMENTS(labels)) { res = labels[i]; }
+      if (i < NR_ELEMENTS(labels)) {
+         res = labels[i]; 
+         switch (i)
+         {
+            case 10:
+            // RSRQ
+            {
+                float val = value_str.toInt();
+                val -= 40;
+                val /= 2.0f;
+                value_str = String(val, 1) + F(" [dBm]");
+            }
+            break;
+            case 11:
+            // RSRP
+            value_str = strformat(F("%d [dBm]"), value_str.toInt() - 140);
+            break;
+            case 12: 
+            // RSSI
+            value_str = strformat(F("%d [dBm]"), value_str.toInt() - 110);
+            break;
+         }
+         
+      }
       break;
     }
   }
@@ -212,36 +235,45 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
 {
   String res = PPP.cmd("AT+CPSI?", 1000);
 
-  if (!res.isEmpty()/* && res.startsWith(F("+CPSI"))*/) {
+  if (!res.isEmpty() /* && res.startsWith(F("+CPSI"))*/) {
     int start_index                         = 0;
     int end_index                           = res.indexOf(',');
     const String systemMode                 = res.substring(start_index, end_index);
+    addLog(LOG_LEVEL_INFO, concat(F("PPP: UE sysinfo: "), systemMode));
+
     const __FlashStringHelper*sysmode_str[] = {
       F("NO SERVICE"), F("GSM"), F("WCDMA"), F("LTE")
     };
     int sysmode_index = -1;
 
-    for (int i = 0; i < NR_ELEMENTS(sysmode_str) && sysmode_index != -1; ++i) {
+    for (int i = 0; i < NR_ELEMENTS(sysmode_str) && sysmode_index == -1; ++i) {
       if (systemMode.endsWith(sysmode_str[i])) { sysmode_index = i; }
 
     }
 
-//    if (sysmode_index == -1) { return; }
+    if (sysmode_index == -1) { return; }
 
     addFormSubHeader(F("UE System Information"));
 
     res += ','; // Add trailing comma so we're not missing the last element
-    for (int i = 0; end_index != -1; ++i)
+
+    for (int i = 0; start_index < res.length() && end_index != -1 && i < 15; ++i)
     {
-        const String label = NW005_decode_label(sysmode_index, i);
-        if (!label.isEmpty()) {
-            addRowLabel(label);
-            if (i == 0) addHtml(sysmode_str[sysmode_index]);
-            else
-            addHtml_pre(res.substring(start_index, end_index));
+      String value_str = res.substring(start_index, end_index);
+      const String label = NW005_decode_label(sysmode_index, i, value_str);
+
+      if (!label.isEmpty()) {
+        addRowLabel(label);
+
+        if (i == 0) { 
+            // We have some leading characters left here, so use the 'clean' strings
+            addHtml(sysmode_str[sysmode_index]); 
+        } else {
+          addHtml_pre(value_str);
         }
-            start_index = end_index;
-    end_index   = res.indexOf(',', start_index);
+      }
+      start_index = end_index + 1;
+      end_index   = res.indexOf(',', start_index);
     }
 
   }
@@ -428,25 +460,26 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
     if (PPP.mode() != ESP_MODEM_MODE_CMUX) {
       PPP.mode(ESP_MODEM_MODE_CMUX);
     }
-    /*
-    {
-      String res = PPP.cmd("AT+CPSI?", 1000);
 
-      if (!res.isEmpty()) {
+    /*
+       {
+       String res = PPP.cmd("AT+CPSI?", 1000);
+
+       if (!res.isEmpty()) {
         addRowLabel(F("AT+CPSI?"));
         addHtml_pre(res);
-      }
-    }*/
-   /*
-    {
-      String res = PPP.cmd("AT+CPSITD?", 1000);
+       }
+       }*/
+    /*
+       {
+       String res = PPP.cmd("AT+CPSITD?", 1000);
 
-      if (!res.isEmpty()) {
-        addRowLabel(F("AT+CPSITD?"));
-        addHtml_pre(res);
-      }
-    }
-      */
+       if (!res.isEmpty()) {
+         addRowLabel(F("AT+CPSITD?"));
+         addHtml_pre(res);
+       }
+       }
+     */
 
   }
 
@@ -567,7 +600,7 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
      }
    */
 
-//   webform_load_UE_system_information();
+     webform_load_UE_system_information();
 }
 
 void NW005_data_struct_PPP_modem::webform_save(struct EventStruct *event)
