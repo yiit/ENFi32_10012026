@@ -363,6 +363,9 @@ void ESPEasy_setup()
   logMemUsageAfter(F("LoadSettings()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
 
+  addLog(LOG_LEVEL_INFO, concat(F("CPU Frequency: "), ESP.getCpuFreqMHz()));
+  
+
 #ifdef ESP32
 #if !defined(CORE32SOLO1) && !defined(ESP32P4)
 
