@@ -272,12 +272,14 @@
 #endif
 #endif
 #ifndef DEFAULT_ETH_PHY_TYPE
+#if FEATURE_ETHERNET
 #ifdef ESP32P4
 #define DEFAULT_ETH_PHY_TYPE             EthPhyType_t::TLK110
-#elif defined(ESP32C2)
-#define DEFAULT_ETH_PHY_TYPE             0
 #else
 #define DEFAULT_ETH_PHY_TYPE             EthPhyType_t::notSet
+#endif
+#else
+#define DEFAULT_ETH_PHY_TYPE             0
 #endif
 #endif
 #ifndef DEFAULT_ETH_PIN_MDC
