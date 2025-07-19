@@ -45,13 +45,13 @@ void handle_controllers() {
 
   // 'index' value in the URL
   uint8_t controllerindex  = getFormItemInt(F("index"), 0);
-  boolean controllerNotSet = controllerindex == 0;
+  const bool controllerIndexSet = controllerindex != 0 && validControllerIndex(controllerindex);
   --controllerindex; // Index in URL is starting from 1, but starting from 0 in the array.
 
   const int protocol_webarg_value = getFormItemInt(F("protocol"), -1);
 
   // submitted data
-  if ((protocol_webarg_value != -1) && !controllerNotSet)
+  if ((protocol_webarg_value != -1) && controllerIndexSet)
   {
     const protocolIndex_t protocolIndex = protocol_webarg_value;
     bool mustInit                       = false;
@@ -138,13 +138,11 @@ void handle_controllers() {
 
   html_add_form();
 
-  if (controllerNotSet)
-  {
-    handle_controllers_ShowAllControllersTable();
-  }
-  else
+  if (controllerIndexSet)
   {
     handle_controllers_ControllerSettingsPage(controllerindex);
+  } else {
+    handle_controllers_ShowAllControllersTable();
   }
 
   sendHeadandTail_stdtemplate(_TAIL);
