@@ -229,6 +229,11 @@ class SettingsStruct_tmpl
   void WiFi_band_mode(wifi_band_mode_t value) { VariousBits_2.WiFi_band_mode = value; }
 #endif
 
+#ifdef ESP32
+  bool WiFi_AP_enable_NAPT() const { return VariousBits_2.WiFi_AP_enable_NAPT; }
+  void WiFi_AP_enable_NAPT(bool enable) { VariousBits_2.WiFi_AP_enable_NAPT = enable; }
+#endif
+
 
   // Flag indicating whether all task values should be sent in a single event or one event per task value (default behavior)
   bool CombineTaskValues_SingleEvent(taskIndex_t taskIndex) const;
@@ -622,7 +627,7 @@ public:
     uint32_t PassiveWiFiScan                  : 1; // Bit 06  // inverted
     uint32_t ShowUnitOfMeasureOnDevicesPage   : 1; // Bit 07  // inverted
     uint32_t WiFi_band_mode                   : 2; // Bit 08 & 09
-    uint32_t unused_10                        : 1; // Bit 10
+    uint32_t WiFi_AP_enable_NAPT              : 1; // Bit 10
     uint32_t unused_11                        : 1; // Bit 11
     uint32_t unused_12                        : 1; // Bit 12
     uint32_t unused_13                        : 1; // Bit 13

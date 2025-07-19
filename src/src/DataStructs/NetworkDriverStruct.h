@@ -2,6 +2,9 @@
 #define DATASTRUCTS_NETWORKDRIVERSTRUCT_H
 
 #include "../../ESPEasy_common.h"
+
+#include "../DataTypes/NetworkIndex.h"
+
 #include <vector>
 
 /*********************************************************************************************\
@@ -11,9 +14,11 @@ struct NetworkDriverStruct
 {
   NetworkDriverStruct() = default;
 
-
+  bool           onlySingleInstance = true;
+  bool           alwaysPresent      = false;
+  networkIndex_t fixedNetworkIndex  = INVALID_NETWORK_INDEX;
 
 
 };
 
-#endif
+#endif // ifndef DATASTRUCTS_NETWORKDRIVERSTRUCT_H

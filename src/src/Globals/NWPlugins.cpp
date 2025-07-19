@@ -7,6 +7,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 
 #include "../Globals/Settings.h"
+#include "../Globals/NWPlugins.h"
 #include "../Helpers/_NWPlugin_init.h"
 #include "../Helpers/PrintToString.h"
 

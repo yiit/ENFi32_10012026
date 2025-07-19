@@ -39,7 +39,10 @@ bool NWPlugin_002(NWPlugin::Function function, struct EventStruct *event, String
   {
     case NWPlugin::Function::NWPLUGIN_DRIVER_ADD:
     {
-//      NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
+      NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
+      nw.onlySingleInstance = true;
+      nw.alwaysPresent      = true;
+      nw.fixedNetworkIndex  = NWPLUGIN_ID_002 - 1; // Start counting at 0
       break;
     }
 
@@ -122,12 +125,16 @@ bool NWPlugin_002(NWPlugin::Function function, struct EventStruct *event, String
       // Usually the AP will be started when no WiFi is defined, or the defined one cannot be found. This flag may prevent it.
       Settings.DoNotStartAP(isFormItemChecked(F("DoNotStartAP")));
 
+# ifdef ESP32
+      Settings.WiFi_AP_enable_NAPT(isFormItemChecked(F("napt")));
+# endif
 
       break;
     }
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
+      addFormSubHeader(F("Wifi AP Settings"));
       addFormPasswordBox(F("WPA AP Mode Key"), F("apkey"), SecuritySettings.WifiAPKey, 63);
       addFormNote(F("WPA Key must be at least 8 characters long"));
 
@@ -140,6 +147,9 @@ bool NWPlugin_002(NWPlugin::Function function, struct EventStruct *event, String
   # else // if FEATURE_ETHERNET
       addFormNote(F("Do not allow to start an AP when configured WiFi cannot be found"));
   # endif // if FEATURE_ETHERNET
+  # ifdef ESP32
+      addFormCheckBox(F("Enable NAPT"), F("napt"), Settings.WiFi_AP_enable_NAPT());
+  # endif
 
       break;
     }

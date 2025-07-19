@@ -248,9 +248,9 @@ void handle_networks_ShowAllNetworksTable()
       }
 
       /*
-         const NetworkDriverStruct& adapter = getNetworkDriverStruct(NetworkDriverIndex);
+         const NetworkDriverStruct& driver = getNetworkDriverStruct(NetworkDriverIndex);
 
-         if ((INVALID_NETWORKDRIVER_INDEX == NetworkDriverIndex) || adapter.usesPort) {
+         if ((INVALID_NETWORKDRIVER_INDEX == NetworkDriverIndex) || driver.usesPort) {
          addHtmlInt(13 == nwpluginID ? Settings.UDPPort : NetworkSettings->Port); // P2P/C013 exception
          }
        */
@@ -268,6 +268,15 @@ void handle_networks_ShowAllNetworksTable()
 void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
   if (!validNetworkIndex(networkindex)) { return; }
 
+  const networkDriverIndex_t networkDriverIndex =
+    getNetworkDriverIndex_from_NWPluginID(
+      Settings.getNWPluginID_for_network(networkindex));
+  const NetworkDriverStruct& cur_driver = getNetworkDriverStruct(networkDriverIndex);
+
+  const bool networkDriverSelectorDisabled = cur_driver.alwaysPresent && validNetworkIndex(cur_driver.fixedNetworkIndex) &&
+                                             networkindex == cur_driver.fixedNetworkIndex;
+
+
   // Show network settings page
   {
     html_table_class_normal();
@@ -275,27 +284,26 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
     addRowLabel(F("Network Driver"));
     const nwpluginID_t choice = Settings.getNWPluginID_for_network(networkindex);
 
-    addSelector_Head_reloadOnChange(F("networkDriver"));
+    addSelector_Head_reloadOnChange(F("networkDriver"), F("wide"), networkDriverSelectorDisabled);
     addSelector_Item(F("- Standalone -"), 0, false, false, EMPTY_STRING);
 
     networkDriverIndex_t networkDriverIndex{};
 
     while (validNetworkDriverIndex(networkDriverIndex))
     {
-      const nwpluginID_t number = getNWPluginID_from_NetworkDriverIndex(networkDriverIndex);
-      boolean disabled          = false; // !((networkindex == 0) || !NetworkDriver[x].usesMQTT);
+      const NetworkDriverStruct& driver = getNetworkDriverStruct(networkDriverIndex);
+      const nwpluginID_t number         = getNWPluginID_from_NetworkDriverIndex(networkDriverIndex);
+      const bool disabled               = driver.alwaysPresent &&
+                                          validNetworkIndex(driver.fixedNetworkIndex) &&
+                                          networkindex != driver.fixedNetworkIndex;
       addSelector_Item(getNWPluginNameFromNetworkDriverIndex(networkDriverIndex),
                        number.value,
                        choice == number,
                        disabled);
       ++networkDriverIndex;
     }
-    addSelector_Foot(true);
+    addSelector_Foot(!networkDriverSelectorDisabled);
   }
-  const networkDriverIndex_t networkDriverIndex =
-    getNetworkDriverIndex_from_NWPluginID(
-      Settings.getNWPluginID_for_network(networkindex));
-  const NetworkDriverStruct& driver = getNetworkDriverStruct(networkDriverIndex);
 
   # ifndef LIMIT_BUILD_SIZE
   addRTDNetworkDriverButton(getNWPluginID_from_NetworkDriverIndex(networkDriverIndex));
@@ -310,7 +318,8 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
 
     String str;
     do_NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD, &TempEvent, str);
-#ifdef ESP32
+# ifdef ESP32
+
     if (do_NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_GET_INTERFACE, &TempEvent, str))
     {
       {
@@ -326,10 +335,10 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
           NWPlugin::NetforkFlags::EventIPmodified,
           NWPlugin::NetforkFlags::isPPP,
           NWPlugin::NetforkFlags::isBridge,
-# if CONFIG_LWIP_IPV6
+#  if CONFIG_LWIP_IPV6
           NWPlugin::NetforkFlags::MLD_v6_report,
           NWPlugin::NetforkFlags::IPv6_autoconf_enabled,
-# endif // if CONFIG_LWIP_IPV6
+#  endif // if CONFIG_LWIP_IPV6
         };
 
         addRowLabel(F("Flags"));
@@ -362,14 +371,14 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
           NWPlugin::IP_type::gateway,
           NWPlugin::IP_type::dns1,
           NWPlugin::IP_type::dns2,
-# if CONFIG_LWIP_IPV6
+#  if CONFIG_LWIP_IPV6
           NWPlugin::IP_type::ipv6_unknown,
           NWPlugin::IP_type::ipv6_global,
           NWPlugin::IP_type::ipv6_link_local,
           NWPlugin::IP_type::ipv6_site_local,
           NWPlugin::IP_type::ipv6_unique_local,
           NWPlugin::IP_type::ipv4_mapped_ipv6,
-# endif // if CONFIG_LWIP_IPV6
+#  endif // if CONFIG_LWIP_IPV6
 
         };
 
@@ -384,7 +393,7 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
         }
       }
     }
-#endif
+# endif // ifdef ESP32
 
     addFormSeparator(2);
 

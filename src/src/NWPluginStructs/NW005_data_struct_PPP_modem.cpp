@@ -725,6 +725,7 @@ bool NW005_data_struct_PPP_modem::init(struct EventStruct *event)
     addLog(LOG_LEVEL_ERROR, F("PPP: Error PPP.begin"));
     return false;
   }
+  PPP.mode(ESP_MODEM_MODE_COMMAND);
 
   addLog(LOG_LEVEL_INFO, strformat(F("PPP: Module Name: %s, IMEI: %s"),
                                    PPP.moduleName().c_str(),
@@ -736,6 +737,7 @@ bool NW005_data_struct_PPP_modem::init(struct EventStruct *event)
 
 bool NW005_data_struct_PPP_modem::exit(struct EventStruct *event)
 {
+  PPP.mode(ESP_MODEM_MODE_COMMAND);
   PPP.end();
 
   _modem_initialized = false;

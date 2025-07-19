@@ -9,14 +9,17 @@
 #include "../CustomBuild/CompiletimeDefines.h"
 #include "../CustomBuild/ESPEasyLimits.h"
 #include "../DataStructs/DeviceStruct.h"
-#include "../DataTypes/SPI_options.h"
-#include "../DataTypes/NWPluginID.h"
+#include "../DataStructs/NetworkDriverStruct.h"
 #include "../DataTypes/NPluginID.h"
+#include "../DataTypes/NWPluginID.h"
+#include "../DataTypes/NWPluginID.h"
 #include "../DataTypes/PluginID.h"
-#include "../Globals/Plugins.h"
+#include "../DataTypes/SPI_options.h"
 #include "../Globals/CPlugins.h"
+#include "../Globals/Plugins.h"
 #include "../Helpers/Misc.h"
 #include "../Helpers/StringParser.h"
+#include "../Helpers/_NWPlugin_init.h"
 
 #if FEATURE_I2C_MULTIPLE
 #include "../Helpers/Hardware_device_info.h"
@@ -544,6 +547,22 @@ void SettingsStruct_tmpl<N_TASKS>::validate() {
   }
 #endif
   #endif
+
+  // Make sure the WiFi and AP drivers are always added and set enabled when loading older settings, 
+  // or factory default settings
+  for (networkDriverIndex_t index; validNetworkDriverIndex(index); ++index)
+  {
+    const NetworkDriverStruct& nw = getNetworkDriverStruct(index);
+    if (nw.alwaysPresent) {
+      if (validNetworkIndex(nw.fixedNetworkIndex)) {
+        const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkDriverIndex(index);
+        if (getNWPluginID_for_network(nw.fixedNetworkIndex) != nwpluginID) {
+          setNWPluginID_for_network(nw.fixedNetworkIndex,  nwpluginID);
+          setNetworkEnabled(nw.fixedNetworkIndex, true);
+        }
+      }
+    }
+  }
 }
 
 template<unsigned int N_TASKS>

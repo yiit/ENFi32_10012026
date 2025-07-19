@@ -48,6 +48,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
     case NWPlugin::Function::NWPLUGIN_DRIVER_ADD:
     {
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
+      nw.onlySingleInstance = true;
+      nw.alwaysPresent = false;
       break;
     }
 

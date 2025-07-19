@@ -44,7 +44,10 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
   {
     case NWPlugin::Function::NWPLUGIN_DRIVER_ADD:
     {
-//      NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
+      NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
+      nw.onlySingleInstance = true;
+      nw.alwaysPresent = true;
+      nw.fixedNetworkIndex = NWPLUGIN_ID_001 -1; // Start counting at 0
       break;
     }
 
