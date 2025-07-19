@@ -11,11 +11,6 @@ uint32_t ESPEasy_key_value_store::combine_StorageType_and_key(
   ESPEasy_key_value_store::StorageType storageType,
   uint32_t                             key)
 {
-  if (storageType == ESPEasy_key_value_store::StorageType::bool_false) {
-    // bool type will be kept in memory as bool_type
-    storageType = ESPEasy_key_value_store::StorageType::bool_type;
-  }
-
   uint32_t res = key & ((1 << 24) - 1);
   res |= (static_cast<uint32_t>(storageType) << 24);
   return res;
@@ -788,12 +783,22 @@ bool ESPEasy_key_value_store::getValue(uint32_t key, double& value) const
 
 void ESPEasy_key_value_store::setValue(uint32_t key, const double& value) { SET_8BYTE_TYPE(double_type, setDouble); }
 
-bool ESPEasy_key_value_store::getValue(uint32_t key, bool& value) const
+bool ESPEasy_key_value_store::getValue(uint32_t key, bool& boolValue) const
 {
-  GET_4BYTE_TYPE(bool_type, getUint32);
+  boolValue = false;
+  uint32_t value{};
+  auto     it = get4byteIterator(ESPEasy_key_value_store::StorageType::bool_type, key);
+
+  if (it == _4byte_data.end()) { return false; }
+  value     = it->second.getUint32();
+  boolValue = value != 0u;
+  return true;
 }
 
-void ESPEasy_key_value_store::setValue(uint32_t key, const bool& value) { SET_4BYTE_TYPE(bool_type, setUint32); }
+void ESPEasy_key_value_store::setValue(uint32_t key, const bool& boolValue) {
+  uint32_t value = boolValue ? 1 : 0;
+  SET_4BYTE_TYPE(bool_type, setUint32);
+}
 
 bool ESPEasy_key_value_store::getValueAsString(const StorageType& storageType, uint32_t key, String& value) const
 {
@@ -890,16 +895,28 @@ bool ESPEasy_key_value_store::getValueAsInt(
 
   switch (storageType)
   {
-  GET_TYPE_AS_INT64(bool_type,   bool)
-  GET_TYPE_AS_INT64(int8_type,   int8_t)
-  GET_TYPE_AS_INT64(uint8_type,  uint8_t)
-  GET_TYPE_AS_INT64(int16_type,  int16_t)
-  GET_TYPE_AS_INT64(uint16_type, uint16_t)
-  GET_TYPE_AS_INT64(int32_type,  int32_t)
-  GET_TYPE_AS_INT64(uint32_type, uint32_t)
-  GET_TYPE_AS_INT64(float_type,  float)
-  GET_TYPE_AS_INT64(uint64_type, uint64_t)
-  GET_TYPE_AS_INT64(double_type, double)
+    case ESPEasy_key_value_store::StorageType::bool_type:
+    case ESPEasy_key_value_store::StorageType::bool_true:
+    case ESPEasy_key_value_store::StorageType::bool_false:
+    {
+      bool v{};
+
+      if (getValue(key, v))
+      {
+        value = v ? 1 : 0;
+        return true;
+      }
+      break;
+    }
+      GET_TYPE_AS_INT64(int8_type,   int8_t)
+      GET_TYPE_AS_INT64(uint8_type,  uint8_t)
+      GET_TYPE_AS_INT64(int16_type,  int16_t)
+      GET_TYPE_AS_INT64(uint16_type, uint16_t)
+      GET_TYPE_AS_INT64(int32_type,  int32_t)
+      GET_TYPE_AS_INT64(uint32_type, uint32_t)
+      GET_TYPE_AS_INT64(float_type,  float)
+      GET_TYPE_AS_INT64(uint64_type, uint64_t)
+      GET_TYPE_AS_INT64(double_type, double)
 
     case ESPEasy_key_value_store::StorageType::int64_type:
       return getValue(key, value);
@@ -960,6 +977,8 @@ void ESPEasy_key_value_store::setValue(const StorageType& storageType, uint32_t 
       break;
     }
     case ESPEasy_key_value_store::StorageType::bool_type:
+    case ESPEasy_key_value_store::StorageType::bool_true:
+    case ESPEasy_key_value_store::StorageType::bool_false:
       setValue(key, static_cast<bool>(value.toInt()));
       break;
     default: return;
@@ -1030,6 +1049,11 @@ void ESPEasy_key_value_store::setValue(
 bool ESPEasy_key_value_store::hasStorageType(StorageType storageType) const
 {
   //    return true;
+  if ((storageType == ESPEasy_key_value_store::StorageType::bool_true) ||
+      (storageType == ESPEasy_key_value_store::StorageType::bool_false)) {
+    storageType = ESPEasy_key_value_store::StorageType::bool_type;
+  }
+
   const uint32_t bitnr         = static_cast<uint32_t>(storageType);
   constexpr uint32_t max_bitnr = static_cast<uint32_t>(StorageType::MAX_Type);
 
@@ -1039,6 +1063,10 @@ bool ESPEasy_key_value_store::hasStorageType(StorageType storageType) const
 
 void ESPEasy_key_value_store::setHasStorageType(StorageType storageType)
 {
+  if ((storageType == ESPEasy_key_value_store::StorageType::bool_true) ||
+      (storageType == ESPEasy_key_value_store::StorageType::bool_false)) {
+    storageType = ESPEasy_key_value_store::StorageType::bool_type;
+  }
   const uint32_t bitnr         = static_cast<uint32_t>(storageType);
   constexpr uint32_t max_bitnr = static_cast<uint32_t>(StorageType::MAX_Type);
 

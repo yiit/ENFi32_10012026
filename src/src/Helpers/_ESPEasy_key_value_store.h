@@ -47,8 +47,9 @@ public:
     MAX_Type,         // Leave this one after the generic type and before 'special' types
 
 
-    bool_true  = 254, // small optimization to store 'true' as extra type
-    bool_false = 255  // small optimization to store 'false' as extra type
+    bool_true  = 126, // small optimization to store 'true' as extra type
+    bool_false = 127,  // small optimization to store 'false' as extra type
+    binary     = 255
 
   };
 
