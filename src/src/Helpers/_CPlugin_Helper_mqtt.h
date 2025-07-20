@@ -37,6 +37,8 @@ String makeHomeAssistantCompliantName(const String& name);
 
 #  if FEATURE_MQTT_DEVICECLASS
 String MQTT_binary_deviceClassName(int devClassIndex);
+bool   MQTT_binary_deviceClassTwoWay(int devClassIndex);
+int    MQTT_binary_deviceClassIndex(const String& deviceClassName);
 #  endif // if FEATURE_MQTT_DEVICECLASS
 struct DiscoveryItem {
   DiscoveryItem(Sensor_VType _VType, int _valueCount, taskVarIndex_t _varIndex)

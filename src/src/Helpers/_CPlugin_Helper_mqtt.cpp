@@ -408,6 +408,27 @@ String MQTT_binary_deviceClassName(int devClassIndex) {
   return result;
 }
 
+int MQTT_binary_deviceClassIndex(const String& deviceClassName) {
+  return GetCommandCode(deviceClassName.c_str(), mqtt_binary_deviceclass_names);
+}
+
+// TwoWay devices are marked with ² in the selector, and disvocered as 'light' instead of 'binary_sensor'
+bool MQTT_binary_deviceClassTwoWay(int devClassIndex) {
+  switch (devClassIndex) { // Index into mqtt_binary_deviceclass_names
+    case 1:                // power
+    case 2:                // light
+    case 3:                // plug
+    case 5:                // garage_door
+    case 8:                // lock
+    case 26:               // sound
+    case 28:               // vibration
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 #  endif // if FEATURE_MQTT_DEVICECLASS
 
 bool MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex, cpluginID_t CPluginID) {
@@ -576,20 +597,22 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
 
                 for (uint8_t v = discoveryItems[s].varIndex; v < varCount; ++v) {
                   const String valuename  = MQTT_DiscoveryHelperGetValueName(x, v, discoveryItems[s]);
-                  String valueDeviceClass = parseStringKeepCase(pluginDeviceClass, v + 1); // Separate device classes per value
+                  String valueDeviceClass = parseStringKeepCase(pluginDeviceClass, v + 1); // Device classes per value
 
                   if (valueDeviceClass.isEmpty()) { valueDeviceClass = F("power"); } // default
-                  const String deviceClass = strformat(F("%s\",\"frc_upd\":true,\"pl_on\":\"%d\",\"pl_off\":\"%d"),
-                                                       valueDeviceClass.c_str(), !inversedState, inversedState);
+                  const bool twoWay = MQTT_binary_deviceClassTwoWay(MQTT_binary_deviceClassIndex(valueDeviceClass));
+
+                  // Discover 2-way as Light
+                  const __FlashStringHelper*componentClass = twoWay ? F("light") : F("binary_sensor");
+                  const String deviceClass                 = strformat(F("%s\",\"pl_on\":\"%d\",\"pl_off\":\"%d"),
+                                                                       valueDeviceClass.c_str(), !inversedState, inversedState);
                   const String uom = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s]);
 
                   success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
                                                                    ControllerIndex,
                                                                    ControllerSettings,
                                                                    F("device_automation"),
-
-                                                                                 // Use deviceClass to pass in TriggerState
-                                                                   !inversedState ? F("1") : F("0"),
+                                                                   EMPTY_STRING, // unused
                                                                    EMPTY_STRING, // No unit of measure used
                                                                    &TempEvent,
                                                                    deviceElement,
@@ -599,7 +622,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                   success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
                                                                    ControllerIndex,
                                                                    ControllerSettings,
-                                                                   F("binary_sensor"),
+                                                                   componentClass,
                                                                    deviceClass,
                                                                    uom,
                                                                    &TempEvent,
@@ -998,12 +1021,12 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                               publish.c_str(), taskName.c_str(), valName.c_str(), uniqueId.c_str(), schema.c_str(),
                                               devOrIcon.c_str(), deviceClass.c_str(), withUoM.c_str(), withSet.c_str(),
                                               deviceElement.c_str());
-    const String triggerMessage = strformat(F("{\"atype\":\"trigger\",\"t\":\"%s\",\"pl\":\"%s\","
+    const String triggerMessage = strformat(F("{\"atype\":\"trigger\",\"t\":\"%s\","
                                               "\"p\":\"device_automation\","
                                               "\"type\":\"button_short_press\"," // FIXME ?
-                                              "\"stype\":\"button_1\""           // FIXME ?
-                                              "%s}"),                            // deviceClass is used to pass in the TriggerState
-                                            publish.c_str(), deviceClass.c_str(), deviceElement.c_str());
+                                              "\"stype\":\"switch_1\""           // FIXME ?
+                                              "%s}"),                            // deviceElement is used to pass in the TriggerState
+                                            publish.c_str(), deviceElement.c_str());
 
     return MQTT_DiscoveryPublish(ControllerIndex,
                                  discoveryConfig.isEmpty() ? concat(discoveryUrl, F("/config")) : concat(discoveryUrl, discoveryConfig),

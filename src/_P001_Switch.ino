@@ -171,7 +171,10 @@ boolean Plugin_001(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_GET_DISCOVERY_VTYPES:
 
       if (P001_SWITCH_OR_DIMMER == PLUGIN_001_TYPE_DIMMER) {
-        success = getDiscoveryVType(event, Plugin_QueryVType_Analog, 255, event->Par5);
+        for (uint8_t i; i < event->Par5; ++i) {
+          event->ParN[i] = static_cast<int>(Sensor_VType::SENSOR_TYPE_DIMMER);
+        }
+        success = true;
       } else {
         success = getDiscoveryVType(event, Settings.TaskDevicePin1Inversed[event->TaskIndex]
                                             ? Plugin_QueryVType_BinarySensorInv
