@@ -10,6 +10,9 @@
 # endif // if FEATURE_MQTT_DISCOVER
 # include "../Helpers/SystemVariables.h"
 
+# ifdef USES_P001
+#  include "../PluginStructs/P001_data_struct.h"
+# endif // ifdef USES_P001
 
 /***************************************************************************************
  * Parse MQTT topic for /cmd and /set ending to handle commands or TaskValueSet
@@ -55,24 +58,41 @@ bool MQTT_handle_topic_commands(struct EventStruct *event,
       if (lastindex > -1) {
         taskName = taskName.substring(lastindex + 1);
 
-        const taskIndex_t    taskIndex    = findTaskIndexByName(taskName);
-        const deviceIndex_t  deviceIndex  = getDeviceIndex_from_TaskIndex(taskIndex);
-        const taskVarIndex_t taskVarIndex = event->Par2 - 1;
-        uint8_t valueNr;
+        const taskIndex_t   taskIndex     = findTaskIndexByName(taskName);
+        const deviceIndex_t deviceIndex   = getDeviceIndex_from_TaskIndex(taskIndex);
+        uint8_t valueNr                   = findDeviceValueIndexByName(valueName, taskIndex);
+        const taskVarIndex_t taskVarIndex = static_cast<taskVarIndex_t>(valueNr); // event->Par2 - 1;
 
         if (validDeviceIndex(deviceIndex) && validTaskVarIndex(taskVarIndex)) {
-# if defined(USES_P033) || defined(USES_P086)
+# if defined(USES_P001) || defined(USES_P033) || defined(USES_P086)
           const int pluginID = Device[deviceIndex].Number;
-# endif // if defined(USES_P033) || defined(USES_P086)
+# endif // if defined(USES_P001) || defined(USES_P033) || defined(USES_P086)
+          # ifdef USES_P001
+
+          if (!handled && (pluginID == 1) && validGpio(Settings.TaskDevicePin[0][taskIndex])) { // Plugin 1 Switch, uses 1st GPIO only
+            EventStruct   TempEvent(taskIndex);
+            const uint8_t switchtype = P001_data_struct::P001_getSwitchType(&TempEvent);        // 0 = Switch
+            const bool    inverted   = Settings.TaskDevicePin1Inversed[taskIndex];
+            uint32_t value{};
+            validUIntFromString(event->String2, value);
+
+            if ((0 == switchtype) && inverted) {
+              value = (0 == value) ? 1u : 0u;
+            }
+            cmd = strformat((0 == switchtype) ? F("gpio,%d,%d") : F("pwm,%d,%d"),
+                            Settings.TaskDevicePin[0][taskIndex], value);
+            handled = true;
+          }
+          # endif // ifdef USES_P001
           # ifdef USES_P033
 
-          if ((pluginID == 33) || // Plugin 33 Dummy Device,
-              // backward compatible behavior: if handleCmd = true then execute TaskValueSet regardless of AllowTaskValueSetAllPlugins
-              ((handleCmd || Settings.AllowTaskValueSetAllPlugins()) && (pluginID != 86))) {
+          if (!handled && ((pluginID == 33) || // Plugin 33 Dummy Device,
+                                               // backward compatible behavior: if handleCmd = true then execute TaskValueSet regardless of
+                                               // AllowTaskValueSetAllPlugins
+                           ((handleCmd || Settings.AllowTaskValueSetAllPlugins()) && (pluginID != 86)))) {
             // TaskValueSet,<task/device nr>,<value nr>,<value/formula (!ToDo) >, works only with new version of P033!
-            valueNr = findDeviceValueIndexByName(valueName, taskIndex);
 
-            if (validTaskVarIndex(valueNr)) { // value Name identified
+            if (validTaskVarIndex(taskVarIndex)) { // value Name identified, valueNr = uint8_t
               // Set a Dummy Device Value, device Number, var number and argument
               cmd     = strformat(F("TaskValueSet,%d,%d,%s"), taskIndex + 1, valueNr + 1, event->String2.c_str());
               handled = true;
@@ -84,7 +104,7 @@ bool MQTT_handle_topic_commands(struct EventStruct *event,
           # endif // if defined(USES_P033) && defined(USES_P086)
           # ifdef USES_P086
 
-          if (pluginID == 86) { // Plugin 86 Homie receiver. Schedules the event defined in the plugin.
+          if (!handled && (pluginID == 86)) { // Plugin 86 Homie receiver. Schedules the event defined in the plugin.
             // Does NOT store the value.
             // Use HomieValueSet to save the value. This will acknowledge back to the controller too.
             valueNr = findDeviceValueIndexByName(valueName, taskIndex);
@@ -134,6 +154,12 @@ bool MQTT_handle_topic_commands(struct EventStruct *event,
  ****************************************************************************************/
 void MQTT_execute_command(String& cmd,
                           bool    tryRemoteConfig) {
+  # ifndef BUILD_NO_DEBUG
+
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Executing command: %s"), cmd.c_str()));
+  }
+  # endif // ifndef BUILD_NO_DEBUG
   // in case of event, store to buffer and return...
   const String command = parseString(cmd, 1);
 
