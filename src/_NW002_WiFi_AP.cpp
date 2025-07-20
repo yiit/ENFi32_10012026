@@ -92,7 +92,7 @@ bool NWPlugin_002(NWPlugin::Function function, struct EventStruct *event, String
     }
 
 # ifdef ESP8266
-    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
       string  = WiFi.softAPmacAddress();
       success = true;

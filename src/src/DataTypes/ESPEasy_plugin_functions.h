@@ -125,12 +125,25 @@ class NWPlugin
 {
 public:
 
+  enum class ConnectionState {
+    Disabled,
+    Error,
+    Initializing, // e.g. power-on sequence of PPP modem may take quite long
+    Connecting,
+    LinkDown,
+    LinkUp,
+    Connected
+  };
+
+  static const __FlashStringHelper* toString(ConnectionState connectionState, bool asUnicodeSymbol = false);
+
   // As these function values are also used in the timing stats, make sure there is no overlap with the PLUGIN_xxx numbering.
 
   enum class Function {
     NWPLUGIN_DRIVER_ADD = 192, // Called at boot for letting a network adapter adding itself to list of available controllers
     NWPLUGIN_CONNECT_SUCCESS,  // Only used for timing stats
     NWPLUGIN_CONNECT_FAIL,     // Only used for timing stats
+    NWPLUGIN_CONNECTION_STATE,
     NWPLUGIN_DRIVER_TEMPLATE,
     NWPLUGIN_LOAD_DEFAULTS,
     NWPLUGIN_GET_DEVICENAME,
@@ -148,7 +161,7 @@ public:
     #endif
     NWPLUGIN_WEBFORM_SHOW_CONNECTED, // Used for showing connected state/speed
     NWPLUGIN_WEBFORM_SHOW_HOSTNAME,  // Used for showing hostname
-    NWPLUGIN_WEBFORM_SHOW_MAC,       // Used for showing MAC
+    NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS,       // Used for showing MAC
     NWPLUGIN_WEBFORM_SHOW_IP,        // Used for showing IP
     NWPLUGIN_WEBFORM_SHOW_PORT       // Used for showing host information for the network adapter.
 

@@ -29,7 +29,7 @@
 # define NW005_KEY_FLOWCTRL             10
 # define NW005_KEY_MODEM_MODEL          11
 # define NW005_KEY_APN                  12
-# define NW005_KEY_PIN                  13
+# define NW005_KEY_SIM_PIN                  13
 
 const __FlashStringHelper* NW005_getLabelString(uint32_t key, bool displayString, ESPEasy_key_value_store::StorageType& storageType)
 {
@@ -59,7 +59,7 @@ const __FlashStringHelper* NW005_getLabelString(uint32_t key, bool displayString
     case NW005_KEY_APN:
       storageType = ESPEasy_key_value_store::StorageType::string_type;
       return displayString ? F("Access Point Name (APN)") : F("apn");
-    case NW005_KEY_PIN:
+    case NW005_KEY_SIM_PIN:
       storageType = ESPEasy_key_value_store::StorageType::string_type;
       return displayString ? F("SIM Card Pin") : F("pin");
 
@@ -80,8 +80,13 @@ WebFormItemParams NW005_makeWebFormItemParams(uint32_t key) {
 }
 
 NW005_data_struct_PPP_modem::~NW005_data_struct_PPP_modem() {
+  if (_modem_task_data.modem_taskHandle) {
+    vTaskDelete(_modem_task_data.modem_taskHandle);
+    _modem_task_data.modem_taskHandle = nullptr;
+  }
+  PPP.mode(ESP_MODEM_MODE_COMMAND);
   PPP.end();
-  _modem_initialized = false;
+  _modem_task_data.modem_initialized = false;
 }
 
 enum class NW005_modem_model {
@@ -122,8 +127,9 @@ ppp_modem_model_t to_ppp_modem_model_t(NW005_modem_model NW005_modemmodel)
   return PPP_MODEM_GENERIC;
 }
 
-String NW005_data_struct_PPP_modem::getRSSI()
+String NW005_data_struct_PPP_modem::getRSSI() const
 {
+  if (!_modem_task_data.modem_initialized) { return F("-"); }
   const int rssi_raw = PPP.RSSI();
 
   if (rssi_raw == 99) { return F("-"); } // Not known or not detectable
@@ -134,21 +140,41 @@ String NW005_data_struct_PPP_modem::getRSSI()
   return String(map(rssi_raw, 2, 30, -109, -53));
 }
 
-String NW005_data_struct_PPP_modem::getBER()
+String NW005_data_struct_PPP_modem::getBER() const
 {
-  switch (PPP.BER())
-  {
-    case 0: return F("<0.01 %");
-    case 1: return F("0.01 % ... 0.1 %");
-    case 2: return F("0.1 % ... 0.5 %");
-    case 3: return F("0.5 % ... 1 %");
-    case 4: return F("1 % ... 2 %");
-    case 5: return F("2 % ... 4 %");
-    case 6: return F("4 % ... 8 %");
-    case 7: return F(">= 8 %");
-    case 99: break; // Not known or not detectable
+  if (_modem_task_data.modem_initialized) {
+    switch (PPP.BER())
+    {
+      case 0: return F("<0.01 %");
+      case 1: return F("0.01 % ... 0.1 %");
+      case 2: return F("0.1 % ... 0.5 %");
+      case 3: return F("0.5 % ... 1 %");
+      case 4: return F("1 % ... 2 %");
+      case 5: return F("2 % ... 4 %");
+      case 6: return F("4 % ... 8 %");
+      case 7: return F(">= 8 %");
+      case 99: break; // Not known or not detectable
+    }
   }
   return F("-");
+}
+
+bool NW005_data_struct_PPP_modem::attached() const
+{
+  if (!_modem_task_data.modem_initialized) { return false; }
+  return PPP.attached();
+}
+
+String NW005_data_struct_PPP_modem::IMEI() const
+{
+  if (!_modem_task_data.modem_initialized) { return EMPTY_STRING; }
+  return PPP.IMEI();
+}
+
+String NW005_data_struct_PPP_modem::operatorName() const
+{
+  if (!_modem_task_data.modem_initialized) { return EMPTY_STRING; }
+  return PPP.operatorName();
 }
 
 const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str)
@@ -202,28 +228,29 @@ const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, Stri
       };
 
       if (i < NR_ELEMENTS(labels)) {
-         res = labels[i]; 
-         switch (i)
-         {
-            case 10:
+        res = labels[i];
+
+        switch (i)
+        {
+          case 10:
             // RSRQ
-            {
-                float val = value_str.toInt();
-                val -= 40;
-                val /= 2.0f;
-                value_str = String(val, 1) + F(" [dBm]");
-            }
+          {
+            float val = value_str.toInt();
+            val      -= 40;
+            val      /= 2.0f;
+            value_str = String(val, 1) + F(" [dBm]");
             break;
-            case 11:
+          }
+          case 11:
             // RSRP
             value_str = strformat(F("%d [dBm]"), value_str.toInt() - 140);
             break;
-            case 12: 
+          case 12:
             // RSSI
             value_str = strformat(F("%d [dBm]"), value_str.toInt() - 110);
             break;
-         }
-         
+        }
+
       }
       break;
     }
@@ -236,9 +263,9 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
   String res = PPP.cmd("AT+CPSI?", 1000);
 
   if (!res.isEmpty() /* && res.startsWith(F("+CPSI"))*/) {
-    int start_index                         = 0;
-    int end_index                           = res.indexOf(',');
-    const String systemMode                 = res.substring(start_index, end_index);
+    int start_index         = 0;
+    int end_index           = res.indexOf(',');
+    const String systemMode = res.substring(start_index, end_index);
     addLog(LOG_LEVEL_INFO, concat(F("PPP: UE sysinfo: "), systemMode));
 
     const __FlashStringHelper*sysmode_str[] = {
@@ -259,15 +286,15 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
 
     for (int i = 0; start_index < res.length() && end_index != -1 && i < 15; ++i)
     {
-      String value_str = res.substring(start_index, end_index);
+      String value_str   = res.substring(start_index, end_index);
       const String label = NW005_decode_label(sysmode_index, i, value_str);
 
       if (!label.isEmpty()) {
         addRowLabel(label);
 
-        if (i == 0) { 
-            // We have some leading characters left here, so use the 'clean' strings
-            addHtml(sysmode_str[sysmode_index]); 
+        if (i == 0) {
+          // We have some leading characters left here, so use the 'clean' strings
+          addHtml(sysmode_str[sysmode_index]);
         } else {
           addHtml_pre(value_str);
         }
@@ -356,39 +383,13 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
   for (int i = NW005_KEY_PIN_RX; i <= NW005_KEY_PIN_RESET; ++i)
   {
     ESPEasy_key_value_store::StorageType storageType;
-    PinSelectPurpose purpose      = PinSelectPurpose::Generic;
-    String label                  = NW005_getLabelString(i, true, storageType);
     const __FlashStringHelper *id = NW005_getLabelString(i, false, storageType);
-
-    switch (i)
-    {
-      case NW005_KEY_PIN_RX:
-        purpose = PinSelectPurpose::Serial_input;
-        label   = formatGpioName_serialRX(false);
-        break;
-      case NW005_KEY_PIN_TX:
-        purpose = PinSelectPurpose::Serial_output;
-        label   = formatGpioName_serialTX(false);
-        break;
-      case NW005_KEY_PIN_CTS:
-        purpose = PinSelectPurpose::Generic_input;
-        label   = formatGpioName(
-          label, gpio_direction::gpio_input, true);
-        break;
-      case NW005_KEY_PIN_RTS:
-        purpose = PinSelectPurpose::Generic_output;
-        label   = formatGpioName(
-          label, gpio_direction::gpio_output, true);
-        break;
-      case NW005_KEY_PIN_RESET:
-        purpose = PinSelectPurpose::Generic_output;
-        label   = formatGpioName(
-          label, gpio_direction::gpio_output, true);
-        break;
-    }
+    PinSelectPurpose purpose      = PinSelectPurpose::Generic;
+    String label                  = NW005_formatGpioLabel(i, purpose);
 
     int8_t pin = -1;
     _kvs->getValue(i, pin);
+
     addFormPinSelect(purpose, label, id, pin);
   }
   showWebformItem(
@@ -432,16 +433,24 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
     showWebformItem(*_kvs, params);
   }
   {
-    auto params = NW005_makeWebFormItemParams(NW005_KEY_PIN);
+    auto params = NW005_makeWebFormItemParams(NW005_KEY_SIM_PIN);
     params._maxLength = 4;
     showWebformItem(*_kvs, params);
     addFormNote(F("Only numerical digits"));
   }
 
-  if (!_modem_initialized) { return; }
-
   addFormSubHeader(F("Modem State"));
   addRowLabel(F("Modem Model"));
+
+  if (!_modem_task_data.modem_initialized) {
+    if (_modem_task_data.initializing) {
+      addHtml(F("Initializing ..."));
+    } else {
+      addHtml(F("Not found"));
+    }
+    return;
+  }
+
   addHtml_pre(PPP.moduleName());
   addRowLabel(F("IMEI"));
   addHtml_pre(PPP.IMEI());
@@ -484,11 +493,11 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
   }
 
   addRowLabel(F("RSSI"));
-  addHtml(NW005_data_struct_PPP_modem::getRSSI());
+  addHtml(getRSSI());
   addUnit(F("dBm"));
 
   addRowLabel(F("BER"));
-  addHtml(NW005_data_struct_PPP_modem::getBER());
+  addHtml(getBER());
 
   addRowLabel(F("Radio State"));
   addHtml((PPP.radioState() == 0) ? F("Minimal") : F("Full"));
@@ -600,7 +609,7 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
      }
    */
 
-     webform_load_UE_system_information();
+  webform_load_UE_system_information();
 }
 
 void NW005_data_struct_PPP_modem::webform_save(struct EventStruct *event)
@@ -618,7 +627,7 @@ void NW005_data_struct_PPP_modem::webform_save(struct EventStruct *event)
     NW005_KEY_FLOWCTRL,
     NW005_KEY_MODEM_MODEL,
     NW005_KEY_APN,
-    NW005_KEY_PIN
+    NW005_KEY_SIM_PIN
   };
 
 
@@ -629,6 +638,63 @@ void NW005_data_struct_PPP_modem::webform_save(struct EventStruct *event)
     storeWebformItem(*_kvs, keys[i], storageType, id);
   }
   _store();
+}
+
+bool NW005_data_struct_PPP_modem::webform_getPort(String& str)
+{
+  str.clear();
+
+  if (_KVS_initialized() && _load()) {
+    int serialPort = _kvs->getValueAsInt_or_default(NW005_KEY_SERIAL_PORT, -1);
+    str = serialHelper_getSerialTypeLabel(static_cast<ESPEasySerialPort>(serialPort));
+
+    if (serialPort >= 0) {
+      const uint32_t keys[] {
+        NW005_KEY_PIN_RX,
+        NW005_KEY_PIN_TX,
+        NW005_KEY_PIN_RTS,
+        NW005_KEY_PIN_CTS,
+        NW005_KEY_PIN_RESET
+      };
+
+      for (int i = 0; i < NR_ELEMENTS(keys); ++i) {
+        int pin = _kvs->getValueAsInt_or_default(keys[i], -1);
+
+        if (pin >= 0) {
+          PinSelectPurpose purpose = PinSelectPurpose::Generic;
+          const bool shortNotation = true;
+          String     label         = NW005_formatGpioLabel(keys[i], purpose, shortNotation);
+          str += strformat(F("\n%s: %d"),
+                           label.c_str(),
+                           pin);
+        }
+      }
+    }
+  }
+  return !str.isEmpty();
+}
+
+void NW005_begin_modem_task(void *parameter)
+{
+  NW005_modem_task_data*modem_task_data = static_cast<NW005_modem_task_data *>(parameter);
+
+  if (!modem_task_data->modem_initialized) {
+    modem_task_data->initializing      = true;
+    modem_task_data->modem_initialized =
+      PPP.begin(
+        modem_task_data->model,
+        modem_task_data->uart_num,
+        modem_task_data->baud_rate);
+    modem_task_data->initializing = false;
+    modem_task_data->logString    =  strformat(
+      F("PPP: Module Name: %s, IMEI: %s"),
+      PPP.moduleName().c_str(),
+      PPP.IMEI().c_str());
+
+    // PPP.mode(ESP_MODEM_MODE_COMMAND);
+  }
+  modem_task_data->modem_taskHandle = nullptr;
+  vTaskDelete(modem_task_data->modem_taskHandle);
 }
 
 bool NW005_data_struct_PPP_modem::init(struct EventStruct *event)
@@ -677,70 +743,75 @@ bool NW005_data_struct_PPP_modem::init(struct EventStruct *event)
   }
   {
     String pin;
-    _kvs->getValue(NW005_KEY_PIN, pin);
+    _kvs->getValue(NW005_KEY_SIM_PIN, pin);
 
     if (pin.length() >= 4) {
       PPP.setPin(pin.c_str());
     }
   }
 
-  ppp_modem_model_t model = to_ppp_modem_model_t(static_cast<NW005_modem_model>(
-                                                   _kvs->getValueAsInt_or_default(NW005_KEY_MODEM_MODEL, PPP_MODEM_GENERIC)));
-  int serialPort = 1;
+  _modem_task_data.model = to_ppp_modem_model_t(static_cast<NW005_modem_model>(
+                                                  _kvs->getValueAsInt_or_default(NW005_KEY_MODEM_MODEL, PPP_MODEM_GENERIC)));
+
+  _modem_task_data.uart_num = 1;
   {
     int8_t serial = 1;
 
     if (_kvs->getValue(NW005_KEY_SERIAL_PORT, serial)) {
       switch (static_cast<ESPEasySerialPort>(serial))
       {
-        case ESPEasySerialPort::serial0: serialPort = 0;
+        case ESPEasySerialPort::serial0: _modem_task_data.uart_num = 0;
           break;
 # if USABLE_SOC_UART_NUM > 1
-        case ESPEasySerialPort::serial1: serialPort = 1;
+        case ESPEasySerialPort::serial1: _modem_task_data.uart_num = 1;
           break;
 # endif // if USABLE_SOC_UART_NUM > 1
 # if USABLE_SOC_UART_NUM > 2
-        case ESPEasySerialPort::serial2: serialPort = 2;
+        case ESPEasySerialPort::serial2: _modem_task_data.uart_num = 2;
           break;
 # endif // if USABLE_SOC_UART_NUM > 2
 # if USABLE_SOC_UART_NUM > 3
-        case ESPEasySerialPort::serial3: serialPort = 3;
+        case ESPEasySerialPort::serial3: _modem_task_data.uart_num = 3;
           break;
 # endif // if USABLE_SOC_UART_NUM > 3
 # if USABLE_SOC_UART_NUM > 4
-        case ESPEasySerialPort::serial4: serialPort = 4;
+        case ESPEasySerialPort::serial4: _modem_task_data.uart_num = 4;
           break;
 # endif // if USABLE_SOC_UART_NUM > 4
 # if USABLE_SOC_UART_NUM > 5
-        case ESPEasySerialPort::serial5: serialPort = 5;
+        case ESPEasySerialPort::serial5: _modem_task_data.uart_num = 5;
           break;
 # endif // if USABLE_SOC_UART_NUM > 5
         default: break;
       }
     }
   }
-  uint32_t baud_rate = _kvs->getValueAsInt_or_default(NW005_KEY_BAUDRATE, 115200);
+  _modem_task_data.baud_rate         = _kvs->getValueAsInt_or_default(NW005_KEY_BAUDRATE, 115200);
+  _modem_task_data.modem_initialized = false;
+  _modem_task_data.initializing      = false;
 
-  if (!PPP.begin(model, serialPort, baud_rate)) {
-    addLog(LOG_LEVEL_ERROR, F("PPP: Error PPP.begin"));
-    return false;
-  }
-  PPP.mode(ESP_MODEM_MODE_COMMAND);
+  xTaskCreatePinnedToCore(
+    NW005_begin_modem_task,             // Function that should be called
+    "PPP.begin()",                      // Name of the task (for debugging)
+    4000,                               // Stack size (bytes)
+    &_modem_task_data,                  // Parameter to pass
+    1,                                  // Task priority
+    &_modem_task_data.modem_taskHandle, // Task handle
+    xPortGetCoreID()                    // Core you want to run the task on (0 or 1)
+    );
 
-  addLog(LOG_LEVEL_INFO, strformat(F("PPP: Module Name: %s, IMEI: %s"),
-                                   PPP.moduleName().c_str(),
-                                   PPP.IMEI().c_str()));
-
-  _modem_initialized = true;
   return true;
 }
 
 bool NW005_data_struct_PPP_modem::exit(struct EventStruct *event)
 {
+  if (_modem_task_data.modem_taskHandle) {
+    vTaskDelete(_modem_task_data.modem_taskHandle);
+    _modem_task_data.modem_taskHandle = nullptr;
+  }
   PPP.mode(ESP_MODEM_MODE_COMMAND);
   PPP.end();
-
-  _modem_initialized = false;
+  _modem_task_data.modem_initialized = false;
   return true;
 }
 
@@ -751,6 +822,53 @@ struct testStruct {
 
 
 };
+
+String NW005_data_struct_PPP_modem::NW005_formatGpioLabel(uint32_t key, PinSelectPurpose& purpose, bool shortNotation) const
+{
+  String label;
+
+  if ((key >= NW005_KEY_PIN_RX) && (key <= NW005_KEY_PIN_RESET))
+  {
+    ESPEasy_key_value_store::StorageType storageType;
+    purpose = PinSelectPurpose::Generic;
+    label   = NW005_getLabelString(key, true, storageType);
+
+    const bool optional = !shortNotation;
+
+    switch (key)
+    {
+      case NW005_KEY_PIN_RX:
+        purpose = PinSelectPurpose::Serial_input;
+        label   = shortNotation
+          ? formatGpioName_RX(false)
+          : formatGpioName_serialRX(false);
+        break;
+      case NW005_KEY_PIN_TX:
+        purpose = PinSelectPurpose::Serial_output;
+        label   = shortNotation
+          ? formatGpioName_TX(false)
+          : formatGpioName_serialTX(false);
+        break;
+      case NW005_KEY_PIN_CTS:
+        purpose = PinSelectPurpose::Generic_input;
+        label   = formatGpioName(
+          label, gpio_direction::gpio_input, optional);
+        break;
+      case NW005_KEY_PIN_RTS:
+        purpose = PinSelectPurpose::Generic_output;
+        label   = formatGpioName(
+          label, gpio_direction::gpio_output, optional);
+        break;
+      case NW005_KEY_PIN_RESET:
+        purpose = PinSelectPurpose::Generic_output;
+        label   = formatGpioName(
+          label, gpio_direction::gpio_output, optional);
+        break;
+    }
+
+  }
+  return label;
+}
 
 void NW005_data_struct_PPP_modem::testWrite()
 {

@@ -10,12 +10,42 @@ bool NWPlugin::canQueryViaNetworkInterface(NWPlugin::Function function)
   {
     // TD-er: Do not try to fetch hostname via base class. No idea why, but it doesn't work well
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
-    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
       return true;
     default: break;
   }
   return false;
+}
+
+const __FlashStringHelper * NWPlugin::toString(ConnectionState connectionState, bool asUnicodeSymbol)
+{
+  if (asUnicodeSymbol) {
+    switch (connectionState)
+    {
+      case NWPlugin::ConnectionState::Disabled:     return F("&#10060;");         // Same icon as used everywhere else in ESPEasy to
+                                                                                  // indicate disabled
+      case NWPlugin::ConnectionState::Error:        return F("&#x26A0;");         // Warning Emoji
+      case NWPlugin::ConnectionState::Initializing: return F("&#x23F3;");         // Hourglass Not Done Emoji
+      case NWPlugin::ConnectionState::Connecting:   return F("&#x23F6;&#x23F3;"); // LinkUp & Initializing
+      case NWPlugin::ConnectionState::LinkDown:     return F("&#x1F53B;");        // Red Triangle Pointed Down Emoji
+      case NWPlugin::ConnectionState::LinkUp:       return F("&#x23F6;");         // Black Medium Up-Pointing Triangle
+      case NWPlugin::ConnectionState::Connected:    return F("&#x1F517;");        // Link Emoji
+    }
+  }
+  else {
+    switch (connectionState)
+    {
+      case NWPlugin::ConnectionState::Disabled:     return F("Disabled");
+      case NWPlugin::ConnectionState::Error:        return F("Error");
+      case NWPlugin::ConnectionState::Initializing: return F("Initializing");
+      case NWPlugin::ConnectionState::Connecting:   return F("Connecting");
+      case NWPlugin::ConnectionState::LinkDown:     return F("LinkDown");
+      case NWPlugin::ConnectionState::LinkUp:       return F("LinkUp");
+      case NWPlugin::ConnectionState::Connected:    return F("Connected");
+    }
+  }
+  return F("");
 }
 
 const __FlashStringHelper * NWPlugin::toString(NWPlugin::IP_type ip_type)

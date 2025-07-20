@@ -97,7 +97,7 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
       break;
     }
 
-    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
       string  = WiFi.macAddress();
       success = true;

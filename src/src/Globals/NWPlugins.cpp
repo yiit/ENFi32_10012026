@@ -91,7 +91,7 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
     case NWPlugin::Function::NWPLUGIN_GET_PARAMETER_DISPLAY_NAME:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
-    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
@@ -127,8 +127,9 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
                     success = true;
                     break;
 
-                  case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC:
+                  case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
                     str     = event->networkInterface->macAddress();
+                    event->String1 = F("MAC");
                     success = true;
                     break;
 

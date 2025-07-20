@@ -175,7 +175,7 @@ void handle_networks_ShowAllNetworksTable()
   html_table_header(F("Network Adapter"));
   html_table_header(F("Connected"));
   html_table_header(F("Hostname/SSID"));
-  html_table_header(F("MAC"));
+  html_table_header(F("HW Address"));
   html_table_header(F("IP"));
   html_table_header(F("Port"));
 
@@ -217,7 +217,7 @@ void handle_networks_ShowAllNetworksTable()
       const NWPlugin::Function functions[] {
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED,
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME,
-        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_MAC,
+        NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS,
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP,
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT
       };
@@ -237,6 +237,10 @@ void handle_networks_ShowAllNetworksTable()
         if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED) {
           if (!res || str.isEmpty()) {
             addEnabled(res);
+          }
+        } else if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS) {
+          if (res && !TempEvent.String1.isEmpty() && !str.isEmpty()) {
+            addHtml(strformat(F("%s: "), TempEvent.String1.c_str()));
           }
         }
 
@@ -324,8 +328,20 @@ void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
     {
       {
         addFormSubHeader(F("Network Interface"));
-        addRowLabel(F("MAC Address"));
-        addHtml_pre(TempEvent.networkInterface->macAddress());
+
+        {
+          String str;
+          const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS, &TempEvent, str);
+
+          if (res && !TempEvent.String1.isEmpty()) {
+            addRowLabel(TempEvent.String1);
+          } else {
+            addRowLabel(F("MAC Address"));
+          }
+          addHtml_pre(res
+            ? str
+            : TempEvent.networkInterface->macAddress());
+        }
 
         const NWPlugin::NetforkFlags flags[] = {
           NWPlugin::NetforkFlags::DHCP_client,

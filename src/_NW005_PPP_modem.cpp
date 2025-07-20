@@ -49,7 +49,7 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
     {
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
       nw.onlySingleInstance = true;
-      nw.alwaysPresent = false;
+      nw.alwaysPresent      = false;
       break;
     }
 
@@ -62,8 +62,12 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 # ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     {
-      event->networkInterface = &PPP;
-      success                 = event->networkInterface != nullptr;
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+
+      if (NW_data && NW_data->attached()) {
+        event->networkInterface = &PPP;
+        success                 = event->networkInterface != nullptr;
+      }
       break;
     }
 # endif // ifdef ESP32
@@ -71,20 +75,44 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
     {
-      success = PPP.attached();
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
-      if (success) {
-        string = strformat(
-          F("%s (%s dBm)"),
-          PPP.operatorName().c_str(),
-          NW005_data_struct_PPP_modem::getRSSI().c_str());
+      if (NW_data) {
+        success = NW_data->attached();
+
+        if (success) {
+          string = strformat(
+            F("%s (%s dBm)"),
+            NW_data->operatorName().c_str(),
+            NW_data->getRSSI().c_str());
+        }
       }
 
       break;
     }
 
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
+    {
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+
+      if (NW_data) {
+        string         = NW_data->IMEI();
+        event->String1 = F("IMEI");
+      }
+
+      // Still mark success = true to prevent a call to get the MAC address
+      success = true;
+      break;
+    }
+
+
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
+      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+
+      if (NW_data) {
+        success = NW_data->webform_getPort(string);
+      }
       break;
     }
 

@@ -5,31 +5,57 @@
 #include "../../_NWPlugin_Helper.h"
 #ifdef USES_NW005
 
+# include "../Helpers/StringGenerator_GPIO.h"
+
+# include <PPP.h>
+
+struct NW005_modem_task_data {
+  ppp_modem_model_t model     = PPP_MODEM_GENERIC;
+  uint8_t           uart_num  = 1;
+  int               baud_rate = 115200;
+  bool              initializing{};
+  bool              modem_initialized{};
+  String            logString;
+  TaskHandle_t      modem_taskHandle = nullptr;
+
+};
+
 
 struct NW005_data_struct_PPP_modem : public NWPluginData_base {
 
   NW005_data_struct_PPP_modem(networkIndex_t networkIndex);
   ~NW005_data_struct_PPP_modem();
 
-  static String getRSSI();
-  static String getBER();
+  String getRSSI() const;
+  String getBER() const;
+  bool   attached() const;
+  String IMEI() const;
+  String operatorName() const;
 
-  void webform_load_UE_system_information();
+  void   webform_load_UE_system_information();
 
-  void webform_load(struct EventStruct *event);
-  void webform_save(struct EventStruct *event);
+  void   webform_load(struct EventStruct *event);
+  void   webform_save(struct EventStruct *event);
 
-  bool init(struct EventStruct *event);
+  bool   webform_getPort(String& str);
 
-  bool exit(struct EventStruct *event);
+  bool   init(struct EventStruct *event);
+
+  bool   exit(struct EventStruct *event);
 
 
-  void testWrite();
+  void   testWrite();
 
-  void testRead();
+  void   testRead();
 
 private:
-  bool _modem_initialized{};
+
+  String NW005_formatGpioLabel(uint32_t          key,
+                         PinSelectPurpose& purpose,
+                         bool              shortNotation = false) const;
+
+  NW005_modem_task_data _modem_task_data;
+
 
 };
 
