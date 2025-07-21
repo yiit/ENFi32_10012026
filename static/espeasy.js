@@ -306,142 +306,164 @@ function initalAutocorrection() {
 }
 
 function formatLogic(text) {
-  const INDENT = '  '; // 2 spaces
+  const INDENT = '  ';
   const lines = text.split('\n').map(line => {
     const trimmed = line.trimStart(); // remove leading spaces only
     return trimmed.startsWith('//') ? line : trimmed;
   });
-
-  let indentLevel = 0;
   const result = [];
-  const stack = [];
   const errors = [];
 
-  let openOnDoLine = null;
-  let ifCount = 0;
-  let endifCount = 0;
-  let ifLines = [];
+  let insideOnBlock = false;
+  let onStartLine = null;
+  let currentIfStack = [];
+  let currentIfLines = [];
 
-  function startsWithKeyword(line, keywords) {
-    line = line.toLowerCase();
-    return keywords.some(k => line.startsWith(k));
+  function isComment(line) {
+    return line.trim().startsWith('//');
   }
 
-  const ON_START = 'on';
-  const ON_END = 'endon';
-  const IF_START = 'if';
-  const ELSE = 'else';
-  const IF_END = 'endif';
+  function isEmpty(line) {
+    return line.trim() === '';
+  }
+
+  function isOnLine(line) {
+    return line.trim().toLowerCase().startsWith('on');
+  }
+
+  function hasDo(line) {
+    return line.trim().toLowerCase().endsWith('do');
+  }
+
+  function isEndonLine(line) {
+    return line.trim().toLowerCase() === 'endon';
+  }
+
+  function isIf(line) {
+    return line.trim().toLowerCase().startsWith('if');
+  }
+
+  function isElse(line) {
+    return line.trim().toLowerCase() === 'else';
+  }
+
+  function isEndif(line) {
+    return line.trim().toLowerCase() === 'endif';
+  }
+
+  let indentLevel = 0;
+
+  function flushIfErrors() {
+    if (currentIfStack.length > 0) {
+      errors.push(`• Missing ${currentIfStack.length} Endif(s):`);
+      errors.push(`     - Unclosed If block(s) starting at line(s): ${currentIfLines.join(', ')}`);
+    }
+    currentIfStack = [];
+    currentIfLines = [];
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const low = line.toLowerCase();
+    const trimmed = line.trim();
 
-    // handle "On ... Do"
-    if (startsWithKeyword(low, [ON_START])) {
-      const hasDo = low.includes('do');
-
-      if (!hasDo) {
-        errors.push(`Line ${i + 1}: "On" without "Do"`);
-      } else {
-        if (openOnDoLine !== null) {
-          errors.push(`Line ${openOnDoLine + 1}: "On...Do" without closing "Endon"`);
-        }
-        openOnDoLine = i;
-      }
-
+    // Comments
+    if (isComment(trimmed)) {
       result.push(line);
+      continue;
+    }
+
+    // Empty
+    if (isEmpty(trimmed)) {
+      result.push('');
+      continue;
+    }
+
+    // === On Line ===
+    if (isOnLine(trimmed)) {
+      if (!hasDo(trimmed)) {
+        errors.push(`• Line ${i + 1}: "On" statement must end with "Do"`);
+        // still treat as valid On block so user can see rest of structure
+      }
+
+      if (insideOnBlock) {
+        errors.push(`• Line ${i + 1}: Found "On..." before previous "On...Do" (line ${onStartLine + 1}) was closed with "Endon"`);
+        flushIfErrors();
+      }
+
+      insideOnBlock = true;
+      onStartLine = i;
       indentLevel = 1;
-      stack.push(ON_START);
+      result.push(trimmed);
       continue;
     }
 
-    // Handle "Endon"
-    if (startsWithKeyword(low, [ON_END])) {
-      indentLevel = Math.max(indentLevel - 1, 0);
-      result.push(INDENT.repeat(indentLevel) + line);
-
-      if (stack.includes(ON_START)) {
-        // remove everything from the top of the stack until the last ON_START
-        while (stack.length) {
-          const popped = stack.pop();
-          if (popped === ON_START) {
-            openOnDoLine = null;
-            break;
-          }
-        }
+    // === Endon Line ===
+    if (isEndonLine(trimmed)) {
+      if (!insideOnBlock) {
+        errors.push(`• Line ${i + 1}: Found "Endon" without a matching "On...Do"`);
       } else {
-        errors.push(`Line ${i + 1}: "Endon" without matching "On...Do"`);
+        flushIfErrors();
+        insideOnBlock = false;
+        onStartLine = null;
+        indentLevel = 0;
       }
 
+      result.push(INDENT.repeat(indentLevel) + trimmed);
       continue;
     }
 
-    // If inside main block:
-    if (stack.includes(ON_START)) {
-      if (startsWithKeyword(low, [IF_START])) {
-        ifCount++;
-        ifLines.push(i + 1);
-        result.push(INDENT.repeat(indentLevel) + line);
-        stack.push(IF_START);
+    // === Inside On Block ===
+    if (insideOnBlock) {
+      if (isIf(trimmed)) {
+        result.push(INDENT.repeat(indentLevel) + trimmed);
+        currentIfStack.push('if');
+        currentIfLines.push(i + 1);
         indentLevel++;
         continue;
       }
 
-      if (startsWithKeyword(low, [ELSE])) {
-        indentLevel = Math.max(indentLevel - 1, 0);
-        result.push(INDENT.repeat(indentLevel) + line);
-        indentLevel++;
-        continue;
-      }
-
-      if (startsWithKeyword(low, [IF_END])) {
-        endifCount++;
-        indentLevel = Math.max(indentLevel - 1, 0);
-        result.push(INDENT.repeat(indentLevel) + line);
-
-        if (stack.length && stack[stack.length - 1] === IF_START) {
-          stack.pop();
-          ifLines.pop();
+      if (isElse(trimmed)) {
+        if (currentIfStack.length === 0) {
+          errors.push(`• Line ${i + 1}: "Else" without matching "If"`);
         } else {
-          errors.push(`Line ${i + 1}: "Endif" without matching "If"`);
+          indentLevel = Math.max(indentLevel - 1, 0);
         }
 
+        result.push(INDENT.repeat(indentLevel) + trimmed);
+        indentLevel++;
         continue;
       }
 
-      if (line.trim().startsWith('//')) {
-        // no indentation for comments
-        result.push(line);
-      } else {
-        // any normal line inside On block
-        result.push(INDENT.repeat(indentLevel) + line);
+      if (isEndif(trimmed)) {
+        if (currentIfStack.length === 0) {
+          errors.push(`• Line ${i + 1}: "Endif" without matching "If"`);
+        } else {
+          indentLevel = Math.max(indentLevel - 1, 0);
+          currentIfStack.pop();
+          currentIfLines.pop();
+        }
+
+        result.push(INDENT.repeat(indentLevel) + trimmed);
+        continue;
       }
 
+      // Any other line inside a block
+      result.push(INDENT.repeat(indentLevel) + trimmed);
       continue;
     }
 
-    // Outside any block
-    result.push(line);
+    // === Outside any block ===
+    result.push(trimmed);
   }
 
-  // Final checks
-  if (openOnDoLine !== null) {
-    errors.push(`Line ${openOnDoLine + 1}: "On...Do" without closing "Endon"`);
-  }
-
-  if (ifCount > endifCount) {
-    const diff = ifCount - endifCount;
-    errors.push(`Missing ${diff} Endif(s)`);
-    if (ifLines.length > 0) {
-      errors.push(`Unclosed If block(s) starting at line(s): ${ifLines.join(", ")}`);
-    }
-  } else if (endifCount > ifCount) {
-    errors.push(`Found ${endifCount - ifCount} Endif(s) without matching If(s)`);
+  // === Final checks ===
+  if (insideOnBlock) {
+    errors.push(`• Missing "Endon" for "On...Do" starting at line ${onStartLine + 1}`);
+    flushIfErrors();
   }
 
   if (errors.length > 0) {
-    alert("Errors found:\n" + errors.join("\n"));
+    alert('Errors found:\n' + errors.join('\n'));
   }
 
   return result.join('\n');
