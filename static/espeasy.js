@@ -243,21 +243,44 @@ function initCM() {
 }
 
 //--------------------------------------------------------------------------------- add formatting option
-document.addEventListener('keydown', function (e) {
-  // Ctrl + Shift + F to format
-  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
-    e.preventDefault();
-    console.log('Formatting...');
-    initalAutocorrection();
 
-    const textarea = document.getElementById('rules');
-    textarea.value = formatLogic(textarea.value);
+// Add Format button inside the form
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('rulesselect');
+  if (form) {
+    const btn = document.createElement('button');
+    btn.type = 'button';     // prevent form submission
+    btn.id = 'formatBtn';
+    btn.textContent = 'Format';
+    btn.className = 'button'; // just the class, no inline style
+    form.appendChild(btn);
 
-    // Clean up previous CodeMirror instances (if any)
-    document.querySelectorAll('div.cm-s-default').forEach(el => el.remove());
-    initCM();
+    btn.addEventListener('click', () => {
+      console.log('Format button clicked');
+      triggerFormatting();
+    });
   }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      console.log('Keyboard shortcut detected: Formatting...');
+      triggerFormatting();
+    }
+  });
 });
+
+// Function to trigger formatting
+function triggerFormatting() {
+  initalAutocorrection();
+
+  const textarea = document.getElementById('rules');
+  textarea.value = formatLogic(textarea.value);
+
+  // Clean up previous CodeMirror instances (if any)
+  document.querySelectorAll('div.cm-s-default').forEach(el => el.remove());
+  initCM();
+}
 
 function initalAutocorrection() {
   const textarea = document.getElementById("rules");
@@ -287,7 +310,7 @@ function formatLogic(text) {
     const trimmed = line.trimStart(); // remove leading spaces only
     return trimmed.startsWith('//') ? line : trimmed;
   });
-  
+
   let indentLevel = 0;
   const result = [];
   const stack = [];
