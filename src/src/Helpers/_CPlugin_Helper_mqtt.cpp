@@ -342,11 +342,15 @@ bool getDiscoveryVType(struct EventStruct *event, QueryVType_ptr func_ptr, uint8
 {
   bool success           = false;
   constexpr uint8_t _max = PLUGIN_CONFIGVAR_MAX;
+  constexpr uint8_t _par = NR_ELEMENTS(event->ParN) - 1;
 
   for (uint8_t i = 0; i < nrVars && i < _max; ++i) {
     const uint8_t choice = (255 == pConfigOffset) ? i : PCONFIG(i + pConfigOffset);
-    event->ParN[i] = (func_ptr(choice));
-    success        = true;
+
+    if (i < _par) {
+      event->ParN[i] = (func_ptr(choice));
+    }
+    success = true;
   }
   return success;
 }

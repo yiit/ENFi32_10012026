@@ -171,7 +171,9 @@ boolean Plugin_001(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_GET_DISCOVERY_VTYPES:
 
       if (P001_SWITCH_OR_DIMMER == PLUGIN_001_TYPE_DIMMER) {
-        for (uint8_t i; i < event->Par5; ++i) {
+        constexpr uint8_t _par = NR_ELEMENTS(event->ParN) - 1;
+
+        for (uint8_t i = 0; i < event->Par5 && i < _par; ++i) {
           event->ParN[i] = static_cast<int>(Sensor_VType::SENSOR_TYPE_DIMMER);
         }
         success = true;
