@@ -974,7 +974,7 @@ void setTaskDevice_to_TaskIndex(pluginID_t taskdevicenumber, taskIndex_t taskInd
     PluginCall(PLUGIN_SET_DEFAULTS,         &TempEvent, dummy);
     PluginCall(PLUGIN_GET_DEVICEVALUENAMES, &TempEvent, dummy); // the plugin should populate ExtraTaskSettings with its default values.
 
-    #if FEATURE_MQTT_DISCOVER
+    #if FEATURE_MQTT_DISCOVER && FEATURE_CUSTOM_TASKVAR_VTYPE && FEATURE_TASKVALUE_UNIT_OF_MEASURE
     // Fill in standard Unit of measurement and Value Type, if possible
     const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(taskIndex);
     std::vector<DiscoveryItem> discoveryItems;
@@ -1003,7 +1003,7 @@ void setTaskDevice_to_TaskIndex(pluginID_t taskdevicenumber, taskIndex_t taskInd
       }
     }
 
-    #endif // if FEATURE_MQTT_DISCOVER
+    #endif // if FEATURE_MQTT_DISCOVER && FEATURE_CUSTOM_TASKVAR_VTYPE && FEATURE_TASKVALUE_UNIT_OF_MEASURE
   } else {
     // New task is empty task, thus save config now.
     taskClear(taskIndex, true);                                 // clear settings, and save

@@ -94,9 +94,9 @@ boolean Plugin_026(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_SET_DEFAULTS:
     {
       PCONFIG(0) = 0; // "Uptime"
-      # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
+      # if FEATURE_MQTT_DISCOVER && FEATURE_CUSTOM_TASKVAR_VTYPE
       ExtraTaskSettings.setTaskVarCustomVType(0, static_cast<uint8_t>(Sensor_VType::SENSOR_TYPE_DURATION));
-      # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
+      # endif // if FEATURE_MQTT_DISCOVER && FEATURE_CUSTOM_TASKVAR_VTYPE
 
       for (uint8_t i = 1; i < VARS_PER_TASK; ++i) {
         PCONFIG(i) = 11; // "None"

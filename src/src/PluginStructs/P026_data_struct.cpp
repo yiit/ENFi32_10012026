@@ -232,7 +232,7 @@ bool P026_data_struct::WebformSave(struct EventStruct *event)
     const uint8_t pconfigIndex = i + P026_QUERY1_CONFIG_POS;
     const uint8_t choice       = PCONFIG(pconfigIndex);
     sensorTypeHelper_saveOutputSelector(event, pconfigIndex, i, Plugin_026_valuename(choice, false));
-    # if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
+    # if FEATURE_MQTT_DISCOVER && FEATURE_CUSTOM_TASKVAR_VTYPE && FEATURE_TASKVALUE_UNIT_OF_MEASURE
 
     if (choice != PCONFIG(pconfigIndex)) {
       const Sensor_VType vtype = P026_get_valueVType(PCONFIG(pconfigIndex));
@@ -248,7 +248,7 @@ bool P026_data_struct::WebformSave(struct EventStruct *event)
         }
       }
     }
-    # endif // if FEATURE_MQTT_DISCOVER || FEATURE_CUSTOM_TASKVAR_VTYPE
+    # endif // if FEATURE_MQTT_DISCOVER && FEATURE_CUSTOM_TASKVAR_VTYPE && FEATURE_TASKVALUE_UNIT_OF_MEASURE
   }
   return true;
 }
