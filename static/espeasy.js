@@ -199,17 +199,18 @@ for (const element2 of pluginDispKind) {
 var EXTRAWORDS = commonAtoms.concat(commonPlugins, commonKeywords, commonCommands, commonEvents, commonTag, commonNumber, commonMath, commonWarning, taskSpecifics, AnythingElse);
 
 var rEdit;
-function initCM() {
-  var confirmR = true
+var confirmR = true;
+
+function initCM(didchk) {
   var android = /Android/.test(navigator.userAgent);
-  if (android) {
+  if (android && !didchk) {
     if (confirm("Do you want to enable colored rules? (There are some issues with the standard Android Keyboard causing it to fail!)")) {
       confirmR = true
     } else {
       confirmR = false
     }
   }
-  if (confirmR) {
+  if (confirmR || didchk) {
     CodeMirror.commands.autocomplete = function (cm) { cm.showHint({ hint: CodeMirror.hint.anyword }); }
     rEdit = CodeMirror.fromTextArea(document.getElementById('rules'), {
       tabSize: 2, indentWithTabs: false, lineNumbers: true, autoCloseBrackets: true,
@@ -279,7 +280,7 @@ function triggerFormatting() {
 
   // Clean up previous CodeMirror instances (if any)
   document.querySelectorAll('div.cm-s-default').forEach(el => el.remove());
-  initCM();
+  if (confirmR) initCM(true);
 }
 
 function initalAutocorrection() {
