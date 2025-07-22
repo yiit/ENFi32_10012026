@@ -852,6 +852,7 @@ System metrics exposed are:
 * Wifi Strength
 * Wifi connection time
 * Wifi reconnection count (since boot)
+* CPU temperature (when available in the build) (Added: 2025/07/22)
 
 In Addition, device values are exposed.  
 
