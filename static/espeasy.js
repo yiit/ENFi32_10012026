@@ -200,9 +200,9 @@ var EXTRAWORDS = commonAtoms.concat(commonPlugins, commonKeywords, commonCommand
 
 var rEdit;
 var confirmR = true;
+var android = /Android/.test(navigator.userAgent);
 
 function initCM() {
-  var android = /Android/.test(navigator.userAgent);
   if (android) {
     if (confirm("Do you want to enable colored rules? (There are some issues with the standard Android Keyboard causing it to fail!)")) {
       confirmR = true
@@ -230,25 +230,133 @@ function initCM() {
         'Shift-Tab': (cm) => cm.execCommand('indentLess'),
       }
     });
+
     rEdit.on('change', function () { rEdit.save() });
-    //hinting on input
-    rEdit.on("inputRead", function (cm, event) {
-      var letters = /[\w%,.]/; //characters for activation
-      var cur = cm.getCursor();
-      var token = cm.getTokenAt(cur);
-      if (letters.test(event.text) && token.type != "comment") {
-        cm.showHint({ completeSingle: false });
-      };
-    });
+
+    if (!android) {
+      rEdit.on("inputRead", function (cm, event) {
+        var letters = /[\w%,.]/; //characters for activation
+        var cur = cm.getCursor();
+        var token = cm.getTokenAt(cur);
+        if (letters.test(event.text) && token.type != "comment") {
+          cm.showHint({ completeSingle: false });
+        };
+      });
+    }
+    CodeMirror.keyMap.default["Ctrl-F"] = function (cm) {
+      openFind(); // Inject your custom buttons
+    };
+
+    CodeMirror.keyMap.default["Cmd-F"] = function (cm) {
+      openFind();
+    };
   }
 }
 
-//--------------------------------------------------------------------------------- add formatting option
+//----------------------------------------------------------------------- add search and formatting options
 
-// Add Format button inside the form
+function closeSearchDialog() {
+  const dlg = document.querySelectorAll('.CodeMirror-dialog');
+  if (dlg.length > 0) {
+    rEdit.execCommand('clearSearch');
+
+    // Remove the highlight classes from marked text spans
+    const highlighted = document.querySelectorAll('.CodeMirror .search-next-highlight');
+    highlighted.forEach(el => el.classList.remove('search-next-highlight'));
+
+    dlg.forEach(d => d.remove());
+
+    document.body.classList.remove('dialog-opened');
+  }
+}
+
+function openFind() {
+  closeSearchDialog(); // Close any existing search dialog
+  rEdit.execCommand('findPersistent'); // Show search dialog
+
+
+  const element = document.querySelector('.CodeMirror-selected');
+  const dialog = document.querySelector('.CodeMirror-dialog');
+  if (!dialog || dialog.querySelector('.search-button-group')) return;
+
+  const buttons = [
+    {
+      title: 'Find Previous',
+      symbol: '▲',
+      action: () => rEdit.execCommand('findPersistentPrev')
+    },
+    {
+      title: 'Find Next',
+      symbol: '▼',
+      action: () => rEdit.execCommand('findPersistentNext')
+    },
+    {
+      title: 'Replace',
+      symbol: 'Replace',
+      action: () => {
+        closeSearchDialog();
+        rEdit.execCommand('replace');
+        openFind();
+      }
+    },
+    {
+      title: 'Close',
+      symbol: '❌',
+      action: closeSearchDialog
+    },
+    {
+      title: 'Help',
+      symbol: '?',
+      action: () => {
+        alert(`Available shortcuts:
+• Ctrl+F / Cmd+F: Open search
+• Ctrl+G / Cmd+G: Find next
+• Shift+Ctrl+G / Shift+Cmd+G: Find previous
+• Shift+Ctrl+F / Cmd+Option+F: Replace
+• Shift+Ctrl+R / Shift+Cmd+Option+F: Replace all
+• Use /re/ syntax for regexp search`);
+      }
+    }
+  ];
+
+  buttons.forEach(({ title, symbol, action }) => {
+    const btn = document.createElement('span');
+    btn.title = title;
+    btn.className = title.toLowerCase() === 'help' ? 'button help' : 'button';
+    btn.innerHTML = symbol;
+    btn.style.cssText = `
+      cursor: pointer;
+      user-select: none;
+    `;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      action();
+    });
+    dialog.appendChild(btn);
+  });
+}
+
+// Add Searchfield button 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('rulesselect');
   if (form) {
+    // Add search help button to CodeMirror editor
+    const btn3 = document.createElement('button');
+    btn3.type = 'button';     // prevent form submission
+    btn3.id = 'searchBtn';
+    btn3.innerHTML = "&#128270;&#xFE0E;"; // magnifier
+    btn3.style.padding = "2px 5px";
+    btn3.className = 'button help'; // just the class, no inline style
+    form.appendChild(btn3);
+
+
+    btn3.addEventListener('click', () => {
+      if (typeof rEdit !== 'undefined') {
+        openFind();
+      }
+    });
+
+    // Add format document button
     const btn = document.createElement('button');
     btn.type = 'button';     // prevent form submission
     btn.id = 'formatBtn';
@@ -262,30 +370,157 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Add hint button to CodeMirror editor
+  // const form2 = document.getElementsByClassName('CodeMirror')[0];
+  // if (form2) {
+  //   console.log('Form2 found', form2);
+  //   const btn2 = document.createElement('button');
+  //   btn2.type = 'button';     // prevent form submission
+  //   btn2.id = 'hintBtn';
+  //   btn2.innerHTML = "&#9776;&#xFE0E;"; // ☰︎
+  //   btn2.className = 'button help';
+  //   btn2.style.position = 'absolute';
+  //   btn2.style.right = '0';
+  //   btn2.style.top = '0';
+
+  //   form2.appendChild(btn2);
+
+  //   btn2.addEventListener('click', () => {
+  //     if (typeof rEdit !== 'undefined') {
+  //       rEdit.focus(); // Optional: ensure focus
+  //       rEdit.execCommand('autocomplete'); // Show hint menu
+  //     }
+  //   });
+  // }
+
+  let charBuffer = "";
+
+  // Global keydown handler
   document.addEventListener('keydown', function (e) {
+    // Ctrl + Shift + F triggers formatting
     if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
       e.preventDefault();
       console.log('Keyboard shortcut detected: Formatting...');
       triggerFormatting();
+      return;
     }
+
+    // Clear buffer on navigation/editing/meta keys
+    const ignoreKeys = [
+      "Backspace", "Delete", "ArrowLeft", "ArrowRight",
+      "ArrowUp", "ArrowDown", "Enter", "Tab", "Escape",
+      "Shift", "Control", "Alt", "Meta"
+    ];
+
+    if (ignoreKeys.includes(e.key) || e.key.length !== 1) {
+      charBuffer = "";
+    }
+
   });
+
+
+  // Workaround of showing hints for Android devices
+  if (android) {
+    document.addEventListener("input", (e) => {
+      if (!rEdit || !e.data || e.data.length !== 1) {
+        charBuffer = "";
+        return;
+      }
+
+      const data = e.data;
+      const doc = rEdit.getDoc();
+      let cursor = doc.getCursor(); // Cursor is AFTER inserted char
+
+      const letters = /[\w%,.]/;
+      const token = rEdit.getTokenAt(cursor);
+      if (letters.test(data) && token.type !== "comment") {
+        charBuffer += data;
+        // Calculate starting point for re-inserting
+        const insertPos = {
+          line: cursor.line,
+          ch: cursor.ch - charBuffer.length + 1
+        };
+
+        // Replace from where the buffer began to current position
+        doc.replaceRange(charBuffer, insertPos, cursor);
+
+        // Set cursor at end of buffer
+        rEdit.setCursor({
+          line: insertPos.line,
+          ch: insertPos.ch + charBuffer.length
+        });
+
+        // Show hints
+        rEdit.showHint({ completeSingle: false });
+      } else if (!letters.test(data)) {
+        // Reset buffer on non-matching input (e.g., space, enter, etc.)
+        charBuffer = "";
+      }
+    });
+
+
+    rEdit.on('endCompletion', function () {
+      setTimeout(() => {
+        rEdit.focus();
+      }, 10); // small delay may help
+    });
+
+    function forceKeyboardOpen() {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.style.position = "absolute";
+      input.style.opacity = "0";
+      input.style.height = "0";
+      input.style.width = "0";
+      input.style.border = "none";
+      input.style.top = "0";
+      input.style.left = "-9999";
+      input.style.padding = "0";
+      input.style.zIndex = "-1";
+      input.style.fontSize = "16px"; // prevents zoom on iOS
+
+      document.body.appendChild(input);
+      input.focus();
+
+      setTimeout(() => {
+        input.remove();
+        rEdit.focus(); // bring focus back to CodeMirror
+      }, 10);
+    }
+  }
 });
 
-// Function to trigger formatting
 function triggerFormatting() {
-  let textarea;
-  if (confirmR) {
-    textarea = rEdit.getValue();
-  } else {
-    textarea = document.getElementById('rules').value;
-  }
+  const doc = rEdit.getDoc();
+  const scrollInfo = rEdit.getScrollInfo();
+  const cursor = doc.getCursor();
+
+  const currentLine = cursor.ch === 0 ? cursor.line - 1 : cursor.line;
+  const lineText = rEdit.getLine(currentLine) || "";
+
+  // Store initial text
+  let textarea = confirmR
+    ? rEdit.getValue()
+    : document.getElementById('rules').value;
+
+  // Apply transformations
   textarea = initalAutocorrection(textarea);
   textarea = formatLogic(textarea);
+
   if (confirmR) {
     rEdit.setValue(textarea);
+
+    // Compute new cursor position
+    const newLine = currentLine;
+    const newCh = cursor.ch === 0 && lineText.length > 0
+      ? lineText.length
+      : cursor.ch - 1;
+
+    rEdit.setCursor({ line: newLine, ch: newCh });
+    rEdit.scrollTo(scrollInfo.left, scrollInfo.top);
+    rEdit.focus();
     rEdit.save();
-  }
-  else {
+  } else {
     document.getElementById('rules').value = textarea;
   }
 }
@@ -348,6 +583,10 @@ function formatLogic(text) {
 
   function isElse(line) {
     return line.trim().toLowerCase() === 'else';
+  }
+
+  function isElseif(line) {
+    return line.trim().toLowerCase().startsWith('elseif');
   }
 
   function isEndif(line) {
@@ -426,8 +665,22 @@ function formatLogic(text) {
       }
 
       if (isElse(trimmed)) {
+        console.log("Else found:", trimmed);
         if (currentIfStack.length === 0) {
           errors.push(`• Line ${i + 1}: "Else" without matching "If"`);
+        } else {
+          indentLevel = Math.max(indentLevel - 1, 0);
+        }
+
+        result.push(INDENT.repeat(indentLevel) + trimmed);
+        indentLevel++;
+        continue;
+      }
+
+      if (isElseif(trimmed)) {
+        console.log("Elseif found:", trimmed);
+        if (currentIfStack.length === 0) {
+          errors.push(`• Line ${i + 1}: "Elseif" without matching "If"`);
         } else {
           indentLevel = Math.max(indentLevel - 1, 0);
         }
@@ -468,10 +721,17 @@ function formatLogic(text) {
   if (errors.length > 0) {
     const firstErrorLine = extractFirstErrorLine(errors);
     alert("Errors found:\n" + errors.join('\n'));
-    if (!isNaN(firstErrorLine) && confirmR) {
-      setTimeout(() => {
-        jumpToLine(firstErrorLine);
-      }, 50);
+    if (!isNaN(firstErrorLine)) {
+      if (confirmR) {
+        setTimeout(() => {
+          jumpToLine(firstErrorLine);
+        }, 50);
+      } else {
+        const textareaR = document.getElementById('rules');
+        setTimeout(() => {
+          jumpToLineInTextarea(textareaR, firstErrorLine);
+        }, 50);
+      }
     }
   }
 
@@ -500,6 +760,25 @@ function extractFirstErrorLine(errors) {
     if (match) return parseInt(match[1]);
   }
   return null;
+}
+
+function jumpToLineInTextarea(textarea, lineNumber) {
+  const lines = textarea.value.split('\n');
+  const clampedLine = Math.max(1, Math.min(lineNumber, lines.length)); // Clamp to valid range
+
+  // Calculate the character offset to the start of the target line
+  let offset = 0;
+  for (let i = 0; i < clampedLine - 1; i++) {
+    offset += lines[i].length + 1; // +1 for the newline character
+  }
+
+  // Move cursor and scroll into view
+  textarea.focus();
+  textarea.selectionStart = textarea.selectionEnd = offset;
+
+  // Scroll to the selection
+  textarea.scrollTop = textarea.scrollHeight; // Jump to bottom
+  textarea.scrollTop = textarea.scrollTop - textarea.clientHeight / 2; // Center around selection
 }
 //--------------------------------------------------------------------------------- end of formatting option
 
