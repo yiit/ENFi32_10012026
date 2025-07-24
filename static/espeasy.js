@@ -273,8 +273,10 @@ function closeSearchDialog() {
 function openFind() {
   closeSearchDialog(); // Close any existing search dialog
   rEdit.execCommand('findPersistent'); // Show search dialog
+  addFindButtons(); // Add custom buttons to the dialog
+}
 
-
+function addFindButtons() {
   const element = document.querySelector('.CodeMirror-selected');
   const dialog = document.querySelector('.CodeMirror-dialog');
   if (!dialog || dialog.querySelector('.search-button-group')) return;
