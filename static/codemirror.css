@@ -638,7 +638,7 @@ div.CodeMirror-dragcursors {
 
 .cm-searching {
   background-color: yellow;
-  color: black;
+  color: black !important;
 }
 
 .search-next-highlight {
