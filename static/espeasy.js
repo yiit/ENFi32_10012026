@@ -298,7 +298,7 @@ function addFindButtons() {
       action: () => {
         closeSearchDialog();
         rEdit.execCommand('replace');
-        openFind();
+        addFindButtons();
       }
     },
     {
