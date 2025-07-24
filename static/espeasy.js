@@ -396,71 +396,75 @@ document.addEventListener('DOMContentLoaded', () => {
   // }
 
   let charBuffer = "";
-let findTimer = null;
+  let findTimer = null;
 
   // Global keydown handler
   document.addEventListener('keydown', function (e) {
+    const key = e.key;
+    const isCtrlShiftF = e.ctrlKey && e.shiftKey && key.toLowerCase() === 'f';
+
     // Ctrl + Shift + F triggers formatting
-    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
+    if (isCtrlShiftF) {
       e.preventDefault();
       console.log('Keyboard shortcut detected: Formatting...');
       triggerFormatting();
       return;
     }
 
-    // Clear buffer on navigation/editing/meta keys
-    const ignoreKeys = [
+    // Keys that cancel character buffering
+    const nonCharKeys = [
       "Backspace", "Delete", "ArrowLeft", "ArrowRight",
       "ArrowUp", "ArrowDown", "Enter", "Tab", "Escape",
       "Shift", "Control", "Alt", "Meta"
     ];
 
-    if (ignoreKeys.includes(e.key) || e.key.length !== 1) {
+    if (nonCharKeys.includes(key) || key.length !== 1) {
       charBuffer = "";
     }
-    // proactive find 
+
+    // Proactive find: when typing in the search field
     const active = document.activeElement;
+    const isSearchField = active?.classList?.contains('CodeMirror-search-field');
 
-    if (active && (active.classList && active.classList.contains('CodeMirror-search-field'))) {
-      if (e.key === 'Enter') {
-        // Do nothing or trigger search again if needed
-        return;
+    if (isSearchField && key !== 'Enter') {
+      const label = document.querySelector('.CodeMirror-search-label');
+      const isReplaceLabel = label && /^(Replace|With):\s*$/i.test(label.textContent.trim());
+
+      if (!isReplaceLabel) {
+        // Reset any previous timer
+        if (findTimer) clearTimeout(findTimer);
+
+        // Set a new timer to trigger search
+        findTimer = setTimeout(() => {
+          triggerSearchEnter();
+          findTimer = null;
+        }, 100);
       }
-      // For other keys (letters, backspace, etc), trigger findNext
-      // Clear any existing timer
-      if (findTimer) clearTimeout(findTimer);
-
-      // Set a new timer to trigger 'find' after 1000ms of inactivity
-      findTimer = setTimeout(() => {
-        triggerSearchEnter();
-        findTimer = null; // reset timer variable
-      }, 100);
     }
-
   });
 
   function triggerSearchEnter() {
-  const input = getDeepActiveElement();
-  if (!input?.classList.contains('CodeMirror-search-field')) return;
+    const input = getDeepActiveElement();
+    if (!input?.classList.contains('CodeMirror-search-field')) return;
 
-  // Reassign value to ensure any internal handlers pick it up
-  input.value = input.value;
+    // Reassign value to ensure any internal handlers pick it up
+    input.value = input.value;
 
-  input.dispatchEvent(new KeyboardEvent('keydown', {
-    key: 'Enter',
-    code: 'Enter',
-    keyCode: 13,
-    which: 13,
-    bubbles: true,
-    cancelable: true
-  }));
-}
+    input.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13,
+      bubbles: true,
+      cancelable: true
+    }));
+  }
 
-function getDeepActiveElement(doc = document) {
-  let el = doc.activeElement;
-  while (el?.shadowRoot?.activeElement) el = el.shadowRoot.activeElement;
-  return el;
-}
+  function getDeepActiveElement(doc = document) {
+    let el = doc.activeElement;
+    while (el?.shadowRoot?.activeElement) el = el.shadowRoot.activeElement;
+    return el;
+  }
 
   // Workaround of showing hints for Android devices
   if (android) {
