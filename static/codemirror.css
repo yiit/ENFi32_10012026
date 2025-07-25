@@ -643,6 +643,7 @@ div.CodeMirror-dragcursors {
 
 .search-next-highlight {
   background-color: orange !important;
+  color: black !important;
 }
 
 /* Used to force a border model for a node */

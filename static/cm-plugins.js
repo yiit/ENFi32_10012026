@@ -954,7 +954,8 @@ var isSame;
             }
 
             cm.setSelection(cursor.from(), cursor.to());
-            cm.scrollIntoView({ from: cursor.from(), to: cursor.to() });
+            //cm.scrollIntoView({ from: cursor.from(), to: cursor.to() });
+            cm.scrollTo(null, cm.charCoords(cursor.from(), 'local').top); // cXd scroll line to top
             highlightCurrentMatch(cursor.from(), cursor.to());
 
             confirmDialog(cm, getDoReplaceConfirm(cm), cm.phrase("Replace?"), [
