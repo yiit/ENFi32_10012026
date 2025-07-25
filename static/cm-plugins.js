@@ -938,7 +938,6 @@ var isSame;
         text = parseString(text);
 
         if (all) {
-          clearHighlight();
           replaceAll(cm, query, text);
         } else {
           clearSearch(cm);
@@ -961,7 +960,6 @@ var isSame;
               function () { doReplace(match); },
               advance,
               function () {
-                clearHighlight();
                 replaceAll(cm, query, text);
               }
             ]);
