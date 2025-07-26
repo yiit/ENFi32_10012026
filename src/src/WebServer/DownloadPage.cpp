@@ -87,13 +87,13 @@ void handle_config_download(bool fullBackup,
     fs::Dir dir = ESPEASY_FS.openDir("");
 
     while (dir.next()) {
-      fs::File f = dir.openFile("r");
+      fs::File file = dir.openFile("r");
 
-      if (f) {
+      if (file) {
         if (!noCreds || (noCreds && (0 != strncasecmp(file.name(), security_dat.c_str(), security_dat.length())))) {
-          tarStream->addFile(f.name(), f.size());
+          tarStream->addFile(file.name(), file.size());
         }
-        f.close();
+        file.close();
       }
     }
     #  endif // if defined(ESP8266)
