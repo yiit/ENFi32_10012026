@@ -6,6 +6,9 @@
 #include "../DataStructs/NetworkSettingsStruct.h"
 #include "../Globals/NWPlugins.h"
 
+namespace ESPEasy {
+namespace net {
+
 
 /*********************************************************************************************\
 * Functions to load and store network settings on the web page.
@@ -32,5 +35,7 @@ void saveNetworkParameterForm(NetworkSettingsStruct        & NetworkSettings,
                               networkIndex_t                 networkindex,
                               NetworkSettingsStruct::VarType varType);
 
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifndef HELPERS__NWPLUGIN_HELPER_WEBFORM_H

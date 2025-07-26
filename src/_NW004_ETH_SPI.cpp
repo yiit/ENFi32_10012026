@@ -33,7 +33,10 @@
 
 # include <pins_arduino.h>
 
-bool NWPlugin_004(NWPlugin::Function function, struct EventStruct *event, String& string)
+namespace ESPEasy {
+namespace net {
+
+bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& string)
 {
   bool success = false;
 
@@ -43,24 +46,24 @@ bool NWPlugin_004(NWPlugin::Function function, struct EventStruct *event, String
     {
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
       nw.onlySingleInstance = true;
-      nw.alwaysPresent = false;
+      nw.alwaysPresent      = false;
       break;
     }
 
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
-        /*
-      # if CONFIG_IDF_TARGET_ESP32P4
-      Settings.ETH_Clock_Mode    = EthClockMode_t::Ext_crystal;
-      Settings.ETH_Phy_Type      = EthPhyType_t::TLK110;
-      Settings.ETH_Phy_Addr      = ETH_PHY_ADDR;
-      Settings.ETH_Pin_mdc_cs    = ETH_PHY_MDC;
-      Settings.ETH_Pin_mdio_irq  = ETH_PHY_MDIO;
-      Settings.ETH_Pin_power_rst = ETH_PHY_POWER;
-      # else // if CONFIG_IDF_TARGET_ESP32P4
-      Settings.ETH_Clock_Mode = EthClockMode_t::Ext_crystal_osc;
-      # endif // if CONFIG_IDF_TARGET_ESP32P4
-      */
+      /*
+       # if CONFIG_IDF_TARGET_ESP32P4
+         Settings.ETH_Clock_Mode    = EthClockMode_t::Ext_crystal;
+         Settings.ETH_Phy_Type      = EthPhyType_t::TLK110;
+         Settings.ETH_Phy_Addr      = ETH_PHY_ADDR;
+         Settings.ETH_Pin_mdc_cs    = ETH_PHY_MDC;
+         Settings.ETH_Pin_mdio_irq  = ETH_PHY_MDIO;
+         Settings.ETH_Pin_power_rst = ETH_PHY_POWER;
+       # else // if CONFIG_IDF_TARGET_ESP32P4
+         Settings.ETH_Clock_Mode = EthClockMode_t::Ext_crystal_osc;
+       # endif // if CONFIG_IDF_TARGET_ESP32P4
+       */
       break;
     }
 
@@ -305,5 +308,8 @@ bool NWPlugin_004(NWPlugin::Function function, struct EventStruct *event, String
   }
   return success;
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifdef USES_NW004

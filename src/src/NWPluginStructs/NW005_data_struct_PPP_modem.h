@@ -9,6 +9,11 @@
 
 # include <PPP.h>
 
+
+namespace ESPEasy {
+namespace net {
+namespace ppp {
+
 struct NW005_modem_task_data {
   ppp_modem_model_t model     = PPP_MODEM_GENERIC;
   uint8_t           uart_num  = 1;
@@ -18,7 +23,8 @@ struct NW005_modem_task_data {
   String            logString;
 
   // This is C-code, so not set to nullptr, but to NULL
-  TaskHandle_t      modem_taskHandle = NULL;
+  TaskHandle_t modem_taskHandle = NULL;
+
 };
 
 
@@ -35,14 +41,14 @@ struct NW005_data_struct_PPP_modem : public NWPluginData_base {
 
   void   webform_load_UE_system_information();
 
-  void   webform_load(struct EventStruct *event);
-  void   webform_save(struct EventStruct *event);
+  void   webform_load(EventStruct *event);
+  void   webform_save(EventStruct *event);
 
   bool   webform_getPort(String& str);
 
-  bool   init(struct EventStruct *event);
+  bool   init(EventStruct *event);
 
-  bool   exit(struct EventStruct *event);
+  bool   exit(EventStruct *event);
 
 
   void   testWrite();
@@ -52,14 +58,17 @@ struct NW005_data_struct_PPP_modem : public NWPluginData_base {
 private:
 
   String NW005_formatGpioLabel(uint32_t          key,
-                         PinSelectPurpose& purpose,
-                         bool              shortNotation = false) const;
+                               PinSelectPurpose& purpose,
+                               bool              shortNotation = false) const;
 
   NW005_modem_task_data _modem_task_data;
 
 
 };
 
+} // namespace ppp
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifdef USES_NW005
 

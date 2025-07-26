@@ -18,14 +18,14 @@ void handle_networks();
 // Selected network has changed.
 // Clear all Network settings and load some defaults
 // ********************************************************************************
-void handle_networks_clearLoadDefaults(networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings);
+void handle_networks_clearLoadDefaults(ESPEasy::net::networkIndex_t networkindex, ESPEasy::net::NetworkSettingsStruct& NetworkSettings);
 
 // ********************************************************************************
 // Collect all submitted form data and store in the NetworkSettings
 // ********************************************************************************
-void handle_networks_CopySubmittedSettings(networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings);
+void handle_networks_CopySubmittedSettings(ESPEasy::net::networkIndex_t networkindex, ESPEasy::net::NetworkSettingsStruct& NetworkSettings);
 
-void handle_networks_CopySubmittedSettings_NWPluginCall(networkIndex_t networkindex);
+void handle_networks_CopySubmittedSettings_NWPluginCall(ESPEasy::net::networkIndex_t networkindex);
 
 // ********************************************************************************
 // Show table with all selected networks
@@ -35,7 +35,7 @@ void handle_networks_ShowAllNetworksTable();
 // ********************************************************************************
 // Show the network settings page
 // ********************************************************************************
-void handle_networks_NetworkSettingsPage(networkIndex_t networkindex);
+void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex);
 
 
 #endif // ifdef WEBSERVER_NETWORK

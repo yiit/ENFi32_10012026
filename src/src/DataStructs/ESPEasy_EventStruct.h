@@ -11,7 +11,7 @@
 #include "../DataStructs/DeviceStruct.h"
 
 #ifdef ESP32
-class NetworkInterface;
+#include <NetworkInterface.h>
 #endif
 
 /*********************************************************************************************\
@@ -85,7 +85,7 @@ public:
 #if FEATURE_NOTIFIER
   notifierIndex_t        NotificationIndex = INVALID_NOTIFIER_INDEX;   // index position in Settings.Notification, 0-3
 #endif
-  networkIndex_t         NetworkIndex      = INVALID_NETWORK_INDEX;    // index position in Settings.NWPluginID, 0-7
+  ESPEasy::net::networkIndex_t         NetworkIndex      = ESPEasy::net::INVALID_NETWORK_INDEX;    // index position in Settings.NWPluginID, 0-7
   uint8_t                BaseVarIndex      = 0;
   Sensor_VType           sensorType        = Sensor_VType::SENSOR_TYPE_NOT_SET;
   uint8_t                OriginTaskIndex   = 0;

@@ -33,7 +33,10 @@
 
 # include <pins_arduino.h>
 
-bool NWPlugin_003(NWPlugin::Function function, struct EventStruct *event, String& string)
+namespace ESPEasy {
+namespace net {
+
+bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& string)
 {
   bool success = false;
 
@@ -43,7 +46,7 @@ bool NWPlugin_003(NWPlugin::Function function, struct EventStruct *event, String
     {
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
       nw.onlySingleInstance = true;
-      nw.alwaysPresent = false;
+      nw.alwaysPresent      = false;
       break;
     }
 
@@ -303,5 +306,9 @@ bool NWPlugin_003(NWPlugin::Function function, struct EventStruct *event, String
   }
   return success;
 }
+
+} // namespace net
+} // namespace ESPEasy
+
 
 #endif // ifdef USES_NW003

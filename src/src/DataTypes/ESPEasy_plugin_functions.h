@@ -161,6 +161,7 @@ public:
     NWPLUGIN_GET_INTERFACE,
     NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO,
     #endif
+    NWPLUGIN_PROCESS_EVENT,  // Process received event arduino_event_id_t
     NWPLUGIN_WEBFORM_SHOW_CONNECTED, // Used for showing connected state/speed
     NWPLUGIN_WEBFORM_SHOW_HOSTNAME,  // Used for showing hostname
     NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS,       // Used for showing MAC

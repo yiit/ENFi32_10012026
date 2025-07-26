@@ -1005,7 +1005,7 @@ void addRTDControllerButton(cpluginID_t cpluginID) {
       get_formatted_Controller_number(cpluginID).c_str()));
 }
 
-void   addRTDNetworkDriverButton(nwpluginID_t nwpluginID)
+void   addRTDNetworkDriverButton(ESPEasy::net::nwpluginID_t nwpluginID)
 {
   addRTDHelpButton(
     strformat(

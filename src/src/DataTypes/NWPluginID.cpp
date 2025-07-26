@@ -2,6 +2,8 @@
 
 #include "../Helpers/StringConverter.h"
 
+namespace ESPEasy {
+namespace net {
 
 String nwpluginID_t::toDisplayString() const {
   if (value == 0) { return F("NW---"); }
@@ -9,3 +11,6 @@ String nwpluginID_t::toDisplayString() const {
 }
 
 const nwpluginID_t INVALID_NW_PLUGIN_ID{};
+
+} // namespace net
+} // namespace ESPEasy

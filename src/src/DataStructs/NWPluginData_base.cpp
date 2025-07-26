@@ -8,6 +8,9 @@
 # include "../Helpers/StringConverter.h"
 # include "../Helpers/_ESPEasy_key_value_store.h"
 
+namespace ESPEasy {
+namespace net {
+
 
 NWPluginData_base::NWPluginData_base(nwpluginID_t nwpluginID, networkIndex_t networkIndex) :
   _kvs(nullptr),
@@ -26,8 +29,8 @@ NWPluginData_base::~NWPluginData_base()
   _kvs = nullptr;
 }
 
-bool NWPluginData_base::plugin_write_base(struct EventStruct *event,
-                                          const String      & string) { return false; }
+bool NWPluginData_base::plugin_write_base(EventStruct  *event,
+                                          const String& string) { return false; }
 
 bool NWPluginData_base::init_KVS()
 {
@@ -58,5 +61,8 @@ bool NWPluginData_base::_store()
     0,
     _nw_data_pluginID.value);
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

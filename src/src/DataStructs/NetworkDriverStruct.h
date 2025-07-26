@@ -7,6 +7,10 @@
 
 #include <vector>
 
+namespace ESPEasy {
+namespace net {
+
+
 /*********************************************************************************************\
 * NetworkDriverStruct
 \*********************************************************************************************/
@@ -20,5 +24,8 @@ struct NetworkDriverStruct
 
 
 };
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifndef DATASTRUCTS_NETWORKDRIVERSTRUCT_H

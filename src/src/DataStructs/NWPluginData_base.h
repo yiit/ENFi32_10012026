@@ -5,9 +5,14 @@
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
+# include "../DataStructs/ESPEasy_EventStruct.h"
 # include "../DataTypes/NWPluginID.h"
 # include "../DataTypes/NetworkIndex.h"
 # include "../Helpers/_ESPEasy_key_value_store.h"
+
+namespace ESPEasy {
+namespace net {
+
 
 // ==============================================
 // Data used by instances of NW-plugins.
@@ -26,14 +31,14 @@ struct NWPluginData_base {
     return _baseClassOnly;
   }
 
-  bool plugin_write_base(struct EventStruct *event,
-                         const String      & string);
+  bool plugin_write_base(EventStruct  *event,
+                         const String& string);
 
 
   // Should only be called from initNWPluginData
   bool         init_KVS();
 
-  nwpluginID_t getNWWPluginID() const { return _nw_data_pluginID; }
+  nwpluginID_t getNWPluginID() const { return _nw_data_pluginID; }
 
 protected:
 
@@ -58,6 +63,8 @@ protected:
 
 };
 
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 

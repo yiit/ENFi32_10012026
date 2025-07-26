@@ -550,12 +550,12 @@ void SettingsStruct_tmpl<N_TASKS>::validate() {
 
   // Make sure the WiFi and AP drivers are always added and set enabled when loading older settings, 
   // or factory default settings
-  for (networkDriverIndex_t index; validNetworkDriverIndex(index); ++index)
+  for (ESPEasy::net::networkDriverIndex_t index; ESPEasy::net::validNetworkDriverIndex(index); ++index)
   {
-    const NetworkDriverStruct& nw = getNetworkDriverStruct(index);
+    const ESPEasy::net::NetworkDriverStruct& nw = ESPEasy::net::getNetworkDriverStruct(index);
     if (nw.alwaysPresent) {
       if (validNetworkIndex(nw.fixedNetworkIndex)) {
-        const nwpluginID_t nwpluginID = getNWPluginID_from_NetworkDriverIndex(index);
+        const ESPEasy::net::nwpluginID_t nwpluginID = ESPEasy::net::getNWPluginID_from_NetworkDriverIndex(index);
         if (getNWPluginID_for_network(nw.fixedNetworkIndex) != nwpluginID) {
           setNWPluginID_for_network(nw.fixedNetworkIndex,  nwpluginID);
           setNetworkEnabled(nw.fixedNetworkIndex, true);
@@ -1313,19 +1313,19 @@ pluginID_t SettingsStruct_tmpl<N_TASKS>::getPluginID_for_task(taskIndex_t taskIn
 }
 
 template<unsigned int N_TASKS>
-nwpluginID_t SettingsStruct_tmpl<N_TASKS>::getNWPluginID_for_network(networkIndex_t index) const
+ESPEasy::net::nwpluginID_t SettingsStruct_tmpl<N_TASKS>::getNWPluginID_for_network(ESPEasy::net::networkIndex_t index) const
 {
   if (validNetworkIndex(index)) {
     const uint8_t nwa = NWPluginID[index];
     if (nwa > 0) {
-      return nwpluginID_t::toPluginID(nwa);
+      return ESPEasy::net::nwpluginID_t::toPluginID(nwa);
     }
   }
-  return INVALID_NW_PLUGIN_ID;
+  return ESPEasy::net::INVALID_NW_PLUGIN_ID;
 }
 
 template<unsigned int N_TASKS>
-void SettingsStruct_tmpl<N_TASKS>::setNWPluginID_for_network(networkIndex_t index, nwpluginID_t id)
+void SettingsStruct_tmpl<N_TASKS>::setNWPluginID_for_network(ESPEasy::net::networkIndex_t index, ESPEasy::net::nwpluginID_t id)
 {
   if (validNetworkIndex(index)) {
     NWPluginID[index] = id.value;

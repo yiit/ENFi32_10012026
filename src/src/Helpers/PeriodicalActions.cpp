@@ -67,7 +67,7 @@ void run50TimesPerSecond() {
   }
   {
     START_TIMER;
-    NWPluginCall(NWPlugin::Function::NWPLUGIN_FIFTY_PER_SECOND, 0, dummy);
+    ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_FIFTY_PER_SECOND, 0, dummy);
     STOP_TIMER(NWPLUGIN_CALL_50PS);
   }
 
@@ -103,7 +103,7 @@ void run10TimesPerSecond() {
   }
   {
     START_TIMER;
-    NWPluginCall(NWPlugin::Function::NWPLUGIN_TEN_PER_SECOND, 0, dummy);
+    ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_TEN_PER_SECOND, 0, dummy);
     STOP_TIMER(NWPLUGIN_CALL_10PS);
   }
   
@@ -507,7 +507,7 @@ void prepareShutdown(IntendedRebootReason_e reason)
   process_serialWriteBuffer();
   flushAndDisconnectAllClients();
   saveUserVarToRTC();
-  NWPluginCall(NWPlugin::Function::NWPLUGIN_EXIT_ALL, 0);
+  ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_EXIT_ALL, 0);
 //  ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   ESPEASY_FS.end();
   process_serialWriteBuffer();

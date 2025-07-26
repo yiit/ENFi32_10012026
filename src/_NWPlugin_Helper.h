@@ -4,10 +4,14 @@
 #include "ESPEasy_common.h"
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
 # include "src/CustomBuild/ESPEasyLimits.h"
-
-
+# include "src/DataStructs/ESPEasy_EventStruct.h"
 # include "src/DataStructs/NWPluginData_base.h"
+
+namespace ESPEasy {
+namespace net {
+
 
 extern NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];
 
@@ -20,17 +24,21 @@ extern NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];
 // Data used by instances of NWPlugins.
 // =============================================
 
-void               resetNWPluginData();
+void resetNWPluginData();
 
-void               clearNWPluginData(networkIndex_t networkIndex);
+void clearNWPluginData(ESPEasy::net::networkIndex_t networkIndex);
 
-bool               initNWPluginData(networkIndex_t     networkIndex,
-                                    NWPluginData_base *data);
+bool initNWPluginData(ESPEasy::net::networkIndex_t     networkIndex,
+                      NWPluginData_base * data);
 
-NWPluginData_base* getNWPluginData(networkIndex_t networkIndex);
-NWPluginData_base* getNWPluginDataBaseClassOnly(networkIndex_t networkIndex);
+NWPluginData_base* getNWPluginData(ESPEasy::net::networkIndex_t networkIndex);
+NWPluginData_base* getNWPluginDataBaseClassOnly(ESPEasy::net::networkIndex_t networkIndex);
 
-bool               nwpluginTaskData_initialized(networkIndex_t networkIndex);
+bool nwpluginTaskData_initialized(ESPEasy::net::networkIndex_t networkIndex);
+
+} // namespace net
+} // namespace ESPEasy
+
 
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 #endif // ifndef _NWPLUGIN_HELPER_H

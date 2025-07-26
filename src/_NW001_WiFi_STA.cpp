@@ -10,6 +10,8 @@
 # define NWPLUGIN_ID_001         1
 # define NWPLUGIN_NAME_001       "WiFi Station"
 
+# include "src/NWPluginStructs/NW001_WiFi_STA.h"
+
 # include "src/ESPEasyCore/ESPEasyNetwork.h"
 # include "src/ESPEasyCore/ESPEasyWifi.h"
 # include "src/DataStructs/ESPEasy_EventStruct.h"
@@ -36,7 +38,10 @@
 #  include <esp_hosted.h>
 # endif
 
-bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String& string)
+namespace ESPEasy {
+namespace net {
+
+bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& string)
 {
   bool success = false;
 
@@ -46,8 +51,8 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
     {
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
       nw.onlySingleInstance = true;
-      nw.alwaysPresent = true;
-      nw.fixedNetworkIndex = NWPLUGIN_ID_001 -1; // Start counting at 0
+      nw.alwaysPresent      = true;
+      nw.fixedNetworkIndex  = NWPLUGIN_ID_001 - 1; // Start counting at 0
       break;
     }
 
@@ -289,5 +294,8 @@ bool NWPlugin_001(NWPlugin::Function function, struct EventStruct *event, String
   }
   return success;
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifdef USES_NW001

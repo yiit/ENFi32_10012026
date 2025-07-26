@@ -405,20 +405,20 @@ public:
     memcpy(&VariousBits_2, &value, sizeof(VariousBits_2));
   }
 
-  bool getNetworkEnabled(networkIndex_t index) const {
+  bool getNetworkEnabled(ESPEasy::net::networkIndex_t index) const {
     if (validNetworkIndex(index)) return bitRead(NetworkEnabled_bits, index);
     return false;
   }
 
-  void setNetworkEnabled(networkIndex_t index, bool enabled) {
+  void setNetworkEnabled(ESPEasy::net::networkIndex_t index, bool enabled) {
     if (validNetworkIndex(index)) {
       bitWrite(NetworkEnabled_bits, index, enabled);
     }
   }
 
-  nwpluginID_t getNWPluginID_for_network(networkIndex_t index) const;
+  ESPEasy::net::nwpluginID_t getNWPluginID_for_network(ESPEasy::net::networkIndex_t index) const;
 
-  void setNWPluginID_for_network(networkIndex_t index, nwpluginID_t id);
+  void setNWPluginID_for_network(ESPEasy::net::networkIndex_t index, ESPEasy::net::nwpluginID_t id);
 
 
   unsigned long PID = 0;

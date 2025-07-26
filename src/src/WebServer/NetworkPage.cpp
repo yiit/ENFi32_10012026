@@ -20,6 +20,8 @@
 
 # include "../Helpers/PrintToString.h"
 
+using namespace ESPEasy::net;
+
 void handle_networks()
 {
 # ifndef BUILD_NO_RAM_TRACKER
@@ -126,7 +128,7 @@ void handle_networks()
   TXBuffer.endStream();
 }
 
-void handle_networks_clearLoadDefaults(networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings) {
+void handle_networks_clearLoadDefaults(ESPEasy::net::networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings) {
   networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(networkindex);
 
   if (validNetworkDriverIndex(NetworkDriverIndex)) {
@@ -142,7 +144,7 @@ void handle_networks_clearLoadDefaults(networkIndex_t networkindex, NetworkSetti
   // TODO TD-er: Must also check NetworkDriverStruct to see if something else must be done
 }
 
-void handle_networks_CopySubmittedSettings(networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings)
+void handle_networks_CopySubmittedSettings(ESPEasy::net::networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings)
 {
   // copy all settings to network settings struct
   for (int parameterIdx = 0; parameterIdx <= NetworkSettingsStruct::NETWORK_ENABLED; ++parameterIdx) {
@@ -152,7 +154,7 @@ void handle_networks_CopySubmittedSettings(networkIndex_t networkindex, NetworkS
 
 }
 
-void handle_networks_CopySubmittedSettings_NWPluginCall(networkIndex_t networkindex) {
+void handle_networks_CopySubmittedSettings_NWPluginCall(ESPEasy::net::networkIndex_t networkindex) {
   networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(networkindex);
 
   if (validNetworkDriverIndex(NetworkDriverIndex)) {
@@ -183,7 +185,7 @@ void handle_networks_ShowAllNetworksTable()
   html_table_header(F("IP"));
   html_table_header(F("Port"));
 
-  for (networkIndex_t x = 0; x < NETWORK_MAX; x++)
+  for (ESPEasy::net::networkIndex_t x = 0; x < NETWORK_MAX; x++)
   {
     const nwpluginID_t nwpluginID = Settings.getNWPluginID_for_network(x);
     const bool nwplugin_set       = nwpluginID.isValid();
@@ -266,7 +268,7 @@ void handle_networks_ShowAllNetworksTable()
       }
 
       /*
-         const NetworkDriverStruct& driver = getNetworkDriverStruct(NetworkDriverIndex);
+         const NetworkDriverStruct& driver = ESPEasy::net::getNetworkDriverStruct(NetworkDriverIndex);
 
          if ((INVALID_NETWORKDRIVER_INDEX == NetworkDriverIndex) || driver.usesPort) {
          addHtmlInt(13 == nwpluginID ? Settings.UDPPort : NetworkSettings->Port); // P2P/C013 exception
@@ -283,13 +285,13 @@ void handle_networks_ShowAllNetworksTable()
   html_end_form();
 }
 
-void handle_networks_NetworkSettingsPage(networkIndex_t networkindex) {
+void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex) {
   if (!validNetworkIndex(networkindex)) { return; }
 
   const networkDriverIndex_t networkDriverIndex =
     getNetworkDriverIndex_from_NWPluginID(
       Settings.getNWPluginID_for_network(networkindex));
-  const NetworkDriverStruct& cur_driver = getNetworkDriverStruct(networkDriverIndex);
+  const NetworkDriverStruct& cur_driver = ESPEasy::net::getNetworkDriverStruct(networkDriverIndex);
 
 
   // Show network settings page

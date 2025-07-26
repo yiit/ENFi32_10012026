@@ -1122,7 +1122,7 @@ uint8_t disableAllNotifications(uint8_t bootFailedCount) {
  \*********************************************************************************************/
 uint8_t disableNetwork(uint8_t bootFailedCount)
 {
-  for (networkIndex_t i = 0; i < NETWORK_MAX && bootFailedCount > 0; ++i) {
+  for (ESPEasy::net::networkIndex_t i = 0; i < NETWORK_MAX && bootFailedCount > 0; ++i) {
     if (Settings.getNetworkEnabled(i)) {
       --bootFailedCount;
 
@@ -1139,7 +1139,7 @@ uint8_t disableAllNetworkss(uint8_t bootFailedCount)
     if (bootFailedCount > 0) {
     --bootFailedCount;
 
-    for (networkIndex_t i = 0; i < NETWORK_MAX; ++i) {
+    for (ESPEasy::net::networkIndex_t i = 0; i < NETWORK_MAX; ++i) {
       Settings.setNetworkEnabled(i, false);
     }
   }

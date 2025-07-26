@@ -300,7 +300,7 @@ void   addHelpButton(const String& url,
 void   addRTDPluginButton(pluginID_t pluginID);
 #ifndef LIMIT_BUILD_SIZE
 void   addRTDControllerButton(cpluginID_t cpluginID);
-void   addRTDNetworkDriverButton(nwpluginID_t nwpluginID);
+void   addRTDNetworkDriverButton(ESPEasy::net::nwpluginID_t nwpluginID);
 #endif // ifndef LIMIT_BUILD_SIZE
 
 String makeDocLink(const String& url,

@@ -15,6 +15,9 @@
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 
+namespace ESPEasy {
+namespace net {
+
 
 NetworkSettingsStruct::NetworkSettingsStruct()
 {
@@ -29,9 +32,10 @@ void NetworkSettingsStruct::reset() {
 
 }
 
-
 void NetworkSettingsStruct::validate() {
 
 
 }
 
+} // namespace net
+} // namespace ESPEasy

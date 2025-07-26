@@ -227,7 +227,7 @@ void ESPEasy_setup()
 
   PluginSetup();
   CPluginSetup();
-  NWPluginSetup();
+  ESPEasy::net::NWPluginSetup();
 
   initWiFi();
   WiFiEventData.clearAll();
@@ -543,7 +543,7 @@ void ESPEasy_setup()
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("CPluginInit()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
-  NWPluginInit();
+  ESPEasy::net::NWPluginInit();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("NWPluginInit()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER

@@ -11,7 +11,10 @@
 #include "../Helpers/_NWPlugin_init.h"
 #include "../Helpers/PrintToString.h"
 
-bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event) {
+namespace ESPEasy {
+namespace net {
+
+bool NWPluginCall(NWPlugin::Function Function, EventStruct *event) {
   #ifdef USE_SECOND_HEAP
   HeapSelectDram ephemeral;
   #endif // ifdef USE_SECOND_HEAP
@@ -21,13 +24,13 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event) {
   return NWPluginCall(Function, event, dummy);
 }
 
-bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String& str)
+bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 {
   #ifdef USE_SECOND_HEAP
   HeapSelectDram ephemeral;
   #endif // ifdef USE_SECOND_HEAP
 
-  struct EventStruct TempEvent;
+  EventStruct TempEvent;
 
   if (event == 0) {
     event = &TempEvent;
@@ -51,6 +54,7 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
       if (Function == NWPlugin::Function::NWPLUGIN_INIT_ALL) {
         Function = NWPlugin::Function::NWPLUGIN_INIT;
       }
+
       if (Function == NWPlugin::Function::NWPLUGIN_EXIT_ALL) {
         Function = NWPlugin::Function::NWPLUGIN_EXIT;
       }
@@ -89,7 +93,7 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
 #ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO:
-#endif
+#endif // ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_CONNECT_SUCCESS:
     case NWPlugin::Function::NWPLUGIN_CONNECT_FAIL:
     case NWPlugin::Function::NWPLUGIN_DRIVER_TEMPLATE:
@@ -128,15 +132,16 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
                 switch (Function)
                 {
                   case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO:
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
-                  // TODO TD-er: Must also add option to set route prio
-                  // See: https://github.com/espressif/arduino-esp32/pull/11617
+# if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
+
+                    // TODO TD-er: Must also add option to set route prio
+                    // See: https://github.com/espressif/arduino-esp32/pull/11617
                     event->Par1 = event->networkInterface->getRoutePrio();
-#else
+# else // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
                     event->Par1 = event->networkInterface->route_prio();
-#endif
+# endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
                     event->Par2 = event->networkInterface->isDefault();
-                    success = true;
+                    success     = true;
                     break;
 
                   case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
@@ -145,9 +150,9 @@ bool NWPluginCall(NWPlugin::Function Function, struct EventStruct *event, String
                     break;
 
                   case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
-                    str     = event->networkInterface->macAddress();
+                    str            = event->networkInterface->macAddress();
                     event->String1 = F("MAC");
-                    success = true;
+                    success        = true;
                     break;
 
                   case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
@@ -213,7 +218,8 @@ networkDriverIndex_t getNetworkDriverIndex_from_NWPluginID(nwpluginID_t nwplugin
   return do_getNetworkDriverIndex_from_NWPluginID(nwpluginID);
 }
 
-nwpluginID_t getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t index) { return do_getNWPluginID_from_NetworkDriverIndex(index); }
+nwpluginID_t getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t index)      { return do_getNWPluginID_from_NetworkDriverIndex(index);
+}
 
 nwpluginID_t getNWPluginID_from_NetworkIndex(networkIndex_t index) {
   const networkDriverIndex_t networkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(index);
@@ -238,3 +244,6 @@ String getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID) {
   }
   return getNWPluginNameFromNetworkDriverIndex(networkDriverIndex);
 }
+
+} // namespace net
+} // namespace ESPEasy

@@ -7,15 +7,19 @@
 # include "src/Globals/NWPlugins.h"
 # include "src/Globals/Settings.h"
 
+namespace ESPEasy {
+namespace net {
+
+
 NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];
 
 void resetNWPluginData() {
-  for (networkIndex_t i = 0; i < NR_ELEMENTS(NWPlugin_task_data); ++i) {
+  for (ESPEasy::net::networkIndex_t i = 0; i < NR_ELEMENTS(NWPlugin_task_data); ++i) {
     NWPlugin_task_data[i] = nullptr;
   }
 }
 
-void clearNWPluginData(networkIndex_t networkIndex) {
+void clearNWPluginData(ESPEasy::net::networkIndex_t networkIndex) {
   if (validNetworkIndex(networkIndex)) {
     if (NWPlugin_task_data[networkIndex] != nullptr) {
       delete NWPlugin_task_data[networkIndex];
@@ -24,7 +28,7 @@ void clearNWPluginData(networkIndex_t networkIndex) {
   }
 }
 
-bool initNWPluginData(networkIndex_t networkIndex, NWPluginData_base *data) {
+bool initNWPluginData(ESPEasy::net::networkIndex_t networkIndex, NWPluginData_base *data) {
   if (!validNetworkIndex(networkIndex)) {
     if (data != nullptr) {
       delete data;
@@ -57,7 +61,7 @@ bool initNWPluginData(networkIndex_t networkIndex, NWPluginData_base *data) {
   return getNWPluginData(networkIndex) != nullptr;
 }
 
-NWPluginData_base* getNWPluginData(networkIndex_t networkIndex) {
+NWPluginData_base* getNWPluginData(ESPEasy::net::networkIndex_t networkIndex) {
   if (nwpluginTaskData_initialized(networkIndex)) {
 
     if (!NWPlugin_task_data[networkIndex]->baseClassOnly()) {
@@ -67,19 +71,22 @@ NWPluginData_base* getNWPluginData(networkIndex_t networkIndex) {
   return nullptr;
 }
 
-NWPluginData_base* getNWPluginDataBaseClassOnly(networkIndex_t networkIndex) {
+NWPluginData_base* getNWPluginDataBaseClassOnly(ESPEasy::net::networkIndex_t networkIndex) {
   if (nwpluginTaskData_initialized(networkIndex)) {
     return NWPlugin_task_data[networkIndex];
   }
   return nullptr;
 }
 
-bool nwpluginTaskData_initialized(networkIndex_t networkIndex) {
+bool nwpluginTaskData_initialized(ESPEasy::net::networkIndex_t networkIndex) {
   if (!validNetworkIndex(networkIndex)) {
     return false;
   }
   return NWPlugin_task_data[networkIndex] != nullptr &&
-         (NWPlugin_task_data[networkIndex]->getNWWPluginID() == Settings.getNWPluginID_for_network(networkIndex));
+         (NWPlugin_task_data[networkIndex]->getNWPluginID() == Settings.getNWPluginID_for_network(networkIndex));
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

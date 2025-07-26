@@ -4,17 +4,20 @@
 #include "../../ESPEasy_common.h"
 
 #include "../CustomBuild/ESPEasyLimits.h"
+#include "../DataStructs/ESPEasy_EventStruct.h"
 #include "../DataTypes/ESPEasy_plugin_functions.h"
 #include "../DataTypes/NWPluginID.h"
 #include "../DataTypes/NetworkIndex.h"
 #include "../DataTypes/NetworkDriverIndex.h"
 
+namespace ESPEasy {
+namespace net {
 
-bool NWPluginCall(NWPlugin::Function  Function,
-                  struct EventStruct *event);
-bool NWPluginCall(NWPlugin::Function  Function,
-                  struct EventStruct *event,
-                  String            & str);
+bool NWPluginCall(NWPlugin::Function Function,
+                  EventStruct       *event);
+bool NWPluginCall(NWPlugin::Function Function,
+                  EventStruct       *event,
+                  String           & str);
 
 
 bool validNetworkDriverIndex(networkDriverIndex_t index);
@@ -40,5 +43,7 @@ nwpluginID_t         getNWPluginID_from_NetworkIndex(networkIndex_t index);
 String               getNWPluginNameFromNetworkDriverIndex(networkDriverIndex_t NetworkDriverIndex);
 String               getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID);
 
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifndef GLOBALS_NWPLUGIN_H

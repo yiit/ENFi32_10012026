@@ -177,7 +177,7 @@ void                       stopTimerTask(deviceIndex_t T,
 void                       stopTimerController(protocolIndex_t   T,
                                                CPlugin::Function F,
                                                uint32_t          statisticsTimerStart);
-void                       stopTimerNetwork(networkDriverIndex_t T,
+void                       stopTimerNetwork(ESPEasy::net::networkDriverIndex_t T,
                                                NWPlugin::Function F,
                                                uint32_t          statisticsTimerStart);
 void                       stopTimer(TimingStatsElements L,

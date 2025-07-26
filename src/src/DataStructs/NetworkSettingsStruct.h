@@ -10,6 +10,11 @@
 #include <new>    // for std::nothrow
 
 #include "../Globals/Plugins.h"
+#include "../Helpers/Memory.h"
+
+namespace ESPEasy {
+namespace net {
+
 
 struct NetworkSettingsStruct
 {
@@ -45,7 +50,6 @@ private:
 
 };
 
-#include "../Helpers/Memory.h"
 
 typedef std::shared_ptr<NetworkSettingsStruct> NetworkSettingsStruct_ptr_type;
 
@@ -61,5 +65,9 @@ typedef std::shared_ptr<NetworkSettingsStruct> NetworkSettingsStruct_ptr_type;
 
 // Check to see if MakeNetworkSettings was successful
 #define AllocatedNetworkSettings() (NetworkSettings.get() != nullptr)
+
+}
+}
+
 
 #endif // DATASTRUCTS_NETWORKSETTINGSSTRUCT_H

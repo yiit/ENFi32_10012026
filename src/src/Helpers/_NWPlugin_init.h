@@ -3,13 +3,15 @@
 
 #include "../../ESPEasy_common.h"
 
+#include "../DataStructs/ESPEasy_EventStruct.h"
+#include "../DataStructs/NetworkDriverStruct.h"
 #include "../DataTypes/ESPEasy_plugin_functions.h"
-
 #include "../DataTypes/NWPluginID.h"
 #include "../DataTypes/NetworkDriverIndex.h"
-#include "../DataStructs/NetworkDriverStruct.h"
 
-struct EventStruct;
+
+namespace ESPEasy {
+namespace net {
 
 networkDriverIndex_t do_getNetworkDriverIndex_from_NWPluginID(nwpluginID_t pluginID);
 nwpluginID_t do_getNWPluginID_from_NetworkDriverIndex(networkDriverIndex_t networkDriverIndex);
@@ -20,7 +22,7 @@ nwpluginID_t getHighestIncludedNWPluginID();
 NetworkDriverStruct& getNetworkDriverStruct(networkDriverIndex_t networkDriverIndex);
 
 // Should only be called from NWPluginCall, or maybe for very special occasions
-bool do_NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, struct EventStruct *event, String& string);
+bool do_NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, EventStruct *event, String& string);
 
 
 void NWPluginSetup();
@@ -32,7 +34,7 @@ void NWPluginInit();
 //
 // Uncrustify must not be used on macros, so turn it off.
 // *INDENT-OFF*
-#define ADDNWPLUGIN_H(NNN) bool NWPlugin_##NNN(NWPlugin::Function function, struct EventStruct *event, String& string);
+#define ADDNWPLUGIN_H(NNN) bool NWPlugin_##NNN(NWPlugin::Function function, EventStruct *event, String& string);
 // Uncrustify must not be used on macros, but we're now done, so turn Uncrustify on again.
 // *INDENT-ON*
 
@@ -1058,5 +1060,7 @@ void NWPluginInit();
 
 #undef ADDNWPLUGIN_H
 
+} // namespace net
+} // namespace ESPEasy
 
 #endif

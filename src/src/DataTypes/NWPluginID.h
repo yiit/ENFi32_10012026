@@ -3,6 +3,9 @@
 
 #include "../../ESPEasy_common.h"
 
+namespace ESPEasy {
+namespace net {
+
 struct __attribute__((__packed__)) nwpluginID_t {
   nwpluginID_t() = default;
 
@@ -12,7 +15,6 @@ struct __attribute__((__packed__)) nwpluginID_t {
   }
 
   constexpr explicit nwpluginID_t(uint8_t id) : value(id) {}
-
 
   static nwpluginID_t toPluginID(unsigned other)
   {
@@ -54,16 +56,19 @@ struct __attribute__((__packed__)) nwpluginID_t {
     return this->value != other.value;
   }
 
-  void setInvalid() {
-    value = 0;
-  }
+  void   setInvalid() { value = 0; }
 
   String toDisplayString() const;
 
   uint8_t value{};
+
 };
 
 
 extern const nwpluginID_t INVALID_NW_PLUGIN_ID;
+
+} // namespace net
+} // namespace ESPEasy
+
 
 #endif // ifndef DATATYPES_NWPLUGINID_H

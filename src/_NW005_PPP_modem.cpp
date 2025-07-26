@@ -39,7 +39,10 @@
 
 # include <PPP.h>
 
-bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String& string)
+namespace ESPEasy {
+namespace net {
+
+bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& string)
 {
   bool success = false;
 
@@ -62,7 +65,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 # ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
       if (NW_data && NW_data->attached()) {
         event->networkInterface = &PPP;
@@ -75,7 +79,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
       if (NW_data) {
         success = NW_data->attached();
@@ -93,7 +98,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
       if (NW_data) {
         string         = NW_data->IMEI();
@@ -108,7 +114,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
       if (NW_data) {
         success = NW_data->webform_getPort(string);
@@ -119,11 +126,12 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
-      bool mustCleanup                     = NW_data == nullptr;
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      bool mustCleanup = NW_data == nullptr;
 
       if (mustCleanup) {
-        NW_data = new (std::nothrow) NW005_data_struct_PPP_modem(event->NetworkIndex);
+        NW_data = new (std::nothrow) ESPEasy::net::ppp::NW005_data_struct_PPP_modem(event->NetworkIndex);
         NW_data->init_KVS();
       }
 
@@ -139,11 +147,12 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
-      bool mustCleanup                     = NW_data == nullptr;
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      bool mustCleanup = NW_data == nullptr;
 
       if (mustCleanup) {
-        NW_data = new (std::nothrow) NW005_data_struct_PPP_modem(event->NetworkIndex);
+        NW_data = new (std::nothrow) ESPEasy::net::ppp::NW005_data_struct_PPP_modem(event->NetworkIndex);
         NW_data->init_KVS();
       }
 
@@ -160,8 +169,9 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
-      initNWPluginData(event->NetworkIndex, new (std::nothrow) NW005_data_struct_PPP_modem(event->NetworkIndex));
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      initNWPluginData(event->NetworkIndex, new (std::nothrow) ESPEasy::net::ppp::NW005_data_struct_PPP_modem(event->NetworkIndex));
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
       if (NW_data) {
         success = NW_data->init(event);
@@ -171,7 +181,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
 
     case NWPlugin::Function::NWPLUGIN_EXIT:
     {
-      NW005_data_struct_PPP_modem *NW_data = static_cast<NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
+      ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
+        static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
       if (NW_data) {
         success = NW_data->exit(event);
@@ -185,5 +196,8 @@ bool NWPlugin_005(NWPlugin::Function function, struct EventStruct *event, String
   }
   return success;
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifdef USES_NW005

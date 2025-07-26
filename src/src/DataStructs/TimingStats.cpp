@@ -338,7 +338,7 @@ void stopTimerController(protocolIndex_t T, CPlugin::Function F, uint32_t statis
   if (mustLogCFunction(F)) { controllerStats[static_cast<int>(T) * 256 + static_cast<int>(F)].add(usecPassedSince_fast(statisticsTimerStart)); }
 }
 
-void stopTimerNetwork(networkDriverIndex_t T, NWPlugin::Function F, uint32_t statisticsTimerStart)
+void stopTimerNetwork(ESPEasy::net::networkDriverIndex_t T, NWPlugin::Function F, uint32_t statisticsTimerStart)
 {
   if (mustLogNWFunction(F)) { networkStats[static_cast<int>(T.value) * 256 + static_cast<int>(F)].add(usecPassedSince_fast(statisticsTimerStart)); }
 }

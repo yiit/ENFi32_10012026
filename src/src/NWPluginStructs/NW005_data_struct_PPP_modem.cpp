@@ -18,6 +18,10 @@
 // # include <esp_modem_api.h>
 // #include <esp_modem_c_api_types.h>
 
+namespace ESPEasy {
+namespace net {
+namespace ppp {
+
 // Keys as used in the Key-value-store
 # define NW005_KEY_SERIAL_PORT          1
 # define NW005_KEY_PIN_RX               2
@@ -314,7 +318,7 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
 
 }
 
-void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
+void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
 {
   _load();
 
@@ -451,7 +455,7 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
     addFormNote(F("Only numerical digits"));
   }
 
-  if (!Settings.getNetworkEnabled(event->NetworkIndex)) return;
+  if (!Settings.getNetworkEnabled(event->NetworkIndex)) { return; }
 
   addFormSubHeader(F("Modem State"));
   addRowLabel(F("Modem Model"));
@@ -626,7 +630,7 @@ void NW005_data_struct_PPP_modem::webform_load(struct EventStruct *event)
   webform_load_UE_system_information();
 }
 
-void NW005_data_struct_PPP_modem::webform_save(struct EventStruct *event)
+void NW005_data_struct_PPP_modem::webform_save(EventStruct *event)
 {
   const uint32_t keys[] {
     NW005_KEY_SERIAL_PORT,
@@ -712,7 +716,7 @@ void NW005_begin_modem_task(void *parameter)
   vTaskDelete(modem_task_data->modem_taskHandle);
 }
 
-bool NW005_data_struct_PPP_modem::init(struct EventStruct *event)
+bool NW005_data_struct_PPP_modem::init(EventStruct *event)
 {
   if (!_KVS_initialized()) {
     addLog(LOG_LEVEL_ERROR, F("PPP: Could not initialize storage"));
@@ -818,7 +822,7 @@ bool NW005_data_struct_PPP_modem::init(struct EventStruct *event)
   return true;
 }
 
-bool NW005_data_struct_PPP_modem::exit(struct EventStruct *event)
+bool NW005_data_struct_PPP_modem::exit(EventStruct *event)
 {
   if (_modem_task_data.modem_taskHandle) {
     vTaskDelete(_modem_task_data.modem_taskHandle);
@@ -920,5 +924,9 @@ void NW005_data_struct_PPP_modem::testRead()
   }
 
 }
+
+} // namespace ppp
+} // namespace net
+} // namespace ESPEasy
 
 #endif // ifdef USES_NW005

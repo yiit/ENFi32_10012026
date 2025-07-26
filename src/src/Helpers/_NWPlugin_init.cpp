@@ -10,6 +10,9 @@
 
 #include "../Helpers/Misc.h"
 
+namespace ESPEasy {
+namespace net {
+
 // ********************************************************************************
 // Initialize all Network NWPlugins that where defined earlier
 // and initialize the function call pointer into the NWPlugin array
@@ -1040,7 +1043,7 @@ constexpr /*nwpluginID_t*/ uint8_t NetworkDriverIndex_to_NWPlugin_id[] PROGMEM =
 
 
 typedef bool (*NWPlugin_ptr_t)(NWPlugin::Function,
-                               struct EventStruct *,
+                               EventStruct *,
                                String&);
 
 const NWPlugin_ptr_t PROGMEM NWPlugin_ptr[] =
@@ -2117,7 +2120,7 @@ bool do_check_validNetworkDriverIndex(networkDriverIndex_t networkDriverIndex)
 
 nwpluginID_t getHighestIncludedNWPluginID() { return nwpluginID_t::toPluginID(Highest_NWPlugin_id); }
 
-bool         do_NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, struct EventStruct *event, String& string)
+bool         do_NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function Function, EventStruct *event, String& string)
 {
   if (networkDriverIndex.value < NetworkDriverIndex_to_NWPlugin_id_size)
   {
@@ -2149,7 +2152,7 @@ void NWPluginSetup()
 
     if (nwpluginID) {
       NWPlugin_id_to_NetworkDriverIndex[nwpluginID.value] = networkDriverIndex;
-      struct EventStruct TempEvent;
+      EventStruct TempEvent;
       TempEvent.idx = networkDriverIndex.value;
       String dummy;
       do_NWPluginCall(networkDriverIndex, NWPlugin::Function::NWPLUGIN_DRIVER_ADD, &TempEvent, dummy);
@@ -2161,10 +2164,13 @@ void NWPluginSetup()
 void NWPluginInit()
 {
   // Set all not supported nwplugins to disabled.
-  for (networkIndex_t network = 0; network < NETWORK_MAX; ++network) {
+  for (ESPEasy::net::networkIndex_t network = 0; network < NETWORK_MAX; ++network) {
     if (!supportedNWPluginID(Settings.getNWPluginID_for_network(network))) {
       Settings.setNetworkEnabled(network, false);
     }
   }
   NWPluginCall(NWPlugin::Function::NWPLUGIN_INIT_ALL, 0);
 }
+
+} // namespace net
+} // namespace ESPEasy
