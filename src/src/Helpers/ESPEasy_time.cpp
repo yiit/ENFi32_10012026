@@ -15,7 +15,7 @@
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 
 #include "../Globals/EventQueue.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Nodes.h"
 #include "../Globals/RTC.h"
 #include "../Globals/Settings.h"

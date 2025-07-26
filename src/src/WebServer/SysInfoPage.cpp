@@ -24,8 +24,8 @@
 
 # include "../Globals/CRCValues.h"
 # include "../Globals/ESPEasy_time.h"
-# include "../Globals/ESPEasyWiFiEvent.h"
-# include "../Globals/NetworkState.h"
+# include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 # include "../Globals/RTC.h"
 # include "../Globals/Settings.h"
 

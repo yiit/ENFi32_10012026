@@ -4,7 +4,7 @@
 
 # include "../../../src/Globals/EventQueue.h"
 # include "../../../src/Globals/Settings.h"
-# include "../../../src/Globals/ESPEasyWiFiEvent.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
 
 # include "../../../src/Helpers/StringConverter.h"
 

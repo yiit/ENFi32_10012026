@@ -18,7 +18,7 @@
 #include "../Globals/ExtraTaskSettings.h"
 #include "../Globals/EventQueue.h"
 #include "../Globals/GlobalMapPortStatus.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 #include "../Globals/Statistics.h"
 

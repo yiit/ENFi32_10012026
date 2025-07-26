@@ -4,7 +4,7 @@
 #include "../ESPEasyCore/Serial.h"
 #include "../Globals/Cache.h"
 #include "../Globals/ESPEasy_Console.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/Logging.h"
 #include "../Globals/Settings.h"
 #include "../Helpers/Networking.h"

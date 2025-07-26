@@ -8,7 +8,7 @@
 #include "../Globals/Services.h"
 #include "../Globals/Settings.h"
 
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 
 // ********************************************************************************
 // Web Interface handle other requests

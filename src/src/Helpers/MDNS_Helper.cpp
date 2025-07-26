@@ -6,8 +6,8 @@
 #include "../ESPEasyCore/ESPEasyEth.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 
-#include "../Globals/ESPEasyWiFiEvent.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Services.h"
 #include "../Globals/Settings.h"
 

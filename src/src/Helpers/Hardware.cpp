@@ -7,7 +7,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 
 #include "../Globals/Device.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/ExtraTaskSettings.h"
 #include "../Globals/Settings.h"
 #include "../Globals/Statistics.h"

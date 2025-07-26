@@ -19,7 +19,7 @@
 
 #include "../Globals/Settings.h"
 #include "../Globals/SecuritySettings.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 
 #include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/Misc.h"

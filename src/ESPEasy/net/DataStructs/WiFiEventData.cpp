@@ -1,15 +1,15 @@
 #include "../DataStructs/WiFiEventData.h"
 
-#include "../ESPEasyCore/ESPEasy_Log.h"
+#include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 
-#include "../Globals/RTC.h"
-#include "../Globals/Settings.h"
-#include "../Globals/WiFi_AP_Candidates.h"
+#include "../../../src/Globals/RTC.h"
+#include "../../../src/Globals/Settings.h"
+#include "../../../src/Globals/WiFi_AP_Candidates.h"
 
-#include "../Helpers/ESPEasy_Storage.h"
-#include "../Helpers/Networking.h"
+#include "../../../src/Helpers/ESPEasy_Storage.h"
+#include "../../../src/Helpers/Networking.h"
 
-#include "../Helpers/StringConverter.h"
+#include "../../../src/Helpers/StringConverter.h"
 
 
 #define WIFI_RECONNECT_WAIT                  30000 // in milliSeconds

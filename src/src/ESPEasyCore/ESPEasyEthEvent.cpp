@@ -5,7 +5,7 @@
 #  include <ETH.h>
 
 #include "../ESPEasyCore/ESPEasyEth.h"
-#include "../Globals/ESPEasyEthEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
 
 
 // ********************************************************************************

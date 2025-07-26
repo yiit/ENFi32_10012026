@@ -1,10 +1,8 @@
-#ifndef GLOBALS_ESPEASYWIFIEVENT_H
-#define GLOBALS_ESPEASYWIFIEVENT_H
+#pragma once
 
+#include "../../../ESPEasy_common.h"
 
-#include "../../ESPEasy_common.h"
-
-#include "../../ESPEasy/net/wifi/ESPEasyWiFi_state_machine.h"
+#include "../wifi/ESPEasyWiFi_state_machine.h"
 
 #include "../DataStructs/WiFiEventData.h"
 
@@ -39,4 +37,3 @@ extern WiFiEventData_t WiFiEventData;
 extern ESPEasy::net::wifi::ESPEasyWiFi_t ESPEasyWiFi;
 
 
-#endif // GLOBALS_ESPEASYWIFIEVENT_H

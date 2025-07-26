@@ -8,13 +8,13 @@
 # include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h" // LogConnectionStatus
 
-# include "../Globals/ESPEasyEthEvent.h"
-# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
+# include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 # include "../Globals/ESPEasy_Scheduler.h"
 # include "../Globals/ESPEasy_time.h"
 # include "../Globals/EventQueue.h"
 # include "../Globals/MQTT.h"
-# include "../Globals/NetworkState.h"
+# include "../../ESPEasy/net/Globals/NetworkState.h"
 # include "../Globals/Settings.h"
 
 # include "../Helpers/LongTermTimer.h"

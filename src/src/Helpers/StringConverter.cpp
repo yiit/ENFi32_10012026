@@ -11,7 +11,7 @@
 #include "../Globals/Cache.h"
 #include "../Globals/CRCValues.h"
 #include "../Globals/Device.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/ESPEasy_time.h"
 #include "../Globals/MQTT.h"
 #include "../Globals/Plugins.h"

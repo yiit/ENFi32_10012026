@@ -1,6 +1,6 @@
 #include "../DataStructs/WiFi_AP_Candidate.h"
 
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Statistics.h"
 #include "../Helpers/ESPEasy_time_calc.h"

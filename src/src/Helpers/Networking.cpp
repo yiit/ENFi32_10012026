@@ -11,8 +11,8 @@
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../ESPEasyCore/Serial.h"
-#include "../Globals/ESPEasyEthEvent.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/ESPEasy_Scheduler.h"
 
 #ifdef USES_ESPEASY_NOW
@@ -20,7 +20,7 @@
 #endif
 
 #include "../Globals/EventQueue.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Nodes.h"
 #include "../Globals/ResetFactoryDefaultPref.h"
 #include "../Globals/Settings.h"

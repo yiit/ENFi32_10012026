@@ -1,9 +1,8 @@
-#ifndef DATASTRUCTS_WIFIEVENTDATA_H
-#define DATASTRUCTS_WIFIEVENTDATA_H
+#pragma once
 
-#include "../DataStructs/MAC_address.h"
-#include "../../ESPEasy/net/wifi/WiFiDisconnectReason.h"
-#include "../Helpers/LongTermTimer.h"
+#include "../../../src/DataStructs/MAC_address.h"
+#include "../wifi/WiFiDisconnectReason.h"
+#include "../../../src/Helpers/LongTermTimer.h"
 
 
 #ifdef ESP32
@@ -152,4 +151,3 @@ struct WiFiEventData_t {
 
 };
 
-#endif   // ifndef DATASTRUCTS_WIFIEVENTDATA_H

@@ -20,7 +20,7 @@
 
 #include "../Globals/CPlugins.h"
 #include "../Globals/Device.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/ESPEasy_Scheduler.h"
 #include "../Globals/MQTT.h"
 #include "../Globals/Plugins.h"

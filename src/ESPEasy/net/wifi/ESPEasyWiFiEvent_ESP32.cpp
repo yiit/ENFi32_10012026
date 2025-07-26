@@ -19,8 +19,8 @@
 # include "../wifi/ESPEasyWifi.h"
 # include "../wifi/ESPEasyWifi_ProcessEvent.h"
 
-# include "../../../src/Globals/ESPEasyWiFiEvent.h"
-# include "../../../src/Globals/NetworkState.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../Globals/NetworkState.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/WiFi_AP_Candidates.h"
 
@@ -29,7 +29,7 @@
 
 
 # if FEATURE_ETHERNET
-# include "../../../src/Globals/ESPEasyEthEvent.h"
+# include "../Globals/ESPEasyEthEvent.h"
 # endif // if FEATURE_ETHERNET
 
 void setUseStaticIP(bool enabled) {}

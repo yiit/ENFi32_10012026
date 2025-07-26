@@ -7,14 +7,14 @@
 
 # include "../../../src/DataTypes/ESPEasyTimeSource.h"
 
-# include "../../../src/ESPEasyCore/ESPEasyEth.h"
+//# include "../../../src/ESPEasyCore/ESPEasyEth.h"
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 # include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
 #  include "../wifi/ESPEasyWifi.h"
 #  include "../wifi/ESPEasyWifi_ProcessEvent.h"
 
-# include "../../../src/Globals/ESPEasyWiFiEvent.h"
-# include "../../../src/Globals/NetworkState.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../Globals/NetworkState.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/WiFi_AP_Candidates.h"
 

@@ -5,7 +5,7 @@
 
 #include "../Commands/Common.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 #include "../Helpers/Misc.h"
 #include "../Helpers/Network.h"

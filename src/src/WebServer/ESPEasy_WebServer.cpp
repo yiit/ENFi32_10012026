@@ -58,7 +58,7 @@
 
 #include "../Globals/CPlugins.h"
 #include "../Globals/Device.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Settings.h"
 

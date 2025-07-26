@@ -14,11 +14,11 @@
 
 #include "../Globals/CRCValues.h"
 #include "../Globals/ESPEasy_time.h"
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #if FEATURE_MQTT
 # include "../Globals/MQTT.h"
 #endif // if FEATURE_MQTT
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/RulesCalculate.h"
 #include "../Globals/RuntimeData.h"
 #include "../Globals/Settings.h"

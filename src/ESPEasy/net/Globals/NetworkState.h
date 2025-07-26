@@ -1,13 +1,12 @@
-#ifndef GLOBALS_NETWORKSTATE_H
-#define GLOBALS_NETWORKSTATE_H
+#pragma once
 
-#include "../../ESPEasy_common.h"
+#include "../../../ESPEasy_common.h"
 
 #include <IPAddress.h>
 #include <WiFiUdp.h>
 
-#include "../DataTypes/ESPEasy_plugin_functions.h"
-#include "../DataTypes/NetworkMedium.h"
+#include "../../../src/DataTypes/ESPEasy_plugin_functions.h"
+#include "../../../src/DataTypes/NetworkMedium.h"
 
 // Ethernet Connectiopn status
 extern NetworkMedium_t active_network_medium;
@@ -30,5 +29,3 @@ extern IPAddress  apIP;
 // udp protocol stuff (syslog, global sync, node info list, ntp time)
 extern WiFiUDP portUDP;
 
-
-#endif // GLOBALS_NETWORKSTATE_H

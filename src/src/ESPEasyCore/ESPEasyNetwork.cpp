@@ -2,7 +2,7 @@
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 
 #include "../Globals/ESPEasy_time.h"

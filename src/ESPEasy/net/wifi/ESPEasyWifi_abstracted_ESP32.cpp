@@ -5,7 +5,7 @@
 
 #  include "../../../src/DataStructs/TimingStats.h"
 
-#  include "../../../src/Globals/ESPEasyWiFiEvent.h"
+#  include "../Globals/ESPEasyWiFiEvent.h"
 #  include "../../../src/Globals/EventQueue.h"
 #  include "../../../src/Globals/Settings.h"
 #  include "../../../src/Globals/WiFi_AP_Candidates.h"

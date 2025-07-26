@@ -1,6 +1,6 @@
 #include "../Globals/NetworkState.h"
 
-#include "../../ESPEasy_common.h"
+#include "../../../ESPEasy_common.h"
 
 
 // Ethernet Connection status

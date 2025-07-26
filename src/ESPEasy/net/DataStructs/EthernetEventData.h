@@ -1,11 +1,10 @@
-#ifndef DATASTRUCTS_ETHERNETEVENTDATA_H
-#define DATASTRUCTS_ETHERNETEVENTDATA_H
+#pragma once
 
-#include "../../ESPEasy_common.h"
+#include "../../../ESPEasy_common.h"
 
 #if FEATURE_ETHERNET
 
-#include "../Helpers/LongTermTimer.h"
+#include "../../../src/Helpers/LongTermTimer.h"
 
 
 
@@ -96,4 +95,3 @@ struct EthernetEventData_t {
 
 #endif
 
-#endif   // ifndef DATASTRUCTS_ETHERNETEVENTDATA_H

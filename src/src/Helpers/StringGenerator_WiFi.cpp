@@ -2,7 +2,7 @@
 
 #include "../Helpers/StringConverter.h"
 
-#include "../Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>

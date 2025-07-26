@@ -2,9 +2,9 @@
 
 #if FEATURE_ETHERNET
 
-#include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../Globals/Settings.h"
-#include "../Helpers/Networking.h"
+#include "../../../src/ESPEasyCore/ESPEasy_Log.h"
+#include "../../../src/Globals/Settings.h"
+#include "../../../src/Helpers/Networking.h"
 
 #include <ETH.h>
 

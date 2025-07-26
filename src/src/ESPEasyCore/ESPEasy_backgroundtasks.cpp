@@ -6,7 +6,7 @@
 #include "../DataStructs/TimingStats.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../ESPEasyCore/Serial.h"
-#include "../Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Services.h"
 #include "../Globals/Settings.h"
 #if FEATURE_RTTTL && FEATURE_ANYRTTTL_LIB && FEATURE_ANYRTTTL_ASYNC
