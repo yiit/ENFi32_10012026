@@ -621,7 +621,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                   const bool twoWay = MQTT_binary_deviceClassTwoWay(MQTT_binary_deviceClassIndex(valueDeviceClass));
 
                   // Discover 2-way as Light
-                  const __FlashStringHelper*componentClass = twoWay ? F("light") : F("binary_sensor");
+                  const __FlashStringHelper*componentClass = twoWay && discoveryItems[s].canSet ? F("light") : F("binary_sensor");
                   const String deviceClass                 = strformat(F("%s\",\"pl_on\":\"%d\",\"pl_off\":\"%d"),
                                                                        valueDeviceClass.c_str(), !inversedState, inversedState);
                   const String uom = MQTT_DiscoveryHelperGetValueUoM(x, v, discoveryItems[s]);
@@ -713,7 +713,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     false, false, elementIds);
+                                                                     discoveryItems[s].canSet, false, elementIds);
                   }
                 }
 
@@ -745,7 +745,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     false, false, elementIds);
+                                                                     discoveryItems[s].canSet, false, elementIds);
                     v++;
                   }
                 }
@@ -801,7 +801,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   false, false, elementIds);
+                                                                   discoveryItems[s].canSet, false, elementIds);
                 }
                 break;
               }
