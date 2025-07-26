@@ -8,8 +8,6 @@
 
 #include "../DataStructs/ESPEasy_EventStruct.h"
 
-#include "../ESPEasyCore/ESPEasyWifi.h"
-#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
 #include "../ESPEasyCore/Serial.h"
 
 #include "../Globals/ESPEasyWiFiEvent.h"
@@ -19,6 +17,9 @@
 
 #include "../Helpers/ESPEasy_Storage.h"
 #include "../Helpers/StringConverter.h"
+
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 
 
 #define WIFI_MODE_MAX (WiFiMode_t)4

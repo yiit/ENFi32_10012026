@@ -8,8 +8,8 @@
 #include "../WebServer/Markup_Forms.h"
 #include "../WebServer/ESPEasy_WebServer.h"
 
-#include "../ESPEasyCore/ESPEasyWifi.h"
-#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 
 #include "../Globals/ESPEasy_time.h"
 #include "../Globals/Settings.h"

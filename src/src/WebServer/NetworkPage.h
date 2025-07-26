@@ -5,8 +5,8 @@
 
 #ifdef WEBSERVER_NETWORK
 
-# include "../DataTypes/NetworkIndex.h"
-# include "../DataStructs/NetworkSettingsStruct.h"
+#include "../../ESPEasy/net/DataTypes/NetworkIndex.h"
+#include "../../ESPEasy/net/DataStructs/NetworkSettingsStruct.h"
 
 
 // ********************************************************************************

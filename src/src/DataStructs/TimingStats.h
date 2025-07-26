@@ -7,7 +7,7 @@
 
 # include "../DataTypes/DeviceIndex.h"
 # include "../DataTypes/ESPEasy_plugin_functions.h"
-# include "../DataTypes/NetworkDriverIndex.h"
+# include "../../ESPEasy/net/DataTypes/NetworkDriverIndex.h"
 # include "../DataTypes/ProtocolIndex.h"
 # include "../Globals/Settings.h"
 # include "../Helpers/ESPEasy_time_calc.h"

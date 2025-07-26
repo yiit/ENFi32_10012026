@@ -9,8 +9,8 @@
 #include "../CustomBuild/CompiletimeDefines.h"
 
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
-#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 #if FEATURE_ETHERNET
 #include "../ESPEasyCore/ESPEasyEth.h"
 #endif

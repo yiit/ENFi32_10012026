@@ -3,7 +3,7 @@
 #include "../../ESPEasy-Globals.h"
 #include "../Commands/Diagnostic.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../../_Plugin_Helper.h"
 #include "../Helpers/ESPEasyStatistics.h"
 #include "../Static/WebStaticData.h"

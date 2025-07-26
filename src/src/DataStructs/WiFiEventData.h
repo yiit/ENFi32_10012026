@@ -2,7 +2,7 @@
 #define DATASTRUCTS_WIFIEVENTDATA_H
 
 #include "../DataStructs/MAC_address.h"
-#include "../DataTypes/WiFiDisconnectReason.h"
+#include "../../ESPEasy/net/wifi/WiFiDisconnectReason.h"
 #include "../Helpers/LongTermTimer.h"
 
 
@@ -97,7 +97,6 @@ struct WiFiEventData_t {
   uint8_t usedChannel     = 0;
 
   bool eventError = false;
-
 
   WiFiDisconnectReason    lastDisconnectReason = WIFI_DISCONNECT_REASON_UNSPECIFIED;
   LongTermTimer           lastScanMoment;

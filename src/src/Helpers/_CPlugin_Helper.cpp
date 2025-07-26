@@ -15,7 +15,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyEth.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 #include "../Globals/Settings.h"
 #include "../Globals/SecuritySettings.h"

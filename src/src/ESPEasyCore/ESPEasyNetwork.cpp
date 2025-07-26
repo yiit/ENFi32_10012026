@@ -1,7 +1,6 @@
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 
-
-#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 
 #include "../Globals/NetworkState.h"
 #include "../Globals/Settings.h"

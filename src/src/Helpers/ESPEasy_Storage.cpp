@@ -16,8 +16,8 @@
 #endif // if FEATURE_MQTT
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
-#include "../ESPEasyCore/ESPEasyWifi_abstracted.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 #include "../ESPEasyCore/Serial.h"
 
 #include "../Globals/CRCValues.h"

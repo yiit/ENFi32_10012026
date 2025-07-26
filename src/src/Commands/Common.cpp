@@ -5,8 +5,7 @@
 
 #include "../../ESPEasy_common.h"
 
-
-#include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../ESPEasyCore/Serial.h"
 
 #include "../Helpers/Networking.h"

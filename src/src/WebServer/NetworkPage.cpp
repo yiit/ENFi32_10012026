@@ -2,23 +2,21 @@
 
 #ifdef WEBSERVER_NETWORK
 
+
+# include "../DataStructs/ESPEasy_EventStruct.h"
+# include "../Globals/Settings.h"
+# include "../Helpers/ESPEasy_Storage.h"
+# include "../Helpers/ESPEasy_Storage.h"
+# include "../Helpers/PrintToString.h"
+# include "../Helpers/StringConverter.h"
 # include "../WebServer/ESPEasy_WebServer.h"
 # include "../WebServer/HTML_wrappers.h"
 # include "../WebServer/Markup.h"
 # include "../WebServer/Markup_Buttons.h"
 # include "../WebServer/Markup_Forms.h"
-# include "../Helpers/_NWPlugin_Helper_webform.h"
-
-# include "../DataStructs/ESPEasy_EventStruct.h"
-# include "../Globals/NWPlugins.h"
-# include "../Globals/Settings.h"
-
-# include "../Helpers/_NWPlugin_init.h"
-# include "../Helpers/ESPEasy_Storage.h"
-# include "../Helpers/StringConverter.h"
-# include "../Helpers/ESPEasy_Storage.h"
-
-# include "../Helpers/PrintToString.h"
+# include "../../ESPEasy/net/Globals/NWPlugins.h"
+# include "../../ESPEasy/net/Helpers/_NWPlugin_Helper_webform.h"
+# include "../../ESPEasy/net/Helpers/_NWPlugin_init.h"
 
 using namespace ESPEasy::net;
 

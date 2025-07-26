@@ -11,7 +11,7 @@
 #include "../DataStructs/GpioFactorySettingsStruct.h"
 
 #include "../ESPEasyCore/ESPEasy_backgroundtasks.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../ESPEasyCore/Serial.h"
 
 #include "../Globals/ESPEasyWiFiEvent.h"

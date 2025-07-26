@@ -1,8 +1,7 @@
 #ifndef GLOBALS_ESPEASYWIFI_H
 #define GLOBALS_ESPEASYWIFI_H
 
-#include "../ESPEasyCore/ESPEasyWifi.h"
-
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 #include "../../ESPEasy_common.h"
 

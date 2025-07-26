@@ -4,7 +4,7 @@
 
 #include "../../ESPEasy_common.h"
 
-#include "../ESPEasyCore/ESPEasyWiFi_state_machine.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWiFi_state_machine.h"
 
 #include "../DataStructs/WiFiEventData.h"
 

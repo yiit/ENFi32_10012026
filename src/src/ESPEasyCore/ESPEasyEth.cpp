@@ -4,7 +4,7 @@
 
 #include "../CustomBuild/ESPEasyLimits.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyGPIO.h"
 #include "../ESPEasyCore/ESPEasyEthEvent.h"

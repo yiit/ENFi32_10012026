@@ -10,14 +10,14 @@
 #include "../DataTypes/ControllerIndex.h"
 #include "../DataTypes/EthernetParameters.h"
 #include "../DataTypes/NetworkMedium.h"
-#include "../DataTypes/NWPluginID.h"
-#include "../DataTypes/NetworkIndex.h"
+#include "../ESPEasy/net/DataTypes/NWPluginID.h"
+#include "../ESPEasy/net/DataTypes/NetworkIndex.h"
 #include "../DataTypes/NPluginID.h"
 #include "../DataTypes/PluginID.h"
 //#include "../DataTypes/TaskEnabledState.h"
 #include "../DataTypes/TimeSource.h"
 #include "../Globals/Plugins.h"
-#include "../Globals/NWPlugins.h"
+#include "../ESPEasy/net/Globals/NWPlugins.h"
 
 #ifdef ESP32
 #include <hal/spi_types.h>

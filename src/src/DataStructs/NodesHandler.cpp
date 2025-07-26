@@ -20,7 +20,7 @@
 
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyWifi.h"
+
 #include "../Globals/ESPEasy_time.h"
 #include "../Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/MQTT.h"
@@ -32,6 +32,9 @@
 #include "../Helpers/PeriodicalActions.h"
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringGenerator_System.h"
+
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+
 
 #define ESPEASY_NOW_ALLOWED_AGE_NO_TRACEROUTE  35000
 

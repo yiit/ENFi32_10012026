@@ -7,7 +7,7 @@
 #include "../DataTypes/EventValueSource.h"
 #include "../DataTypes/TaskIndex.h"
 #include "../DataTypes/NotifierIndex.h"
-#include "../DataTypes/NetworkIndex.h"
+#include "../ESPEasy/net/DataTypes/NetworkIndex.h"
 #include "../DataStructs/DeviceStruct.h"
 
 #ifdef ESP32

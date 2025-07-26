@@ -6,7 +6,7 @@
 
 # include "../ESPEasyCore/ESPEasyEth.h"
 # include "../ESPEasyCore/ESPEasyNetwork.h"
-# include "../ESPEasyCore/ESPEasyWifi.h" // LogConnectionStatus
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h" // LogConnectionStatus
 
 # include "../Globals/ESPEasyEthEvent.h"
 # include "../Globals/ESPEasyWiFiEvent.h"

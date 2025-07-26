@@ -10,7 +10,7 @@
 
 #include "../Helpers/_Plugin_init.h"
 #include "../Helpers/_CPlugin_init.h"
-#include "../Helpers/_NWPlugin_init.h"
+#include "../../ESPEasy/net/Helpers/_NWPlugin_init.h"
 #include "../Helpers/ESPEasyRTC.h"
 #include "../Helpers/ESPEasy_Storage.h"
 #include "../Helpers/StringConverter.h"
