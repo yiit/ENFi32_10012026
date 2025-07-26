@@ -536,11 +536,12 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
           const protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(ControllerIndex);
           const bool usesControllerIDX        = validProtocolIndex(ProtocolIndex) &&
                                                 getProtocolStruct(ProtocolIndex).usesID;
+          const bool useGroupId = groupId != 0 && !usesControllerIDX;
 
-          const String elementName = groupId != 0 && !usesControllerIDX ?
+          const String elementName = useGroupId ?
                                      strformat(F("Group %u"), groupId) :
                                      strformat(F("%s %s"),    hostName.c_str(), taskName.c_str());
-          const String elementIds = groupId != 0 && !usesControllerIDX ?
+          const String elementIds = useGroupId ?
                                      strformat(F("group_%u"), groupId) :
                                      strformat(F("%s_%s"),    hostName.c_str(), taskName.c_str());
           const String docLink = makeDocLink(strformat(
@@ -636,7 +637,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     true, false, elementIds,
+                                                                     true, false,
+                                                                     useGroupId ? elementName : EMPTY_STRING, elementIds,
                                                                      true); // Send Trigger discovery
                   }
                   success &= MQTT_DiscoveryPublishWithStatusAndSet(x, v, valuename,
@@ -648,7 +650,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   discoveryItems[s].canSet, false, elementIds);
+                                                                   discoveryItems[s].canSet, false,
+                                                                   useGroupId ? elementName : EMPTY_STRING, elementIds);
                 }
                 break;
               }
@@ -685,7 +688,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     discoveryItems[s].canSet, false, elementIds);
+                                                                     discoveryItems[s].canSet, false,
+                                                                     useGroupId ? elementName : EMPTY_STRING, elementIds);
                   }
                 }
 
@@ -713,7 +717,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     discoveryItems[s].canSet, false, elementIds);
+                                                                     discoveryItems[s].canSet, false,
+                                                                     useGroupId ? elementName : EMPTY_STRING, elementIds);
                   }
                 }
 
@@ -745,7 +750,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                      &TempEvent,
                                                                      deviceElement,
                                                                      success,
-                                                                     discoveryItems[s].canSet, false, elementIds);
+                                                                     discoveryItems[s].canSet, false,
+                                                                     useGroupId ? elementName : EMPTY_STRING, elementIds);
                     v++;
                   }
                 }
@@ -801,7 +807,8 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                                                                    &TempEvent,
                                                                    deviceElement,
                                                                    success,
-                                                                   discoveryItems[s].canSet, false, elementIds);
+                                                                   discoveryItems[s].canSet, false,
+                                                                   useGroupId ? elementName : EMPTY_STRING, elementIds);
                 }
                 break;
               }
@@ -1005,6 +1012,7 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                            bool                      success,
                                            bool                      hasSet,
                                            bool                      hasIcon,
+                                           const String            & elementName,
                                            const String            & elementId,
                                            bool                      sendTrigger) {
   if (!valueName.isEmpty()) {
@@ -1021,14 +1029,15 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
     const String publishTopic(ControllerSettings.Publish);
     const String discoveryConfig(parseStringKeepCase(ControllerSettings.MqttAutoDiscoveryConfig, 1, '|'));
 
-    const String uniqueId = MQTT_TaskValueUniqueName(taskName, valName);
-    const String publish  = MQTT_DiscoveryBuildValueTopic(publishTopic,
-                                                          event,
-                                                          taskValue,
-                                                          componentClass,
-                                                          uniqueId,
-                                                          elementId,
-                                                          valName);
+    const String uniqueId = elementName.isEmpty() ? MQTT_TaskValueUniqueName(taskName, valName)
+                                                  : strformat(F("%s_%s"), elementId.c_str(), valName.c_str());
+    const String publish = MQTT_DiscoveryBuildValueTopic(publishTopic,
+                                                         event,
+                                                         taskValue,
+                                                         componentClass,
+                                                         uniqueId,
+                                                         elementId,
+                                                         valName);
     const String discoveryUrl = MQTT_DiscoveryBuildValueTopic(discoveryTopic,
                                                               event,
                                                               taskValue,

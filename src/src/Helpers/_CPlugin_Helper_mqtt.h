@@ -99,6 +99,7 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
                                            bool                      success,
                                            bool                      hasSet,
                                            bool                      hasIcon,
+                                           const String            & elementName,
                                            const String            & elementId,
                                            bool                      sendTrigger = false);
 
