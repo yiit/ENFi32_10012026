@@ -73,7 +73,7 @@ void ESPEasy_loop()
 
   updateLoopStats();
 
-  ESPEasy::net::wifi::loopWiFi();
+//  ESPEasy::net::wifi::loopWiFi();
 
   ESPEasy::net::wifi::handle_unprocessedNetworkEvents();
 

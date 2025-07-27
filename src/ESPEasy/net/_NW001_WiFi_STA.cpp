@@ -11,6 +11,7 @@
 # define NWPLUGIN_NAME_001       "WiFi Station"
 
 # include "../../src/DataStructs/ESPEasy_EventStruct.h"
+# include "../../src/Globals/RTC.h"
 # include "../../src/Globals/SecuritySettings.h"
 # include "../../src/Globals/Settings.h"
 # include "../../src/Helpers/ESPEasy_Storage.h"
@@ -23,11 +24,14 @@
 # include "../../src/WebServer/Markup_Forms.h"
 # include "../../src/WebServer/common.h"
 # include "../net/ESPEasyNetwork.h"
+# include "../net/Globals/ESPEasyWiFiEvent.h"
 # include "../net/Globals/NWPlugins.h"
+# include "../net/Globals/WiFi_AP_Candidates.h"
 # include "../net/Helpers/_NWPlugin_Helper_webform.h"
 # include "../net/Helpers/_NWPlugin_init.h"
 # include "../net/NWPluginStructs/NW001_WiFi_STA.h"
 # include "../net/wifi/ESPEasyWifi.h"
+# include "../net/wifi/ESPEasyWifi_ProcessEvent.h"
 
 
 # ifdef ESP32P4
@@ -275,11 +279,68 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
+      /*
+         // Taken from ESPEasy_setup()
+         // Might no longer be needed as we now have a proper WiFi state machine.
+
+       # ifdef ESP32
+
+            // FIXME TD-er: Disabled for now, as this may not return and thus block the ESP forever.
+            // See: https://github.com/espressif/esp-idf/issues/15862
+            // check_and_update_WiFi_Calibration();
+       # endif // ifdef ESP32
+
+            ESPEasy::net::wifi::WiFi_AP_Candidates.clearCache();
+            ESPEasy::net::wifi::WiFi_AP_Candidates.load_knownCredentials();
+            ESPEasy::net::wifi::setSTA(true);
+
+            if (!ESPEasy::net::wifi::WiFi_AP_Candidates.hasCandidateCredentials()) {
+              WiFiEventData.wifiSetup = true;
+              RTC.clearLastWiFi(); // Must scan all channels
+              // Wait until scan has finished to make sure as many as possible are found
+              // We're still in the setup phase, so nothing else is taking resources of the ESP.
+              ESPEasy::net::wifi::WifiScan(false);
+              WiFiEventData.lastScanMoment.clear();
+            }
+
+
+
+            // Always perform WiFi scan
+            // It appears reconnecting from RTC may take just as long to be able to send first packet as performing a scan first and then
+             #connect.
+            // Perhaps the WiFi radio needs some time to stabilize first?
+            if (!ESPEasy::net::wifi::WiFi_AP_Candidates.hasCandidates()) {
+              ESPEasy::net::wifi::WifiScan(false, RTC.lastWiFiChannel);
+            }
+            ESPEasy::net::wifi::WiFi_AP_Candidates.clearCache();
+            ESPEasy::net::wifi::processScanDone();
+            ESPEasy::net::wifi::WiFi_AP_Candidates.load_knownCredentials();
+
+            if (!ESPEasy::net::wifi::WiFi_AP_Candidates.hasCandidates()) {
+       # ifndef BUILD_MINIMAL_OTA
+              addLog(LOG_LEVEL_INFO, F("Setup: Scan all channels"));
+       # endif
+              ESPEasy::net::wifi::WifiScan(false);
+            }
+
+            //    ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
+       */
+
+      ESPEasy::net::wifi::initWiFi();
+
       break;
     }
 
     case NWPlugin::Function::NWPLUGIN_EXIT:
     {
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_FIFTY_PER_SECOND:
+    {
+      // FIXME TD-er: Also called in ESPEasy_loop()
+      // Is it still needed there?
+      ESPEasy::net::wifi::loopWiFi();
       break;
     }
 
