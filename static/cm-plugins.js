@@ -979,7 +979,7 @@ var isSame;
     });
   }
 
-  CodeMirror.commands.find = function (cm) { doSearch; };
+  CodeMirror.commands.find = function (cm) { clearSearch(cm); doSearch(cm); };
   CodeMirror.commands.findPersistent = function (cm) { clearSearch(cm); doSearch(cm, false, true); };
   CodeMirror.commands.findPersistentNext = function (cm) { doSearch(cm, false, true, true); };
   CodeMirror.commands.findPersistentPrev = function (cm) { doSearch(cm, true, true, true); };

@@ -346,11 +346,12 @@ function addFindButtons() {
       action: () => {
         alert(`Available shortcuts:
 • Ctrl+F / Cmd+F: Open search
-• Ctrl+G / Cmd+G: Find next
+• Enter or
+  Ctrl+G / Cmd+G: Find next
 • Shift+Ctrl+G / Shift+Cmd+G: Find previous
 • Shift+Ctrl+F / Cmd+Option+F: Replace
 • Shift+Ctrl+R / Shift+Cmd+Option+F: Replace all
-• Use /re/ syntax for regexp search`);
+• Use /re/ syntax for regex search`);
       }
     }
   ];
