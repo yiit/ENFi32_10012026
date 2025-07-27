@@ -204,7 +204,7 @@ var android = /Android/.test(navigator.userAgent);
 
 function initCM() {
   if (android) {
-    if (confirm("Do you want to enable colored rules? (There are some issues with the standard Android Keyboard causing it to fail!)")) {
+    if (confirm("Do you want to enable colored rules?\n(There are some issues with Android causing it to fail!)\nTestet with Chrome, Firefox and Vivaldi so far.\nPlease report any issues you may have with this feature.")) {
       confirmR = true
     } else {
       confirmR = false
@@ -375,22 +375,25 @@ function addFindButtons() {
 // Add Searchfield button 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('rulesselect');
+
   if (form) {
-    // Add search help button to CodeMirror editor
-    const btn3 = document.createElement('button');
-    btn3.type = 'button';     // prevent form submission
-    btn3.id = 'searchBtn';
-    btn3.innerHTML = "&#128270;&#xFE0E;"; // magnifier
-    btn3.style.padding = "2px 5px";
-    btn3.className = 'button help'; // just the class, no inline style
-    form.appendChild(btn3);
+    if (confirmR) {
+      // Add search help button to CodeMirror editor
+      const btn3 = document.createElement('button');
+      btn3.type = 'button';     // prevent form submission
+      btn3.id = 'searchBtn';
+      btn3.innerHTML = "&#128270;&#xFE0E;"; // magnifier
+      btn3.style.padding = "2px 5px";
+      btn3.className = 'button help'; // just the class, no inline style
+      form.appendChild(btn3);
 
 
-    btn3.addEventListener('click', () => {
-      if (typeof rEdit !== 'undefined') {
-        openFind();
-      }
-    });
+      btn3.addEventListener('click', () => {
+        if (typeof rEdit !== 'undefined') {
+          openFind();
+        }
+      });
+    }
 
     // Add format document button
     const btn = document.createElement('button');
@@ -460,83 +463,135 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Workaround of showing hints for Android devices
   if (android) {
-    document.addEventListener("input", (e) => {
-      if (!rEdit || !e.data || e.data.length !== 1) {
+    var wasKeydown = false; // Flag to track if keydown was triggered 
+
+    // Works on Android for some keys
+    rEdit.on("keydown", (cm, e) => {
+      if (["Enter", "Backspace", " "].includes(e.key)) {
         charBuffer = "";
+        //alert("Buffer cleared via keydown:", e.key);
+      }
+      //alert("Keydown event detected: " + e.key);
+      wasKeydown = true;
+    });
+    let lastCharBuffer = "";
+
+    const inputField = rEdit.getInputField();
+
+    function handleTypedChar(e, isBeforeInput = false) {
+      if (!rEdit.hasFocus() || !rEdit || !e.data || !wasKeydown) return;
+      wasKeydown = false;
+      const data = e.data;
+      const doc = rEdit.getDoc();
+      const cursor = doc.getCursor(); // AFTER inserted char
+      const letters = /[\w%,.]/;
+      const token = rEdit.getTokenAt(cursor);
+
+      // Reset on space
+      if (data === ' ') {
+        console.log("Clearing buffer due to space");
+        charBuffer = "";
+        lastCharBuffer = "";
         return;
       }
 
-      const data = e.data;
-      const doc = rEdit.getDoc();
-      let cursor = doc.getCursor(); // Cursor is AFTER inserted char
+      // Ignore unchanged input
+      if (data === lastCharBuffer && charBuffer.length > 0) return;
 
-      const letters = /[\w%,.]/;
-      const token = rEdit.getTokenAt(cursor);
       if (letters.test(data) && token.type !== "comment") {
-        charBuffer += data;
-        // Calculate starting point for re-inserting
+        const lastChar = cursor.ch <= 1 ? data.slice(-1) : data;
+        charBuffer += lastChar;
+        lastCharBuffer = charBuffer;
+
+        // Remove line number bleed-in
+        if (charBuffer.startsWith(String(cursor.line + 1)) && cursor.ch === 0) {
+          charBuffer = charBuffer.slice(String(cursor.line).length);
+        }
+
+        console.log("Buffer updated:", charBuffer);
+
         const insertPos = {
           line: cursor.line,
           ch: cursor.ch - charBuffer.length + 1
         };
 
-        // Replace from where the buffer began to current position
-        doc.replaceRange(charBuffer, insertPos, cursor);
+        const insertAndHint = () => {
+          doc.replaceRange(charBuffer, insertPos, cursor);
+          rEdit.setCursor({
+            line: insertPos.line,
+            ch: insertPos.ch + charBuffer.length
+          });
+          rEdit.showHint({ completeSingle: false });
+        };
 
-        // Set cursor at end of buffer
-        rEdit.setCursor({
-          line: insertPos.line,
-          ch: insertPos.ch + charBuffer.length
-        });
+        // For `input`, delay slightly to avoid race with native insert
+        if (!isBeforeInput) {
+          setTimeout(insertAndHint, 0);
+        } else {
+          insertAndHint();
+        }
 
-        // Show hints
-        rEdit.showHint({ completeSingle: false });
-      } else if (!letters.test(data)) {
-        // Reset buffer on non-matching input (e.g., space, enter, etc.)
+      } else {
         charBuffer = "";
       }
-    });
+    }
 
+    const ua = navigator.userAgent.toLowerCase();
+    const isFirefox = /firefox/.test(ua);
+    const isChrome = /chrome/.test(ua) && !isFirefox;
+    // Firefox (Android) – beforeinput preferred
+    if (isFirefox) {
+      inputField.addEventListener("beforeinput", (e) => {
+        e.preventDefault();
+        handleTypedChar(e, true);
+      });
+    } else if (isChrome) {
+      document.addEventListener("input", (e) => {
+        handleTypedChar(e, false);
+      });
+    }
 
     rEdit.on('endCompletion', function () {
       setTimeout(() => {
-        rEdit.focus();
-      }, 10); // small delay may help
+        forceKeyboardOpen();
+      }, 100); // small delay may help
     });
-
-    function forceKeyboardOpen() {
-      const input = document.createElement("input");
-      input.type = "text";
-      input.style.position = "absolute";
-      input.style.opacity = "0";
-      input.style.height = "0";
-      input.style.width = "0";
-      input.style.border = "none";
-      input.style.top = "0";
-      input.style.left = "-9999";
-      input.style.padding = "0";
-      input.style.zIndex = "-1";
-      input.style.fontSize = "16px"; // prevents zoom on iOS
-
-      document.body.appendChild(input);
-      input.focus();
-
-      setTimeout(() => {
-        input.remove();
-        rEdit.focus(); // bring focus back to CodeMirror
-      }, 10);
-    }
   }
+
+  function forceKeyboardOpen() {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.style.position = "absolute";
+    input.style.opacity = "0";
+    input.style.height = "0";
+    input.style.width = "0";
+    input.style.border = "none";
+    input.style.top = "0";
+    input.style.left = "-9999";
+    input.style.padding = "0";
+    input.style.zIndex = "-1";
+    input.style.fontSize = "16px"; // prevents zoom on iOS
+
+    document.body.appendChild(input);
+    input.focus();
+
+    setTimeout(() => {
+      input.remove();
+      rEdit.focus(); // bring focus back to CodeMirror
+    }, 10);
+  }
+
 });
 
 function triggerFormatting() {
-  const doc = rEdit.getDoc();
-  const scrollInfo = rEdit.getScrollInfo();
-  const cursor = doc.getCursor();
+  if (confirmR) {
+    const doc = rEdit.getDoc();
+    const scrollInfo = rEdit.getScrollInfo();
+    const cursor = doc.getCursor();
 
-  const currentLine = cursor.ch === 0 ? cursor.line - 1 : cursor.line;
-  const lineText = rEdit.getLine(currentLine) || "";
-
+    const currentLine = cursor.ch === 0 ? cursor.line - 1 : cursor.line;
+    const lineText = rEdit.getLine(currentLine) || "";
+  }
   // Store initial text
   let textarea = confirmR
     ? rEdit.getValue()
