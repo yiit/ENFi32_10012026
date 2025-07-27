@@ -96,10 +96,12 @@ void ethPrintSettings() {
       log += F(" PHY Addr: ");
       log += Settings.ETH_Phy_Addr;
 
+# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
       if (!isSPI_EthernetType(Settings.ETH_Phy_Type)) {
         log += F(" Eth Clock mode: ");
-        log += toString(Settings.ETH_Clock_Mode);
+        log += ESPEasy::net::toString(Settings.ETH_Clock_Mode);
       }
+#endif
       log += strformat(isSPI_EthernetType(Settings.ETH_Phy_Type)
         ? F(" CS: %d IRQ: %d RST: %d") : F(" MDC: %d MIO: %d PWR: %d"),
                        Settings.ETH_Pin_mdc_cs,

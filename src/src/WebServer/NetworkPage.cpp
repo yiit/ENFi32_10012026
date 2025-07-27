@@ -34,13 +34,13 @@ void handle_networks()
 
   // 'index' value in the URL
   uint8_t networkindex  = getFormItemInt(F("index"), 0);
-  boolean networkNotSet = networkindex == 0;
+  const bool networkIndexSet = networkindex != 0 && validNetworkIndex(networkindex - 1);
   --networkindex; // Index in URL is starting from 1, but starting from 0 in the array.
 
   const int networkDriver_webarg_value = getFormItemInt(F("networkDriver"), -1);
 
   // submitted data
-  if ((networkDriver_webarg_value != -1) && !networkNotSet)
+  if ((networkDriver_webarg_value != -1) && networkIndexSet)
   {
     bool mustInit             = false;
     bool mustCallNWpluginSave = false;
@@ -113,13 +113,13 @@ void handle_networks()
 
   html_add_form();
 
-  if (networkNotSet)
+  if (networkIndexSet)
   {
-    handle_networks_ShowAllNetworksTable();
+    handle_networks_NetworkSettingsPage(networkindex);
   }
   else
   {
-    handle_networks_NetworkSettingsPage(networkindex);
+    handle_networks_ShowAllNetworksTable();
   }
 
   sendHeadandTail_stdtemplate(_TAIL);

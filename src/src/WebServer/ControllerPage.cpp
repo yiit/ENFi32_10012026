@@ -45,7 +45,7 @@ void handle_controllers() {
 
   // 'index' value in the URL
   uint8_t controllerindex  = getFormItemInt(F("index"), 0);
-  const bool controllerIndexSet = controllerindex != 0 && validControllerIndex(controllerindex);
+  const bool controllerIndexSet = controllerindex != 0 && validControllerIndex(controllerindex - 1);
   --controllerindex; // Index in URL is starting from 1, but starting from 0 in the array.
 
   const int protocol_webarg_value = getFormItemInt(F("protocol"), -1);
