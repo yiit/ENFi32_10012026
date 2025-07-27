@@ -362,7 +362,7 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
 
 
   #if FEATURE_ETHERNET
-  if (isSPI_EthernetType(Settings.ETH_Phy_Type)) {
+  if (ESPEasy::net::isSPI_EthernetType(Settings.ETH_Phy_Type)) {
     if (includeEthernet && Settings.isEthernetPinOptional(gpio)) {
       if (Settings.ETH_Pin_mdc_cs == gpio) { return F("Eth SPI CS"); }
 
@@ -391,7 +391,7 @@ const __FlashStringHelper* getConflictingUse(int gpio, PinSelectPurpose purpose,
 
     if (includeEthernet && Settings.isEthernetPinOptional(gpio)) {
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-      if (isGpioUsedInETHClockMode(Settings.ETH_Clock_Mode, gpio)) { return F("Eth Clock"); }
+      if (ESPEasy::net::isGpioUsedInETHClockMode(Settings.ETH_Clock_Mode, gpio)) { return F("Eth Clock"); }
 
       if (Settings.ETH_Pin_mdc_cs == gpio) { return F("Eth MDC"); }
 

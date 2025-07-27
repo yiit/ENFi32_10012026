@@ -39,12 +39,12 @@ bool FactoryDefault_Network_NVS::applyToSettings_from_NVS(ESPEasy_NVS_Helper& pr
     Settings.ETH_Pin_mdio_irq   = bits.ETH_Pin_mdio_irq;
     Settings.ETH_Pin_power_rst  = bits.ETH_Pin_power_rst;
 #if FEATURE_ETHERNET
-    Settings.ETH_Phy_Type   = static_cast<EthPhyType_t>(bits.ETH_Phy_Type);
+    Settings.ETH_Phy_Type   = static_cast<ESPEasy::net::EthPhyType_t>(bits.ETH_Phy_Type);
 #else
     Settings.ETH_Phy_Type   = 0;
 #endif
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-    Settings.ETH_Clock_Mode = static_cast<EthClockMode_t>(bits.ETH_Clock_Mode);
+    Settings.ETH_Clock_Mode = static_cast<ESPEasy::net::EthClockMode_t>(bits.ETH_Clock_Mode);
 #endif
     Settings.NetworkMedium  = static_cast<NetworkMedium_t>(bits.NetworkMedium);
     res                     = true;

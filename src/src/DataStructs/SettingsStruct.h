@@ -8,7 +8,6 @@
 #include "../DataStructs/ChecksumType.h"
 #include "../DataStructs/DeviceStruct.h"
 #include "../DataTypes/ControllerIndex.h"
-#include "../DataTypes/EthernetParameters.h"
 #include "../DataTypes/NetworkMedium.h"
 #include "../ESPEasy/net/DataTypes/NWPluginID.h"
 #include "../ESPEasy/net/DataTypes/NetworkIndex.h"
@@ -18,6 +17,10 @@
 #include "../DataTypes/TimeSource.h"
 #include "../Globals/Plugins.h"
 #include "../ESPEasy/net/Globals/NWPlugins.h"
+
+#if FEATURE_ETHERNET
+#include "../../ESPEasy/net/DataTypes/EthernetParameters.h"
+#endif
 
 #ifdef ESP32
 #include <hal/spi_types.h>
@@ -579,9 +582,9 @@ public:
   int8_t          ETH_Pin_mdio_irq = -1;
   int8_t          ETH_Pin_power_rst = -1;
 #if FEATURE_ETHERNET
-  EthPhyType_t    ETH_Phy_Type = EthPhyType_t::notSet;
+  ESPEasy::net::EthPhyType_t    ETH_Phy_Type = ESPEasy::net::EthPhyType_t::notSet;
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-  EthClockMode_t  ETH_Clock_Mode = static_cast<EthClockMode_t>(0);
+  ESPEasy::net::EthClockMode_t  ETH_Clock_Mode = static_cast<ESPEasy::net::EthClockMode_t>(0);
 #else
   uint8_t         ETH_Clock_Mode{};
 #endif

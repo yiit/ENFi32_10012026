@@ -3,6 +3,9 @@
 
 #if CONFIG_IDF_TARGET_ESP32 && FEATURE_ETHERNET
 
+namespace ESPEasy {
+namespace net {
+
 bool isValid(EthClockMode_t clockMode) {
   switch (clockMode)
   {
@@ -39,5 +42,8 @@ const __FlashStringHelper* toString(EthClockMode_t clockMode) {
   }
   return F("Unknown");
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if CONFIG_IDF_TARGET_ESP32

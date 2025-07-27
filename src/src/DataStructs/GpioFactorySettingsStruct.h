@@ -2,10 +2,10 @@
 #define DATASTRUCTS_GPIOFACTORYSETTINGSSTRUCT_H
 
 #include "../DataTypes/DeviceModel.h"
-#include "../DataTypes/EthernetParameters.h"
 #include "../DataTypes/NetworkMedium.h"
-
-
+#if FEATURE_ETHERNET
+#include "../../ESPEasy/net/DataTypes/EthernetParameters.h"
+#endif
 
 struct GpioFactorySettingsStruct {
   GpioFactorySettingsStruct(DeviceModel model = DeviceModel::DeviceModel_default);
@@ -17,7 +17,7 @@ struct GpioFactorySettingsStruct {
   int8_t          i2c_scl;
   int8_t          eth_phyaddr;
 #if FEATURE_ETHERNET
-  EthPhyType_t    eth_phytype;
+  ESPEasy::net::EthPhyType_t    eth_phytype;
 #else
   uint8_t         eth_phytype{};
 #endif
@@ -25,7 +25,7 @@ struct GpioFactorySettingsStruct {
   int8_t          eth_mdio;
   int8_t          eth_power;
 #if FEATURE_ETHERNET && CONFIG_ETH_USE_ESP32_EMAC
-  EthClockMode_t  eth_clock_mode;
+  ESPEasy::net::EthClockMode_t  eth_clock_mode;
 #else
   uint8_t  eth_clock_mode{};
 #endif

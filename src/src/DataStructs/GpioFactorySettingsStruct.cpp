@@ -121,11 +121,11 @@ GpioFactorySettingsStruct::GpioFactorySettingsStruct(DeviceModel model)
       i2c_sda        = 13;
       i2c_scl        = 16;
       eth_phyaddr    = 0;
-      eth_phytype    = EthPhyType_t::LAN8720;
+      eth_phytype    = ESPEasy::net::EthPhyType_t::LAN8720;
       eth_mdc        = 23;
       eth_mdio       = 18;
       eth_power      = 12;
-      eth_clock_mode = EthClockMode_t::Int_50MHz_GPIO_17_inv;
+      eth_clock_mode = ESPEasy::net::EthClockMode_t::Int_50MHz_GPIO_17_inv;
       network_medium = NetworkMedium_t::Ethernet;
       break;
     case DeviceModel::DeviceModel_Olimex_ESP32_EVB:
@@ -137,11 +137,11 @@ GpioFactorySettingsStruct::GpioFactorySettingsStruct(DeviceModel model)
       i2c_sda        = 13;
       i2c_scl        = 16;
       eth_phyaddr    = 0;
-      eth_phytype    = EthPhyType_t::LAN8720;
+      eth_phytype    = ESPEasy::net::EthPhyType_t::LAN8720;
       eth_mdc        = 23;
       eth_mdio       = 18;
       eth_power      = -1; // No Ethernet power pin
-      eth_clock_mode = EthClockMode_t::Ext_crystal_osc;
+      eth_clock_mode = ESPEasy::net::EthClockMode_t::Ext_crystal_osc;
       network_medium = NetworkMedium_t::Ethernet;
       break;
 
@@ -152,11 +152,11 @@ GpioFactorySettingsStruct::GpioFactorySettingsStruct(DeviceModel model)
       i2c_sda        = -1;
       i2c_scl        = -1;
       eth_phyaddr    = 0;
-      eth_phytype    = EthPhyType_t::LAN8720;
+      eth_phytype    = ESPEasy::net::EthPhyType_t::LAN8720;
       eth_mdc        = 23;
       eth_mdio       = 18;
       eth_power      = 5;
-      eth_clock_mode = EthClockMode_t::Int_50MHz_GPIO_17_inv;
+      eth_clock_mode = ESPEasy::net::EthClockMode_t::Int_50MHz_GPIO_17_inv;
       network_medium = NetworkMedium_t::Ethernet;
 
       // Rev A to E:
@@ -185,11 +185,11 @@ GpioFactorySettingsStruct::GpioFactorySettingsStruct(DeviceModel model)
       i2c_sda        = 15;
       i2c_scl        = 4;
       eth_phyaddr    = 0;
-      eth_phytype    = EthPhyType_t::LAN8720;
+      eth_phytype    = ESPEasy::net::EthPhyType_t::LAN8720;
       eth_mdc        = 16;
       eth_mdio       = 17;
       eth_power      = -1;
-      eth_clock_mode = EthClockMode_t::Ext_crystal_osc;
+      eth_clock_mode = ESPEasy::net::EthClockMode_t::Ext_crystal_osc;
       network_medium = NetworkMedium_t::Ethernet;
       break;
 
@@ -198,11 +198,11 @@ GpioFactorySettingsStruct::GpioFactorySettingsStruct(DeviceModel model)
       i2c_sda        = 21;
       i2c_scl        = 22;
       eth_phyaddr    = 1;
-      eth_phytype    = EthPhyType_t::LAN8720;
+      eth_phytype    = ESPEasy::net::EthPhyType_t::LAN8720;
       eth_mdc        = 23;
       eth_mdio       = 18;
       eth_power      = 12; // TODO TD-er: Better to use GPIO-16? as shown here: https://letscontrolit.com/forum/viewtopic.php?p=50133#p50133
-      eth_clock_mode = EthClockMode_t::Ext_crystal_osc;
+      eth_clock_mode = ESPEasy::net::EthClockMode_t::Ext_crystal_osc;
       network_medium = NetworkMedium_t::Ethernet;
       break;
 #  else // if CONFIG_IDF_TARGET_ESP32

@@ -1,9 +1,14 @@
-#ifndef DATASTRUCTS_ETHERNETPARAMETERS_H
-#define DATASTRUCTS_ETHERNETPARAMETERS_H
+#pragma once
 
-#include "../../ESPEasy_common.h"
+#include "../../../ESPEasy_common.h"
 
 #if FEATURE_ETHERNET
+
+# include <ETH.h>
+
+namespace ESPEasy {
+namespace net {
+
 
 // Is stored in settings
 # ifdef ESP32P4
@@ -45,7 +50,7 @@ const __FlashStringHelper* toString(EthClockMode_t clockMode);
 
 bool                       isGpioUsedInETHClockMode(EthClockMode_t clockMode,
                                                     int8_t         gpio);
-#endif
+# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 
 // Is stored in settings
 enum class EthPhyType_t : uint8_t {
@@ -75,18 +80,16 @@ enum class EthPhyType_t : uint8_t {
 
 };
 
-bool isValid(EthPhyType_t phyType);
-
-# if FEATURE_ETHERNET
-#  include <ETH.h>
+bool                       isValid(EthPhyType_t phyType);
 
 bool                       isSPI_EthernetType(EthPhyType_t phyType);
 
 // Convert to internal enum type as those enum values may not always be the same int value
 eth_phy_type_t             to_ESP_phy_type(EthPhyType_t phyType);
-# endif // if FEATURE_ETHERNET
 
 const __FlashStringHelper* toString(EthPhyType_t phyType);
 
+} // namespace net
+} // namespace ESPEasy
+
 #endif // if FEATURE_ETHERNET
-#endif // DATASTRUCTS_ETHERNETPARAMETERS_H

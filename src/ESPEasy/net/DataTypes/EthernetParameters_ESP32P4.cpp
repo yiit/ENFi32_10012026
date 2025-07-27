@@ -5,6 +5,9 @@
 
 # include <pins_arduino.h>
 
+namespace ESPEasy {
+namespace net {
+
 bool isValid(EthClockMode_t clockMode) {
   switch (clockMode)
   {
@@ -66,5 +69,8 @@ const __FlashStringHelper* toString(EthClockMode_t clockMode) {
   }
   return F("Unknown");
 }
+
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if CONFIG_IDF_TARGET_ESP32P4

@@ -127,9 +127,9 @@ void handle_hardware() {
     Settings.ETH_Pin_mdc_cs              = getFormItemInt(F("ethmdc"));
     Settings.ETH_Pin_mdio_irq             = getFormItemInt(F("ethmdio"));
     Settings.ETH_Pin_power_rst            = getFormItemInt(F("ethpower"));
-    Settings.ETH_Phy_Type             = static_cast<EthPhyType_t>(getFormItemInt(F("ethtype")));
+    Settings.ETH_Phy_Type             = static_cast<ESPEasy::net::EthPhyType_t>(getFormItemInt(F("ethtype")));
 #if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-    Settings.ETH_Clock_Mode           = static_cast<EthClockMode_t>(getFormItemInt(F("ethclock")));
+    Settings.ETH_Clock_Mode           = static_cast<ESPEasy::net::EthClockMode_t>(getFormItemInt(F("ethclock")));
 #endif
     Settings.NetworkMedium            = static_cast<NetworkMedium_t>(getFormItemInt(F("ethwifi")));
     #endif // if FEATURE_ETHERNET
@@ -345,56 +345,56 @@ void handle_hardware() {
   addFormNote(F("Change Switch between WiFi and Ethernet requires reboot to activate"));
   {
     const __FlashStringHelper * ethPhyTypes[] = { 
-      toString(EthPhyType_t::notSet),			  
+      toString(ESPEasy::net::EthPhyType_t::notSet),			  
 
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-      toString(EthPhyType_t::LAN8720),			  
-      toString(EthPhyType_t::TLK110),				  
-      toString(EthPhyType_t::RTL8201),				
+      toString(ESPEasy::net::EthPhyType_t::LAN8720),			  
+      toString(ESPEasy::net::EthPhyType_t::TLK110),				  
+      toString(ESPEasy::net::EthPhyType_t::RTL8201),				
 #if ETH_TYPE_JL1101_SUPPORTED
-      toString(EthPhyType_t::JL1101),				  
+      toString(ESPEasy::net::EthPhyType_t::JL1101),				  
 #endif
-      toString(EthPhyType_t::DP83848),				
-      toString(EthPhyType_t::KSZ8041),				
-      toString(EthPhyType_t::KSZ8081),				
+      toString(ESPEasy::net::EthPhyType_t::DP83848),				
+      toString(ESPEasy::net::EthPhyType_t::KSZ8041),				
+      toString(ESPEasy::net::EthPhyType_t::KSZ8081),				
 # endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 
 #if ESP_IDF_VERSION_MAJOR >= 5
 # if CONFIG_ETH_SPI_ETHERNET_DM9051
-      toString(EthPhyType_t::DM9051),				  
+      toString(ESPEasy::net::EthPhyType_t::DM9051),				  
 # endif // if CONFIG_ETH_SPI_ETHERNET_DM9051
 # if CONFIG_ETH_SPI_ETHERNET_W5500
-      toString(EthPhyType_t::W5500),				  
+      toString(ESPEasy::net::EthPhyType_t::W5500),				  
 # endif // if CONFIG_ETH_SPI_ETHERNET_W5500
 # if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
-      toString(EthPhyType_t::KSZ8851),				
+      toString(ESPEasy::net::EthPhyType_t::KSZ8851),				
 # endif // if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
 #endif
       };
     const int ethPhyTypes_index[] = {
-      static_cast<int>(EthPhyType_t::notSet),			  
+      static_cast<int>(ESPEasy::net::EthPhyType_t::notSet),			  
 
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-      static_cast<int>(EthPhyType_t::LAN8720),			  
-      static_cast<int>(EthPhyType_t::TLK110),				  
-      static_cast<int>(EthPhyType_t::RTL8201),			
+      static_cast<int>(ESPEasy::net::EthPhyType_t::LAN8720),			  
+      static_cast<int>(ESPEasy::net::EthPhyType_t::TLK110),				  
+      static_cast<int>(ESPEasy::net::EthPhyType_t::RTL8201),			
 #if ETH_TYPE_JL1101_SUPPORTED	
-      static_cast<int>(EthPhyType_t::JL1101),				  
+      static_cast<int>(ESPEasy::net::EthPhyType_t::JL1101),				  
 #endif
-      static_cast<int>(EthPhyType_t::DP83848),				
-      static_cast<int>(EthPhyType_t::KSZ8041),				
-      static_cast<int>(EthPhyType_t::KSZ8081),				
+      static_cast<int>(ESPEasy::net::EthPhyType_t::DP83848),				
+      static_cast<int>(ESPEasy::net::EthPhyType_t::KSZ8041),				
+      static_cast<int>(ESPEasy::net::EthPhyType_t::KSZ8081),				
 # endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 
 #if ESP_IDF_VERSION_MAJOR >= 5
 # if CONFIG_ETH_SPI_ETHERNET_DM9051
-      static_cast<int>(EthPhyType_t::DM9051),				  
+      static_cast<int>(ESPEasy::net::EthPhyType_t::DM9051),				  
 # endif // if CONFIG_ETH_SPI_ETHERNET_DM9051
 # if CONFIG_ETH_SPI_ETHERNET_W5500
-      static_cast<int>(EthPhyType_t::W5500),				  
+      static_cast<int>(ESPEasy::net::EthPhyType_t::W5500),				  
 # endif // if CONFIG_ETH_SPI_ETHERNET_W5500
 # if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
-      static_cast<int>(EthPhyType_t::KSZ8851),				
+      static_cast<int>(ESPEasy::net::EthPhyType_t::KSZ8851),				
 # endif // if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
 #endif
     };
@@ -404,7 +404,7 @@ void handle_hardware() {
 
     const int choice = isValid(Settings.ETH_Phy_Type) 
       ? static_cast<int>(Settings.ETH_Phy_Type) 
-      : static_cast<int>(EthPhyType_t::notSet);
+      : static_cast<int>(ESPEasy::net::EthPhyType_t::notSet);
 
     const FormSelectorOptions selector(      
       nrItems, 
@@ -449,10 +449,10 @@ void handle_hardware() {
   addRowLabel_tr_id(F("Ethernet Clock"), F("ethclock"));
   {
     const __FlashStringHelper * ethClockOptions[] = { 
-      toString(EthClockMode_t::Ext_crystal_osc),
-      toString(EthClockMode_t::Int_50MHz_GPIO_0),
-      toString(EthClockMode_t::Int_50MHz_GPIO_16),
-      toString(EthClockMode_t::Int_50MHz_GPIO_17_inv)
+      toString(ESPEasy::net::EthClockMode_t::Ext_crystal_osc),
+      toString(ESPEasy::net::EthClockMode_t::Int_50MHz_GPIO_0),
+      toString(ESPEasy::net::EthClockMode_t::Int_50MHz_GPIO_16),
+      toString(ESPEasy::net::EthClockMode_t::Int_50MHz_GPIO_17_inv)
       };
     const FormSelectorOptions selector(NR_ELEMENTS(ethClockOptions), ethClockOptions);
     selector.addSelector(F("ethclock"), static_cast<int>(Settings.ETH_Clock_Mode));

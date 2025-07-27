@@ -283,9 +283,9 @@
 #ifndef DEFAULT_ETH_PHY_TYPE
 #if FEATURE_ETHERNET
 #ifdef ESP32P4
-#define DEFAULT_ETH_PHY_TYPE             EthPhyType_t::TLK110
+#define DEFAULT_ETH_PHY_TYPE             ESPEasy::net::EthPhyType_t::TLK110
 #else
-#define DEFAULT_ETH_PHY_TYPE             EthPhyType_t::notSet
+#define DEFAULT_ETH_PHY_TYPE             ESPEasy::net::EthPhyType_t::notSet
 #endif
 #else
 #define DEFAULT_ETH_PHY_TYPE             0
@@ -314,7 +314,7 @@
 #endif
 #ifndef DEFAULT_ETH_CLOCK_MODE
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-#define DEFAULT_ETH_CLOCK_MODE           static_cast<EthClockMode_t>(0)
+#define DEFAULT_ETH_CLOCK_MODE           static_cast<ESPEasy::net::EthClockMode_t>(0)
 #else
 #define DEFAULT_ETH_CLOCK_MODE           (0)
 #endif

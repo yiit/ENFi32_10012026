@@ -1229,7 +1229,7 @@ bool SettingsStruct_tmpl<N_TASKS>::isEthernetPin(int8_t pin) const {
   #if FEATURE_ETHERNET
   if (pin < 0) return false;
   if (NetworkMedium == NetworkMedium_t::Ethernet &&
-      !isSPI_EthernetType(ETH_Phy_Type)) {
+      !ESPEasy::net::isSPI_EthernetType(ETH_Phy_Type)) {
   #if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
   #ifdef ESP32P4
   switch (pin) {
@@ -1266,9 +1266,9 @@ bool SettingsStruct_tmpl<N_TASKS>::isEthernetPinOptional(int8_t pin) const {
   #if FEATURE_ETHERNET
   if (pin < 0) return false;
   if (NetworkMedium == NetworkMedium_t::Ethernet) {
-    if (!isSPI_EthernetType(ETH_Phy_Type) 
+    if (!ESPEasy::net::isSPI_EthernetType(ETH_Phy_Type) 
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-    && isGpioUsedInETHClockMode(ETH_Clock_Mode, pin)
+    && ESPEasy::net::isGpioUsedInETHClockMode(ETH_Clock_Mode, pin)
   #endif
   ) return true;
     if (ETH_Pin_mdc_cs == pin) return true;
