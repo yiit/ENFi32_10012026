@@ -4,7 +4,7 @@
 
 #include "../../ESPEasy-Globals.h"
 #include "../DataStructs/TimingStats.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../ESPEasyCore/Serial.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Services.h"
@@ -57,9 +57,9 @@ void backgroundtasks()
 
   START_TIMER
   #if FEATURE_MDNS || FEATURE_ESPEASY_P2P
-  const bool networkConnected = NetworkConnected();
+  const bool networkConnected = ESPEasy::net::NetworkConnected();
   #else
-  NetworkConnected();
+  ESPEasy::net::NetworkConnected();
   #endif
 
   runningBackgroundTasks = true;

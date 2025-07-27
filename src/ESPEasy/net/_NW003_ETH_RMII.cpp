@@ -11,8 +11,6 @@
 # define NWPLUGIN_NAME_003       "Ethernet (RMII)"
 
 # include "../../src/DataStructs/ESPEasy_EventStruct.h"
-# include "../../src/ESPEasyCore/ESPEasyEth.h"
-
 # include "../../src/Globals/SecuritySettings.h"
 # include "../../src/Globals/Settings.h"
 # include "../../src/Helpers/ESPEasy_Storage.h"
@@ -24,6 +22,7 @@
 # include "../../src/WebServer/Markup.h"
 # include "../../src/WebServer/Markup_Forms.h"
 # include "../../src/WebServer/common.h"
+# include "../net/eth/ESPEasyEth.h"
 # include "../net/Globals/NWPlugins.h"
 # include "../net/Helpers/_NWPlugin_Helper_webform.h"
 # include "../net/Helpers/_NWPlugin_init.h"
@@ -286,7 +285,7 @@ bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
-      ETHConnectRelaxed();
+      ESPEasy::net::eth::ETHConnectRelaxed();
       break;
     }
 

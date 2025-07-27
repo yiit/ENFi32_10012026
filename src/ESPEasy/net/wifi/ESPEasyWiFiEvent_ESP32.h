@@ -1,21 +1,21 @@
 #pragma once
 
-# include "../../../ESPEasy_common.h"
+#include "../../../ESPEasy_common.h"
 
 #if FEATURE_WIFI
-#ifdef ESP32
+# ifdef ESP32
 
-# include <IPAddress.h>
+#  include <IPAddress.h>
 
 // ********************************************************************************
 
 // Work-around for setting _useStaticIP
 // See reported issue: https://github.com/esp8266/Arduino/issues/4114
 // ********************************************************************************
-# include <IPAddress.h>
-# include <WiFiSTA.h>
-# include <WiFi.h>
-# include <WiFiType.h>
+#  include <IPAddress.h>
+#  include <WiFiSTA.h>
+#  include <WiFi.h>
+#  include <WiFiType.h>
 
 namespace ESPEasy {
 namespace net {
@@ -38,9 +38,9 @@ void setUseStaticIP(bool enabled);
 void WiFiEvent(WiFiEvent_t          event,
                arduino_event_info_t info);
 
-}
-}
-}
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 
-#endif // ifdef ESP32
-#endif
+# endif // ifdef ESP32
+#endif // if FEATURE_WIFI

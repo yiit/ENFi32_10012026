@@ -12,7 +12,7 @@
 #include "../DataTypes/TimeSource.h"
 
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 #include "../Globals/EventQueue.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
@@ -668,7 +668,7 @@ bool ESPEasy_time::getNtpTime(double& unixTime_d)
                      ));
 #endif // ifndef BUILD_NO_DEBUG
       }
-      CheckRunningServices(); // FIXME TD-er: Sometimes services can only be started after NTP is successful
+      ESPEasy::net::CheckRunningServices(); // FIXME TD-er: Sometimes services can only be started after NTP is successful
       STOP_TIMER(NTP_SUCCESS);
       return true;
     }

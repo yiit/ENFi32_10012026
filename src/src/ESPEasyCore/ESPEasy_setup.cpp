@@ -7,7 +7,7 @@
 #include "../Commands/InternalCommands_decoder.h"
 #include "../CustomBuild/CompiletimeDefines.h"
 #include "../ESPEasyCore/ESPEasyGPIO.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
@@ -449,7 +449,7 @@ void ESPEasy_setup()
   }
   #endif // if FEATURE_ETHERNET
 
-  setNetworkMedium(Settings.NetworkMedium);
+  ESPEasy::net::setNetworkMedium(Settings.NetworkMedium);
 
   bool initWiFi = active_network_medium == NetworkMedium_t::WIFI;
 
@@ -635,7 +635,7 @@ void ESPEasy_setup()
 
   #endif // if FEATURE_ETHERNET
 
-  NetworkConnectRelaxed();
+  ESPEasy::net::NetworkConnectRelaxed();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("NetworkConnectRelaxed()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER

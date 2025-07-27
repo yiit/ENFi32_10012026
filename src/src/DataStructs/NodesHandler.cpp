@@ -19,7 +19,7 @@
 #endif
 
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 #include "../Globals/ESPEasy_time.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
@@ -272,7 +272,7 @@ const NodeStruct* NodesHandler::getPreferredNode_notMatching(uint8_t unit_nr) co
 }
 
 const NodeStruct * NodesHandler::getPreferredNode_notMatching(const MAC_address& not_matching) const {
-  MAC_address this_mac = NetworkMacAddress();
+  MAC_address this_mac = ESPEasy::net::NetworkMacAddress();
   const NodeStruct *thisNode = getNodeByMac(this_mac);
   const NodeStruct *reject   = getNodeByMac(not_matching);
 
@@ -394,19 +394,19 @@ void NodesHandler::updateThisNode() {
 
   // Set local data
   {
-    MAC_address mac = NetworkMacAddress();
+    MAC_address mac = ESPEasy::net::NetworkMacAddress();
     mac.get(thisNode.sta_mac);
   }
   WiFi.softAPmacAddress(thisNode.ap_mac);
   {
-    const bool addIP = NetworkConnected();
+    const bool addIP = ESPEasy::net::NetworkConnected();
     #ifdef USES_ESPEASY_NOW
     if (use_EspEasy_now) {
       thisNode.useAP_ESPEasyNow = 1;
     }
     #endif
     if (addIP) {
-      const IPAddress localIP = NetworkLocalIP();
+      const IPAddress localIP = ESPEasy::net::NetworkLocalIP();
 
       for (uint8_t i = 0; i < 4; ++i) {
         thisNode.ip[i] = localIP[i];
@@ -512,8 +512,8 @@ void NodesHandler::updateThisNode() {
 
   #if FEATURE_USE_IPV6
   thisNode.hasIPv4 = thisNode.IP() != INADDR_NONE;
-  thisNode.hasIPv6_mac_based_link_local = is_IPv6_link_local_from_MAC(thisNode.sta_mac);
-  thisNode.hasIPv6_mac_based_link_global = is_IPv6_global_from_MAC(thisNode.sta_mac);
+  thisNode.hasIPv6_mac_based_link_local = ESPEasy::net::is_IPv6_link_local_from_MAC(thisNode.sta_mac);
+  thisNode.hasIPv6_mac_based_link_global = ESPEasy::net::is_IPv6_global_from_MAC(thisNode.sta_mac);
   #endif
 
   #ifdef USES_ESPEASY_NOW
@@ -530,7 +530,7 @@ void NodesHandler::updateThisNode() {
 const NodeStruct * NodesHandler::getThisNode() {
 //  node_time.now();
   updateThisNode();
-  MAC_address this_mac = NetworkMacAddress();
+  MAC_address this_mac = ESPEasy::net::NetworkMacAddress();
   return getNodeByMac(this_mac.mac);
 }
 
@@ -617,7 +617,7 @@ bool NodesHandler::isEndpoint() const
   }
   #endif
 
-  if (!NetworkConnected()) return false;
+  if (!ESPEasy::net::NetworkConnected()) return false;
 
   return false;
 }
@@ -625,7 +625,7 @@ bool NodesHandler::isEndpoint() const
 #ifdef USES_ESPEASY_NOW
 uint8_t NodesHandler::getESPEasyNOW_channel() const
 {
-  if (active_network_medium == NetworkMedium_t::WIFI && NetworkConnected()) {
+  if (active_network_medium == NetworkMedium_t::WIFI && ESPEasy::net::NetworkConnected()) {
     return WiFi.channel();
   }
   if (Settings.ForceESPEasyNOWchannel > 0) {

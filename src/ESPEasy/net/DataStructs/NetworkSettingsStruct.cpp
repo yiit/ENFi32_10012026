@@ -4,7 +4,7 @@
 
 #include "../../../src/CustomBuild/ESPEasyLimits.h"
 #include "../../../src/ESPEasyCore/ESPEasy_Log.h"
-#include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
+#include "../ESPEasyNetwork.h"
 #include "../../../src/Helpers/Misc.h"
 #include "../../../src/Helpers/Networking.h"
 #include "../../../src/Helpers/StringConverter.h"

@@ -8,7 +8,7 @@
 #include "../ControllerQueue/DelayQueueElements.h" // Also forward declaring the do_process_cNNN_delay_queue
 #include "../DataStructs/ControllerSettingsStruct.h"
 #include "../ESPEasyCore/Controller.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../Globals/CPlugins.h"
 #include "../Globals/ESPEasy_Scheduler.h"
 #include "../Globals/Services.h"

@@ -1,5 +1,4 @@
-#ifndef DATASTRUCTS_MAC_ADDRESS_H
-#define DATASTRUCTS_MAC_ADDRESS_H
+#pragma once
 
 #include <stdint.h>
 #include <WString.h>
@@ -75,5 +74,3 @@ private:
 
   bool mac_addr_cmp(const uint8_t other[6]) const;
 };
-
-#endif // DATASTRUCTS_MAC_ADDRESS_H

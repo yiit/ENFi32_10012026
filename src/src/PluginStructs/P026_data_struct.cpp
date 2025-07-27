@@ -3,7 +3,7 @@
 #ifdef USES_P026
 
 # include "../DataStructs/ESPEasy_packed_raw_data.h"
-# include "../ESPEasyCore/ESPEasyNetwork.h"
+# include "../../ESPEasy/net/ESPEasyNetwork.h"
 # include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 # include "../Helpers/Memory.h"
 # include "../Helpers/Hardware_temperature_sensor.h"
@@ -128,7 +128,7 @@ float P026_get_value(uint8_t type)
     case P026_VALUETYPE_ip2:
     case P026_VALUETYPE_ip3:
     case P026_VALUETYPE_ip4:
-      res = NetworkLocalIP()[type - P026_VALUETYPE_ip1];
+      res = ESPEasy::net::NetworkLocalIP()[type - P026_VALUETYPE_ip1];
       break;
     case P026_VALUETYPE_web:
       res = timePassedSince(lastWeb) / 1000.0f;

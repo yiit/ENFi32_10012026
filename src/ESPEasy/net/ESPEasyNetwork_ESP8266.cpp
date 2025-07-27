@@ -1,20 +1,24 @@
 #ifdef ESP8266
 
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
-#include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyEth.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../src/ESPEasyCore/ESPEasy_Log.h"
 
-#include "../Globals/ESPEasy_time.h"
-#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
-#include "../../ESPEasy/net/Globals/NetworkState.h"
-#include "../Globals/Settings.h"
+#include "../../src/Globals/ESPEasy_time.h"
+#include "../../src/Globals/Settings.h"
 
-#include "../Helpers/Network.h"
-#include "../Helpers/Networking.h"
-#include "../Helpers/StringConverter.h"
-#include "../Helpers/MDNS_Helper.h"
+#include "../../src/Helpers/Network.h"
+#include "../../src/Helpers/Networking.h"
+#include "../../src/Helpers/StringConverter.h"
+#include "../../src/Helpers/MDNS_Helper.h"
+
+#include "../net/Globals/ESPEasyWiFiEvent.h"
+#include "../net/Globals/NetworkState.h"
+#include "../net/wifi/ESPEasyWifi.h"
+
+
+namespace ESPEasy {
+namespace net {
 
 void setNetworkMedium(NetworkMedium_t new_medium) {
   if (new_medium == NetworkMedium_t::Ethernet) {
@@ -45,7 +49,7 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
    Ethernet or Wifi Support for ESP32 Build flag FEATURE_ETHERNET
 \*********************************************************************************************/
 void NetworkConnectRelaxed() {
-  if (NetworkConnected()) { return; }
+  if (!ESPEasy::net::NetworkConnected()) 
   ESPEasy::net::wifi::WiFiConnectRelaxed();
 }
 
@@ -85,5 +89,8 @@ MAC_address WifiSTAmacAddress() {
 }
 
 #endif // if FEATURE_WIFI
+
+}
+}
 
 #endif // ifdef ESP8266

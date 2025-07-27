@@ -4,7 +4,7 @@
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 #include "../Globals/Settings.h"
 #include "../Globals/Services.h"
@@ -57,7 +57,7 @@ void statusLED(bool traffic)
   }
   else
   {
-    if (NetworkConnected())
+    if (ESPEasy::net::NetworkConnected())
     {
       long int delta = timePassedSince(gnLastUpdate);
 

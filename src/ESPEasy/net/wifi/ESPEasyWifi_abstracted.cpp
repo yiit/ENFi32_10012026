@@ -2,7 +2,7 @@
 
 #if FEATURE_WIFI
 
-# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
+# include "../../net/ESPEasyNetwork.h"
 # include "../../../src/Globals/EventQueue.h"
 # include "../../../src/Globals/SecuritySettings.h"
 # include "../../../src/Globals/Services.h"

@@ -4,7 +4,7 @@
 
 # include "../../../ESPEasy-Globals.h"
 # include "../../../src/DataStructs/TimingStats.h"
-# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
+# include "../../net/ESPEasyNetwork.h"
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 # include "../../../src/ESPEasyCore/Serial.h"
 # include "../../../src/Globals/EventQueue.h"

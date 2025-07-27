@@ -20,8 +20,7 @@ bool statusNTPInitialized = false;
 
 // Setup DNS, only used if the ESP has no valid WiFi config
 const uint8_t DNS_PORT = 53;
-IPAddress  apIP(DEFAULT_AP_IP);
-
+IPAddress     apIP(DEFAULT_AP_IP);
 
 
 // udp protocol stuff (syslog, global sync, node info list, ntp time)

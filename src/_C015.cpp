@@ -275,7 +275,7 @@ if (!Settings.ControllerEnabled[element._controller_idx]) {
   return true;
 }
 
-if (!NetworkConnected()) {
+if (!ESPEasy::net::NetworkConnected()) {
   return false;
 }
 
@@ -300,7 +300,7 @@ return element.checkDone(sendSuccess);
 }
 
 boolean Blynk_keep_connection_c015(int controllerIndex, ControllerSettingsStruct& ControllerSettings) {
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return false;
   }
 

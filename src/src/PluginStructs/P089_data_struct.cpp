@@ -47,7 +47,7 @@ bool P089_data_struct::send_ping(struct EventStruct *event) {
   }
 
   /* This ping lost for sure */
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return true;
   }
 

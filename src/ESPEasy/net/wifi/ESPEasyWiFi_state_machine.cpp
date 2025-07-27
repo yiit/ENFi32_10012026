@@ -2,7 +2,7 @@
 
 #if FEATURE_WIFI
 
-# include "../../../src/ESPEasyCore/ESPEasyNetwork.h" // for setNetworkMedium, however this should not be part of the WiFi code
+# include "../ESPEasyNetwork.h" // for setNetworkMedium, however this should not be part of the WiFi code
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/Settings.h"

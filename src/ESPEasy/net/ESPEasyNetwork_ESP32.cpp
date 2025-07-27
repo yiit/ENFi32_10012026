@@ -1,22 +1,22 @@
 #ifdef ESP32
 
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../net/ESPEasyNetwork.h"
 
-#include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyEth.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../src/ESPEasyCore/ESPEasy_Log.h"
+#include "../net/eth/ESPEasyEth.h"
+#include "../net/wifi/ESPEasyWifi.h"
 
-#include "../Globals/ESPEasy_time.h"
+#include "../../src/Globals/ESPEasy_time.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
-#include "../Globals/Settings.h"
+#include "../../src/Globals/Settings.h"
 
 #include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
 
-#include "../Helpers/Network.h"
-#include "../Helpers/Networking.h"
-#include "../Helpers/StringConverter.h"
-#include "../Helpers/MDNS_Helper.h"
+#include "../../src/Helpers/Network.h"
+#include "../../src/Helpers/Networking.h"
+#include "../../src/Helpers/StringConverter.h"
+#include "../../src/Helpers/MDNS_Helper.h"
 
 #include <NetworkManager.h>
 
@@ -27,6 +27,17 @@
 #if FEATURE_USE_IPV6
 # include <esp_netif.h>
 #endif
+
+
+// Forward declaration to access internal function in NetworkInterface.cpp
+// as we don't have a public function in NetworkInterface to access the
+// Network_Interface_ID
+NetworkInterface* getNetifByID(Network_Interface_ID id);
+
+
+
+namespace ESPEasy {
+namespace net {
 
 
 void setNetworkMedium(NetworkMedium_t new_medium) {
@@ -77,11 +88,11 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
    Ethernet or Wifi Support for ESP32 Build flag FEATURE_ETHERNET
 \*********************************************************************************************/
 void NetworkConnectRelaxed() {
-  if (NetworkConnected()) { return; }
+  if (ESPEasy::net::NetworkConnected()) { return; }
 #if FEATURE_ETHERNET
 
   if (active_network_medium == NetworkMedium_t::Ethernet) {
-    if (ETHConnectRelaxed()) {
+    if (ESPEasy::net::eth::ETHConnectRelaxed()) {
       return;
     }
 
@@ -95,11 +106,6 @@ void NetworkConnectRelaxed() {
   // So set the runtime active medium to WiFi to try connecting to WiFi or at least start the AP.
   ESPEasy::net::wifi::WiFiConnectRelaxed();
 }
-
-// Forward declaration to access internal function in NetworkInterface.cpp
-// as we don't have a public function in NetworkInterface to access the
-// Network_Interface_ID
-NetworkInterface* getNetifByID(Network_Interface_ID id);
 
 NetworkInterface* getDefaultNonAP_interface()
 {
@@ -322,5 +328,8 @@ uint8_t EthLinkSpeed()
 }
 
 #endif // if FEATURE_ETHERNET
+
+}
+}
 
 #endif // ifdef ESP32

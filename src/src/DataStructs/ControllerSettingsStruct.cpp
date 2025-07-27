@@ -4,7 +4,7 @@
 
 #include "../CustomBuild/ESPEasyLimits.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../Helpers/Misc.h"
 #include "../Helpers/Networking.h"
 #include "../Helpers/StringConverter.h"
@@ -212,7 +212,7 @@ bool ControllerSettingsStruct::updateIPcache() {
     return true;
   }
 
-  if (!NetworkConnected()) { return false; }
+  if (!ESPEasy::net::NetworkConnected()) { return false; }
   IPAddress tmpIP;
 
   if (resolveHostByName(HostName, tmpIP, ClientTimeout)) {

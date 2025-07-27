@@ -4,4 +4,4 @@
 
 ESPEasy::net::wifi::ESPEasyWiFi_t ESPEasyWiFi;
 
-#endif
+#endif // if FEATURE_WIFI

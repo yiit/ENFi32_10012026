@@ -11,24 +11,18 @@
 #  endif
 
 #  include "../../../src/DataStructs/RTCStruct.h"
-
 #  include "../../../src/DataTypes/ESPEasyTimeSource.h"
-
-#  include "../../../src/ESPEasyCore/ESPEasyEth.h"
 #  include "../../../src/ESPEasyCore/ESPEasy_Log.h"
-#  include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
-
-#  include "../wifi/ESPEasyWifi.h"
-#  include "../wifi/ESPEasyWifi_ProcessEvent.h"
-
-#  include "../Globals/ESPEasyWiFiEvent.h"
-#  include "../Globals/NetworkState.h"
 #  include "../../../src/Globals/RTC.h"
 #  include "../../../src/Globals/WiFi_AP_Candidates.h"
-
 #  include "../../../src/Helpers/ESPEasy_time_calc.h"
 #  include "../../../src/Helpers/StringConverter.h"
-
+#  include "../../net/ESPEasyNetwork.h"
+#  include "../Globals/ESPEasyWiFiEvent.h"
+#  include "../Globals/NetworkState.h"
+#  include "../eth/ESPEasyEth.h"
+#  include "../wifi/ESPEasyWifi.h"
+#  include "../wifi/ESPEasyWifi_ProcessEvent.h"
 
 #  if FEATURE_ETHERNET
 #   include "../Globals/ESPEasyEthEvent.h"
@@ -218,8 +212,8 @@ void WiFiEvent(WiFiEvent_t event_id, arduino_event_info_t info) {
   }
 }
 
-}
-}
-}
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 # endif // ifdef ESP32
 #endif // if FEATURE_WIFI

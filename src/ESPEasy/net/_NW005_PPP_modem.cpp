@@ -11,7 +11,7 @@
 # define NWPLUGIN_NAME_005       "PPP modem"
 
 # include "../../src/DataStructs/ESPEasy_EventStruct.h"
-# include "../../src/ESPEasyCore/ESPEasyNetwork.h"
+# include "../net/ESPEasyNetwork.h"
 # include "../../src/Globals/SecuritySettings.h"
 # include "../../src/Globals/Settings.h"
 # include "../../src/Helpers/ESPEasy_Storage.h"

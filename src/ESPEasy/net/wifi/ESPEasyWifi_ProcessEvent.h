@@ -11,16 +11,16 @@ void handle_unprocessedNetworkEvents();
 void processDisconnect();
 void processConnect();
 void processGotIP();
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
 void processGotIPv6();
-#endif
+# endif
 void processDisconnectAPmode();
 void processConnectAPmode();
 void processDisableAPmode();
 void processScanDone();
 
-}
-}
-}
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 
-#endif
+#endif // if FEATURE_WIFI

@@ -56,9 +56,9 @@ void onWiFiScanDone(void  *arg,
                     STATUS status);
 #  endif // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
-}
-}
-}
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 
 # endif // ifdef ESP8266
 

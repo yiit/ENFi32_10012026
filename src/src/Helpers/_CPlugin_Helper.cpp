@@ -13,8 +13,8 @@
 
 #include "../ESPEasyCore/ESPEasy_backgroundtasks.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyEth.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/eth/ESPEasyEth.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 #include "../Globals/Settings.h"
@@ -131,7 +131,7 @@ bool count_connection_results(bool success, const __FlashStringHelper *prefix, c
 bool try_connect_host(cpluginID_t cpluginID, WiFiUDP& client, ControllerSettingsStruct& ControllerSettings) {
   const uint64_t statisticsTimerStart(getMicros64()); // START_TIMER;
 
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     client.stop();
     return false;
   }
@@ -175,7 +175,7 @@ bool try_connect_host(cpluginID_t                cpluginID,
                       const __FlashStringHelper *loglabel) {
   const uint64_t statisticsTimerStart(getMicros64()); // START_TIMER;
 
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     client.stop();
     return false;
   }

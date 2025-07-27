@@ -8,11 +8,11 @@
 
 #include "../CustomBuild/CompiletimeDefines.h"
 
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 #if FEATURE_ETHERNET
-#include "../ESPEasyCore/ESPEasyEth.h"
+#include "../../ESPEasy/net/eth/ESPEasyEth.h"
 #endif
 
 #include "../Globals/Device.h"
@@ -329,7 +329,7 @@ String getValue(LabelType::Enum label) {
     }
     #endif // FEATURE_ZEROFILLED_UNITNUMBER
     case LabelType::UNIT_NAME:              return Settings.getName(); // Only return the set name, no appended unit.
-    case LabelType::HOST_NAME:              return NetworkGetHostname();
+    case LabelType::HOST_NAME:              return ESPEasy::net::NetworkGetHostname();
 
 
     case LabelType::LOCAL_TIME:             return node_time.getDateTimeString('-', ':', ' ');
@@ -465,15 +465,15 @@ String getValue(LabelType::Enum label) {
                                                      : getLabel(LabelType::IP_CONFIG_DYNAMIC);
     case LabelType::IP_CONFIG_STATIC:       break;
     case LabelType::IP_CONFIG_DYNAMIC:      break;
-    case LabelType::IP_ADDRESS:             return formatIP(NetworkLocalIP());
-    case LabelType::IP_SUBNET:              return formatIP(NetworkSubnetMask());
+    case LabelType::IP_ADDRESS:             return formatIP(ESPEasy::net::NetworkLocalIP());
+    case LabelType::IP_SUBNET:              return formatIP(ESPEasy::net::NetworkSubnetMask());
     case LabelType::IP_ADDRESS_SUBNET:      return strformat(F("%s / %s"), getValue(LabelType::IP_ADDRESS).c_str(), getValue(LabelType::IP_SUBNET).c_str());
-    case LabelType::GATEWAY:                return formatIP(NetworkGatewayIP());
+    case LabelType::GATEWAY:                return formatIP(ESPEasy::net::NetworkGatewayIP());
 #if FEATURE_USE_IPV6
-    case LabelType::IP6_LOCAL:              return formatIP(NetworkLocalIP6(), true);
-    case LabelType::IP6_GLOBAL:             return formatIP(NetworkGlobalIP6());
+    case LabelType::IP6_LOCAL:              return formatIP(ESPEasy::net::NetworkLocalIP6(), true);
+    case LabelType::IP6_GLOBAL:             return formatIP(ESPEasy::net::NetworkGlobalIP6());
 #if FEATURE_ETHERNET
-    case LabelType::ETH_IP6_LOCAL:          return formatIP(NetworkLocalIP6(), true);
+    case LabelType::ETH_IP6_LOCAL:          return formatIP(ESPEasy::net::NetworkLocalIP6(), true);
 #endif
 /*
     case LabelType::IP6_ALL_ADDRESSES:
@@ -500,12 +500,12 @@ String getValue(LabelType::Enum label) {
     case LabelType::M_DNS:                  return NetworkGetHostname() + F(".local");
     #endif // if FEATURE_MDNS
     case LabelType::DNS:                    return strformat(F("%s / %s"), getValue(LabelType::DNS_1).c_str(), getValue(LabelType::DNS_2).c_str());
-    case LabelType::DNS_1:                  return formatIP(NetworkDnsIP(0));
-    case LabelType::DNS_2:                  return formatIP(NetworkDnsIP(1));
+    case LabelType::DNS_1:                  return formatIP(ESPEasy::net::NetworkDnsIP(0));
+    case LabelType::DNS_2:                  return formatIP(ESPEasy::net::NetworkDnsIP(1));
     case LabelType::ALLOWED_IP_RANGE:       return describeAllowedIPrange();
 #if FEATURE_WIFI
-    case LabelType::STA_MAC:                return WifiSTAmacAddress().toString();
-    case LabelType::AP_MAC:                 return WifiSoftAPmacAddress().toString();
+    case LabelType::STA_MAC:                return ESPEasy::net::WifiSTAmacAddress().toString();
+    case LabelType::AP_MAC:                 return ESPEasy::net::WifiSoftAPmacAddress().toString();
     case LabelType::SSID:                   return WiFi.SSID();
     case LabelType::BSSID:                  return WiFi.BSSIDstr();
     case LabelType::CHANNEL:                retval = WiFi.channel(); break;
@@ -622,20 +622,20 @@ String getValue(LabelType::Enum label) {
     case LabelType::OTA_2STEP:              break;
     case LabelType::OTA_POSSIBLE:           break;
 #if FEATURE_ETHERNET
-    case LabelType::ETH_IP_ADDRESS:         return formatIP(NetworkLocalIP());
-    case LabelType::ETH_IP_SUBNET:          return formatIP(NetworkSubnetMask());
+    case LabelType::ETH_IP_ADDRESS:         return formatIP(ESPEasy::net::NetworkLocalIP());
+    case LabelType::ETH_IP_SUBNET:          return formatIP(ESPEasy::net::NetworkSubnetMask());
     case LabelType::ETH_IP_ADDRESS_SUBNET:  return strformat(
                                                           F("%s / %s"),
                                                           getValue(LabelType::ETH_IP_ADDRESS).c_str(),
                                                           getValue(LabelType::ETH_IP_SUBNET).c_str());
-    case LabelType::ETH_IP_GATEWAY:         return formatIP(NetworkGatewayIP());
-    case LabelType::ETH_IP_DNS:             return formatIP(NetworkDnsIP(0));
-    case LabelType::ETH_MAC:                return NetworkMacAddress().toString();
-    case LabelType::ETH_DUPLEX:             return EthLinkUp() ? (EthFullDuplex() ? F("Full Duplex") : F("Half Duplex")) : F("Link Down");
-    case LabelType::ETH_SPEED:              return EthLinkUp() ? getEthSpeed() : F("Link Down");
-    case LabelType::ETH_STATE:              return EthLinkUp() ? F("Link Up") : F("Link Down");
-    case LabelType::ETH_SPEED_STATE:        return EthLinkUp() ? getEthLinkSpeedState() : F("Link Down");
-    case LabelType::ETH_CONNECTED:          return ETHConnected() ? F("CONNECTED") : F("DISCONNECTED"); // 0=disconnected, 1=connected
+    case LabelType::ETH_IP_GATEWAY:         return formatIP(ESPEasy::net::NetworkGatewayIP());
+    case LabelType::ETH_IP_DNS:             return formatIP(ESPEasy::net::NetworkDnsIP(0));
+    case LabelType::ETH_MAC:                return ESPEasy::net::NetworkMacAddress().toString();
+    case LabelType::ETH_DUPLEX:             return ESPEasy::net::EthLinkUp() ? (ESPEasy::net::EthFullDuplex() ? F("Full Duplex") : F("Half Duplex")) : F("Link Down");
+    case LabelType::ETH_SPEED:              return getEthSpeed();
+    case LabelType::ETH_STATE:              return ESPEasy::net::EthLinkUp() ? F("Link Up") : F("Link Down");
+    case LabelType::ETH_SPEED_STATE:        return getEthLinkSpeedState();
+    case LabelType::ETH_CONNECTED:          return ESPEasy::net::eth::ETHConnected() ? F("CONNECTED") : F("DISCONNECTED"); // 0=disconnected, 1=connected
     case LabelType::ETH_CHIP:               return toString(Settings.ETH_Phy_Type);
 #endif // if FEATURE_ETHERNET
 # if FEATURE_ETHERNET || defined(USES_ESPEASY_NOW)
@@ -662,11 +662,14 @@ String getValue(LabelType::Enum label) {
 
 #if FEATURE_ETHERNET
 String getEthSpeed() {
-  return strformat(F("%d [Mbps]"), EthLinkSpeed());
+  if (ESPEasy::net::EthLinkUp()) {
+    return strformat(F("%d [Mbps]"), ESPEasy::net::EthLinkSpeed());
+  }
+  return getValue(LabelType::ETH_STATE);
 }
 
 String getEthLinkSpeedState() {
-  if (EthLinkUp()) {
+  if (ESPEasy::net::EthLinkUp()) {
     return strformat(F("%s %s %s"), 
     getValue(LabelType::ETH_STATE).c_str(), 
     getValue(LabelType::ETH_DUPLEX).c_str(), 

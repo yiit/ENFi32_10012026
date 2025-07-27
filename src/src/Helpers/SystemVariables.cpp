@@ -10,7 +10,7 @@
 #include "../DataStructs/TimingStats.h"
 
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 #include "../Globals/CRCValues.h"
 #include "../Globals/ESPEasy_time.h"
@@ -162,7 +162,7 @@ String SystemVariables::getSystemVariable(SystemVariables::Enum enumval) {
     case BOOT_CAUSE:        intvalue = lastBootCause; break;                         // Integer value to be used in rules
     case BSSID:             return (WiFiEventData.WiFiDisconnected()) ? MAC_address().toString() : WiFi.BSSIDstr();
     case CR:                return String('\r');
-    case IP4:               intvalue = static_cast<int>(NetworkLocalIP()[3]); break; // 4th IP octet
+    case IP4:               intvalue = static_cast<int>(ESPEasy::net::NetworkLocalIP()[3]); break; // 4th IP octet
     case ISVAR_DOUBLE:      intvalue =
                             #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
                             1;

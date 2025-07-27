@@ -1,38 +1,43 @@
-#include "../ESPEasyCore/ESPEasyEth_ProcessEvent.h"
+#include "../eth/ESPEasyEth_ProcessEvent.h"
 
 #if FEATURE_ETHERNET
 
-# include "../../ESPEasy-Globals.h"
+# include "../../../ESPEasy-Globals.h"
 
-# include "../ESPEasyCore/ESPEasyEth.h"
-# include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi.h" // LogConnectionStatus
+# include "../eth/ESPEasyEth.h"
+# include "../ESPEasyNetwork.h"
+# include "../wifi/ESPEasyWifi.h" // LogConnectionStatus
 
-# include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
-# include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
-# include "../Globals/ESPEasy_Scheduler.h"
-# include "../Globals/ESPEasy_time.h"
-# include "../Globals/EventQueue.h"
-# include "../Globals/MQTT.h"
-# include "../../ESPEasy/net/Globals/NetworkState.h"
-# include "../Globals/Settings.h"
+# include "../Globals/ESPEasyEthEvent.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../../../src/Globals/ESPEasy_Scheduler.h"
+# include "../../../src/Globals/ESPEasy_time.h"
+# include "../../../src/Globals/EventQueue.h"
+# include "../../../src/Globals/MQTT.h"
+# include "../Globals/NetworkState.h"
+# include "../../../src/Globals/Settings.h"
 
-# include "../Helpers/LongTermTimer.h"
-# include "../Helpers/Network.h"
-# include "../Helpers/Networking.h"
-# include "../Helpers/PeriodicalActions.h"
-# include "../Helpers/StringConverter.h"
+# include "../../../src/Helpers/LongTermTimer.h"
+# include "../../../src/Helpers/Network.h"
+# include "../../../src/Helpers/Networking.h"
+# include "../../../src/Helpers/PeriodicalActions.h"
+# include "../../../src/Helpers/StringConverter.h"
 
 # include <ETH.h>
+
+namespace ESPEasy {
+namespace net {
+namespace eth {
 
 void handle_unprocessedEthEvents() {
   if (EthEventData.unprocessedEthEvents()) {
     // Process disconnect events before connect events.
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
+
     if (!EthEventData.processedGotIP6) {
       processEthernetGotIPv6();
     }
-#endif
+# endif // if FEATURE_USE_IPV6
 
     if (!EthEventData.processedDisconnect) {
       # ifndef BUILD_NO_DEBUG
@@ -92,8 +97,8 @@ void check_Eth_DNS_valid() {
       (active_network_medium == NetworkMedium_t::Ethernet) &&
       EthEventData.ethInitSuccess &&
       !ethUseStaticIP()) {
-    const bool has_cache = 
-      valid_DNS_address(EthEventData.dns0_cache) || 
+    const bool has_cache =
+      valid_DNS_address(EthEventData.dns0_cache) ||
       valid_DNS_address(EthEventData.dns1_cache);
 
     if (has_cache) {
@@ -102,10 +107,11 @@ void check_Eth_DNS_valid() {
 
       if (!valid_DNS_address(dns0) && !valid_DNS_address(dns1)) {
         static uint32_t lastLog = 0;
+
         if (timePassedSince(lastLog) > 1000) {
           addLogMove(LOG_LEVEL_ERROR, concat(
-            F("ETH  : DNS server was cleared, use cached DNS IP: "), 
-            formatIP(EthEventData.dns0_cache)));
+                       F("ETH  : DNS server was cleared, use cached DNS IP: "),
+                       formatIP(EthEventData.dns0_cache)));
           lastLog = millis();
         }
         setDNS(0, EthEventData.dns0_cache);
@@ -165,15 +171,17 @@ void processEthernetGotIP() {
   IPAddress dns0                              = ETH.dnsIP(0);
   IPAddress dns1                              = ETH.dnsIP(1);
   const LongTermTimer::Duration dhcp_duration = EthEventData.lastConnectMoment.timeDiff(EthEventData.lastGetIPmoment);
-  #if ESP_IDF_VERSION_MAJOR >= 5
+  # if ESP_IDF_VERSION_MAJOR >= 5
   const bool mustRequestDHCP = (!dns0 && !dns1) && !ethUseStaticIP();
-  #endif
+  # endif
 
   if (!ethUseStaticIP()) {
     if (!dns0 && !dns1) {
       addLog(LOG_LEVEL_ERROR, F("ETH  : No DNS server received via DHCP, use cached DNS IP"));
-      if (EthEventData.dns0_cache) setDNS(0, EthEventData.dns0_cache);
-      if (EthEventData.dns1_cache) setDNS(1, EthEventData.dns1_cache);
+
+      if (EthEventData.dns0_cache) { setDNS(0, EthEventData.dns0_cache); }
+
+      if (EthEventData.dns1_cache) { setDNS(1, EthEventData.dns1_cache); }
     } else {
       EthEventData.dns0_cache = dns0;
       EthEventData.dns1_cache = dns1;
@@ -250,30 +258,40 @@ void processEthernetGotIP() {
   ESPEasy::net::wifi::logConnectionStatus();
 
   EthEventData.processedGotIP = true;
-#if ESP_IDF_VERSION_MAJOR >= 5
+# if ESP_IDF_VERSION_MAJOR >= 5
+
   if (mustRequestDHCP /*&& EthEventData.lastConnectMoment.millisPassedSince() < 10000*/) {
     // FIXME TD-er: Must add some check other than fixed timeout here to not constantly make DHCP requests.
     // Force new DHCP request.
     ETH.config();
   }
-#endif
+# endif // if ESP_IDF_VERSION_MAJOR >= 5
 
   EthEventData.setEthGotIP();
   CheckRunningServices();
 }
 
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
+
 void processEthernetGotIPv6() {
   if (!EthEventData.processedGotIP6) {
-    if (loglevelActiveFor(LOG_LEVEL_INFO))
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, String(F("ETH event: Got IP6 ")) + EthEventData.unprocessed_IP6.toString(true));
+    }
     EthEventData.processedGotIP6 = true;
-#if FEATURE_ESPEASY_P2P
-//    updateUDPport(true);
-#endif
+#  if FEATURE_ESPEASY_P2P
+
+    //    updateUDPport(true);
+#  endif // if FEATURE_ESPEASY_P2P
 
   }
 }
-#endif
+
+# endif // if FEATURE_USE_IPV6
+
+
+} // namespace eth
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if FEATURE_ETHERNET

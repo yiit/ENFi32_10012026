@@ -11,7 +11,7 @@
 # include "../WebServer/Markup_Forms.h"
 # include "../WebServer/SysInfoPage.h"
 
-# include "../ESPEasyCore/ESPEasyNetwork.h"
+# include "../../ESPEasy/net/ESPEasyNetwork.h"
 # include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 
@@ -50,7 +50,7 @@ void handle_setup() {
   // Do not check client IP range allowed.
   TXBuffer.startStream();
 
-  const bool connected = NetworkConnected();
+  const bool connected = ESPEasy::net::NetworkConnected();
 
 
 //  if (connected) {
@@ -182,7 +182,7 @@ void handle_setup() {
         
         #if SETUP_PAGE_SHOW_CONFIG_BUTTON
         if (!clientIPinSubnet()) {
-          String host = formatIP(NetworkLocalIP());
+          String host = formatIP(ESPEasy::net::NetworkLocalIP());
           String url  = F("http://");
           url += host;
           url += F("/config");

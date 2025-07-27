@@ -5,4 +5,3 @@
 #if FEATURE_ETHERNET
 EthernetEventData_t EthEventData;
 #endif
-

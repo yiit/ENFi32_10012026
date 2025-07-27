@@ -10,4 +10,3 @@
 extern EthernetEventData_t EthEventData;
 
 #endif // if FEATURE_ETHERNET
-

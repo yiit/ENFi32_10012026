@@ -11,7 +11,7 @@
 # define NWPLUGIN_NAME_004       "Ethernet (SPI)"
 
 # include "../../src/DataStructs/ESPEasy_EventStruct.h"
-# include "../../src/ESPEasyCore/ESPEasyEth.h"
+# include "../net/eth/ESPEasyEth.h"
 # include "../../src/Globals/SecuritySettings.h"
 # include "../../src/Globals/Settings.h"
 # include "../../src/Helpers/ESPEasy_Storage.h"
@@ -288,7 +288,7 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
-      ETHConnectRelaxed();
+      ESPEasy::net::eth::ETHConnectRelaxed();
       break;
     }
 

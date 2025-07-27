@@ -3,22 +3,20 @@
 #if FEATURE_WIFI
 # ifdef ESP8266
 
-# include "../../../src/DataStructs/RTCStruct.h"
+#  include "../../../src/DataStructs/RTCStruct.h"
+#  include "../../../src/DataTypes/ESPEasyTimeSource.h"
+#  include "../../../src/ESPEasyCore/ESPEasy_Log.h"
+#  include "../../../src/Globals/RTC.h"
+#  include "../../../src/Globals/WiFi_AP_Candidates.h"
+#  include "../../../src/Helpers/ESPEasy_time_calc.h"
 
-# include "../../../src/DataTypes/ESPEasyTimeSource.h"
-
-//# include "../../../src/ESPEasyCore/ESPEasyEth.h"
-# include "../../../src/ESPEasyCore/ESPEasy_Log.h"
-# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
+#  include "../ESPEasyNetwork.h"
 #  include "../wifi/ESPEasyWifi.h"
 #  include "../wifi/ESPEasyWifi_ProcessEvent.h"
 
-# include "../Globals/ESPEasyWiFiEvent.h"
-# include "../Globals/NetworkState.h"
-# include "../../../src/Globals/RTC.h"
-# include "../../../src/Globals/WiFi_AP_Candidates.h"
+#  include "../Globals/ESPEasyWiFiEvent.h"
+#  include "../Globals/NetworkState.h"
 
-# include "../../../src/Helpers/ESPEasy_time_calc.h"
 
 namespace ESPEasy {
 namespace net {
@@ -112,9 +110,9 @@ void onWiFiScanDone(void *arg, STATUS status) {
 
 #  endif // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
-}
-}
-}
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 
 # endif // ifdef ESP8266
 #endif // if FEATURE_WIFI

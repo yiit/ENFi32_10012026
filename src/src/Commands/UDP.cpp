@@ -4,7 +4,7 @@
 #include "../../ESPEasy_common.h"
 
 #include "../Commands/Common.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 #include "../Helpers/Misc.h"
@@ -61,7 +61,7 @@ const __FlashStringHelper* Command_UDP_SendToUPDMix(struct EventStruct *event, c
 
 const __FlashStringHelper* Command_UDP_SendToUPD(struct EventStruct *event, const char *Line, const bool handleMix)
 {
-  if (NetworkConnected()) {
+  if (ESPEasy::net::NetworkConnected()) {
     const String ip   = parseString(Line, 2);
     const int    port = parseCommandArgumentInt(Line, 2, -1);
 

@@ -5,7 +5,7 @@
 
 #if FEATURE_ESPEASY_P2P
 #include "../Helpers/ESPEasy_time.h"
-#include "../DataStructs/MAC_address.h"
+#include "../../ESPEasy/net/DataStructs/MAC_address.h"
 
 #include <IPAddress.h>
 #include <map>

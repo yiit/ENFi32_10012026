@@ -1,37 +1,40 @@
-#include "../ESPEasyCore/ESPEasyEth.h"
+#include "../eth/ESPEasyEth.h"
 
 #if FEATURE_ETHERNET
 
-#include "../CustomBuild/ESPEasyLimits.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyGPIO.h"
-#include "../ESPEasyCore/ESPEasyEthEvent.h"
-#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
-#include "../../ESPEasy/net/Globals/NetworkState.h"
-#include "../Globals/Settings.h"
-#include "../Helpers/Hardware_GPIO.h"
-#include "../Helpers/StringConverter.h"
-#include "../Helpers/Networking.h"
+# include "../../../src/CustomBuild/ESPEasyLimits.h"
+# include "../ESPEasyNetwork.h"
+# include "../wifi/ESPEasyWifi.h"
+# include "../../../src/ESPEasyCore/ESPEasy_Log.h"
+# include "../../../src/ESPEasyCore/ESPEasyGPIO.h"
+# include "../eth/ESPEasyEthEvent.h"
+# include "../Globals/ESPEasyEthEvent.h"
+# include "../Globals/NetworkState.h"
+# include "../../../src/Globals/Settings.h"
+# include "../../../src/Helpers/Hardware_GPIO.h"
+# include "../../../src/Helpers/StringConverter.h"
+# include "../../../src/Helpers/Networking.h"
 
-#include <ETH.h>
-#include <lwip/dns.h>
-#include <esp_eth_phy.h>
+# include <ETH.h>
+# include <lwip/dns.h>
+# include <esp_eth_phy.h>
 
-#include <WiFi.h>
+# include <WiFi.h>
 
-bool ethUseStaticIP() {
-  return Settings.ETH_IP[0] != 0 && Settings.ETH_IP[0] != 255;
-}
+namespace ESPEasy {
+namespace net {
+namespace eth {
+
+bool ethUseStaticIP() { return Settings.ETH_IP[0] != 0 && Settings.ETH_IP[0] != 255; }
 
 void ethSetupStaticIPconfig() {
-  const IPAddress IP_zero(0, 0, 0, 0); 
-  if (!ethUseStaticIP()) { 
+  const IPAddress IP_zero(0, 0, 0, 0);
+
+  if (!ethUseStaticIP()) {
     if (!ETH.config(IP_zero, IP_zero, IP_zero, IP_zero)) {
       addLog(LOG_LEVEL_ERROR, F("ETH  : Cannot set IP config"));
     }
-    return; 
+    return;
   }
   const IPAddress ip     = Settings.ETH_IP;
   const IPAddress gw     = Settings.ETH_Gateway;
@@ -59,21 +62,22 @@ void ethSetupStaticIPconfig() {
 }
 
 bool ethCheckSettings() {
-  return isValid(Settings.ETH_Phy_Type) 
-#if CONFIG_ETH_USE_ESP32_EMAC
-      && (isValid(Settings.ETH_Clock_Mode)/* || isSPI_EthernetType(Settings.ETH_Phy_Type)*/)
-#endif
-      && isValid(Settings.NetworkMedium)
-      && validGpio(Settings.ETH_Pin_mdc_cs)
-      && (isSPI_EthernetType(Settings.ETH_Phy_Type) ||
-          ( validGpio(Settings.ETH_Pin_mdio_irq) && 
-            (validGpio(Settings.ETH_Pin_power_rst) || (Settings.ETH_Pin_power_rst == -1))
-          )
-        ); // Some boards have fixed power
+  return isValid(Settings.ETH_Phy_Type)
+# if CONFIG_ETH_USE_ESP32_EMAC
+         && (isValid(Settings.ETH_Clock_Mode) /* || isSPI_EthernetType(Settings.ETH_Phy_Type)*/)
+# endif
+         && isValid(Settings.NetworkMedium)
+         && validGpio(Settings.ETH_Pin_mdc_cs)
+         && (isSPI_EthernetType(Settings.ETH_Phy_Type) ||
+             (validGpio(Settings.ETH_Pin_mdio_irq) &&
+              (validGpio(Settings.ETH_Pin_power_rst) || (Settings.ETH_Pin_power_rst == -1))
+             )
+             ); // Some boards have fixed power
 }
 
 bool ethPrepare() {
   char hostname[40];
+
   safe_strncpy(hostname, NetworkCreateRFCCompliantHostname().c_str(), sizeof(hostname));
   ETH.setHostname(hostname);
   ethSetupStaticIPconfig();
@@ -83,9 +87,10 @@ bool ethPrepare() {
 void ethPrintSettings() {
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log;
+
     if (log.reserve(115)) {
-//    log += F("ETH/Wifi mode: ");
-//    log += toString(active_network_medium);
+      //    log += F("ETH/Wifi mode: ");
+      //    log += toString(active_network_medium);
       log += F("ETH PHY Type: ");
       log += toString(Settings.ETH_Phy_Type);
       log += F(" PHY Addr: ");
@@ -95,11 +100,11 @@ void ethPrintSettings() {
         log += F(" Eth Clock mode: ");
         log += toString(Settings.ETH_Clock_Mode);
       }
-      log += strformat(isSPI_EthernetType(Settings.ETH_Phy_Type) 
+      log += strformat(isSPI_EthernetType(Settings.ETH_Phy_Type)
         ? F(" CS: %d IRQ: %d RST: %d") : F(" MDC: %d MIO: %d PWR: %d"),
-        Settings.ETH_Pin_mdc_cs,
-        Settings.ETH_Pin_mdio_irq,
-        Settings.ETH_Pin_power_rst);
+                       Settings.ETH_Pin_mdc_cs,
+                       Settings.ETH_Pin_mdio_irq,
+                       Settings.ETH_Pin_power_rst);
       addLogMove(LOG_LEVEL_INFO, log);
     }
   }
@@ -107,7 +112,8 @@ void ethPrintSettings() {
 
 MAC_address ETHMacAddress() {
   MAC_address mac;
-  if(!EthEventData.ethInitSuccess) {
+
+  if (!EthEventData.ethInitSuccess) {
     addLog(LOG_LEVEL_ERROR, F("Call NetworkMacAddress() only on connected Ethernet!"));
   } else {
     ETH.macAddress(mac.mac);
@@ -129,18 +135,19 @@ void registerEthEventHandler()
   EthEventData.wm_event_id = WiFi.onEvent(EthEvent);
 }
 
-
 bool ETHConnectRelaxed() {
   if (EthEventData.ethInitSuccess) {
     return EthLinkUp();
   }
   ethPrintSettings();
+
   if (!ethCheckSettings())
   {
     addLog(LOG_LEVEL_ERROR, F("ETH: Settings not correct!!!"));
     EthEventData.ethInitSuccess = false;
     return false;
   }
+
   // Re-register event listener
   removeEthEventHandler();
 
@@ -151,46 +158,50 @@ bool ETHConnectRelaxed() {
   registerEthEventHandler();
 
   if (!EthEventData.ethInitSuccess) {
-#if ESP_IDF_VERSION_MAJOR < 5
-    EthEventData.ethInitSuccess = ETH.begin( 
+# if ESP_IDF_VERSION_MAJOR < 5
+    EthEventData.ethInitSuccess = ETH.begin(
       Settings.ETH_Phy_Addr,
       Settings.ETH_Pin_power_rst,
       Settings.ETH_Pin_mdc_cs,
       Settings.ETH_Pin_mdio_irq,
       (eth_phy_type_t)Settings.ETH_Phy_Type,
       (eth_clock_mode_t)Settings.ETH_Clock_Mode);
-#else
-#if FEATURE_USE_IPV6
+# else // if ESP_IDF_VERSION_MAJOR < 5
+#  if FEATURE_USE_IPV6
+
     if (Settings.EnableIPv6()) {
       ETH.enableIPv6(true);
     }
-#endif
+#  endif // if FEATURE_USE_IPV6
 
     if (isSPI_EthernetType(Settings.ETH_Phy_Type)) {
       spi_host_device_t SPI_host = Settings.getSPI_host();
+
       if (SPI_host == spi_host_device_t::SPI_HOST_MAX) {
         addLog(LOG_LEVEL_ERROR, F("SPI not enabled"));
-        #ifdef ESP32C3
+        #  ifdef ESP32C3
+
         // FIXME TD-er: Fallback for ETH01-EVO board
-        SPI_host = spi_host_device_t::SPI2_HOST;
-        Settings.InitSPI = static_cast<int>(SPI_Options_e::UserDefined);
+        SPI_host              = spi_host_device_t::SPI2_HOST;
+        Settings.InitSPI      = static_cast<int>(SPI_Options_e::UserDefined);
         Settings.SPI_SCLK_pin = 7;
         Settings.SPI_MISO_pin = 3;
         Settings.SPI_MOSI_pin = 10;
-        #endif
+        #  endif // ifdef ESP32C3
       }
-      // else 
+
+      // else
       {
-#if ETH_SPI_SUPPORTS_CUSTOM
-        EthEventData.ethInitSuccess = ETH.begin( 
+#  if ETH_SPI_SUPPORTS_CUSTOM
+        EthEventData.ethInitSuccess = ETH.begin(
           to_ESP_phy_type(Settings.ETH_Phy_Type),
           Settings.ETH_Phy_Addr,
           Settings.ETH_Pin_mdc_cs,
           Settings.ETH_Pin_mdio_irq,
           Settings.ETH_Pin_power_rst,
           SPI);
-#else
-        EthEventData.ethInitSuccess = ETH.begin( 
+#  else // if ETH_SPI_SUPPORTS_CUSTOM
+        EthEventData.ethInitSuccess = ETH.begin(
           to_ESP_phy_type(Settings.ETH_Phy_Type),
           Settings.ETH_Phy_Addr,
           Settings.ETH_Pin_mdc_cs,
@@ -200,50 +211,51 @@ bool ETHConnectRelaxed() {
           static_cast<int>(Settings.SPI_SCLK_pin),
           static_cast<int>(Settings.SPI_MISO_pin),
           static_cast<int>(Settings.SPI_MOSI_pin));
-#endif
+#  endif // if ETH_SPI_SUPPORTS_CUSTOM
       }
     } else {
-# if CONFIG_ETH_USE_ESP32_EMAC
-#ifndef ESP32P4
-    ethResetGPIOpins();
-#endif
-    EthEventData.ethInitSuccess = ETH.begin( 
-      to_ESP_phy_type(Settings.ETH_Phy_Type),
-      Settings.ETH_Phy_Addr,
-      Settings.ETH_Pin_mdc_cs,
-      Settings.ETH_Pin_mdio_irq,
-      Settings.ETH_Pin_power_rst,
-      (eth_clock_mode_t)Settings.ETH_Clock_Mode);
-#endif
+#  if CONFIG_ETH_USE_ESP32_EMAC
+#   ifndef ESP32P4
+      ethResetGPIOpins();
+#   endif
+      EthEventData.ethInitSuccess = ETH.begin(
+        to_ESP_phy_type(Settings.ETH_Phy_Type),
+        Settings.ETH_Phy_Addr,
+        Settings.ETH_Pin_mdc_cs,
+        Settings.ETH_Pin_mdio_irq,
+        Settings.ETH_Pin_power_rst,
+        (eth_clock_mode_t)Settings.ETH_Clock_Mode);
+#  endif // if CONFIG_ETH_USE_ESP32_EMAC
     }
 
-#endif
+# endif // if ESP_IDF_VERSION_MAJOR < 5
   }
+
   if (EthEventData.ethInitSuccess) {
     // FIXME TD-er: Not sure if this is correctly set to false
-    //EthEventData.ethConnectAttemptNeeded = false;
+    // EthEventData.ethConnectAttemptNeeded = false;
 
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-#if ESP_IDF_VERSION_MAJOR < 5
+# if ESP_IDF_VERSION_MAJOR < 5
       addLog(LOG_LEVEL_INFO, strformat(
-        F("ETH  : MAC: %s speed: %dM %s Link: %s"),
-        ETH.macAddress().c_str(),
-        ETH.linkSpeed(),
-        String(ETH.fullDuplex() ? F("Full Duplex") : F("Half Duplex")).c_str(),
-        String(ETH.linkUp() ? F("Up") : F("Down")).c_str()));
-#else
+               F("ETH  : MAC: %s speed: %dM %s Link: %s"),
+               ETH.macAddress().c_str(),
+               ETH.linkSpeed(),
+               String(ETH.fullDuplex() ? F("Full Duplex") : F("Half Duplex")).c_str(),
+               String(ETH.linkUp() ? F("Up") : F("Down")).c_str()));
+# else // if ESP_IDF_VERSION_MAJOR < 5
       addLog(LOG_LEVEL_INFO, strformat(
-        F("ETH  : MAC: %s phy addr: %d speed: %dM %s Link: %s"),
-        ETH.macAddress().c_str(),
-        ETH.phyAddr(),
-        ETH.linkSpeed(),
-        concat(
-          ETH.fullDuplex() ? F("Full Duplex") : F("Half Duplex"),
-          ETH.autoNegotiation() ? F("(auto)") : F("")).c_str(),
-        String(ETH.linkUp() ? F("Up") : F("Down")).c_str()));
-#endif
+               F("ETH  : MAC: %s phy addr: %d speed: %dM %s Link: %s"),
+               ETH.macAddress().c_str(),
+               ETH.phyAddr(),
+               ETH.linkSpeed(),
+               concat(
+                 ETH.fullDuplex() ? F("Full Duplex") : F("Half Duplex"),
+                 ETH.autoNegotiation() ? F("(auto)") : F("")).c_str(),
+               String(ETH.linkUp() ? F("Up") : F("Down")).c_str()));
+# endif // if ESP_IDF_VERSION_MAJOR < 5
     }
-    
+
     if (EthLinkUp()) {
       // We might miss the connected event, since we are already connected.
       EthEventData.markConnected();
@@ -255,45 +267,55 @@ bool ETHConnectRelaxed() {
 }
 
 void ethPower(bool enable) {
-  if (isSPI_EthernetType(Settings.ETH_Phy_Type)) 
+  if (isSPI_EthernetType(Settings.ETH_Phy_Type)) {
     return;
+  }
+
   if (Settings.ETH_Pin_power_rst != -1) {
     if (GPIO_Internal_Read(Settings.ETH_Pin_power_rst) == enable) {
       // Already the desired state
       return;
     }
     addLog(LOG_LEVEL_INFO, enable ? F("ETH power ON") : F("ETH power OFF"));
+
     if (!enable) {
       EthEventData.ethInitSuccess = false;
       EthEventData.clearAll();
-      #ifdef ESP_IDF_VERSION_MAJOR
+      # ifdef ESP_IDF_VERSION_MAJOR
+
       // FIXME TD-er: See: https://github.com/espressif/arduino-esp32/issues/6105
       // Need to store the last link state, as it will be cleared after destructing the object.
       EthEventData.setEthDisconnected();
+
       if (ETH.linkUp()) {
         EthEventData.setEthConnected();
       }
-      #endif
-//      ETH = ETHClass();
+      # endif // ifdef ESP_IDF_VERSION_MAJOR
+
+      //      ETH = ETHClass();
     }
+
     if (enable) {
-//      ethResetGPIOpins();
+      //      ethResetGPIOpins();
     }
-//    gpio_reset_pin((gpio_num_t)Settings.ETH_Pin_power_rst);
+
+    //    gpio_reset_pin((gpio_num_t)Settings.ETH_Pin_power_rst);
 
     GPIO_Write(PLUGIN_GPIO, Settings.ETH_Pin_power_rst, enable ? 1 : 0);
+
     if (!enable) {
 # if CONFIG_ETH_USE_ESP32_EMAC
-      #if CONFIG_IDF_TARGET_ESP32P4
+      #  if CONFIG_IDF_TARGET_ESP32P4
       const bool isExternalCrystal = Settings.ETH_Clock_Mode == EthClockMode_t::Ext_crystal;
-      #else
+      #  else
       const bool isExternalCrystal = Settings.ETH_Clock_Mode == EthClockMode_t::Ext_crystal_osc;
-      #endif
+      #  endif // if CONFIG_IDF_TARGET_ESP32P4
+
       if (isExternalCrystal) {
         delay(600); // Give some time to discharge any capacitors
         // Delay is needed to make sure no clock signal remains present which may cause the ESP to boot into flash mode.
       }
-#endif
+# endif // if CONFIG_ETH_USE_ESP32_EMAC
     } else {
       delay(400); // LAN chip needs to initialize before calling Eth.begin()
     }
@@ -301,8 +323,9 @@ void ethPower(bool enable) {
 }
 
 void ethResetGPIOpins() {
-  if (isSPI_EthernetType(Settings.ETH_Phy_Type)) 
+  if (isSPI_EthernetType(Settings.ETH_Phy_Type)) {
     return;
+  }
 
   // fix an disconnection issue after rebooting Olimex POE - this forces a clean state for all GPIO involved in RMII
   // Thanks to @s-hadinger and @Jason2866
@@ -312,27 +335,28 @@ void ethResetGPIOpins() {
   gpio_reset_pin((gpio_num_t)Settings.ETH_Pin_mdio_irq);
 # if CONFIG_ETH_USE_ESP32_EMAC
 
-  gpio_reset_pin(GPIO_NUM_19);    // EMAC_TXD0 - hardcoded
-  gpio_reset_pin(GPIO_NUM_21);    // EMAC_TX_EN - hardcoded
-  gpio_reset_pin(GPIO_NUM_22);    // EMAC_TXD1 - hardcoded
-  gpio_reset_pin(GPIO_NUM_25);    // EMAC_RXD0 - hardcoded
-  gpio_reset_pin(GPIO_NUM_26);    // EMAC_RXD1 - hardcoded
-  gpio_reset_pin(GPIO_NUM_27);    // EMAC_RX_CRS_DV - hardcoded
-#endif
+  gpio_reset_pin(GPIO_NUM_19); // EMAC_TXD0 - hardcoded
+  gpio_reset_pin(GPIO_NUM_21); // EMAC_TX_EN - hardcoded
+  gpio_reset_pin(GPIO_NUM_22); // EMAC_TXD1 - hardcoded
+  gpio_reset_pin(GPIO_NUM_25); // EMAC_RXD0 - hardcoded
+  gpio_reset_pin(GPIO_NUM_26); // EMAC_RXD1 - hardcoded
+  gpio_reset_pin(GPIO_NUM_27); // EMAC_RX_CRS_DV - hardcoded
+# endif // if CONFIG_ETH_USE_ESP32_EMAC
+
   /*
-  switch (Settings.ETH_Clock_Mode) {
-    case EthClockMode_t::Ext_crystal_osc:       // ETH_CLOCK_GPIO0_IN
-    case EthClockMode_t::Int_50MHz_GPIO_0:      // ETH_CLOCK_GPIO0_OUT
+     switch (Settings.ETH_Clock_Mode) {
+     case EthClockMode_t::Ext_crystal_osc:       // ETH_CLOCK_GPIO0_IN
+     case EthClockMode_t::Int_50MHz_GPIO_0:      // ETH_CLOCK_GPIO0_OUT
       gpio_reset_pin(GPIO_NUM_0);
       break;
-    case EthClockMode_t::Int_50MHz_GPIO_16:     // ETH_CLOCK_GPIO16_OUT
+     case EthClockMode_t::Int_50MHz_GPIO_16:     // ETH_CLOCK_GPIO16_OUT
       gpio_reset_pin(GPIO_NUM_16);
       break;
-    case EthClockMode_t::Int_50MHz_GPIO_17_inv: // ETH_CLOCK_GPIO17_OUT
+     case EthClockMode_t::Int_50MHz_GPIO_17_inv: // ETH_CLOCK_GPIO17_OUT
       gpio_reset_pin(GPIO_NUM_17);
       break;
-  }
-  */
+     }
+   */
   delay(1);
 }
 
@@ -341,18 +365,21 @@ bool ETHConnected() {
     if (EthLinkUp()) {
       return true;
     }
+
     // Apparently we missed an event
     EthEventData.processedDisconnect = false;
   } else if (EthEventData.ethInitSuccess) {
     if (EthLinkUp()) {
       EthEventData.setEthConnected();
-      if (NetworkLocalIP() != IPAddress(0, 0, 0, 0) && 
+
+      if ((NetworkLocalIP() != IPAddress(0, 0, 0, 0)) &&
           !EthEventData.EthGotIP()) {
         EthEventData.processedGotIP = false;
       }
+
       if (EthEventData.lastConnectMoment.isSet()) {
         if (!EthEventData.EthServicesInitialized()) {
-          if (EthEventData.lastConnectMoment.millisPassedSince() > 10000 &&
+          if ((EthEventData.lastConnectMoment.millisPassedSince() > 10000) &&
               EthEventData.lastGetIPmoment.isSet()) {
             EthEventData.processedGotIP = false;
             EthEventData.markLostIP();
@@ -361,8 +388,8 @@ bool ETHConnected() {
       }
       return EthEventData.EthServicesInitialized();
     } else {
-      if (EthEventData.last_eth_connect_attempt_moment.isSet() && 
-          EthEventData.last_eth_connect_attempt_moment.millisPassedSince() < 5000) {
+      if (EthEventData.last_eth_connect_attempt_moment.isSet() &&
+          (EthEventData.last_eth_connect_attempt_moment.millisPassedSince() < 5000)) {
         return false;
       }
       setNetworkMedium(NetworkMedium_t::WIFI);
@@ -370,5 +397,9 @@ bool ETHConnected() {
   }
   return false;
 }
+
+} // namespace eth
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if FEATURE_ETHERNET

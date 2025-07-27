@@ -3,7 +3,7 @@
 #include "../DataStructs/tcp_cleanup.h"
 #include "../DataTypes/ESPEasyTimeSource.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 // FIXME TD-er: Should keep a pointer to the webserver as a member, not use the global defined one.
 #include "../Globals/Services.h"

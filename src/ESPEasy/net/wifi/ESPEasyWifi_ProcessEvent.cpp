@@ -5,9 +5,9 @@
 #if FEATURE_WIFI
 
 # if FEATURE_ETHERNET
-#  include "../../../src/ESPEasyCore/ESPEasyEth_ProcessEvent.h"
+#  include "../eth/ESPEasyEth_ProcessEvent.h"
 # endif
-# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
+# include "../ESPEasyNetwork.h"
 # include "../../../src/Globals/ESPEasy_Scheduler.h"
 # include "../../../src/Globals/ESPEasy_time.h"
 # include "../../../src/Globals/EventQueue.h"
@@ -28,7 +28,7 @@
 # include "../../../src/Helpers/StringGenerator_WiFi.h"
 # include "../../../src/Helpers/StringProvider.h"
 
-// #include "../ESPEasyCore/ESPEasyEth.h"
+// #include "../../ESPEasy/net/eth/ESPEasyEth.h"
 // #include "../ESPEasyCore/ESPEasyWiFiEvent.h"
 // #include "../ESPEasyCore/ESPEasy_Log.h"
 // #include "../Helpers/ESPEasy_time_calc.h"
@@ -53,7 +53,7 @@ namespace wifi {
 void handle_unprocessedNetworkEvents()
 {
 # if FEATURE_ETHERNET
-  handle_unprocessedEthEvents();
+  ESPEasy::net::eth::handle_unprocessedEthEvents();
 # endif
 
   if (active_network_medium == NetworkMedium_t::WIFI) {
@@ -103,7 +103,7 @@ void handle_unprocessedNetworkEvents()
   }
 
 # if FEATURE_ETHERNET
-  check_Eth_DNS_valid();
+  ESPEasy::net::eth::check_Eth_DNS_valid();
 # endif // if FEATURE_ETHERNET
 
 # if FEATURE_ESPEASY_P2P

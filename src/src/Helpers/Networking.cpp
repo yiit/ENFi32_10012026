@@ -7,8 +7,8 @@
 #include "../DataTypes/EventValueSource.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasy_backgroundtasks.h"
-#include "../ESPEasyCore/ESPEasyEth.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/eth/ESPEasyEth.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../ESPEasyCore/Serial.h"
 #include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
@@ -100,7 +100,7 @@ void etharp_gratuitous_r(struct netif *netif)     { tcpip_callback_with_block((t
 \*********************************************************************************************/
 void sendSyslog(uint8_t logLevel, const String& message)
 {
-  if ((Settings.Syslog_IP[0] != 0) && NetworkConnected())
+  if ((Settings.Syslog_IP[0] != 0) && ESPEasy::net::NetworkConnected())
   {
     IPAddress broadcastIP(Settings.Syslog_IP[0], Settings.Syslog_IP[1], Settings.Syslog_IP[2], Settings.Syslog_IP[3]);
 
@@ -130,7 +130,7 @@ void sendSyslog(uint8_t logLevel, const String& message)
       header += '<';
       header += prio;
       header += '>';
-      header += NetworkCreateRFCCompliantHostname(true);
+      header += ESPEasy::net::NetworkCreateRFCCompliantHostname(true);
       header += F(" EspEasy: ");
       header.trim();
       header.replace(' ', '_');
@@ -233,7 +233,7 @@ void updateUDPport(bool force)
     lastUsedUDPPort = 0;
   }
 
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return;
   }
 
@@ -259,7 +259,7 @@ boolean runningUPDCheck = false;
 
 void checkUDP()
 {
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return;
   }
 
@@ -989,8 +989,8 @@ bool getSubnetRange(IPAddress& low, IPAddress& high)
     return false;
   }
 
-  const IPAddress ip     = NetworkLocalIP();
-  const IPAddress subnet = NetworkSubnetMask();
+  const IPAddress ip     = ESPEasy::net::NetworkLocalIP();
+  const IPAddress subnet = ESPEasy::net::NetworkSubnetMask();
 
   low  = ip;
   high = ip;
@@ -1040,7 +1040,7 @@ bool useStaticIP() {
   #if FEATURE_ETHERNET
 
   if (active_network_medium == NetworkMedium_t::Ethernet) {
-    return ethUseStaticIP();
+    return ESPEasy::net::eth::ethUseStaticIP();
   }
   #endif // if FEATURE_ETHERNET
   return ESPEasy::net::wifi::WiFiUseStaticIP();
@@ -1048,7 +1048,7 @@ bool useStaticIP() {
 
 // Check connection. Maximum timeout 500 msec.
 bool NetworkConnected(uint32_t timeout_ms) {
-  if (NetworkConnected()) return true;
+  if (ESPEasy::net::NetworkConnected()) return true;
 
 #ifdef USES_ESPEASY_NOW
 
@@ -1070,7 +1070,7 @@ bool NetworkConnected(uint32_t timeout_ms) {
   }
 
   // Apparently something needs network, perform check to see if it is ready now.
-  while (!NetworkConnected()) {
+  while (!ESPEasy::net::NetworkConnected()) {
     if (timeOutReached(timer)) {
       return false;
     }
@@ -1080,7 +1080,7 @@ bool NetworkConnected(uint32_t timeout_ms) {
 }
 
 bool hostReachable(const IPAddress& ip) {
-  if (!NetworkConnected()) { return false; }
+  if (!ESPEasy::net::NetworkConnected()) { return false; }
 
   return true; // Disabled ping as requested here:
   // https://github.com/letscontrolit/ESPEasy/issues/1494#issuecomment-397872538
@@ -1128,7 +1128,7 @@ bool connectClient(WiFiClient& client, IPAddress ip, uint16_t port, uint32_t tim
 {
   START_TIMER;
 
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     client.stop();
     return false;
   }
@@ -1252,7 +1252,7 @@ bool setDNS(int index, const IPAddress& dns) {
 bool resolveHostByName(const char *aHostname, IPAddress& aResult, uint32_t timeout_ms) {
   START_TIMER;
 
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return false;
   }
 
@@ -1292,7 +1292,7 @@ bool hostReachable(const String& hostname) {
 // Create a random port for the UDP connection.
 // Return true when successful.
 bool beginWiFiUDP_randomPort(WiFiUDP& udp) {
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return false;
   }
   unsigned int attempts = 3;
@@ -1309,7 +1309,7 @@ bool beginWiFiUDP_randomPort(WiFiUDP& udp) {
 }
 
 void sendGratuitousARP() {
-  if (!NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected()) {
     return;
   }
 #ifdef SUPPORT_ARP
@@ -1617,7 +1617,7 @@ int http_authenticate(const String& logIdentifier,
   http.addHeader(F("Accept"),          F("*/*;q=0.1"));
 
   // Add client IP
-  http.addHeader(F("X-Forwarded-For"), formatIP(NetworkLocalIP()));
+  http.addHeader(F("X-Forwarded-For"), formatIP(ESPEasy::net::NetworkLocalIP()));
 
   delay(0);
   scrubDNS();

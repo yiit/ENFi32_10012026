@@ -3,7 +3,7 @@
 
 #include "../../ESPEasy_common.h"
 
-#include "../DataStructs/MAC_address.h"
+#include "../../ESPEasy/net/DataStructs/MAC_address.h"
 struct WiFi_AP_Candidate {
   WiFi_AP_Candidate();
   WiFi_AP_Candidate(const WiFi_AP_Candidate& other);

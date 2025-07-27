@@ -11,7 +11,7 @@
 # include "../WebServer/Markup_Forms.h"
 
 # include "../Commands/ExecuteCommand.h"
-# include "../ESPEasyCore/ESPEasyNetwork.h"
+# include "../../ESPEasy/net/ESPEasyNetwork.h"
 # include "../Globals/ESPEasy_time.h"
 # include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 # include "../Globals/MainLoopCommand.h"

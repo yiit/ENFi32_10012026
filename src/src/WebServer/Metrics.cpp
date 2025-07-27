@@ -2,7 +2,7 @@
 #include "../WebServer/ESPEasy_WebServer.h"
 #include "../../ESPEasy-Globals.h"
 #include "../Commands/Diagnostic.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../../_Plugin_Helper.h"
 #include "../Helpers/ESPEasyStatistics.h"

@@ -10,7 +10,7 @@
 #include "../ESPEasyCore/Controller.h"
 #include "../ESPEasyCore/ESPEasyGPIO.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../ESPEasyCore/Serial.h"
 #include "../Globals/ESPEasy_Scheduler.h"
@@ -109,7 +109,7 @@ void run10TimesPerSecond() {
   }
   
   #ifdef USES_C015
-  if (NetworkConnected()) {
+  if (ESPEasy::net::NetworkConnected()) {
     Blynk_Run_c015();
   }
   #endif
@@ -196,7 +196,7 @@ void runOncePerSecond()
   #if FEATURE_MDNS
   #ifdef ESP8266
   // Allow MDNS processing
-  if (NetworkConnected()) {
+  if (ESPEasy::net::NetworkConnected()) {
     MDNS.announce();
   }
   #endif

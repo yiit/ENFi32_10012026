@@ -1,9 +1,8 @@
-#ifndef ESPEASY_NETWORK_H
-#define ESPEASY_NETWORK_H
+#pragma once
 
 #include "../../ESPEasy_common.h"
 
-#include "../DataStructs/MAC_address.h"
+#include "../net/DataStructs/MAC_address.h"
 
 #include <IPAddress.h>
 
@@ -14,6 +13,9 @@
 // typedef std::vector<std::pair<IPAddress, ip6_addr_type_t>> IP6Addresses_t;
 typedef std::vector<IPAddress> IP6Addresses_t;
 #endif // if FEATURE_USE_IPV6
+
+namespace ESPEasy {
+namespace net {
 
 void           setNetworkMedium(NetworkMedium_t medium);
 
@@ -57,4 +59,5 @@ uint8_t        EthLinkSpeed();
 #endif // if FEATURE_ETHERNET
 
 
-#endif // ifndef ESPEASY_NETWORK_H
+}
+}

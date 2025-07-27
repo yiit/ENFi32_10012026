@@ -5,7 +5,7 @@
 
 #include "../DataTypes/NodeTypeID.h"
 
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Settings.h"
@@ -70,7 +70,7 @@ bool NodeStruct::validate(const IPAddress& remoteIP) {
   if (Settings.EnableIPv6() &&
       hasIPv6_mac_based_link_global && 
       remoteIP.type() == IPv6) {
-    const IPAddress this_global = NetworkGlobalIP6();
+    const IPAddress this_global = ESPEasy::net::NetworkGlobalIP6();
     // Check first 64 bit to see if we're in the same global scope
     for (int i = 0; i < 8 && hasIPv6_mac_based_link_global; ++i) {
       if (this_global[i] != remoteIP[i])
@@ -161,7 +161,7 @@ IPAddress NodeStruct::IPv6_link_local(bool stripZone) const
   if (Settings.EnableIPv6() && hasIPv6_mac_based_link_local) {
     // Base IPv6 on MAC address
     IPAddress ipv6;
-    if (IPv6_link_local_from_MAC(sta_mac, ipv6)) {
+    if (ESPEasy::net::IPv6_link_local_from_MAC(sta_mac, ipv6)) {
       if (stripZone) {
         return IPAddress(IPv6, &ipv6[0], 0);
       }
@@ -176,7 +176,7 @@ IPAddress NodeStruct::IPv6_global() const
   if (Settings.EnableIPv6() && hasIPv6_mac_based_link_global) {
     // Base IPv6 on MAC address
     IPAddress ipv6;
-    if (IPv6_global_from_MAC(sta_mac, ipv6)) {
+    if (ESPEasy::net::IPv6_global_from_MAC(sta_mac, ipv6)) {
       return ipv6;
     }
   }
@@ -319,9 +319,9 @@ bool NodeStruct::isThisNode() const
 {
     // Check to see if we process a node we've sent ourselves.
     #if FEATURE_WIFI
-    if (WifiSoftAPmacAddress() == ap_mac) return true;
+    if (ESPEasy::net::WifiSoftAPmacAddress() == ap_mac) return true;
     #endif
-    if (NetworkMacAddress() == sta_mac) return true;
+    if (ESPEasy::net::NetworkMacAddress() == sta_mac) return true;
 
     return false;
 }

@@ -51,7 +51,7 @@
 
 #include "../DataTypes/SettingsType.h"
 
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
@@ -180,7 +180,7 @@ bool captivePortal() {
     return false;
   }
 
-  if (!isIP(web_server.hostHeader()) && (web_server.hostHeader() != (NetworkGetHostname() + F(".local")))) {
+  if (!isIP(web_server.hostHeader()) && (web_server.hostHeader() != (ESPEasy::net::NetworkGetHostname() + F(".local")))) {
     String redirectURL = concat(F("http://"), formatIP(client_localIP));
     #ifdef WEBSERVER_SETUP
 
@@ -404,7 +404,7 @@ void setWebserverRunning(bool state) {
     #endif
   }
   webserverRunning = state;
-  CheckRunningServices(); // Uses webserverRunning state.
+  ESPEasy::net::CheckRunningServices(); // Uses webserverRunning state.
 }
 
 void getWebPageTemplateDefault(const String& tmplName, WebTemplateParser& parser)

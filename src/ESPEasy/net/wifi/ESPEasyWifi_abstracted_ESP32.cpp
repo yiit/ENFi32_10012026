@@ -9,8 +9,7 @@
 #  include "../../../src/Globals/WiFi_AP_Candidates.h"
 #  include "../../../src/Helpers/StringConverter.h"
 
-#  include "../../../src/ESPEasyCore/ESPEasyNetwork.h" // Needed for NetworkCreateRFCCompliantHostname, WiFi code should not include network
-                                                       // code
+#  include "../../net/ESPEasyNetwork.h" // Needed for NetworkCreateRFCCompliantHostname, WiFi code should not include network code
 #  include "../Globals/ESPEasyWiFiEvent.h"
 #  include "../wifi/ESPEasyWiFiEvent_ESP32.h"
 #  include "../wifi/ESPEasyWifi_ProcessEvent.h"

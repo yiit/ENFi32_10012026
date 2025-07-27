@@ -17,8 +17,8 @@
 
 # include "../DataStructs/RTCStruct.h"
 
-# include "../ESPEasyCore/ESPEasyEth.h"
-# include "../ESPEasyCore/ESPEasyNetwork.h"
+# include "../../ESPEasy/net/eth/ESPEasyEth.h"
+# include "../../ESPEasy/net/ESPEasyNetwork.h"
 # include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 
@@ -653,7 +653,7 @@ void handle_sysinfo_NetworkServices() {
   addTableSeparator(F("Network Services"), 2, 3);
 
   addRowLabel(F("Network Connected"));
-  addEnabled(NetworkConnected());
+  addEnabled(ESPEasy::net::NetworkConnected());
 
   addRowLabel(F("NTP Initialized"));
   addEnabled(statusNTPInitialized);

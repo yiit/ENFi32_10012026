@@ -4,7 +4,7 @@
 #include "../../ESPEasy-Globals.h"
 #include "../Commands/ExecuteCommand.h"
 #include "../DataStructs/TimingStats.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi_ProcessEvent.h"
 #include "../ESPEasyCore/ESPEasy_backgroundtasks.h"
@@ -77,7 +77,7 @@ void ESPEasy_loop()
 
   ESPEasy::net::wifi::handle_unprocessedNetworkEvents();
 
-  bool firstLoopConnectionsEstablished = NetworkConnected() && firstLoop;
+  bool firstLoopConnectionsEstablished = ESPEasy::net::NetworkConnected() && firstLoop;
 
   if (firstLoopConnectionsEstablished) {
     #ifndef BUILD_MINIMAL_OTA

@@ -21,7 +21,7 @@ extern "C"
 # include <lwip/netif.h>
 }
 
-# include "src/ESPEasyCore/ESPEasyNetwork.h"
+# include "ESPEasy/net/ESPEasyNetwork.h"
 
 
 struct P089_icmp_pcb {

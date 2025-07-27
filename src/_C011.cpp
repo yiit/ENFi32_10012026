@@ -216,7 +216,7 @@ bool do_process_c011_delay_queue(cpluginID_t cpluginID, const Queue_element_base
   const C011_queue_element& element = static_cast<const C011_queue_element&>(element_base);
 // *INDENT-ON*
 
-if (!NetworkConnected()) { return false; }
+if (!ESPEasy::net::NetworkConnected()) { return false; }
 
 int httpCode = -1;
 

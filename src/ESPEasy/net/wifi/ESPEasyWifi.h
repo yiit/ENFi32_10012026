@@ -11,7 +11,7 @@
   #  include <WiFi.h>
 # endif // if defined(ESP32)
 
-#include "../wifi/WiFiConnectionProtocol.h"
+# include "../wifi/WiFiConnectionProtocol.h"
 # include "../../../src/DataStructs/WiFi_AP_Candidate.h"
 
 # include "../../../src/Helpers/LongTermTimer.h"
@@ -32,15 +32,14 @@ namespace wifi {
 # define WIFI_SCAN_INTERVAL_MINIMAL          60000  // in milliSeconds
 
 
-
-bool WiFiConnected();
-void WiFiConnectRelaxed();
-void AttemptWiFiConnect();
-bool prepareWiFi();
-bool checkAndResetWiFi();
-void resetWiFi();
-void initWiFi();
-void loopWiFi();
+bool  WiFiConnected();
+void  WiFiConnectRelaxed();
+void  AttemptWiFiConnect();
+bool  prepareWiFi();
+bool  checkAndResetWiFi();
+void  resetWiFi();
+void  initWiFi();
+void  loopWiFi();
 
 # if FEATURE_SET_WIFI_TX_PWR
 void  SetWiFiTXpower();
@@ -88,9 +87,9 @@ bool                       WifiIsSTA(WiFiMode_t wifimode);
 
 const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode);
 
-#if CONFIG_SOC_WIFI_SUPPORT_5G
+# if CONFIG_SOC_WIFI_SUPPORT_5G
 const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode);
-#endif
+# endif
 
 bool                       setSTA(bool enable);
 bool                       setAP(bool enable);
@@ -100,12 +99,11 @@ bool                       setSTA_AP(bool sta_enable,
 bool                       setWifiMode(WiFiMode_t new_mode);
 
 
-void    WifiScan(bool    async,
-                 uint8_t channel = 0);
+void                       WifiScan(bool    async,
+                                    uint8_t channel = 0);
 
 
-}
-}
-}
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 #endif // if FEATURE_WIFI
-

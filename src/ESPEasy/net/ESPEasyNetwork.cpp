@@ -1,15 +1,18 @@
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../net/ESPEasyNetwork.h"
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 
 #include "../../ESPEasy/net/Globals/NetworkState.h"
-#include "../Globals/Settings.h"
+#include "../../src/Globals/Settings.h"
 
-#include "../Globals/ESPEasy_time.h"
+#include "../../src/Globals/ESPEasy_time.h"
 
-#include "../Helpers/StringConverter.h"
-#include "../Helpers/MDNS_Helper.h"
+#include "../../src/Helpers/StringConverter.h"
+#include "../../src/Helpers/MDNS_Helper.h"
+
+namespace ESPEasy {
+namespace net {
 
 // ********************************************************************************
 // Determine Wifi AP name to set. (also used for mDNS)
@@ -92,4 +95,7 @@ void CheckRunningServices() {
 #if FEATURE_MDNS
   set_mDNS();
   #endif
+}
+
+}
 }

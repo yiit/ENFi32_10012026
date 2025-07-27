@@ -24,8 +24,7 @@ extern bool statusNTPInitialized;
 
 // Setup DNS, only used if the ESP has no valid WiFi config
 extern const uint8_t DNS_PORT;
-extern IPAddress  apIP;
+extern IPAddress     apIP;
 
 // udp protocol stuff (syslog, global sync, node info list, ntp time)
 extern WiFiUDP portUDP;
-

@@ -288,7 +288,7 @@ bool CPlugin_014(CPlugin::Function function, struct EventStruct *event, String& 
         CPlugin_014_sendMQTTdevice(pubname, event->TaskIndex, F("$localip"), formatIP(NetworkLocalIP()), errorCounter);
 
         // $mac	Device → Controller	Mac address of the device network interface. The format MUST be of the type A1:B2:C3:D4:E5:F6	Yes	Yes
-        CPlugin_014_sendMQTTdevice(pubname, event->TaskIndex, F("$mac"),     NetworkMacAddress(),        errorCounter);
+        CPlugin_014_sendMQTTdevice(pubname, event->TaskIndex, F("$mac"),     ESPEasy::net::NetworkMacAddress(),        errorCounter);
 
         // $implementation	Device → Controller	An identifier for the Homie implementation (example esp8266)	Yes	Yes
         CPlugin_014_sendMQTTdevice(pubname, event->TaskIndex, F("$implementation"),

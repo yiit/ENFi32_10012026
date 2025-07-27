@@ -160,7 +160,7 @@ static size_t expectedJsonLength = 100;
         // IPAddress ip = NetworkLocalIP();
         // sprintf_P(ipStr, PSTR("%u.%u.%u.%u"), ip[0], ip[1], ip[2], ip[3]);
         jsonString += ',';
-        jsonString += to_json_object_value(F("ip"), formatIP(NetworkLocalIP()));
+        jsonString += to_json_object_value(F("ip"), formatIP(ESPEasy::net::NetworkLocalIP()));
       }
       jsonString += '}'; // End "ESP"
 

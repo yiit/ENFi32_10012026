@@ -3,8 +3,8 @@
 #if FEATURE_MDNS
 
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyEth.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/eth/ESPEasyEth.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"

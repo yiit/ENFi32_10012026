@@ -2,8 +2,8 @@
 
 #include "../../ESPEasy_common.h"
 #include "../Commands/Common.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../ESPEasyCore/ESPEasyEth.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/eth/ESPEasyEth.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 #include "../Helpers/StringConverter.h"
@@ -27,24 +27,24 @@ String Command_AccessInfo_Clear (struct EventStruct *event, const char* Line)
 
 String Command_DNS (struct EventStruct *event, const char* Line)
 {
-  return Command_GetORSetIP(event, F("DNS:"), Line, Settings.DNS, NetworkDnsIP(0), 1);
+  return Command_GetORSetIP(event, F("DNS:"), Line, Settings.DNS, ESPEasy::net::NetworkDnsIP(0), 1);
 }
 
 String Command_Gateway (struct EventStruct *event, const char* Line)
 {
-  return Command_GetORSetIP(event, F("Gateway:"), Line, Settings.Gateway, NetworkGatewayIP(),1);
+  return Command_GetORSetIP(event, F("Gateway:"), Line, Settings.Gateway, ESPEasy::net::NetworkGatewayIP(),1);
 }
 
 String Command_IP (struct EventStruct *event, const char* Line)
 {
-  return Command_GetORSetIP(event, F("IP:"), Line, Settings.IP, NetworkLocalIP(),1);
+  return Command_GetORSetIP(event, F("IP:"), Line, Settings.IP, ESPEasy::net::NetworkLocalIP(),1);
 }
 
 #if FEATURE_USE_IPV6
 String Command_show_all_IP6 (struct EventStruct *event, const char* Line)
 {
   // Only get all IPv6 addresses
-  IP6Addresses_t addresses = NetworkAllIPv6();
+  IP6Addresses_t addresses = ESPEasy::net::NetworkAllIPv6();
   String res;
   res += '[';
   bool first = true;
@@ -65,7 +65,7 @@ String Command_show_all_IP6 (struct EventStruct *event, const char* Line)
 
 String Command_Subnet (struct EventStruct *event, const char* Line)
 {
-  return Command_GetORSetIP(event, F("Subnet:"), Line, Settings.Subnet, NetworkSubnetMask(), 1);
+  return Command_GetORSetIP(event, F("Subnet:"), Line, Settings.Subnet, ESPEasy::net::NetworkSubnetMask(), 1);
 }
 
 #if FEATURE_ETHERNET
@@ -139,7 +139,7 @@ String Command_ETH_Wifi_Mode (struct EventStruct *event, const char* Line)
       Settings.NetworkMedium = orig_medium;
       return return_command_failed();
     }
-    setNetworkMedium(Settings.NetworkMedium);
+    ESPEasy::net::setNetworkMedium(Settings.NetworkMedium);
   }
   
   return result;
@@ -148,11 +148,11 @@ String Command_ETH_Wifi_Mode (struct EventStruct *event, const char* Line)
 String Command_ETH_Disconnect (struct EventStruct *event, const char* Line)
 {
 
-  ethPower(0);
+  ESPEasy::net::eth::ethPower(0);
   delay(400);
 //  ethPower(1);
-  setNetworkMedium(NetworkMedium_t::Ethernet);
-  ETHConnectRelaxed();
+  ESPEasy::net::setNetworkMedium(NetworkMedium_t::Ethernet);
+  ESPEasy::net::eth::ETHConnectRelaxed();
 
   return return_command_success();
 }

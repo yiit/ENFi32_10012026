@@ -15,7 +15,7 @@
 # include "../ESPEasyCore/Controller.h"
 #endif // if FEATURE_MQTT
 #include "../ESPEasyCore/ESPEasy_Log.h"
-#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 #include "../ESPEasyCore/Serial.h"
@@ -864,7 +864,7 @@ String SaveSecuritySettings(bool forFactoryReset) {
     if (!forFactoryReset) {
       if (SecuritySettings.hasWiFiCredentials() && (active_network_medium == NetworkMedium_t::WIFI)) {
         WiFi_AP_Candidates.force_reload(); // Force reload of the credentials and found APs from the last scan
-        if (!NetworkConnected()) {
+        if (!ESPEasy::net::NetworkConnected()) {
           WiFiEventData.wifiConnectAttemptNeeded = true;
           ESPEasy::net::wifi::resetWiFi();
           ESPEasy::net::wifi::AttemptWiFiConnect();
@@ -952,7 +952,7 @@ void afterloadSettings() {
     eventQueue.clear();
   }
   node_time.applyTimeZone();
-  CheckRunningServices(); // To update changes in hostname.
+  ESPEasy::net::CheckRunningServices(); // To update changes in hostname.
 }
 
 /********************************************************************************************\
