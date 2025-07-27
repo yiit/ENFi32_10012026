@@ -1,4 +1,4 @@
-#include "../Helpers/Network.h"
+#include "../Helpers/NetworkStatusLED.h"
 
 #include "../../ESPEasy_common.h"
 
@@ -19,6 +19,10 @@
 # include <esp32-hal-periman.h>
 #endif // ifdef ESP32
 
+#define PWMRANGE_FULL 1023
+#define STATUS_PWM_NORMALVALUE (PWMRANGE_FULL >> 2)
+#define STATUS_PWM_NORMALFADE (PWMRANGE_FULL >> 8)
+#define STATUS_PWM_TRAFFICRISE (PWMRANGE_FULL >> 1)
 
 /********************************************************************************************\
    Status LED

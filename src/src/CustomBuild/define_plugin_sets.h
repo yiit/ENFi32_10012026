@@ -159,6 +159,13 @@ To create/register a plugin, you have to :
     #endif
 #endif
 
+
+#if FEATURE_ETHERNET && defined(PLUGIN_DISPLAY_COLLECTION)
+  // Display builds are getting too large, so for now disable ETH for display buikds
+  #undef FEATURE_ETHERNET
+#endif
+
+
 #ifdef MEMORY_ANALYSIS
   #ifdef MQTT_ONLY
     #define USES_C002   // Domoticz MQTT

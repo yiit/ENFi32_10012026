@@ -14,7 +14,7 @@
 #include "../Globals/Services.h"
 #include "../Helpers/_CPlugin_init.h"
 #include "../Helpers/Misc.h"
-#include "../Helpers/Network.h"
+#include "../Helpers/NetworkStatusLED.h"
 #include "../Helpers/Networking.h"
 #include "../Helpers/Numerical.h"
 #include "../Helpers/StringConverter.h"

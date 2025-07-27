@@ -23,7 +23,7 @@
 
 #include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/Misc.h"
-#include "../Helpers/Network.h"
+#include "../Helpers/NetworkStatusLED.h"
 #include "../Helpers/Networking.h"
 #include "../Helpers/StringConverter.h"
 

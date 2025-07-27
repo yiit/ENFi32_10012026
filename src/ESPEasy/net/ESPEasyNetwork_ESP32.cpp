@@ -13,7 +13,7 @@
 
 #include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
 
-#include "../../src/Helpers/Network.h"
+#include "../../src/Helpers/NetworkStatusLED.h"
 #include "../../src/Helpers/Networking.h"
 #include "../../src/Helpers/StringConverter.h"
 #include "../../src/Helpers/MDNS_Helper.h"

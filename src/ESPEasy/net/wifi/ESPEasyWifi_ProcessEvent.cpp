@@ -21,7 +21,7 @@
 # include "../../../src/Helpers/Convert.h"
 # include "../../../src/Helpers/ESPEasyRTC.h"
 # include "../../../src/Helpers/ESPEasy_Storage.h"
-# include "../../../src/Helpers/Network.h"
+# include "../../../src/Helpers/NetworkStatusLED.h"
 # include "../../../src/Helpers/Networking.h"
 # include "../../../src/Helpers/PeriodicalActions.h"
 # include "../../../src/Helpers/StringConverter.h"

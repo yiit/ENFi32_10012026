@@ -6,7 +6,7 @@
 #include "../Globals/RamTracker.h"
 
 #include "../Helpers/ESPEasy_Storage.h"
-#include "../Helpers/Network.h"
+#include "../Helpers/NetworkStatusLED.h"
 #include "../Helpers/Numerical.h"
 
 #include "../WebServer/CustomPage.h"

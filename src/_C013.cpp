@@ -11,7 +11,7 @@
 # include "src/DataStructs/C013_p2p_SensorInfoStruct.h"
 # include "src/ESPEasyCore/ESPEasyRules.h"
 # include "src/Helpers/Misc.h"
-# include "src/Helpers/Network.h"
+# include "src/Helpers/NetworkStatusLED.h"
 
 // #######################################################################################################
 // ########################### Controller Plugin 013: ESPEasy P2P network ################################

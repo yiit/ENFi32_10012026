@@ -13,7 +13,7 @@
 #include "../Helpers/Audio.h"
 #endif // if FEATURE_RTTTL && FEATURE_ANYRTTTL_LIB && FEATURE_ANYRTTTL_ASYNC
 #include "../Helpers/ESPEasy_time_calc.h"
-#include "../Helpers/Network.h"
+#include "../Helpers/NetworkStatusLED.h"
 #include "../Helpers/Networking.h"
 
 

@@ -28,7 +28,7 @@
 #include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/Hardware.h"
 #include "../Helpers/Misc.h"
-#include "../Helpers/Network.h"
+#include "../Helpers/NetworkStatusLED.h"
 #include "../Helpers/Numerical.h"
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringProvider.h"
