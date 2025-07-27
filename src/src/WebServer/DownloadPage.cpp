@@ -31,6 +31,8 @@ void handle_full_backup_no_usr_pwd() {
 
 void handle_config_download(bool fullBackup,
                             bool noCreds) {
+# else // if FEATURE_TARSTREAM_SUPPORT
+  const bool noCreds = false;
 # endif // if FEATURE_TARSTREAM_SUPPORT
   # ifndef BUILD_NO_RAM_TRACKER
   checkRAM(F("handle_download"));
