@@ -26,7 +26,7 @@
 # include "../net/Globals/NWPlugins.h"
 # include "../net/Helpers/_NWPlugin_Helper_webform.h"
 # include "../net/Helpers/_NWPlugin_init.h"
-# include "../net/wifi/ESPEasyWifi_abstracted.h"
+
 
 
 // TODO TD-er: This code should be moved to this NW002 plugin
@@ -160,7 +160,7 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
-      setAPinternal(true);
+      ESPEasy::net::wifi::setAPinternal(true);
 
       //      WiFi.AP.begin();
       break;

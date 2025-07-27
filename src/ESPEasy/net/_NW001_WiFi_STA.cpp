@@ -28,7 +28,7 @@
 # include "../net/Helpers/_NWPlugin_init.h"
 # include "../net/NWPluginStructs/NW001_WiFi_STA.h"
 # include "../net/wifi/ESPEasyWifi.h"
-# include "../net/wifi/ESPEasyWifi_abstracted.h"
+
 
 # ifdef ESP32P4
 #  include <esp_hosted.h>

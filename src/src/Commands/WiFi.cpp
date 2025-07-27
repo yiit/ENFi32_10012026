@@ -19,7 +19,7 @@
 #include "../Helpers/StringConverter.h"
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 
 
 #define WIFI_MODE_MAX (WiFiMode_t)4
@@ -78,7 +78,7 @@ String Command_Wifi_HiddenSSID(struct EventStruct *event, const char *Line)
 
 const __FlashStringHelper* Command_Wifi_Scan(struct EventStruct *event, const char *Line)
 {
-  WiFiScan_log_to_serial();
+  ESPEasy::net::wifi::WiFiScan_log_to_serial();
   return return_command_success_flashstr();
 }
 
@@ -91,7 +91,7 @@ const __FlashStringHelper* Command_Wifi_Connect(struct EventStruct *event, const
 const __FlashStringHelper* Command_Wifi_Disconnect(struct EventStruct *event, const char *Line)
 {
   RTC.clearLastWiFi(); // Force a WiFi scan
-  WifiDisconnect();
+  ESPEasy::net::wifi::WifiDisconnect();
 
   return return_command_success_flashstr();
 }

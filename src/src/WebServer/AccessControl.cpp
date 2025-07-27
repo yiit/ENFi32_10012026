@@ -5,7 +5,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Services.h"

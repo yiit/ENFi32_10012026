@@ -28,7 +28,7 @@
 # include "../net/Helpers/_NWPlugin_Helper_webform.h"
 # include "../net/Helpers/_NWPlugin_init.h"
 # include "../net/NWPluginStructs/NW005_data_struct_PPP_modem.h"
-# include "../net/wifi/ESPEasyWifi_abstracted.h"
+
 
 # include <ESPEasySerialPort.h>
 

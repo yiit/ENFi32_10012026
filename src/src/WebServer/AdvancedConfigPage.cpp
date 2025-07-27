@@ -9,7 +9,7 @@
 #include "../WebServer/ESPEasy_WebServer.h"
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 
 #include "../Globals/ESPEasy_time.h"
 #include "../Globals/Settings.h"

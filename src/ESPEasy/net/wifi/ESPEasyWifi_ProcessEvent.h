@@ -1,7 +1,11 @@
-#ifndef ESPEASYCORE_ESPEASYWIFI_PROCESSEVENT_H
-#define ESPEASYCORE_ESPEASYWIFI_PROCESSEVENT_H
+#pragma once
 
 #include "../../../ESPEasy_common.h"
+
+#if FEATURE_WIFI
+namespace ESPEasy {
+namespace net {
+namespace wifi {
 
 void handle_unprocessedNetworkEvents();
 void processDisconnect();
@@ -15,4 +19,8 @@ void processConnectAPmode();
 void processDisableAPmode();
 void processScanDone();
 
-#endif // ifndef ESPEASYCORE_ESPEASYWIFI_PROCESSEVENT_H
+}
+}
+}
+
+#endif

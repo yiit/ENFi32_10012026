@@ -10,7 +10,7 @@
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 #include "../../ESPEasy/net/wifi/ESPEasyWifi_ProcessEvent.h"
 #include "../ESPEasyCore/Serial.h"
 #include "../Globals/Cache.h"
@@ -229,7 +229,7 @@ void ESPEasy_setup()
   CPluginSetup();
   ESPEasy::net::NWPluginSetup();
 
-  initWiFi();
+  ESPEasy::net::wifi::initWiFi();
   WiFiEventData.clearAll();
 
 #ifndef BUILD_MINIMAL_OTA
@@ -483,7 +483,7 @@ void ESPEasy_setup()
       ESPEasy::net::wifi::WifiScan(false, RTC.lastWiFiChannel);
     }
     WiFi_AP_Candidates.clearCache();
-    processScanDone();
+    ESPEasy::net::wifi::processScanDone();
     WiFi_AP_Candidates.load_knownCredentials();
 
     if (!WiFi_AP_Candidates.hasCandidates()) {

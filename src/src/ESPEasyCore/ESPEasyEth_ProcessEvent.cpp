@@ -247,7 +247,7 @@ void processEthernetGotIP() {
     eventQueue.add(F("Ethernet#Connected"));
   }
   statusLED(true);
-  logConnectionStatus();
+  ESPEasy::net::wifi::logConnectionStatus();
 
   EthEventData.processedGotIP = true;
 #if ESP_IDF_VERSION_MAJOR >= 5

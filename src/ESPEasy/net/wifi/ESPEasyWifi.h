@@ -1,5 +1,4 @@
-#ifndef ESPEASY_WIFI_H
-#define ESPEASY_WIFI_H
+#pragma once
 
 #include "../../../ESPEasy_common.h"
 
@@ -17,6 +16,10 @@
 
 # include "../../../src/Helpers/LongTermTimer.h"
 
+namespace ESPEasy {
+namespace net {
+namespace wifi {
+
 # define WIFI_RECONNECT_WAIT                 30000  // in milliSeconds
 # define WIFI_AP_OFF_TIMER_DURATION         300000  // in milliSeconds
 # if FEATURE_CUSTOM_PROVISIONING
@@ -29,10 +32,6 @@
 # define WIFI_SCAN_INTERVAL_MINIMAL          60000  // in milliSeconds
 
 
-# ifdef ESPEASY_WIFI_CLEANUP_WORK_IN_PROGRESS
-
-
-# endif // ESPEASY_WIFI_CLEANUP_WORK_IN_PROGRESS
 
 bool WiFiConnected();
 void WiFiConnectRelaxed();
@@ -55,7 +54,7 @@ float GetRSSIthreshold(float& maxTXpwr);
 // <-97 => 0 , >-50 => 10
 // -97 ... -50 => 1 ... 9
 int                    GetRSSI_quality();
-ESPEasy::net::wifi::WiFiConnectionProtocol getConnectionProtocol();
+WiFiConnectionProtocol getConnectionProtocol();
 # ifdef ESP32
 
 // TSF time is 64-bit timer in usec, sent by the AP along with other packets.
@@ -80,6 +79,33 @@ String  formatScanResult(int           i,
 
 void logConnectionStatus();
 
+
+// ********************************************************************************
+// Manage Wifi Modes
+// ********************************************************************************
+bool                       WifiIsAP(WiFiMode_t wifimode);
+bool                       WifiIsSTA(WiFiMode_t wifimode);
+
+const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode);
+
+#if CONFIG_SOC_WIFI_SUPPORT_5G
+const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode);
+#endif
+
+bool                       setSTA(bool enable);
+bool                       setAP(bool enable);
+bool                       setSTA_AP(bool sta_enable,
+                                     bool ap_enable);
+
+bool                       setWifiMode(WiFiMode_t new_mode);
+
+
+void    WifiScan(bool    async,
+                 uint8_t channel = 0);
+
+
+}
+}
+}
 #endif // if FEATURE_WIFI
 
-#endif // ESPEASY_WIFI_H

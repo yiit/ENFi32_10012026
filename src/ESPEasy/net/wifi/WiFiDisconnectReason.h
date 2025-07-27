@@ -1,5 +1,9 @@
 #pragma once
 
+#include "../../../ESPEasy_common.h"
+
+#if FEATURE_WIFI
+
 
 // The WiFi Disconnect Reason is not part of the ESPEasy::net::wifi namespace
 // ESP8266 does have it defined as a type, but ESP32 doesn't.
@@ -7,12 +11,12 @@
 // out of this namespace
 
 /*
-namespace ESPEasy {
-namespace net {
-namespace wifi {
-*/
+   namespace ESPEasy {
+   namespace net {
+   namespace wifi {
+ */
 
-#ifdef ESP32
+# ifdef ESP32
 enum WiFiDisconnectReason
 {
   WIFI_DISCONNECT_REASON_UNSPECIFIED              = 1,
@@ -44,10 +48,15 @@ enum WiFiDisconnectReason
   WIFI_DISCONNECT_REASON_AUTH_FAIL         = 202,
   WIFI_DISCONNECT_REASON_ASSOC_FAIL        = 203,
   WIFI_DISCONNECT_REASON_HANDSHAKE_TIMEOUT = 204
+
 };
-#endif
+
+# endif // ifdef ESP32
+
 /*
-}
-}
-}
-*/
+   }
+   }
+   }
+ */
+
+#endif // if FEATURE_WIFI

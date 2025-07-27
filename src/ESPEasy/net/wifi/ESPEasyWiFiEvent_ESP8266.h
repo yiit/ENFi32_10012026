@@ -1,12 +1,12 @@
-#ifndef ESPEASY_WIFI_EVENT_ESP8266_H
-#define ESPEASY_WIFI_EVENT_ESP8266_H
+#pragma once
 
-#ifdef ESP8266
+#include "../../../ESPEasy_common.h"
+
+#if FEATURE_WIFI
 
 
-# include "../../../ESPEasy_common.h"
+# ifdef ESP8266
 
-# if FEATURE_WIFI
 
 #  include <IPAddress.h>
 
@@ -18,6 +18,10 @@
 
 #  include <ESP8266WiFi.h>
 #  include <ESP8266WiFiSTA.h>
+
+namespace ESPEasy {
+namespace net {
+namespace wifi {
 
 class WiFi_Access_Static_IP : public ESP8266WiFiSTAClass
 {
@@ -52,7 +56,10 @@ void onWiFiScanDone(void  *arg,
                     STATUS status);
 #  endif // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
-# endif // if FEATURE_WIFI
+}
+}
+}
 
-#endif // ifdef ESP8266
-#endif // ifndef ESPEASY_WIFI_EVENT_ESP8266_H
+# endif // ifdef ESP8266
+
+#endif // if FEATURE_WIFI

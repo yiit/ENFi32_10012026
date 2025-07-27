@@ -5,12 +5,9 @@
 # include "../../../ESPEasy-Globals.h"
 # include "../../../src/DataStructs/TimingStats.h"
 # include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
-# include "../wifi/ESPEasyWifi_ProcessEvent.h"
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 # include "../../../src/ESPEasyCore/Serial.h"
-# include "../Globals/ESPEasyWiFiEvent.h"
 # include "../../../src/Globals/EventQueue.h"
-# include "../Globals/NetworkState.h"
 # include "../../../src/Globals/Nodes.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/SecuritySettings.h"
@@ -24,8 +21,10 @@
 # include "../../../src/Helpers/StringConverter.h"
 # include "../../../src/Helpers/StringGenerator_WiFi.h"
 # include "../../../src/Helpers/StringProvider.h"
-
-
+# include "../Globals/ESPEasyWiFi.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../Globals/NetworkState.h"
+# include "../wifi/ESPEasyWifi_ProcessEvent.h"
 # include "../wifi/ESPEasyWifi_abstracted.h"
 
 
@@ -33,12 +32,16 @@
 #  include <WiFiGeneric.h>
 #  include <esp_wifi.h> // Needed to call ESP-IDF functions like esp_wifi_....
 
-#ifndef ESP32P4
-#  include <esp_phy_init.h>
-#endif
+#  ifndef ESP32P4
+#   include <esp_phy_init.h>
+#  endif
 
 # endif // ifdef ESP32
 
+
+namespace ESPEasy {
+namespace net {
+namespace wifi {
 
 // ********************************************************************************
 // WiFi state
@@ -99,7 +102,6 @@
 
  */
 
-
 // ********************************************************************************
 // Check WiFi connected status
 // This is basically the state machine to switch between states:
@@ -136,7 +138,7 @@ void AttemptWiFiConnect() {
 // Set Wifi config
 // ********************************************************************************
 bool prepareWiFi() {
-//  ESPEasyWiFi.setup();
+  //  ESPEasyWiFi.setup();
 
   return true;
 }
@@ -156,7 +158,7 @@ void resetWiFi() {
      // Send this log only after WifiDisconnect() or else sending to syslog may cause issues
      addLog(LOG_LEVEL_INFO, F("Reset WiFi."));
 
-     //  ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
+     //  setWifiMode(WIFI_OFF);
 
      initWiFi();
    */
@@ -175,93 +177,15 @@ void SetWiFiTXpower() {
   SetWiFiTXpower(0); // Just some minimal value, will be adjusted in SetWiFiTXpower
 }
 
-void SetWiFiTXpower(float dBm) { SetWiFiTXpower(dBm, WiFi.RSSI()); }
+void SetWiFiTXpower(float dBm)             { doSetWiFiTXpower(dBm, WiFi.RSSI()); }
 
-void SetWiFiTXpower(float dBm, float rssi) {
-  const WiFiMode_t cur_mode = WiFi.getMode();
-
-  if (cur_mode == WIFI_OFF) {
-    return;
-  }
-
-  if (Settings.UseMaxTXpowerForSending()) {
-    dBm = 30; // Just some max, will be limited later
-  }
-
-  // Range ESP32  : -1dBm - 20dBm
-  // Range ESP8266: 0dBm - 20.5dBm
-  float maxTXpwr;
-  float threshold = GetRSSIthreshold(maxTXpwr);
-  #  ifdef ESP8266
-  float minTXpwr{};
-  #  endif
-  #  ifdef ESP32
-  float minTXpwr = -1.0f;
-  #  endif
-
-  threshold += Settings.WiFi_sensitivity_margin; // Margin in dBm on top of threshold
-
-  // Assume AP sends with max set by ETSI standard.
-  // 2.4 GHz: 100 mWatt (20 dBm)
-  // US and some other countries allow 1000 mW (30 dBm)
-  // We cannot send with over 20 dBm, thus it makes no sense to force higher TX power all the time.
-  const float newrssi = rssi - 20;
-
-  if (newrssi < threshold) {
-    minTXpwr = threshold - newrssi;
-  }
-
-  if (minTXpwr > maxTXpwr) {
-    minTXpwr = maxTXpwr;
-  }
-
-  if (dBm > maxTXpwr) {
-    dBm = maxTXpwr;
-  } else if (dBm < minTXpwr) {
-    dBm = minTXpwr;
-  }
-
-  ESPEasy::net::wifi::SetWiFiTXpower(dBm);
-
-  if (WiFiEventData.wifi_TX_pwr < dBm) {
-    // Will increase the TX power, give power supply of the unit some rest
-    delay(1);
-  }
-
-  WiFiEventData.wifi_TX_pwr = dBm;
-
-  delay(0);
-  #  ifndef BUILD_NO_DEBUG
-
-  if (loglevelActiveFor(LOG_LEVEL_DEBUG)) {
-    const int TX_pwr_int   = WiFiEventData.wifi_TX_pwr * 4;
-    const int maxTXpwr_int = maxTXpwr * 4;
-
-    if (TX_pwr_int != maxTXpwr_int) {
-      static int last_log = -1;
-
-      if (TX_pwr_int != last_log) {
-        last_log = TX_pwr_int;
-        String log = strformat(
-          F("WiFi : Set TX power to %ddBm sensitivity: %ddBm"),
-          static_cast<int>(dBm),
-          static_cast<int>(threshold));
-
-        if (rssi < 0) {
-          log += strformat(F(" RSSI: %ddBm"), static_cast<int>(rssi));
-        }
-        addLogMove(LOG_LEVEL_DEBUG, log);
-      }
-    }
-  }
-  #  endif // ifndef BUILD_NO_DEBUG
-}
+void SetWiFiTXpower(float dBm, float rssi) { doSetWiFiTXpower(dBm, rssi); }
 
 # endif // if FEATURE_SET_WIFI_TX_PWR
 
 float GetRSSIthreshold(float& maxTXpwr) {
   maxTXpwr = Settings.getWiFi_TX_power();
-  return ESPEasy::net::wifi::GetRSSIthreshold(maxTXpwr);
+  return doGetRSSIthreshold(maxTXpwr);
 }
 
 int GetRSSI_quality() {
@@ -274,16 +198,16 @@ int GetRSSI_quality() {
   return (rssi / 5) + 1;
 }
 
-ESPEasy::net::wifi::WiFiConnectionProtocol getConnectionProtocol() { return ESPEasy::net::wifi::getConnectionProtocol(); }
+WiFiConnectionProtocol getConnectionProtocol() { return doGetConnectionProtocol(); }
 
 # ifdef ESP32
 
-int64_t WiFi_get_TSF_time() { 
-  # ifndef SOC_WIFI_SUPPORTED
+int64_t WiFi_get_TSF_time() {
+  #  ifndef SOC_WIFI_SUPPORTED
   return 0;
-  #else
-  return esp_wifi_get_tsf_time(WIFI_IF_STA); 
-  #endif
+  #  else
+  return esp_wifi_get_tsf_time(WIFI_IF_STA);
+  #  endif // ifndef SOC_WIFI_SUPPORTED
 }
 
 # endif // ifdef ESP32
@@ -296,12 +220,7 @@ void WifiDisconnect() { ESPEasyWiFi.disconnect(); }
 // ********************************************************************************
 // Scan WiFi network
 // ********************************************************************************
-bool WiFiScanAllowed() {
-  if (WiFi_AP_Candidates.scanComplete() == WIFI_SCAN_RUNNING) {
-    return false;
-  }
-  return WiFiEventData.processedConnect;
-}
+bool WiFiScanAllowed() { return doWiFiScanAllowed(); }
 
 // ********************************************************************************
 // Scan all Wifi Access Points
@@ -313,8 +232,8 @@ void WiFiScan_log_to_serial()
 
   if (WiFi_AP_Candidates.scanComplete() <= 0) {
     WiFiMode_t cur_wifimode = WiFi.getMode();
-    ESPEasy::net::wifi::WifiScan(false);
-    ESPEasy::net::wifi::setWifiMode(cur_wifimode);
+    WifiScan(false);
+    setWifiMode(cur_wifimode);
   }
 
   const int8_t scanCompleteStatus = WiFi_AP_Candidates.scanComplete();
@@ -346,90 +265,13 @@ void WiFiScan_log_to_serial()
 }
 
 // Only internal scope
-void setAPinternal(bool enable)
-{
-  if (enable) {
-    // create and store unique AP SSID/PW to prevent ESP from starting AP mode with default SSID and No password!
-    // setup ssid for AP Mode when needed
-    String softAPSSID = NetworkCreateRFCCompliantHostname();
-    String pwd        = SecuritySettings.WifiAPKey;
-    IPAddress subnet(DEFAULT_AP_SUBNET);
-    #ifdef ESP32
-    IPAddress dhcp_lease_start = (uint32_t)0;
-    IPAddress dns(DEFAULT_AP_DNS);
+void setAPinternal(bool enable) { doSetAPinternal(enable); }
 
-    if (!WiFi.softAPConfig(apIP, apIP, subnet, dhcp_lease_start, dns)) {
-      addLog(LOG_LEVEL_ERROR, strformat(
-               ("WIFI : [AP] softAPConfig failed! IP: %s, GW: %s, SN: %s, DNS: %s"),
-               apIP.toString().c_str(),
-               apIP.toString().c_str(),
-               subnet.toString().c_str(),
-               dns.toString().c_str())
-             );
-    }
-    #endif
-    #ifdef ESP8266
-    if (!WiFi.softAPConfig(apIP, apIP, subnet)) {
-      addLog(LOG_LEVEL_ERROR, strformat(
-               ("WIFI : [AP] softAPConfig failed! IP: %s, GW: %s, SN: %s"),
-               apIP.toString().c_str(),
-               apIP.toString().c_str(),
-               subnet.toString().c_str())
-             );
-    }
-    #endif
-
-    int channel = 1;
-
-    if (ESPEasy::net::wifi::WifiIsSTA(WiFi.getMode()) && WiFiConnected()) {
-      channel = WiFi.channel();
-    }
-
-    if (WiFi.softAP(softAPSSID.c_str(), pwd.c_str(), channel)) {
-      eventQueue.add(F("WiFi#APmodeEnabled"));
-
-      if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-        addLogMove(LOG_LEVEL_INFO, strformat(
-                     F("WIFI : AP Mode enabled. SSID: %s IP: %s ch: %d"),
-                     softAPSSID.c_str(),
-                     formatIP(WiFi.softAPIP()).c_str(),
-                     channel));
-      }
-    } else {
-      if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
-        addLogMove(LOG_LEVEL_ERROR, strformat(
-                     F("WIFI : Error while starting AP Mode with SSID: %s IP: %s"),
-                     softAPSSID.c_str(),
-                     formatIP(apIP).c_str()));
-      }
-    }
-    # ifdef ESP32
-
-    # else // ifdef ESP32
-
-    if (wifi_softap_dhcps_status() != DHCP_STARTED) {
-      if (!wifi_softap_dhcps_start()) {
-        addLog(LOG_LEVEL_ERROR, F("WIFI : [AP] wifi_softap_dhcps_start failed!"));
-      }
-    }
-    # endif // ifdef ESP32
-    WiFiEventData.timerAPoff.setMillisFromNow(WIFI_AP_OFF_TIMER_DURATION);
-  } else {
-    # if FEATURE_DNS_SERVER
-
-    if (dnsServerActive) {
-      dnsServerActive = false;
-      dnsServer.stop();
-    }
-    # endif // if FEATURE_DNS_SERVER
-  }
-}
-
-bool WiFiUseStaticIP() { return Settings.IP[0] != 0 && Settings.IP[0] != 255; }
+bool WiFiUseStaticIP()          { return Settings.IP[0] != 0 && Settings.IP[0] != 255; }
 
 bool wifiAPmodeActivelyUsed()
 {
-  if (!ESPEasy::net::wifi::WifiIsAP(WiFi.getMode()) || (!WiFiEventData.timerAPoff.isSet())) {
+  if (!WifiIsAP(WiFi.getMode()) || (!WiFiEventData.timerAPoff.isSet())) {
     // AP not active or soon to be disabled in processDisableAPmode()
     return false;
   }
@@ -545,5 +387,34 @@ void logConnectionStatus() {
    */
 # endif // ifndef BUILD_NO_DEBUG
 }
+
+bool                       WifiIsAP(WiFiMode_t wifimode)          { return doWifiIsAP(wifimode); }
+
+bool                       WifiIsSTA(WiFiMode_t wifimode)         { return doWifiIsSTA(wifimode); }
+
+const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode) { return doGetWifiModeString(wifimode); }
+
+# if CONFIG_SOC_WIFI_SUPPORT_5G
+
+const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode) { return doGetWifiBandModeString(wifiBandMode); }
+
+# endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+
+bool setSTA(bool enable) { return doSetSTA(enable); }
+
+bool setAP(bool enable)  { return doSetAP(enable); }
+
+bool setSTA_AP(bool sta_enable,
+               bool ap_enable) { return doSetSTA_AP(sta_enable, ap_enable); }
+
+bool setWifiMode(WiFiMode_t new_mode) { return doSetWifiMode(new_mode); }
+
+void WifiScan(bool    async,
+              uint8_t channel) { doWifiScan(async, channel); }
+
+
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
 
 #endif // if FEATURE_WIFI

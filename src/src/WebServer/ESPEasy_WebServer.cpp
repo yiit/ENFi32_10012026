@@ -54,7 +54,7 @@
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 
 #include "../Globals/CPlugins.h"
 #include "../Globals/Device.h"

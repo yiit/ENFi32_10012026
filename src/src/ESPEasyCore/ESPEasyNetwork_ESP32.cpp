@@ -5,7 +5,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyEth.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 #include "../Globals/ESPEasy_time.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
@@ -93,7 +93,7 @@ void NetworkConnectRelaxed() {
 
   // Failed to start the Ethernet network, probably not present of wrong parameters.
   // So set the runtime active medium to WiFi to try connecting to WiFi or at least start the AP.
-  WiFiConnectRelaxed();
+  ESPEasy::net::wifi::WiFiConnectRelaxed();
 }
 
 // Forward declaration to access internal function in NetworkInterface.cpp

@@ -2,23 +2,28 @@
 
 #if FEATURE_WIFI
 
+# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
 # include "../../../src/Globals/EventQueue.h"
+# include "../../../src/Globals/SecuritySettings.h"
+# include "../../../src/Globals/Services.h"
 # include "../../../src/Globals/Settings.h"
-# include "../Globals/ESPEasyWiFiEvent.h"
-
+# include "../../../src/Globals/WiFi_AP_Candidates.h"
 # include "../../../src/Helpers/StringConverter.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../Globals/ESPEasyWiFi.h"
+# include "../Globals/NetworkState.h"
 
 namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode)
+const __FlashStringHelper* doGetWifiModeString(WiFiMode_t wifimode)
 {
   switch (wifimode)
   {
-    case WIFI_OFF:   return F("OFF");
-    case WIFI_STA:   return F("STA");
-    case WIFI_AP:    return F("AP");
+    case WIFI_OFF:    return F("OFF");
+    case WIFI_STA:    return F("STA");
+    case WIFI_AP:     return F("AP");
     case WIFI_AP_STA: return F("AP+STA");
     default:
       break;
@@ -26,8 +31,9 @@ const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode)
   return F("Unknown");
 }
 
-#if CONFIG_SOC_WIFI_SUPPORT_5G
-const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode)
+# if CONFIG_SOC_WIFI_SUPPORT_5G
+
+const __FlashStringHelper* doGetWifiBandModeString(wifi_band_mode_t wifiBandMode)
 {
   switch (wifiBandMode)
   {
@@ -37,25 +43,124 @@ const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode)
   }
   return F("2.4 GHz + 5 GHz");
 }
-#endif
 
+# endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 
-bool WiFiConnected()     { return ESPEasyWiFi.connected(); }
+bool doSetSTA(bool enable) { return doSetSTA_AP(enable,  doWifiIsAP(WiFi.getMode())); }
 
-bool setSTA(bool enable) { return setSTA_AP(enable,  WifiIsAP(WiFi.getMode())); }
+bool doSetAP(bool enable)  { return doSetSTA_AP(doWifiIsSTA(WiFi.getMode()), enable); }
 
-bool setAP(bool enable)  { return setSTA_AP(WifiIsSTA(WiFi.getMode()), enable); }
-
-bool setSTA_AP(bool sta_enable, bool ap_enable)
+bool doSetSTA_AP(bool sta_enable, bool ap_enable)
 {
 # ifndef SOC_WIFI_SUPPORTED
   return true;
-#else
+# else
+
   if (ap_enable) {
-    return setWifiMode(sta_enable ? WIFI_AP_STA : WIFI_AP);
+    return doSetWifiMode(sta_enable ? WIFI_AP_STA : WIFI_AP);
   }
-  return setWifiMode(sta_enable ? WIFI_STA : WIFI_OFF);
-#endif
+  return doSetWifiMode(sta_enable ? WIFI_STA : WIFI_OFF);
+# endif // ifndef SOC_WIFI_SUPPORTED
+}
+
+// ********************************************************************************
+// Scan WiFi network
+// ********************************************************************************
+bool doWiFiScanAllowed() {
+  if (WiFi_AP_Candidates.scanComplete() == WIFI_SCAN_RUNNING) {
+    return false;
+  }
+  return WiFiEventData.processedConnect;
+}
+
+// Only internal scope
+void doSetAPinternal(bool enable)
+{
+  if (enable) {
+    // create and store unique AP SSID/PW to prevent ESP from starting AP mode with default SSID and No password!
+    // setup ssid for AP Mode when needed
+    String softAPSSID = NetworkCreateRFCCompliantHostname();
+    String pwd        = SecuritySettings.WifiAPKey;
+    IPAddress subnet(DEFAULT_AP_SUBNET);
+    # ifdef ESP32
+    IPAddress dhcp_lease_start = (uint32_t)0;
+    IPAddress dns(DEFAULT_AP_DNS);
+
+    if (!WiFi.softAPConfig(apIP, apIP, subnet, dhcp_lease_start, dns)) {
+      addLog(LOG_LEVEL_ERROR, strformat(
+               ("WIFI : [AP] softAPConfig failed! IP: %s, GW: %s, SN: %s, DNS: %s"),
+               apIP.toString().c_str(),
+               apIP.toString().c_str(),
+               subnet.toString().c_str(),
+               dns.toString().c_str())
+             );
+    }
+    # endif // ifdef ESP32
+    # ifdef ESP8266
+
+    if (!WiFi.softAPConfig(apIP, apIP, subnet)) {
+      addLog(LOG_LEVEL_ERROR, strformat(
+               ("WIFI : [AP] softAPConfig failed! IP: %s, GW: %s, SN: %s"),
+               apIP.toString().c_str(),
+               apIP.toString().c_str(),
+               subnet.toString().c_str())
+             );
+    }
+    # endif // ifdef ESP8266
+
+    int channel = 1;
+
+    if (WifiIsSTA(WiFi.getMode()) && WiFiConnected()) {
+      channel = WiFi.channel();
+    }
+
+    if (WiFi.softAP(softAPSSID.c_str(), pwd.c_str(), channel)) {
+      eventQueue.add(F("WiFi#APmodeEnabled"));
+
+      if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+        addLogMove(LOG_LEVEL_INFO, strformat(
+                     F("WIFI : AP Mode enabled. SSID: %s IP: %s ch: %d"),
+                     softAPSSID.c_str(),
+                     formatIP(WiFi.softAPIP()).c_str(),
+                     channel));
+      }
+    } else {
+      if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
+        addLogMove(LOG_LEVEL_ERROR, strformat(
+                     F("WIFI : Error while starting AP Mode with SSID: %s IP: %s"),
+                     softAPSSID.c_str(),
+                     formatIP(apIP).c_str()));
+      }
+    }
+    # ifdef ESP32
+
+    # else // ifdef ESP32
+
+    if (wifi_softap_dhcps_status() != DHCP_STARTED) {
+      if (!wifi_softap_dhcps_start()) {
+        addLog(LOG_LEVEL_ERROR, F("WIFI : [AP] wifi_softap_dhcps_start failed!"));
+      }
+    }
+    # endif // ifdef ESP32
+    WiFiEventData.timerAPoff.setMillisFromNow(WIFI_AP_OFF_TIMER_DURATION);
+  } else {
+    # if FEATURE_DNS_SERVER
+
+    if (dnsServerActive) {
+      dnsServerActive = false;
+      dnsServer.stop();
+    }
+    # endif // if FEATURE_DNS_SERVER
+  }
+}
+
+void doSetConnectionSpeed() {
+  doSetConnectionSpeed(
+    Settings.ForceWiFi_bg_mode()
+# if CONFIG_SOC_WIFI_SUPPORT_5G
+    , Settings.WiFi_band_mode()
+# endif
+    );
 }
 
 // ********************************************************************************
@@ -63,13 +168,13 @@ bool setSTA_AP(bool sta_enable, bool ap_enable)
 // ********************************************************************************
 # if FEATURE_SET_WIFI_TX_PWR
 
-void SetWiFiTXpower() {
-  SetWiFiTXpower(0); // Just some minimal value, will be adjusted in SetWiFiTXpower
+void doSetWiFiTXpower() {
+  doSetWiFiTXpower(0, WiFi.RSSI());
+
+  // Just some minimal value, will be adjusted in doSetWiFiTXpower
 }
 
-void SetWiFiTXpower(float dBm) { SetWiFiTXpower(dBm, WiFi.RSSI()); }
-
-void SetWiFiTXpower(float dBm, float rssi) {
+void doSetWiFiTXpower(float dBm, float rssi) {
   const WiFiMode_t cur_mode = WiFi.getMode();
 
   if (cur_mode == WIFI_OFF) {
@@ -151,28 +256,8 @@ void SetWiFiTXpower(float dBm, float rssi) {
 
 # endif // if FEATURE_SET_WIFI_TX_PWR
 
-int GetRSSI_quality() {
-  long rssi = WiFi.RSSI();
-
-  if (-50 < rssi) { return 10; }
-
-  if (rssi <= -98) { return 0;  }
-  rssi = rssi + 97; // Range 0..47 => 1..9
-  return (rssi / 5) + 1;
-}
-
-void setConnectionSpeed() { 
-  setConnectionSpeed(
-    Settings.ForceWiFi_bg_mode()
-#if CONFIG_SOC_WIFI_SUPPORT_5G
-    ,Settings.WiFi_band_mode()
-#endif
-  ); 
-}
-
 } // namespace wifi
 } // namespace net
 } // namespace ESPEasy
-
 
 #endif // if FEATURE_WIFI

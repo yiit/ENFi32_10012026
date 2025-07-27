@@ -10,7 +10,7 @@
 
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 #if FEATURE_ETHERNET
 #include "../ESPEasyCore/ESPEasyEth.h"
 #endif
@@ -750,7 +750,7 @@ String getFormNote(LabelType::Enum label)
     case LabelType::WIFI_SENS_MARGIN:
     {
       float maxTXpwr;
-      float sensitivity = GetRSSIthreshold(maxTXpwr);
+      float sensitivity = ESPEasy::net::wifi::GetRSSIthreshold(maxTXpwr);
       if (LabelType::WIFI_TX_MAX_PWR == label) {
         return strformat(
           F("Current max: %.2f dBm"), maxTXpwr);

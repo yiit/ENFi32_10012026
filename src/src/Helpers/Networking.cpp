@@ -1043,7 +1043,7 @@ bool useStaticIP() {
     return ethUseStaticIP();
   }
   #endif // if FEATURE_ETHERNET
-  return WiFiUseStaticIP();
+  return ESPEasy::net::wifi::WiFiUseStaticIP();
 }
 
 // Check connection. Maximum timeout 500 msec.

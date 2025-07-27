@@ -11,20 +11,13 @@
 #include "../ESPEasyCore/ESPEasyGPIO.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../ESPEasyCore/Serial.h"
-#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
-#if FEATURE_ETHERNET
-#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
-#endif
 #include "../Globals/ESPEasy_Scheduler.h"
 #include "../Globals/ESPEasy_time.h"
 #include "../Globals/EventQueue.h"
 #include "../Globals/MainLoopCommand.h"
 #include "../Globals/MQTT.h"
-#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/RTC.h"
 #include "../Globals/Services.h"
 #include "../Globals/Settings.h"
@@ -39,6 +32,14 @@
 #include "../Helpers/StringGenerator_System.h"
 #include "../Helpers/StringGenerator_WiFi.h"
 #include "../Helpers/StringProvider.h"
+
+#include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
+#if FEATURE_ETHERNET
+#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
+#endif
+#include "../../ESPEasy/net/Globals/NetworkState.h"
+
 
 #ifdef USES_C015
 #include "../../ESPEasy_fdwdecl.h"
@@ -148,7 +149,7 @@ void runOncePerSecond()
     {
       case CMD_WIFI_DISCONNECT:
         {
-          WifiDisconnect();
+          ESPEasy::net::wifi::WifiDisconnect();
           break;
         }
       case CMD_REBOOT:

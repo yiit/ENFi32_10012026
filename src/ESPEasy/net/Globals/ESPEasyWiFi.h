@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../wifi/ESPEasyWifi.h"
-
 #include "../../../ESPEasy_common.h"
 
-#ifdef ESPEASY_WIFI_CLEANUP_WORK_IN_PROGRESS
+#if FEATURE_WIFI
 
-extern ESPEasyWiFi_t ESPEasyWiFi;
-#endif // ifdef ESPEASY_WIFI_CLEANUP_WORK_IN_PROGRESS
+#include "../wifi/ESPEasyWifi.h"
+#include "../wifi/ESPEasyWiFi_state_machine.h"
 
+extern ESPEasy::net::wifi::ESPEasyWiFi_t ESPEasyWiFi;
+#endif

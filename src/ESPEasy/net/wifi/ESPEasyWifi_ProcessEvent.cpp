@@ -2,19 +2,16 @@
 
 #include "../../../ESPEasy-Globals.h"
 
-#if FEATURE_ETHERNET
-# include "../../../src/ESPEasyCore/ESPEasyEth_ProcessEvent.h"
-#endif
-# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
-#include "../wifi/ESPEasyWifi.h"
-#include "../wifi/ESPEasyWifi_abstracted.h"
+#if FEATURE_WIFI
 
-# include "../Globals/ESPEasyWiFiEvent.h"
+# if FEATURE_ETHERNET
+#  include "../../../src/ESPEasyCore/ESPEasyEth_ProcessEvent.h"
+# endif
+# include "../../../src/ESPEasyCore/ESPEasyNetwork.h"
 # include "../../../src/Globals/ESPEasy_Scheduler.h"
 # include "../../../src/Globals/ESPEasy_time.h"
 # include "../../../src/Globals/EventQueue.h"
 # include "../../../src/Globals/MQTT.h"
-# include "../Globals/NetworkState.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/SecuritySettings.h"
 # include "../../../src/Globals/Services.h"
@@ -40,23 +37,32 @@
 
 # include "../../../src/WebServer/ESPEasy_WebServer.h"
 
+# include "../wifi/ESPEasyWifi.h"
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../Globals/NetworkState.h"
+
+
+namespace ESPEasy {
+namespace net {
+namespace wifi {
+
 // ********************************************************************************
 // Called from the loop() to make sure events are processed as soon as possible.
 // These functions are called from Setup() or Loop() and thus may call delay() or yield()
 // ********************************************************************************
 void handle_unprocessedNetworkEvents()
 {
-#if FEATURE_ETHERNET
+# if FEATURE_ETHERNET
   handle_unprocessedEthEvents();
-#endif
+# endif
 
   if (active_network_medium == NetworkMedium_t::WIFI) {
     bool processedSomething = false;
 
     if (!WiFiEventData.processedConnect) {
-        #ifndef BUILD_NO_DEBUG
+        # ifndef BUILD_NO_DEBUG
       addLog(LOG_LEVEL_DEBUG, F("WIFI : Entering processConnect()"));
-        #endif // ifndef BUILD_NO_DEBUG
+        # endif // ifndef BUILD_NO_DEBUG
       processConnect();
       processedSomething = true;
 
@@ -65,9 +71,9 @@ void handle_unprocessedNetworkEvents()
     }
 
     if (!WiFiEventData.processedGotIP) {
-        #ifndef BUILD_NO_DEBUG
+        # ifndef BUILD_NO_DEBUG
       addLog(LOG_LEVEL_DEBUG, F("WIFI : Entering processGotIP()"));
-        #endif // ifndef BUILD_NO_DEBUG
+        # endif // ifndef BUILD_NO_DEBUG
       processGotIP();
 
       processedSomething = true;
@@ -96,13 +102,13 @@ void handle_unprocessedNetworkEvents()
     }
   }
 
-#if FEATURE_ETHERNET
+# if FEATURE_ETHERNET
   check_Eth_DNS_valid();
-#endif // if FEATURE_ETHERNET
+# endif // if FEATURE_ETHERNET
 
-#if FEATURE_ESPEASY_P2P
+# if FEATURE_ESPEASY_P2P
   updateUDPport(false);
-#endif
+# endif
 }
 
 // ********************************************************************************
@@ -132,22 +138,22 @@ void processConnect() {
   ++WiFiEventData.wifi_reconnects;
 
   if (WiFi_AP_Candidates.getCurrent().bits.isEmergencyFallback) {
-   #ifdef CUSTOM_EMERGENCY_FALLBACK_RESET_CREDENTIALS
+   # ifdef CUSTOM_EMERGENCY_FALLBACK_RESET_CREDENTIALS
     const bool mustResetCredentials = CUSTOM_EMERGENCY_FALLBACK_RESET_CREDENTIALS;
-   #else
+   # else
     const bool mustResetCredentials = false;
-   #endif // ifdef CUSTOM_EMERGENCY_FALLBACK_RESET_CREDENTIALS
-   #ifdef CUSTOM_EMERGENCY_FALLBACK_START_AP
+   # endif // ifdef CUSTOM_EMERGENCY_FALLBACK_RESET_CREDENTIALS
+   # ifdef CUSTOM_EMERGENCY_FALLBACK_START_AP
     const bool mustStartAP = CUSTOM_EMERGENCY_FALLBACK_START_AP;
-   #else
+   # else
     const bool mustStartAP = false;
-   #endif // ifdef CUSTOM_EMERGENCY_FALLBACK_START_AP
+   # endif // ifdef CUSTOM_EMERGENCY_FALLBACK_START_AP
 
     if (mustStartAP) {
       int allowedUptimeMinutes = 10;
-   #ifdef CUSTOM_EMERGENCY_FALLBACK_ALLOW_MINUTES_UPTIME
+   # ifdef CUSTOM_EMERGENCY_FALLBACK_ALLOW_MINUTES_UPTIME
       allowedUptimeMinutes = CUSTOM_EMERGENCY_FALLBACK_ALLOW_MINUTES_UPTIME;
-   #endif
+   # endif
 
       if (getUptimeMinutes() < allowedUptimeMinutes) {
         WiFiEventData.timerAPstart.setNow();
@@ -213,13 +219,13 @@ void processGotIP() {
   IPAddress ip = NetworkLocalIP();
 
   if (!useStaticIP()) {
-   #ifdef ESP8266
+   # ifdef ESP8266
 
     if (!ip.isSet())
-   #else // ifdef ESP8266
+   # else // ifdef ESP8266
 
     if ((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0))
-   #endif // ifdef ESP8266
+   # endif // ifdef ESP8266
     {
       return;
     }
@@ -258,13 +264,13 @@ void processGotIP() {
     WiFi.config(ip, gw, subnet, WiFiEventData.dns0_cache, WiFiEventData.dns1_cache);
   }
 
-   #if FEATURE_MQTT
+   # if FEATURE_MQTT
   mqtt_reconnect_count        = 0;
   MQTTclient_should_reconnect = true;
   timermqtt_interval          = 100;
   Scheduler.setIntervalTimer(SchedulerIntervalTimer_e::TIMER_MQTT);
   scheduleNextMQTTdelayQueue();
-   #endif // if FEATURE_MQTT
+   # endif // if FEATURE_MQTT
   Scheduler.sendGratuitousARP_now();
 
   if (Settings.UseRules)
@@ -284,13 +290,13 @@ void processGotIP() {
   if ((WiFiEventData.WiFiConnected() || WiFi.isConnected()) && hasIPaddr()) {
     WiFiEventData.setWiFiGotIP();
   }
-   #if FEATURE_ESPEASY_P2P
+   # if FEATURE_ESPEASY_P2P
   refreshNodeList();
-   #endif
+   # endif
   logConnectionStatus();
 }
 
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
 
 void processGotIPv6() {
   if (!WiFiEventData.processedGotIP6) {
@@ -299,21 +305,21 @@ void processGotIPv6() {
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, String(F("WIFI : STA got IP6 ")) + WiFiEventData.unprocessed_IP6.toString(true));
     }
-# if FEATURE_ESPEASY_P2P
+#  if FEATURE_ESPEASY_P2P
 
     //    updateUDPport(true);
-# endif // if FEATURE_ESPEASY_P2P
+#  endif // if FEATURE_ESPEASY_P2P
   }
 }
 
-#endif // if FEATURE_USE_IPV6
+# endif // if FEATURE_USE_IPV6
 
 // A client disconnected from the AP on this node.
 void processDisconnectAPmode() {
   if (WiFiEventData.processedDisconnectAPmode) { return; }
   WiFiEventData.processedDisconnectAPmode = true;
 
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log(strformat(
@@ -322,7 +328,7 @@ void processDisconnectAPmode() {
                  WiFi.softAPgetStationNum()));
     addLogMove(LOG_LEVEL_INFO, log);
   }
-#endif // ifndef BUILD_NO_DEBUG
+# endif // ifndef BUILD_NO_DEBUG
 }
 
 // Client connects to AP on this node
@@ -332,7 +338,7 @@ void processConnectAPmode() {
 
   // Extend timer to switch off AP.
   WiFiEventData.timerAPoff.setMillisFromNow(WIFI_AP_OFF_TIMER_DURATION);
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log(strformat(
@@ -341,9 +347,9 @@ void processConnectAPmode() {
                  WiFi.softAPgetStationNum()));
     addLogMove(LOG_LEVEL_INFO, log);
   }
-#endif // ifndef BUILD_NO_DEBUG
+# endif // ifndef BUILD_NO_DEBUG
 
-  #if FEATURE_DNS_SERVER
+  # if FEATURE_DNS_SERVER
 
   // Start DNS, only used if the ESP has no valid WiFi config
   // It will reply with it's own address on all DNS requests
@@ -352,7 +358,7 @@ void processConnectAPmode() {
     dnsServerActive = true;
     dnsServer.start(DNS_PORT, "*", apIP);
   }
-  #endif // if FEATURE_DNS_SERVER
+  # endif // if FEATURE_DNS_SERVER
 }
 
 // Switch of AP mode when timeout reached and no client connected anymore.
@@ -400,9 +406,9 @@ void processScanDone() {
 
       // FIXME TD-er: Set timeout...
       if (WiFiEventData.lastGetScanMoment.timeoutReached(5000)) {
-        #ifndef BUILD_NO_DEBUG
+        # ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_ERROR, F("WiFi : Scan Running Timeout"));
-      #endif
+      # endif
         WiFi.scanDelete();
         WiFiEventData.processedScanDone = true;
       }
@@ -416,38 +422,43 @@ void processScanDone() {
 
   WiFiEventData.lastGetScanMoment.setNow();
   WiFiEventData.processedScanDone = true;
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
 
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLogMove(LOG_LEVEL_INFO, concat(F("WiFi : Scan finished, found: "), scanCompleteStatus));
   }
-#endif // ifndef BUILD_NO_DEBUG
+# endif // ifndef BUILD_NO_DEBUG
 
-#if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
+# if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
   WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
-#endif
+# endif
   WiFi_AP_Candidates.load_knownCredentials();
 
   if (WiFi_AP_Candidates.addedKnownCandidate() && !NetworkConnected()) {
     if (!WiFiEventData.wifiConnectInProgress) {
       WiFiEventData.wifiConnectAttemptNeeded = true;
-      #ifndef BUILD_NO_DEBUG
+      # ifndef BUILD_NO_DEBUG
 
       if (WiFi_AP_Candidates.addedKnownCandidate()) {
         addLog(LOG_LEVEL_INFO, F("WiFi : Added known candidate, try to connect"));
       }
-      #endif // ifndef BUILD_NO_DEBUG
-#ifdef ESP32
+      # endif // ifndef BUILD_NO_DEBUG
+# ifdef ESP32
 
       //       ESPEasy::net::wifi::setSTA(false);
-#endif // ifdef ESP32
+# endif // ifdef ESP32
       NetworkConnectRelaxed();
-#ifdef USES_ESPEASY_NOW
+# ifdef USES_ESPEASY_NOW
       temp_disable_EspEasy_now_timer = millis() + 20000;
-#endif
+# endif
     }
   } else if (!WiFiEventData.wifiConnectInProgress && !NetworkConnected()) {
     WiFiEventData.timerAPstart.setNow();
   }
 
 }
+
+} // namespace wifi
+} // namespace net
+} // namespace ESPEasy
+#endif // if FEATURE_WIFI

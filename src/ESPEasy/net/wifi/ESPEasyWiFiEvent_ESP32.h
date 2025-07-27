@@ -1,9 +1,9 @@
-#ifndef ESPEASY_WIFI_EVENT_ESP32_H
-#define ESPEASY_WIFI_EVENT_ESP32_H
-
-#ifdef ESP32
+#pragma once
 
 # include "../../../ESPEasy_common.h"
+
+#if FEATURE_WIFI
+#ifdef ESP32
 
 # include <IPAddress.h>
 
@@ -17,6 +17,9 @@
 # include <WiFi.h>
 # include <WiFiType.h>
 
+namespace ESPEasy {
+namespace net {
+namespace wifi {
 
 class WiFi_Access_Static_IP : public WiFiSTAClass
 {
@@ -35,6 +38,9 @@ void setUseStaticIP(bool enabled);
 void WiFiEvent(WiFiEvent_t          event,
                arduino_event_info_t info);
 
-#endif // ifdef ESP32
+}
+}
+}
 
-#endif // ifndef ESPEASY_WIFI_EVENT_ESP32_H
+#endif // ifdef ESP32
+#endif

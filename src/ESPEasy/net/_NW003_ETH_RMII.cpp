@@ -12,7 +12,7 @@
 
 # include "../../src/DataStructs/ESPEasy_EventStruct.h"
 # include "../../src/ESPEasyCore/ESPEasyEth.h"
-# include "../net/wifi/ESPEasyWifi_abstracted.h"
+
 # include "../../src/Globals/SecuritySettings.h"
 # include "../../src/Globals/Settings.h"
 # include "../../src/Helpers/ESPEasy_Storage.h"

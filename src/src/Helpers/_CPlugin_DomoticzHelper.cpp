@@ -42,7 +42,7 @@ int humStatDomoticz(struct EventStruct *event, uint8_t rel_index) {
 }
 
 int mapRSSItoDomoticz() { 
-  return GetRSSI_quality(); 
+  return ESPEasy::net::wifi::GetRSSI_quality(); 
 }
 
 int mapVccToDomoticz() {

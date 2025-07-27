@@ -2,8 +2,9 @@
 
 #include "../../../ESPEasy_common.h"
 
+#if FEATURE_WIFI
 
-#ifdef ESP8266
+# ifdef ESP8266
 WiFiEventHandler stationConnectedHandler;
 WiFiEventHandler stationDisconnectedHandler;
 WiFiEventHandler stationGotIpHandler;
@@ -11,9 +12,8 @@ WiFiEventHandler stationModeDHCPTimeoutHandler;
 WiFiEventHandler stationModeAuthModeChangeHandler;
 WiFiEventHandler APModeStationConnectedHandler;
 WiFiEventHandler APModeStationDisconnectedHandler;
-#endif // ifdef ESP8266
+# endif // ifdef ESP8266
 
 WiFiEventData_t WiFiEventData;
-ESPEasy::net::wifi::ESPEasyWiFi_t ESPEasyWiFi;
 
-
+#endif // if FEATURE_WIFI

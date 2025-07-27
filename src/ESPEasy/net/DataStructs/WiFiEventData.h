@@ -1,36 +1,40 @@
 #pragma once
 
-#include "../../../src/DataStructs/MAC_address.h"
-#include "../wifi/WiFiDisconnectReason.h"
-#include "../../../src/Helpers/LongTermTimer.h"
+#include "../../../ESPEasy_common.h"
+
+#if FEATURE_WIFI
+
+# include "../../../src/DataStructs/MAC_address.h"
+# include "../wifi/WiFiDisconnectReason.h"
+# include "../../../src/Helpers/LongTermTimer.h"
 
 
-#ifdef ESP32
-# include <esp_event.h>
-# include <WiFiGeneric.h>
-# include <WiFiType.h>
+# ifdef ESP32
+#  include <esp_event.h>
+#  include <WiFiGeneric.h>
+#  include <WiFiType.h>
 
-#endif // ifdef ESP32
+# endif // ifdef ESP32
 
-#include <IPAddress.h>
+# include <IPAddress.h>
 
-#ifdef ESP8266
-# include <ESP8266WiFiGeneric.h>
-# include <ESP8266WiFiType.h>
-#endif // ifdef ESP8266
+# ifdef ESP8266
+#  include <ESP8266WiFiGeneric.h>
+#  include <ESP8266WiFiType.h>
+# endif // ifdef ESP8266
 
-#include <map>
+# include <map>
 
 // WifiStatus
-#define ESPEASY_WIFI_DISCONNECTED            0
+# define ESPEASY_WIFI_DISCONNECTED            0
 
 // Bit numbers for WiFi status
-#define ESPEASY_WIFI_CONNECTED               0
-#define ESPEASY_WIFI_GOT_IP                  1
-#define ESPEASY_WIFI_SERVICES_INITIALIZED    2
+# define ESPEASY_WIFI_CONNECTED               0
+# define ESPEASY_WIFI_GOT_IP                  1
+# define ESPEASY_WIFI_SERVICES_INITIALIZED    2
 
 
-#define WIFI_PROCESS_EVENTS_TIMEOUT          20000 // in milliSeconds
+# define WIFI_PROCESS_EVENTS_TIMEOUT          20000 // in milliSeconds
 
 struct WiFiEventData_t {
   bool WiFiConnectAllowed() const;
@@ -44,24 +48,26 @@ struct WiFiEventData_t {
 
   bool WiFiDisconnected() const;
   bool WiFiGotIP() const;
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
   bool WiFiGotIPv6() const;
-#endif
+# endif
   bool WiFiConnected() const;
   bool WiFiServicesInitialized() const;
 
-  void     setWiFiDisconnected();
-  void     setWiFiGotIP();
-  void     setWiFiConnected();
-  void     setWiFiServicesInitialized();
+  void setWiFiDisconnected();
+  void setWiFiGotIP();
+  void setWiFiConnected();
+  void setWiFiServicesInitialized();
 
 
-  void     markGotIP();
-  void     markGotIP(const IPAddress& ip, const IPAddress& netmask, const IPAddress& gw);
+  void markGotIP();
+  void markGotIP(const IPAddress& ip,
+                 const IPAddress& netmask,
+                 const IPAddress& gw);
 
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
   void     markGotIPv6(const IPAddress& ip6);
-#endif
+# endif
   void     markLostIP();
   void     markDisconnect(WiFiDisconnectReason reason);
   void     markConnected(const String& ssid,
@@ -114,9 +120,9 @@ struct WiFiEventData_t {
   IPAddress dns0_cache;
   IPAddress dns1_cache;
 
-  #if FEATURE_USE_IPV6
+  # if FEATURE_USE_IPV6
   IPAddress unprocessed_IP6;
-  #endif
+  # endif
 
 
   // processDisconnect() may clear all WiFi settings, resulting in clearing processedDisconnect
@@ -128,9 +134,9 @@ struct WiFiEventData_t {
   bool processedConnect    = true;
   bool processedDisconnect = true;
   bool processedGotIP      = true;
-  #if FEATURE_USE_IPV6
+  # if FEATURE_USE_IPV6
   bool processedGotIP6 = true;
-  #endif
+  # endif
   bool processedDHCPTimeout      = true;
   bool processedConnectAPmode    = true;
   bool processedDisconnectAPmode = true;
@@ -145,9 +151,10 @@ struct WiFiEventData_t {
 
   std::map<uint8_t, long>connectDurations;
 
-#ifdef ESP32
+# ifdef ESP32
   WiFiEventId_t wm_event_id = 0;
-#endif // ifdef ESP32
+# endif // ifdef ESP32
 
 };
 
+#endif // if FEATURE_WIFI

@@ -5,7 +5,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyEth.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 #include "../Globals/ESPEasy_time.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
@@ -46,10 +46,10 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
 \*********************************************************************************************/
 void NetworkConnectRelaxed() {
   if (NetworkConnected()) { return; }
-  WiFiConnectRelaxed();
+  ESPEasy::net::wifi::WiFiConnectRelaxed();
 }
 
-bool        NetworkConnected()           { return WiFiConnected(); }
+bool        NetworkConnected()           { return ESPEasy::net::wifi::WiFiConnected(); }
 
 IPAddress   NetworkLocalIP()             { return WiFi.localIP(); }
 

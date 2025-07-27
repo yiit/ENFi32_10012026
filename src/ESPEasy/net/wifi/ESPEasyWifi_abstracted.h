@@ -1,13 +1,12 @@
-#ifndef ESPEASYCORE_ESPEASYWIFI_ABSTRACTED_H
-#define ESPEASYCORE_ESPEASYWIFI_ABSTRACTED_H
+#pragma once
 
 #include "../../../ESPEasy_common.h"
 
 #if FEATURE_WIFI
 
-#include "../wifi/WiFiConnectionProtocol.h"
-#include "../wifi/WiFi_STA_connected_state.h"
-#include "../wifi/WiFi_State.h"
+# include "../wifi/WiFiConnectionProtocol.h"
+# include "../wifi/WiFi_STA_connected_state.h"
+# include "../wifi/WiFi_State.h"
 
 
 # if defined(ESP8266)
@@ -31,33 +30,37 @@ bool WiFi_pre_setup();
 // Call before setting WiFi into STA mode
 bool WiFi_pre_STA_setup();
 
-bool WiFiConnected();
 
-void WiFiDisconnect();
+void doWiFiDisconnect();
 
 // ********************************************************************************
 // Manage Wifi Modes
 // ********************************************************************************
-bool                       WifiIsAP(WiFiMode_t wifimode);
-bool                       WifiIsSTA(WiFiMode_t wifimode);
+bool                       doWifiIsAP(WiFiMode_t wifimode);
+bool                       doWifiIsSTA(WiFiMode_t wifimode);
 
-const __FlashStringHelper* getWifiModeString(WiFiMode_t wifimode);
+const __FlashStringHelper* doGetWifiModeString(WiFiMode_t wifimode);
 
-#if CONFIG_SOC_WIFI_SUPPORT_5G
-const __FlashStringHelper* getWifiBandModeString(wifi_band_mode_t wifiBandMode);
-#endif
+# if CONFIG_SOC_WIFI_SUPPORT_5G
+const __FlashStringHelper* doGetWifiBandModeString(wifi_band_mode_t wifiBandMode);
+# endif
 
-bool                       setSTA(bool enable);
-bool                       setAP(bool enable);
-bool                       setSTA_AP(bool sta_enable,
-                                     bool ap_enable);
+bool                       doSetSTA(bool enable);
+bool                       doSetAP(bool enable);
+bool                       doSetSTA_AP(bool sta_enable,
+                                       bool ap_enable);
 
-bool                       setWifiMode(WiFiMode_t new_mode);
+bool                       doSetWifiMode(WiFiMode_t new_mode);
 
 
-void    WifiScan(bool    async,
-                 uint8_t channel = 0);
+void                       doWifiScan(bool    async,
+                                      uint8_t channel = 0);
 
+
+bool doWiFiScanAllowed();
+
+// Only internal scope
+void doSetAPinternal(bool enable);
 
 // ********************************************************************************
 // Event handlers
@@ -67,37 +70,40 @@ void                   removeWiFiEventHandler();
 void                   registerWiFiEventHandler();
 
 
-WiFiConnectionProtocol getConnectionProtocol();
-float                  GetRSSIthreshold(float& maxTXpwr);
+WiFiConnectionProtocol doGetConnectionProtocol();
+float                  doGetRSSIthreshold(float& maxTXpwr);
 
 // ********************************************************************************
 // Configure WiFi TX power
 // ********************************************************************************
 
 # if FEATURE_SET_WIFI_TX_PWR
-void SetWiFiTXpower();
-void SetWiFiTXpower(float dBm);
-void SetWiFiTXpower(float dBm,
-                    float rssi);
 
 // Actually set the TX power using platform specific calls.
 void doSetWiFiTXpower(float& dBm);
+
+
+void doSetWiFiTXpower();
+
+void doSetWiFiTXpower(float dBm,
+                      float rssi);
+
 # endif // if FEATURE_SET_WIFI_TX_PWR
 
-int  GetRSSI_quality();
 
-void setConnectionSpeed();
-#if CONFIG_SOC_WIFI_SUPPORT_5G
-void setConnectionSpeed(bool ForceWiFi_bg_mode, wifi_band_mode_t WiFi_band_mode);
-#else
-void setConnectionSpeed(bool ForceWiFi_bg_mode);
-#endif
+void doSetConnectionSpeed();
+# if CONFIG_SOC_WIFI_SUPPORT_5G
+void doSetConnectionSpeed(bool             ForceWiFi_bg_mode,
+                          wifi_band_mode_t WiFi_band_mode);
+# else // if CONFIG_SOC_WIFI_SUPPORT_5G
+void doSetConnectionSpeed(bool ForceWiFi_bg_mode);
+# endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 
-void setWiFiNoneSleep();
-void setWiFiEcoPowerMode();
-void setWiFiDefaultPowerMode();
+void doSetWiFiNoneSleep();
+void doSetWiFiEcoPowerMode();
+void doSetWiFiDefaultPowerMode();
 
-void setWiFiCountryPolicyManual();
+void doSetWiFiCountryPolicyManual();
 
 } // namespace wifi
 } // namespace net
@@ -105,4 +111,3 @@ void setWiFiCountryPolicyManual();
 
 
 #endif // if FEATURE_WIFI
-#endif // ifndef ESPEASYCORE_ESPEASYWIFI_ABSTRACTED_H

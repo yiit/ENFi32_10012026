@@ -4,28 +4,23 @@
 # ifdef ESP32
 
 #  include "../../../src/DataStructs/TimingStats.h"
-
-#  include "../Globals/ESPEasyWiFiEvent.h"
 #  include "../../../src/Globals/EventQueue.h"
 #  include "../../../src/Globals/Settings.h"
 #  include "../../../src/Globals/WiFi_AP_Candidates.h"
-#  include "../wifi/ESPEasyWiFiEvent_ESP32.h"
-
 #  include "../../../src/Helpers/StringConverter.h"
 
-
-#  include "../../../src/ESPEasyCore/ESPEasyNetwork.h" // Needed for NetworkCreateRFCCompliantHostname, WiFi code should not include network code
-#  include "../wifi/ESPEasyWifi.h"    // Needed for WifiDisconnect. Maybe this should be moved to these 'abstract' files?
-
+#  include "../../../src/ESPEasyCore/ESPEasyNetwork.h" // Needed for NetworkCreateRFCCompliantHostname, WiFi code should not include network
+                                                       // code
+#  include "../Globals/ESPEasyWiFiEvent.h"
+#  include "../wifi/ESPEasyWiFiEvent_ESP32.h"
 #  include "../wifi/ESPEasyWifi_ProcessEvent.h"
-
 
 #  include <WiFiGeneric.h>
 #  include <esp_wifi.h> // Needed to call ESP-IDF functions like esp_wifi_....
 
-#ifndef ESP32P4
-#  include <esp_phy_init.h>
-#endif
+#  ifndef ESP32P4
+#   include <esp_phy_init.h>
+#  endif
 
 
 namespace ESPEasy {
@@ -37,21 +32,21 @@ bool WiFi_pre_setup() {
   registerWiFiEventHandler();
   WiFi.persistent(false);
 
-  return setSTA_AP(false, false);
+  return doSetSTA_AP(false, false);
 }
 
 bool WiFi_pre_STA_setup()
 {
-  if (!setSTA(true)) { return false; }
+  if (!doSetSTA(true)) { return false; }
 
   WiFi.setAutoReconnect(false);
   delay(10);
   return true;
 }
 
-void WiFiDisconnect() {
+void doWiFiDisconnect() {
   //  removeWiFiEventHandler();
-  WiFi.disconnect();
+  WiFi.disconnect(Settings.WiFiRestart_connection_lost());
   delay(100);
   {
     const IPAddress ip;
@@ -62,11 +57,11 @@ void WiFiDisconnect() {
   }
 }
 
-bool WifiIsAP(WiFiMode_t wifimode)  { return (wifimode == WIFI_MODE_AP) || (wifimode == WIFI_MODE_APSTA); }
+bool doWifiIsAP(WiFiMode_t wifimode)  { return (wifimode == WIFI_MODE_AP) || (wifimode == WIFI_MODE_APSTA); }
 
-bool WifiIsSTA(WiFiMode_t wifimode) { return (wifimode & WIFI_MODE_STA) != 0; }
+bool doWifiIsSTA(WiFiMode_t wifimode) { return (wifimode & WIFI_MODE_STA) != 0; }
 
-bool setWifiMode(WiFiMode_t new_mode)
+bool doSetWifiMode(WiFiMode_t new_mode)
 {
   const WiFiMode_t cur_mode = WiFi.getMode();
 
@@ -103,7 +98,7 @@ bool setWifiMode(WiFiMode_t new_mode)
     #  endif // ifdef ESP8266
     delay(100);
   } else {
-    WifiDisconnect();
+    doWiFiDisconnect();
 
     //    delay(100);
     processDisconnect();
@@ -111,7 +106,7 @@ bool setWifiMode(WiFiMode_t new_mode)
     removeWiFiEventHandler();
   }
 
-  addLog(LOG_LEVEL_INFO, concat(F("WIFI : Set WiFi to "), getWifiModeString(new_mode)));
+  addLog(LOG_LEVEL_INFO, concat(F("WIFI : Set WiFi to "), doGetWifiModeString(new_mode)));
 
   int retry = 2;
 
@@ -143,9 +138,9 @@ bool setWifiMode(WiFiMode_t new_mode)
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
     delay(100);
-#ifndef ESP32P4
+#  ifndef ESP32P4
     esp_wifi_set_ps(WIFI_PS_NONE);
-#endif
+#  endif
 
     //    esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
     delay(1);
@@ -161,35 +156,35 @@ bool setWifiMode(WiFiMode_t new_mode)
 
     // Only set power mode when AP is not enabled
     // When AP is enabled, the sleep mode is already set to WIFI_NONE_SLEEP
-    if (!WifiIsAP(new_mode)) {
+    if (!doWifiIsAP(new_mode)) {
       if (Settings.WifiNoneSleep()) {
-        setWiFiNoneSleep();
+        doSetWiFiNoneSleep();
       } else if (Settings.EcoPowerMode()) {
-        setWiFiEcoPowerMode();
+        doSetWiFiEcoPowerMode();
       } else {
         // Default
-        setWiFiDefaultPowerMode();
+        doSetWiFiDefaultPowerMode();
       }
     }
 #  if FEATURE_SET_WIFI_TX_PWR
-    SetWiFiTXpower();
+    doSetWiFiTXpower();
 #  endif
 
-    if (WifiIsSTA(new_mode)) {
+    if (doWifiIsSTA(new_mode)) {
       //      WiFi.setAutoConnect(Settings.SDK_WiFi_autoreconnect());
       WiFi.setAutoReconnect(Settings.SDK_WiFi_autoreconnect());
     }
     delay(100); // Must allow for some time to init.
   }
-  const bool new_mode_AP_enabled =  WifiIsAP(new_mode);
+  const bool new_mode_AP_enabled =  doWifiIsAP(new_mode);
 
-  if (WifiIsAP(cur_mode) && !new_mode_AP_enabled) {
+  if (doWifiIsAP(cur_mode) && !new_mode_AP_enabled) {
     eventQueue.add(F("WiFi#APmodeDisabled"));
   }
 
-  if (WifiIsAP(cur_mode) != new_mode_AP_enabled) {
+  if (doWifiIsAP(cur_mode) != new_mode_AP_enabled) {
     // Mode has changed
-    setAPinternal(new_mode_AP_enabled);
+    doSetAPinternal(new_mode_AP_enabled);
   }
   #  if FEATURE_MDNS
   #   ifdef ESP8266
@@ -201,17 +196,17 @@ bool setWifiMode(WiFiMode_t new_mode)
   return true;
 }
 
-void WifiScan(bool async, uint8_t channel) {
-  ESPEasy::net::wifi::setSTA(true);
+void doWifiScan(bool async, uint8_t channel) {
+  doSetSTA(true);
 
-  if (!WiFiScanAllowed()) {
+  if (!doWiFiScanAllowed()) {
     return;
   }
 
 #  if CONFIG_SOC_WIFI_SUPPORT_5G
   const wifi_band_mode_t current_wifi_band_mode = WiFi.getBandMode();
   WiFi.setBandMode(Settings.WiFi_band_mode());
-#  endif
+#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 
   // TD-er: Don't run async scan on ESP32.
   // Since IDF 4.4 it seems like the active channel may be messed up when running async scan
@@ -220,7 +215,7 @@ void WifiScan(bool async, uint8_t channel) {
   async = false;
 
   if (Settings.IncludeHiddenSSID()) {
-    ESPEasy::net::wifi::setWiFiCountryPolicyManual();
+    doSetWiFiCountryPolicyManual();
   }
 
   START_TIMER;
@@ -293,9 +288,10 @@ void WifiScan(bool async, uint8_t channel) {
   }
 #  endif // if ESP_IDF_VERSION_MAJOR < 5
 #  if CONFIG_SOC_WIFI_SUPPORT_5G
+
   // Restore band mode
   WiFi.setBandMode(current_wifi_band_mode);
-#endif
+#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 }
 
 void removeWiFiEventHandler()
@@ -312,12 +308,12 @@ void registerWiFiEventHandler()
   WiFiEventData.wm_event_id = WiFi.onEvent(WiFiEvent);
 }
 
-float GetRSSIthreshold(float& maxTXpwr) {
+float doGetRSSIthreshold(float& maxTXpwr) {
   maxTXpwr = Settings.getWiFi_TX_power();
 
   float threshold = WIFI_SENSITIVITY_n;
 
-  switch (getConnectionProtocol())
+  switch (doGetConnectionProtocol())
   {
     case WiFiConnectionProtocol::WiFi_Protocol_11b:
       threshold = WIFI_SENSITIVITY_11b;
@@ -349,9 +345,9 @@ float GetRSSIthreshold(float& maxTXpwr) {
   return threshold;
 }
 
-WiFiConnectionProtocol getConnectionProtocol()
+WiFiConnectionProtocol doGetConnectionProtocol()
 {
-//  #ifndef ESP32P4
+  //  #ifndef ESP32P4
   if (WiFi.RSSI() < 0) {
     wifi_phy_mode_t phymode;
     esp_wifi_sta_get_negotiated_phymode(&phymode);
@@ -372,7 +368,8 @@ WiFiConnectionProtocol getConnectionProtocol()
 #  endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 3, 0)
     }
   }
-//  #endif
+
+  //  #endif
   return WiFiConnectionProtocol::Unknown;
 }
 
@@ -396,32 +393,36 @@ void doSetWiFiTXpower(float& dBm)
 bool setProtocol(wifi_interface_t ifx, uint16_t protocol_2GHz, uint16_t protocol_5GHz)
 {
   esp_err_t err;
+
   switch (WiFi.getBandMode())
   {
-    case WIFI_BAND_MODE_2G_ONLY: err = esp_wifi_set_protocol(ifx, protocol_2GHz); break;
-    case WIFI_BAND_MODE_5G_ONLY: err = esp_wifi_set_protocol(ifx, protocol_5GHz); break;
-    default: 
+    case WIFI_BAND_MODE_2G_ONLY: err = esp_wifi_set_protocol(ifx, protocol_2GHz);
+      break;
+    case WIFI_BAND_MODE_5G_ONLY: err = esp_wifi_set_protocol(ifx, protocol_5GHz);
+      break;
+    default:
     {
       wifi_protocols_t protocols { .ghz_2g = protocol_2GHz, .ghz_5g = protocol_5GHz };
       err = esp_wifi_set_protocols(WIFI_IF_STA, &protocols);
       break;
     }
   }
+
   if (err != ESP_OK) {
     // TODO TD-er: Log
   }
-  
+
   return err == ESP_OK;
 }
 
 #  else // if CONFIG_SOC_WIFI_SUPPORT_5G
 
-bool setProtocol(wifi_interface_t ifx, uint8_t protocol_2GHz) { 
-  # ifndef SOC_WIFI_SUPPORTED
+bool setProtocol(wifi_interface_t ifx, uint8_t protocol_2GHz) {
+  #   ifndef SOC_WIFI_SUPPORTED
   return false;
-  #else
-  return esp_wifi_set_protocol(ifx, protocol_2GHz) == ESP_OK; 
-  #endif
+  #   else
+  return esp_wifi_set_protocol(ifx, protocol_2GHz) == ESP_OK;
+  #   endif // ifndef SOC_WIFI_SUPPORTED
 }
 
 #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
@@ -429,10 +430,10 @@ bool setProtocol(wifi_interface_t ifx, uint8_t protocol_2GHz) {
 
 #  if CONFIG_SOC_WIFI_SUPPORT_5G
 
-void setConnectionSpeed(bool ForceWiFi_bg_mode, wifi_band_mode_t WiFi_band_mode)
+void doSetConnectionSpeed(bool ForceWiFi_bg_mode, wifi_band_mode_t WiFi_band_mode)
 #  else // if CONFIG_SOC_WIFI_SUPPORT_5G
 
-void setConnectionSpeed(bool ForceWiFi_bg_mode)
+void doSetConnectionSpeed(bool ForceWiFi_bg_mode)
 #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 {
   // Does not (yet) work, so commented out.
@@ -443,20 +444,20 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode)
   // However since HT40 is using nearly all channels on 2.4 GHz WiFi,
   // Thus you are more likely to experience disturbances.
   // The response speed and stability is better at HT20 for ESP units.
-  # ifndef SOC_WIFI_SUPPORTED
+  #  ifndef SOC_WIFI_SUPPORTED
   return;
-  #else
+  #  else
   esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
 
 
-#  if CONFIG_SOC_WIFI_SUPPORT_5G
+#   if CONFIG_SOC_WIFI_SUPPORT_5G
   WiFi.setBandMode(WiFi_band_mode);
-#   if CONFIG_SOC_WIFI_HE_SUPPORT
+#    if CONFIG_SOC_WIFI_HE_SUPPORT
   uint8_t protocol_5GHz = WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11A | WIFI_PROTOCOL_11AC | WIFI_PROTOCOL_11AX;
-#   else
+#    else
   uint8_t protocol_5GHz = WIFI_PROTOCOL_11N | WIFI_PROTOCOL_11A | WIFI_PROTOCOL_11AC;
-#   endif // if CONFIG_SOC_WIFI_HE_SUPPORT
-#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+#    endif // if CONFIG_SOC_WIFI_HE_SUPPORT
+#   endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 
   uint8_t protocol = 0;
 
@@ -467,9 +468,9 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode)
   if (WiFiEventData.connectionFailures > 10) {
     // Set to allow all protocols
     protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
-#  if CONFIG_SOC_WIFI_HE_SUPPORT
+#   if CONFIG_SOC_WIFI_HE_SUPPORT
     protocol |= WIFI_PROTOCOL_11AX;
-#  endif
+#   endif
   }
 
   const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
@@ -482,18 +483,19 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode)
       if (candidate.bits.phy_11g) { protocol |= WIFI_PROTOCOL_11G; }
 
       if (candidate.bits.phy_11n) { protocol |= WIFI_PROTOCOL_11N; }
-#  if CONFIG_SOC_WIFI_HE_SUPPORT
+#   if CONFIG_SOC_WIFI_HE_SUPPORT
 
       if (candidate.bits.phy_11ax) { protocol |= WIFI_PROTOCOL_11AX; }
-#  endif // if CONFIG_SOC_WIFI_HE_SUPPORT
-/*
-#  if CONFIG_SOC_WIFI_SUPPORT_5G
+#   endif // if CONFIG_SOC_WIFI_HE_SUPPORT
 
-      if (candidate.bits.phy_11a) { protocol |= WIFI_PROTOCOL_11A; }
+      /*
+       #  if CONFIG_SOC_WIFI_SUPPORT_5G
 
-      if (candidate.bits.phy_11ac) { protocol |= WIFI_PROTOCOL_11AC; }
-#  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
-*/
+            if (candidate.bits.phy_11a) { protocol |= WIFI_PROTOCOL_11A; }
+
+            if (candidate.bits.phy_11ac) { protocol |= WIFI_PROTOCOL_11AC; }
+       #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+       */
     } else
 
     // Check to see if the access point is set to "N-only"
@@ -504,81 +506,82 @@ void setConnectionSpeed(bool ForceWiFi_bg_mode)
           protocol |= WIFI_PROTOCOL_11N;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11n only"));
         }
-#  if CONFIG_SOC_WIFI_HE_SUPPORT
+#   if CONFIG_SOC_WIFI_HE_SUPPORT
 
         if (candidate.bits.phy_11ax) {
           // Set to use WiFi6
           protocol |= WIFI_PROTOCOL_11AX;
-//          protocol_5GHz |= WIFI_PROTOCOL_11AX;
+
+          //          protocol_5GHz |= WIFI_PROTOCOL_11AX;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11ax, Wi-Fi 6"));
         }
-#   if CONFIG_SOC_WIFI_SUPPORT_5G
+#    if CONFIG_SOC_WIFI_SUPPORT_5G
 
         if (candidate.bits.phy_11a) {
           // Set to use 5 GHz WiFi
-//          protocol_5GHz |= WIFI_PROTOCOL_11A;
+          //          protocol_5GHz |= WIFI_PROTOCOL_11A;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11a, 5 GHz"));
         }
 
         if (candidate.bits.phy_11ac) {
           // Set to use 5 GHz WiFi-5
-//          protocol_5GHz |= WIFI_PROTOCOL_11AC;
+          //          protocol_5GHz |= WIFI_PROTOCOL_11AC;
           addLog(LOG_LEVEL_INFO, F("WIFI : AP allows 802.11ac, 5 GHz Wi-Fi 5"));
         }
-#   endif // if CONFIG_SOC_WIFI_SUPPORT_5G
-#  endif // if CONFIG_SOC_WIFI_HE_SUPPORT
+#    endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+#   endif // if CONFIG_SOC_WIFI_HE_SUPPORT
       }
     }
   }
 
 
-  if (WifiIsSTA(WiFi.getMode())) {
+  if (doWifiIsSTA(WiFi.getMode())) {
     // Set to use "Long GI" making it more resilliant to reflections
     // See: https://www.tp-link.com/us/configuration-guides/q_a_basic_wireless_concepts/?configurationId=2958#_idTextAnchor038
     esp_wifi_config_80211_tx_rate(WIFI_IF_STA, WIFI_PHY_RATE_MCS3_LGI);
-    #  if CONFIG_SOC_WIFI_SUPPORT_5G
+    #   if CONFIG_SOC_WIFI_SUPPORT_5G
     setProtocol(WIFI_IF_STA, protocol, protocol_5GHz);
-    #  else
+    #   else
     setProtocol(WIFI_IF_STA, protocol);
-    #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+    #   endif // if CONFIG_SOC_WIFI_SUPPORT_5G
   }
 
-  if (WifiIsAP(WiFi.getMode())) {
-    #  if CONFIG_SOC_WIFI_SUPPORT_5G
+  if (doWifiIsAP(WiFi.getMode())) {
+    #   if CONFIG_SOC_WIFI_SUPPORT_5G
     setProtocol(WIFI_IF_AP,  protocol, protocol_5GHz);
-    #  else
+    #   else
     setProtocol(WIFI_IF_STA, protocol);
-    #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+    #   endif // if CONFIG_SOC_WIFI_SUPPORT_5G
   }
-  #endif
+  #  endif // ifndef SOC_WIFI_SUPPORTED
 }
 
-void setWiFiNoneSleep() { 
-  #ifndef ESP32P4
-  WiFi.setSleep(WIFI_PS_NONE); 
-  #endif
+void doSetWiFiNoneSleep() {
+  #  ifndef ESP32P4
+  WiFi.setSleep(WIFI_PS_NONE);
+  #  endif
 }
 
-void setWiFiEcoPowerMode()
+void doSetWiFiEcoPowerMode()
 {
   // Maximum modem power saving.
   // In this mode, interval to receive beacons is determined by the listen_interval parameter in wifi_sta_config_t
   // FIXME TD-er: Must test if this is desired behavior in ESP32.
-  #ifndef ESP32P4
+  #  ifndef ESP32P4
   WiFi.setSleep(WIFI_PS_MAX_MODEM);
-  #endif
+  #  endif
 }
 
-void setWiFiDefaultPowerMode()
+void doSetWiFiDefaultPowerMode()
 {
   // Minimum modem power saving.
   // In this mode, station wakes up to receive beacon every DTIM period
-  #ifndef ESP32P4
+  #  ifndef ESP32P4
   WiFi.setSleep(WIFI_PS_MIN_MODEM);
-  #endif
+  #  endif
 }
 
-void setWiFiCountryPolicyManual()
+void doSetWiFiCountryPolicyManual()
 {
   /*   wifi_country_t config = {
       .cc     = "01",

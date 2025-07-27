@@ -125,7 +125,7 @@ void handle_sysinfo_json() {
   json_close();
 
   json_open(false, F("wifi"));
-  json_prop(F("type"),          toString(getConnectionProtocol()));
+  json_prop(F("type"),          toString(ESPEasy::net::wifi::getConnectionProtocol()));
   json_number(F("rssi"),        String(WiFi.RSSI()));
   json_prop(F("dhcp"),          useStaticIP() ? getLabel(LabelType::IP_CONFIG_STATIC) : getLabel(LabelType::IP_CONFIG_DYNAMIC));
   json_prop(F("ip"),            getValue(LabelType::IP_ADDRESS));
@@ -491,7 +491,7 @@ void handle_sysinfo_Network() {
   addRowLabel(LabelType::WIFI_CONNECTION);
   if (showWiFiConnectionInfo)
   {
-    addHtml(toString(getConnectionProtocol()));
+    addHtml(toString(ESPEasy::net::wifi::getConnectionProtocol()));
     addHtml(F(" (RSSI "));
     addHtmlInt(WiFi.RSSI());
     addHtml(F(" dBm)"));
@@ -507,7 +507,7 @@ void handle_sysinfo_Network() {
   } else addHtml('-');
 
   #ifdef ESP32
-  const int64_t tsf_time = WiFi_get_TSF_time();
+  const int64_t tsf_time = ESPEasy::net::wifi::WiFi_get_TSF_time();
   if (tsf_time > 0) {
     addRowLabel(F("WiFi TSF time"));
     // Split it while printing, so we're not loosing a lot of decimals in the float conversion

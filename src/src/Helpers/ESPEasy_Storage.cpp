@@ -17,7 +17,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 #include "../ESPEasyCore/Serial.h"
 
 #include "../Globals/CRCValues.h"
@@ -682,7 +682,7 @@ bool check_and_update_WiFi_Calibration() {
 
 bool Erase_WiFi_Calibration() {
   #ifdef ESP8266
-  WifiDisconnect();
+  ESPEasy::net::wifi::WifiDisconnect();
   ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   if (!ESP.eraseConfig())
     return false;
@@ -695,7 +695,7 @@ bool Erase_WiFi_Calibration() {
   # ifndef SOC_WIFI_SUPPORTED
   return false;
   #else
-  WifiDisconnect();
+  ESPEasy::net::wifi::WifiDisconnect();
   ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   // Make sure power is stable, so wait a bit longer
   delay(1000);
@@ -866,8 +866,8 @@ String SaveSecuritySettings(bool forFactoryReset) {
         WiFi_AP_Candidates.force_reload(); // Force reload of the credentials and found APs from the last scan
         if (!NetworkConnected()) {
           WiFiEventData.wifiConnectAttemptNeeded = true;
-          resetWiFi();
-          AttemptWiFiConnect();
+          ESPEasy::net::wifi::resetWiFi();
+          ESPEasy::net::wifi::AttemptWiFiConnect();
         }
       }
     }

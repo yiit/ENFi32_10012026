@@ -2,21 +2,18 @@
 
 #if FEATURE_WIFI
 
-# include "../wifi/ESPEasyWifi.h"
-# include "../wifi/ESPEasyWifi_abstracted.h"
-
-
 # include "../../../src/ESPEasyCore/ESPEasyNetwork.h" // for setNetworkMedium, however this should not be part of the WiFi code
-
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
-
-# include "../Globals/ESPEasyWiFiEvent.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/Settings.h"
 # include "../../../src/Globals/WiFi_AP_Candidates.h"
-
 # include "../../../src/Helpers/StringConverter.h"
 # include "../../../src/Helpers/StringGenerator_WiFi.h"
+
+# include "../Globals/ESPEasyWiFiEvent.h"
+# include "../wifi/ESPEasyWifi.h"
+# include "../wifi/ESPEasyWifi_abstracted.h"
+
 
 namespace ESPEasy {
 namespace net {
@@ -88,8 +85,7 @@ void ESPEasyWiFi_t::loop()
         // This is where we decide what to do next:
         // - Reconnect
         // - Scan
-        // 
-
+        //
 
 
         // Do we have candidate to connect to ?
@@ -130,6 +126,7 @@ void ESPEasyWiFi_t::loop()
     {
       // -1 if scan not finished
       auto scanCompleteStatus = WiFi.scanComplete();
+
       if (scanCompleteStatus >= 0) {
         WiFi_AP_Candidates.load_knownCredentials();
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
@@ -209,7 +206,7 @@ bool ESPEasyWiFi_t::connected() const
   return getSTA_connected_state() == STA_connected_state::Connected;
 }
 
-void ESPEasyWiFi_t::disconnect() { WiFi.disconnect(Settings.WiFiRestart_connection_lost()); }
+void ESPEasyWiFi_t::disconnect() { doWiFiDisconnect(); }
 
 void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
@@ -335,7 +332,7 @@ bool ESPEasyWiFi_t::connectSTA()
 
   //  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
 # endif // if defined(ESP32)
-  setConnectionSpeed();
+  doSetConnectionSpeed();
   setupStaticIPconfig();
 
   // Start the process of connecting or starting AP
@@ -384,7 +381,7 @@ bool ESPEasyWiFi_t::connectSTA()
 # ifdef ESP32
 
     if (Settings.IncludeHiddenSSID()) {
-      setWiFiCountryPolicyManual();
+      doSetWiFiCountryPolicyManual();
     }
 # endif // ifdef ESP32
 

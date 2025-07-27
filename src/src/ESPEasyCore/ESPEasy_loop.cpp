@@ -73,9 +73,9 @@ void ESPEasy_loop()
 
   updateLoopStats();
 
-  loopWiFi();
+  ESPEasy::net::wifi::loopWiFi();
 
-  handle_unprocessedNetworkEvents();
+  ESPEasy::net::wifi::handle_unprocessedNetworkEvents();
 
   bool firstLoopConnectionsEstablished = NetworkConnected() && firstLoop;
 

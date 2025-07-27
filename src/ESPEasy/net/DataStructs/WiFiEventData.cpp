@@ -1,31 +1,33 @@
 #include "../DataStructs/WiFiEventData.h"
 
-#include "../../../src/ESPEasyCore/ESPEasy_Log.h"
+#if FEATURE_WIFI
 
-#include "../../../src/Globals/RTC.h"
-#include "../../../src/Globals/Settings.h"
-#include "../../../src/Globals/WiFi_AP_Candidates.h"
+# include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 
-#include "../../../src/Helpers/ESPEasy_Storage.h"
-#include "../../../src/Helpers/Networking.h"
+# include "../../../src/Globals/RTC.h"
+# include "../../../src/Globals/Settings.h"
+# include "../../../src/Globals/WiFi_AP_Candidates.h"
 
-#include "../../../src/Helpers/StringConverter.h"
+# include "../../../src/Helpers/ESPEasy_Storage.h"
+# include "../../../src/Helpers/Networking.h"
 
-
-#define WIFI_RECONNECT_WAIT                  30000 // in milliSeconds
-
-#define CONNECT_TIMEOUT_MAX                  4000  // in milliSeconds
+# include "../../../src/Helpers/StringConverter.h"
 
 
-#if FEATURE_USE_IPV6
-# include <esp_netif.h>
+# define WIFI_RECONNECT_WAIT                  30000 // in milliSeconds
+
+# define CONNECT_TIMEOUT_MAX                  4000  // in milliSeconds
+
+
+# if FEATURE_USE_IPV6
+#  include <esp_netif.h>
 
 // -----------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------- Private functions ------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------
 
 esp_netif_t* get_esp_interface_netif(esp_interface_t interface);
-#endif // if FEATURE_USE_IPV6
+# endif // if FEATURE_USE_IPV6
 
 bool         WiFiEventData_t::WiFiConnectAllowed() const {
   if (WiFi.status() == WL_IDLE_STATUS) {
@@ -61,9 +63,9 @@ bool         WiFiEventData_t::WiFiConnectAllowed() const {
 
 bool WiFiEventData_t::unprocessedWifiEvents() const {
   if (processedConnect && processedDisconnect && processedGotIP && processedDHCPTimeout
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
       && processedGotIP6
-#endif
+# endif
       )
   {
     return false;
@@ -121,9 +123,9 @@ void WiFiEventData_t::clear_processed_flags() {
   processedConnect    = true;
   processedDisconnect = true;
   processedGotIP      = true;
-  #if FEATURE_USE_IPV6
+  # if FEATURE_USE_IPV6
   processedGotIP6 = true;
-  #endif
+  # endif
   processedDHCPTimeout      = true;
   processedConnectAPmode    = true;
   processedDisconnectAPmode = true;
@@ -151,9 +153,9 @@ void WiFiEventData_t::setWiFiDisconnected() {
   wifiStatus = ESPEASY_WIFI_DISCONNECTED;
   last_wifi_connect_attempt_moment.clear();
   wifiConnectInProgress = false;
-#if FEATURE_ESPEASY_P2P
+# if FEATURE_ESPEASY_P2P
   updateUDPport(true);
-#endif  
+# endif
 
 }
 
@@ -185,9 +187,10 @@ void WiFiEventData_t::setWiFiServicesInitialized() {
   }
 
   if (/*!unprocessedWifiEvents() && */ WiFiConnected() && WiFiGotIP()) {
-    #ifndef BUILD_NO_DEBUG
-//    addLog(LOG_LEVEL_DEBUG, F("WiFi : WiFi services initialized"));
-    #endif
+    # ifndef BUILD_NO_DEBUG
+
+    //    addLog(LOG_LEVEL_DEBUG, F("WiFi : WiFi services initialized"));
+    # endif // ifndef BUILD_NO_DEBUG
     bitSet(wifiStatus, ESPEASY_WIFI_SERVICES_INITIALIZED);
     wifiConnectInProgress    = false;
     wifiConnectAttemptNeeded = false;
@@ -199,9 +202,9 @@ void WiFiEventData_t::setWiFiServicesInitialized() {
     if (valid_DNS_address(WiFi.dnsIP(1))) {
       dns1_cache = WiFi.dnsIP(1);
     }
-#if FEATURE_ESPEASY_P2P
+# if FEATURE_ESPEASY_P2P
     updateUDPport(false);
-#endif  
+# endif
   }
 }
 
@@ -232,14 +235,14 @@ void WiFiEventData_t::markGotIP(const IPAddress& ip, const IPAddress& netmask, c
   markGotIP();
 }
 
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
 
 void WiFiEventData_t::markGotIPv6(const IPAddress& ip6) {
   processedGotIP6 = false;
   unprocessed_IP6 = ip6;
 }
 
-#endif // if FEATURE_USE_IPV6
+# endif // if FEATURE_USE_IPV6
 
 void WiFiEventData_t::markLostIP() {
   bitClear(wifiStatus, ESPEASY_WIFI_GOT_IP);
@@ -290,12 +293,12 @@ void WiFiEventData_t::markConnected(const String& ssid, const uint8_t bssid[6], 
       RTC.lastBSSID[i] = bssid[i];
     }
   }
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
 
   if (Settings.EnableIPv6()) {
     WiFi.enableIPv6(true);
   }
-#endif // if FEATURE_USE_IPV6
+# endif // if FEATURE_USE_IPV6
 }
 
 void WiFiEventData_t::markConnectedAPmode(const uint8_t mac[6]) {
@@ -339,7 +342,7 @@ uint32_t WiFiEventData_t::getSuggestedTimeout(int index, uint32_t minimum_timeou
   return constrain(res, minimum_timeout, CONNECT_TIMEOUT_MAX);
 }
 
-#ifdef ESP8266
+# ifdef ESP8266
 
 bool WiFiEventData_t::WiFiDisconnected() const {
   return wifiStatus == ESPEASY_WIFI_DISCONNECTED;
@@ -357,9 +360,9 @@ bool WiFiEventData_t::WiFiServicesInitialized() const {
   return bitRead(wifiStatus, ESPEASY_WIFI_SERVICES_INITIALIZED);
 }
 
-#endif // ifdef ESP8266
+# endif // ifdef ESP8266
 
-#ifdef ESP32
+# ifdef ESP32
 
 bool WiFiEventData_t::WiFiDisconnected() const {
   return !WiFi.STA.connected();
@@ -369,13 +372,13 @@ bool WiFiEventData_t::WiFiGotIP() const {
   return WiFi.STA.hasIP();
 }
 
-# if FEATURE_USE_IPV6
+#  if FEATURE_USE_IPV6
 
 bool WiFiEventData_t::WiFiGotIPv6() const {
   return WiFi.STA.hasGlobalIPv6();
 }
 
-# endif // if FEATURE_USE_IPV6
+#  endif // if FEATURE_USE_IPV6
 
 bool WiFiEventData_t::WiFiConnected() const {
   return WiFi.STA.connected();
@@ -383,11 +386,13 @@ bool WiFiEventData_t::WiFiConnected() const {
 
 bool WiFiEventData_t::WiFiServicesInitialized() const {
   return WiFiConnected() &&
-# if FEATURE_USE_IPV6
+#  if FEATURE_USE_IPV6
          (WiFiGotIP() || WiFi.STA.hasGlobalIPv6() || WiFi.STA.hasLinkLocalIPv6());
-# else
+#  else
          WiFiGotIP();
-# endif // if FEATURE_USE_IPV6
+#  endif // if FEATURE_USE_IPV6
 }
 
-  #endif // ifdef ESP32
+# endif // ifdef ESP32
+
+#endif // if FEATURE_WIFI

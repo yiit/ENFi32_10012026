@@ -20,6 +20,10 @@
 
 # include "../../../src/Helpers/ESPEasy_time_calc.h"
 
+namespace ESPEasy {
+namespace net {
+namespace wifi {
+
 void WiFi_Access_Static_IP::set_use_static_ip(bool enabled) { _useStaticIp = enabled; }
 
 void setUseStaticIP(bool enabled) {
@@ -107,6 +111,10 @@ void onWiFiScanDone(void *arg, STATUS status) {
 }
 
 #  endif // if FEATURE_ESP8266_DIRECT_WIFI_SCAN
+
+}
+}
+}
 
 # endif // ifdef ESP8266
 #endif // if FEATURE_WIFI

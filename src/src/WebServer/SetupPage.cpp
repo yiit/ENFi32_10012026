@@ -13,7 +13,7 @@
 
 # include "../ESPEasyCore/ESPEasyNetwork.h"
 # include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
-#include "../../ESPEasy/net/wifi/ESPEasyWifi_abstracted.h"
+
 
 # include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
@@ -130,7 +130,7 @@ void handle_setup() {
               }
               status       = HANDLE_SETUP_CONNECTING_STAGE;
               refreshCount = 0;
-              AttemptWiFiConnect();
+              ESPEasy::net::wifi::AttemptWiFiConnect();
             }
           }
         }
@@ -246,7 +246,7 @@ void handle_setup_scan_and_show(const String& ssid, const String& other, const S
   const bool needsRescan = 
     (scanCompleteStatus == 0 || // No AP found
      scanCompleteStatus == -2)  // Scan not triggered
-    && WiFiScanAllowed();
+    && ESPEasy::net::wifi::WiFiScanAllowed();
   if (needsRescan) {
     WiFiMode_t cur_wifimode = WiFi.getMode();
     ESPEasy::net::wifi::WifiScan(false);
