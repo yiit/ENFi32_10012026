@@ -585,18 +585,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function triggerFormatting() {
+  let scrollInfo, cursor, currentLine, lineText, textarea;
+
   if (confirmR) {
     const doc = rEdit.getDoc();
-    const scrollInfo = rEdit.getScrollInfo();
-    const cursor = doc.getCursor();
+    scrollInfo = rEdit.getScrollInfo();
+    cursor = doc.getCursor();
 
-    const currentLine = cursor.ch === 0 ? cursor.line - 1 : cursor.line;
-    const lineText = rEdit.getLine(currentLine) || "";
+    currentLine = cursor.ch === 0 ? cursor.line - 1 : cursor.line;
+    lineText = rEdit.getLine(currentLine) || "";
+
+    textarea = rEdit.getValue();
+  } else {
+    textarea = document.getElementById('rules').value;
   }
-  // Store initial text
-  let textarea = confirmR
-    ? rEdit.getValue()
-    : document.getElementById('rules').value;
 
   // Apply transformations
   textarea = initalAutocorrection(textarea);
@@ -605,15 +607,20 @@ function triggerFormatting() {
   if (confirmR) {
     rEdit.setValue(textarea);
 
-    // Compute new cursor position
+    // Restore cursor
     const newLine = currentLine;
     const newCh = cursor.ch === 0 && lineText.length > 0
       ? lineText.length
-      : cursor.ch - 1;
+      : cursor.ch;
 
     rEdit.setCursor({ line: newLine, ch: newCh });
-    rEdit.scrollTo(scrollInfo.left, scrollInfo.top);
-    rEdit.focus();
+
+    // Delay scroll restoration slightly to ensure rendering is complete
+    setTimeout(() => {
+      rEdit.scrollTo(scrollInfo.left, scrollInfo.top);
+      rEdit.focus();
+    }, 0);
+
     rEdit.save();
   } else {
     document.getElementById('rules').value = textarea;
