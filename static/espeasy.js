@@ -278,6 +278,7 @@ let findDialogObserver = null; // Keep one observer
 function openFind() {
   // Disconnect previous observer if it exists
   if (findDialogObserver) {
+    document.querySelectorAll('.CodeMirror-dialog').forEach(d => d.remove());
     findDialogObserver.disconnect();
     findDialogObserver = null;
   }
