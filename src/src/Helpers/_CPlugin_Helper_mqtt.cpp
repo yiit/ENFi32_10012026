@@ -16,7 +16,7 @@
 
 /***************************************************************************************
  * Parse MQTT topic for /cmd and /set ending to handle commands or TaskValueSet
- * Special C014 case: handleCmd = false and handleSet is true, so *only* pluginID 33 & 86 are accepted
+ * Special C014 case: handleCmd = false and handleSet is true, so *only* pluginID 1, 9, 19, 33 & 86 are accepted
  **************************************************************************************/
 bool MQTT_handle_topic_commands(struct EventStruct *event,
                                 bool                handleCmd,
@@ -464,7 +464,6 @@ bool MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex, cpluginID_t CPlug
       && (ControllerSettings->MqttAutoDiscoveryTopic[0] != 0)) {
     #  ifndef BUILD_NO_DEBUG
 
-    // FIXME change log level to DEBUG
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, concat(strformat(F("MQTT : AutoDiscovery for Controller %d CPlugin %d"),
                                               ControllerIndex + 1, CPluginID),
@@ -481,8 +480,6 @@ bool MQTT_SendAutoDiscovery(controllerIndex_t ControllerIndex, cpluginID_t CPlug
         success = MQTT_HomeAssistant_SendAutoDiscovery(ControllerIndex, *ControllerSettings);
         break;
     }
-
-    // FIXME Generate event when autoDiscovery started?
   }
 
   return success;
@@ -988,7 +985,6 @@ bool MQTT_DiscoveryPublish(controllerIndex_t ControllerIndex,
   result = MQTTpublish(ControllerIndex, INVALID_TASK_INDEX, topic.c_str(), discoveryMessage.c_str(), retainDsc);
   #  ifndef BUILD_NO_DEBUG
 
-  // FIXME change this log to DEBUG level
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Discovery %d Task %d '%s': disc.topic: %s"),
                                      result, x + 1, getTaskDeviceName(x).c_str(), topic.c_str()));
