@@ -123,16 +123,7 @@ void handle_controllers() {
 
     if (mustInit) {
       // Init controller plugin using the new settings.
-      protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(controllerindex);
-
-      if (validProtocolIndex(ProtocolIndex)) {
-        struct EventStruct TempEvent;
-        TempEvent.ControllerIndex = controllerindex;
-        String dummy;
-        CPlugin::Function cfunction =
-          Settings.ControllerEnabled[controllerindex] ? CPlugin::Function::CPLUGIN_INIT : CPlugin::Function::CPLUGIN_EXIT;
-        do_CPluginCall(ProtocolIndex, cfunction, &TempEvent, dummy);
-      }
+      CPlugin_Init_Exit(controllerindex);
     }
   }
 

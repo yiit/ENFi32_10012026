@@ -64,7 +64,11 @@ protected:
   nwpluginID_t   _nw_data_pluginID = INVALID_NW_PLUGIN_ID;
   networkIndex_t _networkIndex     = INVALID_NETWORK_INDEX;
 
+#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
   bool _baseClassOnly = false;
+#else
+  bool _baseClassOnly = true;
+#endif
 
 };
 

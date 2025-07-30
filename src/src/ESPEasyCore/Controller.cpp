@@ -160,7 +160,6 @@ void MQTTDisconnect()
 {
   if (MQTTclient.connected()) {
     MQTTclient.disconnect();
-    MQTTclient_connected_stats.setOff();
     addLog(LOG_LEVEL_INFO, F("MQTT : Disconnected from broker"));
   }
   updateMQTTclient_connected();
@@ -193,7 +192,6 @@ bool MQTTConnect(controllerIndex_t controller_idx)
 
   if (MQTTclient.connected()) {
     MQTTclient.disconnect();
-    MQTTclient_connected_stats.setOff();
     # if FEATURE_MQTT_TLS
 
     if (mqtt_tls != nullptr) {

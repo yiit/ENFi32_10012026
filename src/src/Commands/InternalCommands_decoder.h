@@ -118,6 +118,8 @@ enum class ESPEasy_cmd_e : uint8_t {
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
 
   name,
+  networkdisable,
+  networkenable,
   nosleep,
 #if FEATURE_NOTIFIER
   notify,

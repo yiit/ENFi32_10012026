@@ -27,6 +27,10 @@ bool do_NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::Function
 void NWPluginSetup();
 void NWPluginInit();
 
+// Start or stop network as how it is set in the Settings
+void NWPlugin_Init_Exit(networkIndex_t networkIndex);
+
+
 // Macro to forward declare the NWPlugin_NNN functions.
 // N.B. Some controllers also have a do_process_cNNN_delay_queue function.
 //      Forward declaration of these is done in ControllerQueue/ControllerDelayHandlerStruct.h

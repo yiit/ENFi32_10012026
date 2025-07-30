@@ -2169,5 +2169,21 @@ void NWPluginInit()
   NWPluginCall(NWPlugin::Function::NWPLUGIN_INIT_ALL, 0);
 }
 
+void NWPlugin_Init_Exit(networkIndex_t networkIndex)
+{
+  const networkDriverIndex_t NetworkDriverIndex = 
+  getNetworkDriverIndex_from_NetworkIndex(networkIndex);
+
+  if (validNetworkDriverIndex(NetworkDriverIndex)) {
+    struct EventStruct TempEvent;
+    TempEvent.NetworkIndex = networkIndex;
+    String dummy;
+    NWPlugin::Function nfunction =
+      Settings.getNetworkEnabled(networkIndex) ? NWPlugin::Function::NWPLUGIN_INIT : NWPlugin::Function::NWPLUGIN_EXIT;
+    do_NWPluginCall(NetworkDriverIndex, nfunction, &TempEvent, dummy);
+  }
+}
+
+
 } // namespace net
 } // namespace ESPEasy

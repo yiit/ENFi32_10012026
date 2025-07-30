@@ -361,7 +361,10 @@ bool InternalCommands::executeInternalCommand()
     case ESPEasy_cmd_e::meminfo:                    COMMAND_CASE_A(Command_MemInfo,        0);               // Diagnostic.h
     case ESPEasy_cmd_e::meminfodetail:              COMMAND_CASE_A(Command_MemInfo_detail, 0);               // Diagnostic.h
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
-    case ESPEasy_cmd_e::name:                       COMMAND_CASE_R(Command_Settings_Name,        1);         // Settings.h
+    case ESPEasy_cmd_e::name:                       COMMAND_CASE_R(Command_Settings_Name,    1);             // Settings.h
+    case ESPEasy_cmd_e::networkdisable:             COMMAND_CASE_R(Command_Network_Disable,  1);             // Networks.h
+    case ESPEasy_cmd_e::networkenable:              COMMAND_CASE_R(Command_Network_Enable,   1);             // Networks.h
+
     case ESPEasy_cmd_e::nosleep:                    COMMAND_CASE_R(Command_System_NoSleep,       1);         // System.h
 #if FEATURE_NOTIFIER
     case ESPEasy_cmd_e::notify:                     COMMAND_CASE_R(Command_Notifications_Notify, -1);        // Notifications.h

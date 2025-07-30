@@ -5,6 +5,7 @@
 
 #include "../DataTypes/ESPEasy_plugin_functions.h"
 
+#include "../DataTypes/ControllerIndex.h"
 #include "../DataTypes/CPluginID.h"
 #include "../DataTypes/ProtocolIndex.h"
 #include "../DataStructs/ProtocolStruct.h"
@@ -25,6 +26,10 @@ bool do_CPluginCall(protocolIndex_t protocolIndex, CPlugin::Function Function, s
 
 void CPluginSetup();
 void CPluginInit();
+
+// Start or stop controller as how it is set in the Settings
+void CPlugin_Init_Exit(controllerIndex_t controllerIndex);
+
 
 // Macro to forward declare the CPlugin_NNN functions.
 // N.B. Some controllers also have a do_process_cNNN_delay_queue function.

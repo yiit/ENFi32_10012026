@@ -4,6 +4,7 @@
 #include "../Commands/Common.h"
 #include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/eth/ESPEasyEth.h"
+#include "../../ESPEasy/net/DataTypes/NetworkIndex.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 #include "../Helpers/StringConverter.h"
@@ -13,6 +14,28 @@
 #if FEATURE_ETHERNET
 #include <ETH.h>
 #endif
+
+
+//      networkIndex = (event->Par1 - 1);   Par1 is here for 1 ... NETWORK_MAX
+bool validNetworkVar(struct EventStruct *event, ESPEasy::net::networkIndex_t& networkIndex)
+{
+  if (event->Par1 <= 0) { return false; }
+  networkIndex = static_cast<ESPEasy::net::networkIndex_t>(event->Par1 - 1);
+  return validNetworkIndex(networkIndex);
+}
+
+const __FlashStringHelper * Command_Network_Disable(struct EventStruct *event, const char *Line)
+{
+  ESPEasy::net::networkIndex_t networkIndex;
+  return return_command_boolean_result_flashstr(validNetworkVar(event, networkIndex) && setNetworkEnableStatus(networkIndex, false));
+}
+
+const __FlashStringHelper * Command_Network_Enable(struct EventStruct *event, const char *Line)
+{
+  ESPEasy::net::networkIndex_t networkIndex;
+  return return_command_boolean_result_flashstr(validNetworkVar(event, networkIndex) && setNetworkEnableStatus(networkIndex, true));
+}
+
 
 String Command_AccessInfo_Ls(struct EventStruct *event, const char* Line)
 {

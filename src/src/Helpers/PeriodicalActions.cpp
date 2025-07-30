@@ -362,9 +362,10 @@ void processMQTTdelayQueue() {
 }
 
 void updateMQTTclient_connected() {
-  if (MQTTclient_connected != MQTTclient.connected()) {
-    MQTTclient_connected = !MQTTclient_connected;
-    MQTTclient_connected_stats.set(MQTTclient_connected);
+  const bool actual_MQTTclient_connected = MQTTclient.connected();
+  if (MQTTclient_connected != actual_MQTTclient_connected) {
+    MQTTclient_connected = actual_MQTTclient_connected;
+    MQTTclient_connected_stats.set(actual_MQTTclient_connected);
     if (!MQTTclient_connected) {
       if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
         String connectionError = F("MQTT : Connection lost, state: ");

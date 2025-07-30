@@ -69,6 +69,36 @@ void delayBackground(unsigned long dsdelay)
 }
 
 /********************************************************************************************\
+   Toggle network enabled state
+ \*********************************************************************************************/
+bool setNetworkEnableStatus(ESPEasy::net::networkIndex_t networkIndex, bool enabled)
+{
+  if (!validNetworkIndex(networkIndex)) { return false; }
+  #ifndef BUILD_NO_RAM_TRACKER
+  checkRAM(F("setNetworkEnableStatus"));
+  #endif // ifndef BUILD_NO_RAM_TRACKER
+
+  // Only enable network if it has a network interface configured
+  if (Settings.getNWPluginID_for_network(networkIndex) != ESPEasy::net::INVALID_NW_PLUGIN_ID || !enabled) {
+    struct EventStruct TempEvent;
+    TempEvent.NetworkIndex = networkIndex;
+    String dummy;
+
+    if (!enabled) {
+      ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_EXIT, &TempEvent, dummy);
+    }
+    Settings.setNetworkEnabled(networkIndex, enabled);
+    if (enabled) {
+      ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_INIT, &TempEvent, dummy);
+    }
+
+    return true;
+  }
+  return false;
+}
+
+
+/********************************************************************************************\
    Toggle controller enabled state
  \*********************************************************************************************/
 bool setControllerEnableStatus(controllerIndex_t controllerIndex, bool enabled)
@@ -80,7 +110,17 @@ bool setControllerEnableStatus(controllerIndex_t controllerIndex, bool enabled)
 
   // Only enable controller if it has a protocol configured
   if ((Settings.Protocol[controllerIndex] != 0) || !enabled) {
+    struct EventStruct TempEvent;
+    TempEvent.ControllerIndex = controllerIndex;
+    String dummy;
+    if (!enabled) {
+      CPluginCall(CPlugin::Function::CPLUGIN_EXIT, &TempEvent, dummy);
+    }
+
     Settings.ControllerEnabled[controllerIndex] = enabled;
+    if (enabled) {
+      CPluginCall(CPlugin::Function::CPLUGIN_INIT, &TempEvent, dummy);
+    }
     return true;
   }
   return false;

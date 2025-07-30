@@ -2169,3 +2169,17 @@ void CPluginInit()
   }
   CPluginCall(CPlugin::Function::CPLUGIN_INIT_ALL, 0);
 }
+
+void CPlugin_Init_Exit(controllerIndex_t controllerIndex)
+{
+  protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(controllerIndex);
+
+  if (validProtocolIndex(ProtocolIndex)) {
+    struct EventStruct TempEvent;
+    TempEvent.ControllerIndex = controllerIndex;
+    String dummy;
+    CPlugin::Function cfunction =
+      Settings.ControllerEnabled[controllerIndex] ? CPlugin::Function::CPLUGIN_INIT : CPlugin::Function::CPLUGIN_EXIT;
+    do_CPluginCall(ProtocolIndex, cfunction, &TempEvent, dummy);
+  }
+}

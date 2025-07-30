@@ -151,6 +151,8 @@ const char Internal_commands_m[] PROGMEM =
 #define Int_cmd_no_offset ESPEasy_cmd_e::name
 const char Internal_commands_no[] PROGMEM =
   "name|"
+  "networkdisable|"
+  "networkenable|"
   "nosleep|"
 #if FEATURE_NOTIFIER
   "notify|"

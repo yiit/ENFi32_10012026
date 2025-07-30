@@ -26,7 +26,7 @@
 # include "../net/Globals/NWPlugins.h"
 # include "../net/Helpers/_NWPlugin_Helper_webform.h"
 # include "../net/Helpers/_NWPlugin_init.h"
-
+# include "../net/NWPluginStructs/NW002_data_struct_WiFi_AP.h"
 
 
 // TODO TD-er: This code should be moved to this NW002 plugin
@@ -160,21 +160,24 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_INIT:
     {
-      ESPEasy::net::wifi::setAPinternal(true);
+      initNWPluginData(event->NetworkIndex, new (std::nothrow) ESPEasy::net::wifi::NW002_data_struct_WiFi_AP(event->NetworkIndex));
+      ESPEasy::net::wifi::NW002_data_struct_WiFi_AP *NW_data =
+        static_cast<ESPEasy::net::wifi::NW002_data_struct_WiFi_AP *>(getNWPluginData(event->NetworkIndex));
 
-      //      WiFi.AP.begin();
+      if (NW_data) {
+        success = NW_data->init(event);
+      }
       break;
     }
 
     case NWPlugin::Function::NWPLUGIN_EXIT:
     {
-# ifdef ESP32
-      WiFi.AP.end();
-# endif
-# ifdef ESP8266
+      ESPEasy::net::wifi::NW002_data_struct_WiFi_AP *NW_data =
+        static_cast<ESPEasy::net::wifi::NW002_data_struct_WiFi_AP *>(getNWPluginData(event->NetworkIndex));
 
-      // WiFi.softAP
-# endif // ifdef ESP8266
+      if (NW_data) {
+        success = NW_data->exit(event);
+      }
       break;
     }
 

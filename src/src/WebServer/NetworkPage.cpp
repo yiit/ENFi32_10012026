@@ -97,16 +97,7 @@ void handle_networks()
 
     if (mustInit) {
       // Init network plugin using the new settings.
-      networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NWPluginID(nwpluginID);
-
-      if (validNetworkDriverIndex(NetworkDriverIndex)) {
-        struct EventStruct TempEvent;
-        TempEvent.NetworkIndex = networkindex;
-        String dummy;
-        NWPlugin::Function nfunction =
-          Settings.getNetworkEnabled(networkindex) ? NWPlugin::Function::NWPLUGIN_INIT : NWPlugin::Function::NWPLUGIN_EXIT;
-        do_NWPluginCall(NetworkDriverIndex, nfunction, &TempEvent, dummy);
-      }
+      NWPlugin_Init_Exit(networkindex);
     }
 
   }
