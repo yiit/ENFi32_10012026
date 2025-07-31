@@ -238,7 +238,7 @@ void                 setPluginTaskTimer(unsigned long msecFromNow,
   \*********************************************************************************************/
 
   // Note: event will be moved
-  void schedule_plugin_task_event_timer(deviceIndex_t        DeviceIndex,
+  void schedule_plugin_task_event_timer(taskIndex_t          taskIndex,
                                         uint8_t              Function,
                                         struct EventStruct&& event);
 

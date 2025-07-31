@@ -2136,7 +2136,7 @@ bool do_CPluginCall(protocolIndex_t protocolIndex, CPlugin::Function Function, s
     } else if (Function == CPlugin::Function::CPLUGIN_EXIT) {
       if (!bitRead(controllerIndex_initialized, event->ControllerIndex)) {
         // FIXME TD-er: What to do here? Was not (yet) initialized
-        addLog(LOG_LEVEL_ERROR, strformat(F("Controller %d was not (yet) initialized"), event->ControllerIndex + 1));
+//        addLog(LOG_LEVEL_ERROR, strformat(F("Controller %d was not (yet) initialized"), event->ControllerIndex + 1));
         return false;
       }
       bitClear(controllerIndex_initialized, event->ControllerIndex);

@@ -11,7 +11,7 @@
 
 #include "../../ESPEasy/net/DataTypes/NetworkIndex.h"
 
-
+#define bitReadULL(value, bit) ((value) >> (bit) & 1)
 #define bitSetULL(value, bit) ((value) |= (1ULL << (bit)))
 #define bitClearULL(value, bit) ((value) &= ~(1ULL << (bit)))
 #define bitWriteULL(value, bit, bitvalue) (bitvalue ? bitSetULL(value, bit) : bitClearULL(value, bit))

@@ -22,13 +22,13 @@
 * Proper use case is calling from a callback function, since those cannot use yield() or delay()
 \*********************************************************************************************/
 void ESPEasy_Scheduler::schedule_plugin_task_event_timer(
-  deviceIndex_t        DeviceIndex,
+  taskIndex_t          taskIndex,
   uint8_t              Function,
   struct EventStruct&& event) {
-  if (validDeviceIndex(DeviceIndex)) {
+  if (validDeviceIndex(getDeviceIndex_from_TaskIndex(taskIndex))) {
     schedule_event_timer(
       SchedulerPluginPtrType_e::TaskPlugin,
-      DeviceIndex.value,
+      taskIndex,
       Function,
       std::move(event));
   }
@@ -58,7 +58,7 @@ void ESPEasy_Scheduler::schedule_mqtt_plugin_import_event_timer(
     // This makes sure the relatively large event will not be in memory twice.
     const SystemEventQueueTimerID timerID(
       SchedulerPluginPtrType_e::TaskPlugin,
-      DeviceIndex.value,
+      TaskIndex,
       static_cast<uint8_t>(Function));
 
     {
@@ -192,7 +192,7 @@ void ESPEasy_Scheduler::process_system_event_queue() {
   switch (ptr_type) {
     case SchedulerPluginPtrType_e::TaskPlugin:
     {
-      const deviceIndex_t deviceIndex = deviceIndex_t::toDeviceIndex(Index);
+      const deviceIndex_t deviceIndex = getDeviceIndex_from_TaskIndex(Index);
 
       if (validDeviceIndex(deviceIndex)) {
         if (((Function != PLUGIN_READ) &&
@@ -202,8 +202,7 @@ void ESPEasy_Scheduler::process_system_event_queue() {
           // FIXME TD-er: LoadTaskSettings should only be called when needed, not pre-emptive.
           LoadTaskSettings(ScheduledEventQueue.front().event.TaskIndex);
         }
-        do_PluginCall(deviceIndex,
-                   Function,
+        PluginCall(Function,
                    &ScheduledEventQueue.front().event,
                    tmpString);
       }

@@ -281,7 +281,7 @@ void queueTaskEvent(const String& eventName, taskIndex_t taskIndex, const String
       event += ',';
       event += wrapWithQuotesIfContainsParameterSeparatorChar(value_str);
     }
-    eventQueue.addMove(std::move(event));
+    eventQueue.addMove(std::move(event), true);
   }
 }
 

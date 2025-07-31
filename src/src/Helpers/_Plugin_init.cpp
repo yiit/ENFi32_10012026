@@ -6,6 +6,7 @@
 #include "../Globals/Settings.h"
 
 #include "../Helpers/Misc.h"
+#include "../Helpers/StringConverter.h"
 
 
 // ********************************************************************************
@@ -2199,8 +2200,26 @@ deviceIndex_t getDeviceIndex_sorted(deviceIndex_t deviceIndex)
 
 boolean do_PluginCall(deviceIndex_t deviceIndex, uint8_t function, struct EventStruct *event, String& string)
 {
+  // TODO TD-er: May need to be changed to some other type when we ever will have > 64 tasks
+  static uint64_t taskIndex_initialized{};
   if (do_check_validDeviceIndex(deviceIndex))
   {
+    if (function == PLUGIN_INIT) {
+      if (bitReadULL(taskIndex_initialized, event->TaskIndex)) {
+        // FIXME TD-er: What to do here? Was already initialized
+        addLog(LOG_LEVEL_ERROR, strformat(F("Task %d was already initialized"), event->TaskIndex + 1));
+        return false;
+      }
+      bitSetULL(taskIndex_initialized, event->TaskIndex);
+    } else if (function == PLUGIN_EXIT) {
+      if (!bitReadULL(taskIndex_initialized, event->TaskIndex)) {
+        // FIXME TD-er: What to do here? Was not (yet) initialized
+//        addLog(LOG_LEVEL_ERROR, strformat(F("Task %d was not (yet) initialized"), event->TaskIndex + 1));
+        return false;
+      }
+      bitClearULL(taskIndex_initialized, event->TaskIndex);
+    }
+
     Plugin_ptr_t plugin_call = (Plugin_ptr_t)pgm_read_ptr(Plugin_ptr + deviceIndex.value);
     return plugin_call(function, event, string);
   }

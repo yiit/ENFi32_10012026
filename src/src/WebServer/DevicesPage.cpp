@@ -180,12 +180,13 @@ void handle_devices() {
       struct EventStruct TempEvent(taskIndex);
       String dummy;
 
+      // May need to call PLUGIN_INIT, however we must make sure it is exited first
+      PluginCall(PLUGIN_EXIT, &TempEvent, dummy);
+
       if (Settings.TaskDeviceEnabled[taskIndex]) {
         if (PluginCall(PLUGIN_INIT, &TempEvent, dummy)) {
           PluginCall(PLUGIN_READ, &TempEvent, dummy);
         }
-      } else {
-        PluginCall(PLUGIN_EXIT, &TempEvent, dummy);
       }
     }
   }
@@ -476,7 +477,7 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
 
     if (device.ErrorStateValues) {
       // FIXME TD-er: Must collect these from the web page.
-      do_PluginCall(DeviceIndex, PLUGIN_INIT_VALUE_RANGES, &TempEvent, dummy);
+      PluginCall(PLUGIN_INIT_VALUE_RANGES, &TempEvent, dummy);
     }
 
     // Make sure the task needs to reload using the new settings.

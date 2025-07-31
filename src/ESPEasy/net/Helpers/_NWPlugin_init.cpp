@@ -2134,7 +2134,7 @@ bool         do_NWPluginCall(networkDriverIndex_t networkDriverIndex, NWPlugin::
     } else if (Function == NWPlugin::Function::NWPLUGIN_EXIT) {
       if (!bitRead(networkIndex_initialized, event->NetworkIndex)) {
         // FIXME TD-er: What to do here? Was not (yet) initialized
-        addLog(LOG_LEVEL_ERROR, strformat(F("Network %d was not (yet) initialized"), event->NetworkIndex + 1));
+        //        addLog(LOG_LEVEL_ERROR, strformat(F("Network %d was not (yet) initialized"), event->NetworkIndex + 1));
         return false;
       }
       bitClear(networkIndex_initialized, event->NetworkIndex);

@@ -89,7 +89,8 @@ bool setNetworkEnableStatus(ESPEasy::net::networkIndex_t networkIndex, bool enab
     }
     Settings.setNetworkEnabled(networkIndex, enabled);
     if (enabled) {
-      ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_INIT, &TempEvent, dummy);
+      if (!ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_INIT, &TempEvent, dummy))
+        return false;
     }
 
     return true;
@@ -119,7 +120,8 @@ bool setControllerEnableStatus(controllerIndex_t controllerIndex, bool enabled)
 
     Settings.ControllerEnabled[controllerIndex] = enabled;
     if (enabled) {
-      CPluginCall(CPlugin::Function::CPLUGIN_INIT, &TempEvent, dummy);
+      if (!CPluginCall(CPlugin::Function::CPLUGIN_INIT, &TempEvent, dummy))
+        return false;
     }
     return true;
   }
