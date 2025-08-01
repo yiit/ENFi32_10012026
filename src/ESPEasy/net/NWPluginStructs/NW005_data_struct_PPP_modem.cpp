@@ -20,6 +20,8 @@
 // # include <esp_modem_api.h>
 // #include <esp_modem_c_api_types.h>
 
+# define NW_PLUGIN_ID  5
+
 namespace ESPEasy {
 namespace net {
 namespace ppp {
@@ -28,12 +30,10 @@ namespace ppp {
 static LongTermOnOffTimer _startStopStats;
 static LongTermOnOffTimer _connectedStats;
 static LongTermOnOffTimer _gotIPStats;
-#if FEATURE_USE_IPV6
+# if FEATURE_USE_IPV6
 static LongTermOnOffTimer _gotIP6Stats;
-#endif
+# endif
 static IPAddress _dns_cache[2]{};
-
-
 
 
 // Keys as used in the Key-value-store
@@ -93,11 +93,13 @@ const __FlashStringHelper* NW005_getLabelString(uint32_t key, bool displayString
 }
 
 NW005_data_struct_PPP_modem::NW005_data_struct_PPP_modem(networkIndex_t networkIndex)
-  : NWPluginData_base(nwpluginID_t(5), networkIndex)
+  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex)
 {
   _connectedStats.clear();
   _gotIPStats.clear();
+# if FEATURE_USE_IPV6
   _gotIP6Stats.clear();
+# endif
   nw_event_id = Network.onEvent(NW005_data_struct_PPP_modem::onEvent);
 }
 
@@ -896,6 +898,13 @@ bool NW005_data_struct_PPP_modem::handle_priority_route_changed()
       auto tmp = PPP.dnsIP(i);
 
       if ((_dns_cache[i] != INADDR_NONE) && (_dns_cache[i] != tmp)) {
+        addLog(LOG_LEVEL_INFO, strformat(
+                 F("NW005: Restore cached DNS server %d from %s to %s"),
+                 i,
+                 tmp.toString().c_str(),
+                 _dns_cache[i].toString().c_str()
+                 ));
+
         PPP.dnsIP(i, _dns_cache[i]);
         res = true;
       }
@@ -903,7 +912,6 @@ bool NW005_data_struct_PPP_modem::handle_priority_route_changed()
   }
   return res;
 }
-
 
 String NW005_data_struct_PPP_modem::write_AT_cmd(const String& cmd, int timeout)
 {
@@ -931,7 +939,7 @@ void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_even
       _startStopStats.setOn();
 # if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
       PPP.setRoutePrio(200);
-#endif
+# endif
       break;
     case ARDUINO_EVENT_PPP_STOP:      addLog(LOG_LEVEL_INFO, F("PPP Stopped"));
       _startStopStats.setOff();
@@ -944,13 +952,14 @@ void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_even
     case ARDUINO_EVENT_PPP_DISCONNECTED:
       _connectedStats.setOff();
       addLog(LOG_LEVEL_INFO, concat(
-        F("PPP Disconnected. Connected for: "), 
-        format_msec_duration_HMS(_connectedStats.getLastOnDuration_ms())));
+               F("PPP Disconnected. Connected for: "),
+               format_msec_duration_HMS(_connectedStats.getLastOnDuration_ms())));
       WiFi.AP.enableNAPT(false);
       break;
     case ARDUINO_EVENT_PPP_GOT_IP:
+
       for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-        auto tmp = WiFi.STA.dnsIP(i);
+        auto tmp = PPP.dnsIP(i);
 
         if (tmp != INADDR_NONE) {
           _dns_cache[i] = tmp;
@@ -968,13 +977,17 @@ void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_even
         addLog(LOG_LEVEL_INFO, F("WiFi.AP.enableNAPT"));
       }
       break;
+# if FEATURE_USE_IPV6
     case ARDUINO_EVENT_PPP_GOT_IP6:
       _gotIP6Stats.setOn();
       addLog(LOG_LEVEL_INFO, F("PPP Got IPv6"));
       break;
+# endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_PPP_LOST_IP:
       _gotIPStats.setOff();
+# if FEATURE_USE_IPV6
       _gotIP6Stats.setOff();
+# endif
       addLog(LOG_LEVEL_INFO, F("PPP Lost IP"));
       WiFi.AP.enableNAPT(false);
       break;

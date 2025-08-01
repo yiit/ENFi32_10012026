@@ -54,11 +54,12 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
     case NWPlugin::Function::NWPLUGIN_PRIORITY_ROUTE_CHANGED:
 #endif
     {
-      const bool success = 
-        Function != NWPlugin::Function::NWPLUGIN_WRITE 
+      // Set to true where return value doesn't matter
+      bool success = 
 #ifdef ESP32
-        && Function != NWPlugin::Function::NWPLUGIN_PRIORITY_ROUTE_CHANGED;
+        Function != NWPlugin::Function::NWPLUGIN_PRIORITY_ROUTE_CHANGED &&
 #endif
+        Function != NWPlugin::Function::NWPLUGIN_WRITE;
 
       if (Function == NWPlugin::Function::NWPLUGIN_INIT_ALL) {
         Function = NWPlugin::Function::NWPLUGIN_INIT;
@@ -85,14 +86,11 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
                 Function,
                 event,
                 command)) {
-            if (Function == NWPlugin::Function::NWPLUGIN_WRITE
-#ifdef ESP32
-              || Function == NWPlugin::Function::NWPLUGIN_PRIORITY_ROUTE_CHANGED
-#endif
-            ) {
+            if (Function == NWPlugin::Function::NWPLUGIN_WRITE) {
               // Need to stop when call was handled
               return true;
             }
+            success = true;
           }
         }
       }

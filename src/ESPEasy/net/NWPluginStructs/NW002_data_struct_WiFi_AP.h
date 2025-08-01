@@ -23,14 +23,18 @@ struct NW002_data_struct_WiFi_AP : public NWPluginData_base {
 
   bool exit(EventStruct *event);
 
+# ifdef ESP32
+  bool handle_priority_route_changed();
+# endif
+
 private:
 
-#ifdef ESP32
+# ifdef ESP32
   static void onEvent(arduino_event_id_t   event,
                       arduino_event_info_t info);
 
   network_event_handle_t nw_event_id = 0;
-#endif
+# endif // ifdef ESP32
 
 };
 

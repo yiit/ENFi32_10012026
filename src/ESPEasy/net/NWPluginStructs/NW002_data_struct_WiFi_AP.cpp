@@ -10,6 +10,8 @@
 
 # include "../wifi/ESPEasyWifi.h"
 
+# define NW_PLUGIN_ID  2
+
 namespace ESPEasy {
 namespace net {
 namespace wifi {
@@ -18,21 +20,22 @@ static LongTermOnOffTimer _startStopStats;
 
 
 NW002_data_struct_WiFi_AP::NW002_data_struct_WiFi_AP(networkIndex_t networkIndex)
-  : NWPluginData_base(nwpluginID_t(2), networkIndex)
+  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex)
 {
-#ifdef ESP32
+# ifdef ESP32
   nw_event_id = Network.onEvent(NW002_data_struct_WiFi_AP::onEvent);
-#endif
+# endif
 }
 
 NW002_data_struct_WiFi_AP::~NW002_data_struct_WiFi_AP()
 {
-#ifdef ESP32
+# ifdef ESP32
+
   if (nw_event_id != 0) {
     Network.removeEvent(nw_event_id);
   }
   nw_event_id = 0;
-#endif
+# endif // ifdef ESP32
 }
 
 void NW002_data_struct_WiFi_AP::webform_load(EventStruct *event) {}
@@ -60,7 +63,22 @@ bool NW002_data_struct_WiFi_AP::exit(EventStruct *event)
   return true;
 }
 
-#ifdef ESP32
+# ifdef ESP32
+
+bool NW002_data_struct_WiFi_AP::handle_priority_route_changed()
+{
+  bool res{};
+
+  // WiFi.AP.enableNAPT(false);
+
+  if (!WiFi.AP.isDefault()) {
+    // FIXME TD-er: May need to stop/start NAPT on WiFi.AP
+    // WiFi.AP.enableNAPT(true);
+  }
+
+  return res;
+}
+
 void NW002_data_struct_WiFi_AP::onEvent(arduino_event_id_t   event,
                                         arduino_event_info_t info)
 {
@@ -93,7 +111,8 @@ void NW002_data_struct_WiFi_AP::onEvent(arduino_event_id_t   event,
     default: break;
   }
 }
-#endif
+
+# endif // ifdef ESP32
 
 } // namespace wifi
 } // namespace net

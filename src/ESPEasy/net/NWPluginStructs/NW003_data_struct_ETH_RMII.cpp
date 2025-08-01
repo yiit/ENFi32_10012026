@@ -8,6 +8,7 @@
 # include "../../../src/Helpers/LongTermOnOffTimer.h"
 # include "../../../src/Helpers/StringConverter.h"
 
+# define NW_PLUGIN_ID  3
 
 namespace ESPEasy {
 namespace net {
@@ -22,11 +23,13 @@ static LongTermOnOffTimer _gotIP6Stats;
 static IPAddress _dns_cache[2]{};
 
 NW003_data_struct_ETH_RMII::NW003_data_struct_ETH_RMII(networkIndex_t networkIndex)
-  : NWPluginData_base(nwpluginID_t(1), networkIndex)
+  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex)
 {
   _connectedStats.clear();
   _gotIPStats.clear();
+# if FEATURE_USE_IPV6
   _gotIP6Stats.clear();
+# endif
 
   nw_event_id = Network.onEvent(NW003_data_struct_ETH_RMII::onEvent);
 }
@@ -62,6 +65,13 @@ bool NW003_data_struct_ETH_RMII::handle_priority_route_changed()
       auto tmp = ETH.dnsIP(i);
 
       if ((_dns_cache[i] != INADDR_NONE) && (_dns_cache[i] != tmp)) {
+        addLog(LOG_LEVEL_INFO, strformat(
+                 F("NW003: Restore cached DNS server %d from %s to %s"),
+                 i,
+                 tmp.toString().c_str(),
+                 _dns_cache[i].toString().c_str()
+                 ));
+
         ETH.dnsIP(i, _dns_cache[i]);
         res = true;
       }
@@ -105,13 +115,17 @@ void NW003_data_struct_ETH_RMII::onEvent(arduino_event_id_t   event,
       _gotIPStats.setOn();
       addLog(LOG_LEVEL_INFO, F("ETH_GOT_IP"));
       break;
+# if FEATURE_USE_IPV6
     case ARDUINO_EVENT_ETH_GOT_IP6:
       _gotIP6Stats.setOn();
       addLog(LOG_LEVEL_INFO, F("ETH_GOT_IP6"));
       break;
+# endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_ETH_LOST_IP:
       _gotIPStats.setOff();
+# if FEATURE_USE_IPV6
       _gotIP6Stats.setOff();
+# endif
 
       addLog(LOG_LEVEL_INFO, F("ETH_LOST_IP"));
       break;
