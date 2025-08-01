@@ -33,8 +33,7 @@ namespace wifi {
 
 
 bool  WiFiConnected();
-void  WiFiConnectRelaxed();
-void  AttemptWiFiConnect();
+//void  WiFiConnectRelaxed();
 bool  prepareWiFi();
 bool  checkAndResetWiFi();
 void  resetWiFi();
@@ -68,6 +67,7 @@ void    WiFiScan_log_to_serial();
 
 void    setAPinternal(bool enable); // FIXME TD-er: Move to ESPEasyWifi_abstracted...
 
+void    setUseStaticIP(bool enabled);
 bool    WiFiUseStaticIP();
 bool    wifiAPmodeActivelyUsed();
 void    setupStaticIPconfig();

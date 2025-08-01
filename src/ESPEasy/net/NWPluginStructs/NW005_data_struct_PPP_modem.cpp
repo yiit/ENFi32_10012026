@@ -21,17 +21,18 @@
 // #include <esp_modem_c_api_types.h>
 
 # define NW_PLUGIN_ID  5
+# define NW_PLUGIN_INTERFACE   PPP
 
 namespace ESPEasy {
 namespace net {
 namespace ppp {
 
 
-static LongTermOnOffTimer _startStopStats;
-static LongTermOnOffTimer _connectedStats;
-static LongTermOnOffTimer _gotIPStats;
+static LongTermOnOffTimer _startStopStats{};
+static LongTermOnOffTimer _connectedStats{};
+static LongTermOnOffTimer _gotIPStats{};
 # if FEATURE_USE_IPV6
-static LongTermOnOffTimer _gotIP6Stats;
+static LongTermOnOffTimer _gotIP6Stats{};
 # endif
 static IPAddress _dns_cache[2]{};
 
@@ -116,8 +117,8 @@ NW005_data_struct_PPP_modem::~NW005_data_struct_PPP_modem() {
     vTaskDelete(_modem_task_data.modem_taskHandle);
     _modem_task_data.modem_taskHandle = NULL;
   }
-  PPP.mode(ESP_MODEM_MODE_COMMAND);
-  PPP.end();
+  NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_COMMAND);
+  NW_PLUGIN_INTERFACE.end();
   _modem_task_data.modem_initialized = false;
 
   if (nw_event_id != 0) {
@@ -167,7 +168,7 @@ ppp_modem_model_t to_ppp_modem_model_t(NW005_modem_model NW005_modemmodel)
 String NW005_data_struct_PPP_modem::getRSSI() const
 {
   if (!_modem_task_data.modem_initialized) { return F("-"); }
-  const int rssi_raw = PPP.RSSI();
+  const int rssi_raw = NW_PLUGIN_INTERFACE.RSSI();
 
   if (rssi_raw == 99) { return F("-"); } // Not known or not detectable
 
@@ -180,7 +181,7 @@ String NW005_data_struct_PPP_modem::getRSSI() const
 String NW005_data_struct_PPP_modem::getBER() const
 {
   if (_modem_task_data.modem_initialized) {
-    switch (PPP.BER())
+    switch (NW_PLUGIN_INTERFACE.BER())
     {
       case 0: return F("<0.01 %");
       case 1: return F("0.01 % ... 0.1 %");
@@ -199,19 +200,19 @@ String NW005_data_struct_PPP_modem::getBER() const
 bool NW005_data_struct_PPP_modem::attached() const
 {
   if (!_modem_task_data.modem_initialized) { return false; }
-  return PPP.attached();
+  return NW_PLUGIN_INTERFACE.attached();
 }
 
 String NW005_data_struct_PPP_modem::IMEI() const
 {
   if (!_modem_task_data.modem_initialized) { return EMPTY_STRING; }
-  return PPP.IMEI();
+  return NW_PLUGIN_INTERFACE.IMEI();
 }
 
 String NW005_data_struct_PPP_modem::operatorName() const
 {
   if (!_modem_task_data.modem_initialized) { return EMPTY_STRING; }
-  return PPP.operatorName();
+  return NW_PLUGIN_INTERFACE.operatorName();
 }
 
 const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str)
@@ -297,7 +298,7 @@ const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, Stri
 
 void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
 {
-  if (!PPP.attached()) {
+  if (!NW_PLUGIN_INTERFACE.attached()) {
     // clear cached string
     _modem_task_data.AT_CPSI.clear();
     return;
@@ -506,28 +507,28 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
     return;
   }
 
-  addHtml_pre(PPP.moduleName());
+  addHtml_pre(NW_PLUGIN_INTERFACE.moduleName());
   addRowLabel(F("IMEI"));
-  addHtml_pre(PPP.IMEI());
+  addHtml_pre(NW_PLUGIN_INTERFACE.IMEI());
 
   addRowLabel(F("IMSI"));
-  addHtml_pre(PPP.IMSI());
+  addHtml_pre(NW_PLUGIN_INTERFACE.IMSI());
 
-  if (PPP.attached()) {
-    const String operatorName = PPP.operatorName();
+  if (NW_PLUGIN_INTERFACE.attached()) {
+    const String operatorName = NW_PLUGIN_INTERFACE.operatorName();
     addRowLabel(F("Mobile Country Code (MCC)"));
     addHtml_pre(operatorName.substring(0, 3));
     addRowLabel(F("Mobile Network Code (MNC)"));
     addHtml_pre(operatorName.substring(3));
     addFormNote(F("See <a href=\"https://en.wikipedia.org/wiki/Mobile_country_code\">Wikipedia - Mobile Country Code</a>"));
 
-    if (PPP.mode() != ESP_MODEM_MODE_CMUX) {
-      PPP.mode(ESP_MODEM_MODE_CMUX);
+    if (NW_PLUGIN_INTERFACE.mode() != ESP_MODEM_MODE_CMUX) {
+      NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
     }
 
     /*
        {
-       String res = PPP.cmd("AT+CPSI?", 1000);
+       String res = NW_PLUGIN_INTERFACE.cmd("AT+CPSI?", 1000);
 
        if (!res.isEmpty()) {
         addRowLabel(F("AT+CPSI?"));
@@ -536,7 +537,7 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
        }*/
     /*
        {
-       String res = PPP.cmd("AT+CPSITD?", 1000);
+       String res = NW_PLUGIN_INTERFACE.cmd("AT+CPSITD?", 1000);
 
        if (!res.isEmpty()) {
          addRowLabel(F("AT+CPSITD?"));
@@ -555,9 +556,9 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
   addHtml(getBER());
 
   addRowLabel(F("Radio State"));
-  addHtml((PPP.radioState() == 0) ? F("Minimal") : F("Full"));
+  addHtml((NW_PLUGIN_INTERFACE.radioState() == 0) ? F("Minimal") : F("Full"));
 
-  int networkMode = PPP.networkMode();
+  int networkMode = NW_PLUGIN_INTERFACE.networkMode();
 
   if (networkMode >= 0) {
     addRowLabel(F("Network Mode"));
@@ -589,7 +590,7 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
   }
 
   {
-    int batStatus = PPP.batteryStatus();
+    int batStatus = NW_PLUGIN_INTERFACE.batteryStatus();
     addRowLabel(F("Battery Status"));
     const __FlashStringHelper*str = F("Not Available");
 
@@ -605,7 +606,7 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
     addHtml(str);
 
     if (batStatus >= 0) {
-      int batVolt = PPP.batteryVoltage();
+      int batVolt = NW_PLUGIN_INTERFACE.batteryVoltage();
 
       if (batVolt >= 0) {
         addRowLabel(F("Battery Voltage"));
@@ -613,7 +614,7 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
         addUnit(F("mV"));
       }
 
-      int batLevel = PPP.batteryLevel();
+      int batLevel = NW_PLUGIN_INTERFACE.batteryLevel();
 
       if (batLevel >= 0) {
         addRowLabel(F("Battery Level"));
@@ -625,7 +626,7 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
   // TODO TD-er: Disabled for now, missing PdpContext
 
   /*
-     esp_modem_dce_t *handle = PPP.handle();
+     esp_modem_dce_t *handle = NW_PLUGIN_INTERFACE.handle();
 
      if (handle) {
      int state{};
@@ -666,8 +667,8 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
 
   webform_load_UE_system_information();
 
-  if (PPP.attached()) {
-    PPP.mode(ESP_MODEM_MODE_DATA);
+  if (NW_PLUGIN_INTERFACE.attached()) {
+    NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_DATA);
   }
 }
 
@@ -741,15 +742,15 @@ void NW005_begin_modem_task(void *parameter)
   if (!modem_task_data->modem_initialized) {
     modem_task_data->initializing = true;
     const bool res =
-      PPP.begin(
+      NW_PLUGIN_INTERFACE.begin(
         modem_task_data->model,
         modem_task_data->uart_num,
         modem_task_data->baud_rate);
     modem_task_data->initializing = false;
     modem_task_data->logString    =  strformat(
       F("PPP: Module Name: %s, IMEI: %s"),
-      PPP.moduleName().c_str(),
-      PPP.IMEI().c_str());
+      NW_PLUGIN_INTERFACE.moduleName().c_str(),
+      NW_PLUGIN_INTERFACE.IMEI().c_str());
 
     if (res) {
 
@@ -759,10 +760,10 @@ void NW005_begin_modem_task(void *parameter)
       {
         delay(100);
       }
-      while (timePassedSince(start) < 5000 && !PPP.attached());
+      while (timePassedSince(start) < 5000 && !NW_PLUGIN_INTERFACE.attached());
 
-      PPP.mode(ESP_MODEM_MODE_CMUX);
-      modem_task_data->AT_CPSI = PPP.cmd(F("AT+CPSI?"), 3000);
+      NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
+      modem_task_data->AT_CPSI = NW_PLUGIN_INTERFACE.cmd(F("AT+CPSI?"), 3000);
     }
     modem_task_data->modem_initialized = res;
   }
@@ -782,7 +783,7 @@ bool NW005_data_struct_PPP_modem::init(EventStruct *event)
     return false;
   }
 
-  PPP.setResetPin(
+  NW_PLUGIN_INTERFACE.setResetPin(
     _kvs->getValueAsInt_or_default(NW005_KEY_PIN_RESET, -1),
     _kvs->getValueAsInt_or_default(NW005_KEY_PIN_RESET_ACTIVE_LOW, 0),
     _kvs->getValueAsInt_or_default(NW005_KEY_PIN_RESET_DELAY, 200));
@@ -799,7 +800,7 @@ bool NW005_data_struct_PPP_modem::init(EventStruct *event)
     }
   }
 
-  if (!PPP.setPins(
+  if (!NW_PLUGIN_INTERFACE.setPins(
         _kvs->getValueAsInt_or_default(NW005_KEY_PIN_TX, -1),
         _kvs->getValueAsInt_or_default(NW005_KEY_PIN_RX, -1),
         rtsPin,
@@ -812,14 +813,14 @@ bool NW005_data_struct_PPP_modem::init(EventStruct *event)
   {
     String apn;
     _kvs->getValue(NW005_KEY_APN, apn);
-    PPP.setApn(apn.c_str());
+    NW_PLUGIN_INTERFACE.setApn(apn.c_str());
   }
   {
     String pin;
     _kvs->getValue(NW005_KEY_SIM_PIN, pin);
 
     if (pin.length() >= 4) {
-      PPP.setPin(pin.c_str());
+      NW_PLUGIN_INTERFACE.setPin(pin.c_str());
     }
   }
 
@@ -882,8 +883,8 @@ bool NW005_data_struct_PPP_modem::exit(EventStruct *event)
     vTaskDelete(_modem_task_data.modem_taskHandle);
     _modem_task_data.modem_taskHandle = NULL;
   }
-  PPP.mode(ESP_MODEM_MODE_COMMAND);
-  PPP.end();
+  NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_COMMAND);
+  NW_PLUGIN_INTERFACE.end();
   _modem_task_data.modem_initialized = false;
   return true;
 }
@@ -892,10 +893,11 @@ bool NW005_data_struct_PPP_modem::handle_priority_route_changed()
 {
   bool res{};
 
-  if (PPP.isDefault()) {
+  if (NW_PLUGIN_INTERFACE.isDefault()) {
+    if (NWPlugin::forceDHCP_request(&NW_PLUGIN_INTERFACE)) { return true; }
     // Check to see if we may need to restore any cached DNS server
     for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-      auto tmp = PPP.dnsIP(i);
+      auto tmp = NW_PLUGIN_INTERFACE.dnsIP(i);
 
       if ((_dns_cache[i] != INADDR_NONE) && (_dns_cache[i] != tmp)) {
         addLog(LOG_LEVEL_INFO, strformat(
@@ -905,7 +907,7 @@ bool NW005_data_struct_PPP_modem::handle_priority_route_changed()
                  _dns_cache[i].toString().c_str()
                  ));
 
-        PPP.dnsIP(i, _dns_cache[i]);
+        NW_PLUGIN_INTERFACE.dnsIP(i, _dns_cache[i]);
         res = true;
       }
     }
@@ -916,13 +918,13 @@ bool NW005_data_struct_PPP_modem::handle_priority_route_changed()
 String NW005_data_struct_PPP_modem::write_AT_cmd(const String& cmd, int timeout)
 {
   String res;
-  auto   cur_mode = PPP.mode();
+  auto   cur_mode = NW_PLUGIN_INTERFACE.mode();
 
-  if (PPP.mode() != ESP_MODEM_MODE_CMUX) {
-    PPP.mode(ESP_MODEM_MODE_CMUX);
-    res = PPP.cmd(cmd.c_str(), timeout);
+  if (NW_PLUGIN_INTERFACE.mode() != ESP_MODEM_MODE_CMUX) {
+    NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
+    res = NW_PLUGIN_INTERFACE.cmd(cmd.c_str(), timeout);
   }
-  PPP.mode(cur_mode);
+  NW_PLUGIN_INTERFACE.mode(cur_mode);
   return res;
 }
 
@@ -938,7 +940,7 @@ void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_even
     case ARDUINO_EVENT_PPP_START:     addLog(LOG_LEVEL_INFO, F("PPP Started"));
       _startStopStats.setOn();
 # if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
-      PPP.setRoutePrio(200);
+      NW_PLUGIN_INTERFACE.setRoutePrio(200);
 # endif
       break;
     case ARDUINO_EVENT_PPP_STOP:      addLog(LOG_LEVEL_INFO, F("PPP Stopped"));
@@ -959,7 +961,7 @@ void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_even
     case ARDUINO_EVENT_PPP_GOT_IP:
 
       for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-        auto tmp = PPP.dnsIP(i);
+        auto tmp = NW_PLUGIN_INTERFACE.dnsIP(i);
 
         if (tmp != INADDR_NONE) {
           _dns_cache[i] = tmp;
@@ -971,7 +973,7 @@ void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_even
       _gotIPStats.setOn();
       addLog(LOG_LEVEL_INFO, F("PPP Got IP"));
 
-      //      PPP.setDefault();
+      //      NW_PLUGIN_INTERFACE.setDefault();
 
       if (WiFi.AP.enableNAPT(true)) {
         addLog(LOG_LEVEL_INFO, F("WiFi.AP.enableNAPT"));

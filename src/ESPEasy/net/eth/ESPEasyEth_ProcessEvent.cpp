@@ -62,7 +62,7 @@ void handle_unprocessedEthEvents() {
     if (!EthEventData.EthServicesInitialized() || EthEventData.unprocessedEthEvents())
     {
       if (!EthEventData.unprocessedEthEvents() && EthEventData.EthConnectAllowed()) {
-        NetworkConnectRelaxed();
+//        NetworkConnectRelaxed();
       }
 
       if (!EthEventData.processedGotIP) {

@@ -3,6 +3,13 @@
 #include "../_NWPlugin_Helper.h"
 #ifdef USES_NW001
 
+#ifdef ESP8266
+#include "../wifi/ESPEasyWiFi_STA_Event_ESP8266.h"
+#endif
+#ifdef ESP32
+#include "../wifi/ESPEasyWiFi_STA_Event_ESP32.h"
+#endif
+
 
 namespace ESPEasy {
 namespace net {
@@ -29,12 +36,7 @@ struct NW001_data_struct_WiFi_STA : public NWPluginData_base {
 
 private:
 
-# ifdef ESP32
-  static void onEvent(arduino_event_id_t   event,
-                      arduino_event_info_t info);
-
-  network_event_handle_t nw_event_id = 0;
-# endif // ifdef ESP32
+ESPEasyWiFi_STA_EventHandler _WiFiEventHandler{};
 
 };
 

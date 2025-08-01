@@ -11,12 +11,13 @@
 # include "../wifi/ESPEasyWifi.h"
 
 # define NW_PLUGIN_ID  2
+# define NW_PLUGIN_INTERFACE   WiFi.AP
 
 namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-static LongTermOnOffTimer _startStopStats;
+static LongTermOnOffTimer _startStopStats{};
 
 
 NW002_data_struct_WiFi_AP::NW002_data_struct_WiFi_AP(networkIndex_t networkIndex)
@@ -53,7 +54,7 @@ bool NW002_data_struct_WiFi_AP::init(EventStruct *event)
 bool NW002_data_struct_WiFi_AP::exit(EventStruct *event)
 {
 # ifdef ESP32
-  WiFi.AP.end();
+  NW_PLUGIN_INTERFACE.end();
 # endif
 # ifdef ESP8266
 
@@ -69,11 +70,11 @@ bool NW002_data_struct_WiFi_AP::handle_priority_route_changed()
 {
   bool res{};
 
-  // WiFi.AP.enableNAPT(false);
+  // NW_PLUGIN_INTERFACE.enableNAPT(false);
 
-  if (!WiFi.AP.isDefault()) {
+  if (!NW_PLUGIN_INTERFACE.isDefault()) {
     // FIXME TD-er: May need to stop/start NAPT on WiFi.AP
-    // WiFi.AP.enableNAPT(true);
+    // NW_PLUGIN_INTERFACE.enableNAPT(true);
   }
 
   return res;

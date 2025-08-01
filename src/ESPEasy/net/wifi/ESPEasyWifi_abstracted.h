@@ -10,11 +10,11 @@
 
 
 # if defined(ESP8266)
-#  include "../wifi/ESPEasyWiFiEvent_ESP8266.h"
+#  include "../wifi/ESPEasyWiFi_STA_Event_ESP8266.h"
 #  include <ESP8266WiFi.h>
 # endif // if defined(ESP8266)
 # if defined(ESP32)
-#  include "../wifi/ESPEasyWiFiEvent_ESP32.h"
+#  include "../wifi/ESPEasyWiFi_STA_Event_ESP32.h"
 #  include <WiFi.h>
 #  include <WiFiType.h>
 # endif // if defined(ESP32)
@@ -66,10 +66,6 @@ void doSetAPinternal(bool enable);
 // Event handlers
 // ********************************************************************************
 
-void                   removeWiFiEventHandler();
-void                   registerWiFiEventHandler();
-
-
 WiFiConnectionProtocol doGetConnectionProtocol();
 float                  doGetRSSIthreshold(float& maxTXpwr);
 
@@ -104,6 +100,9 @@ void doSetWiFiEcoPowerMode();
 void doSetWiFiDefaultPowerMode();
 
 void doSetWiFiCountryPolicyManual();
+
+
+void doSetUseStaticIP(bool enabled);
 
 } // namespace wifi
 } // namespace net

@@ -11,7 +11,7 @@
 
 #  include "../../net/ESPEasyNetwork.h" // Needed for NetworkCreateRFCCompliantHostname, WiFi code should not include network code
 #  include "../Globals/ESPEasyWiFiEvent.h"
-#  include "../wifi/ESPEasyWiFiEvent_ESP32.h"
+#  include "../wifi/ESPEasyWiFi_STA_Event_ESP32.h"
 #  include "../wifi/ESPEasyWifi_ProcessEvent.h"
 
 #  include <WiFiGeneric.h>
@@ -27,8 +27,9 @@ namespace net {
 namespace wifi {
 
 bool WiFi_pre_setup() {
+  if (!ESPEasyWiFi_STA_EventHandler::initialized()) return false;
 
-  registerWiFiEventHandler();
+//  registerWiFiEventHandler();
   WiFi.persistent(false);
 
   return doSetSTA_AP(false, false);
@@ -44,7 +45,6 @@ bool WiFi_pre_STA_setup()
 }
 
 void doWiFiDisconnect() {
-  //  removeWiFiEventHandler();
   WiFi.disconnect(Settings.WiFiRestart_connection_lost());
   delay(100);
   {
@@ -69,7 +69,7 @@ bool doSetWifiMode(WiFiMode_t new_mode)
 
   if (cur_mode == new_mode) {
     if (cur_mode != WIFI_OFF) {
-      registerWiFiEventHandler();
+//      registerWiFiEventHandler();
     }
     return true;
   }
@@ -82,8 +82,6 @@ bool doSetWifiMode(WiFiMode_t new_mode)
 
 
   if (cur_mode == WIFI_OFF) {
-    registerWiFiEventHandler();
-
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
     WiFiEventData.markWiFiTurnOn();
@@ -102,7 +100,6 @@ bool doSetWifiMode(WiFiMode_t new_mode)
     //    delay(100);
     processDisconnect();
     WiFiEventData.clear_processed_flags();
-    removeWiFiEventHandler();
   }
 
   addLog(LOG_LEVEL_INFO, concat(F("WIFI : Set WiFi to "), doGetWifiModeString(new_mode)));
@@ -293,19 +290,6 @@ void doWifiScan(bool async, uint8_t channel) {
 #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 }
 
-void removeWiFiEventHandler()
-{
-  WiFi.removeEvent(WiFiEventData.wm_event_id);
-  WiFiEventData.wm_event_id = 0;
-}
-
-void registerWiFiEventHandler()
-{
-  if (WiFiEventData.wm_event_id != 0) {
-    removeWiFiEventHandler();
-  }
-  WiFiEventData.wm_event_id = WiFi.onEvent(WiFiEvent);
-}
 
 float doGetRSSIthreshold(float& maxTXpwr) {
   maxTXpwr = Settings.getWiFi_TX_power();
@@ -592,6 +576,18 @@ void doSetWiFiCountryPolicyManual()
      esp_wifi_set_country(&config);
    */
 }
+
+/*
+class WiFi_Access_Static_IP : public WiFiSTAClass
+{
+public:
+
+  void set_use_static_ip(bool enabled);
+};
+*/
+
+void doSetUseStaticIP(bool enabled)
+{}
 
 } // namespace wifi
 } // namespace net

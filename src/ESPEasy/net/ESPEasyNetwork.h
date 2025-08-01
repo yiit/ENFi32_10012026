@@ -19,7 +19,7 @@ namespace net {
 
 void           setNetworkMedium(NetworkMedium_t medium);
 
-void           NetworkConnectRelaxed();
+//void           NetworkConnectRelaxed();
 bool           NetworkConnected();
 IPAddress      NetworkLocalIP();
 IPAddress      NetworkSubnetMask();

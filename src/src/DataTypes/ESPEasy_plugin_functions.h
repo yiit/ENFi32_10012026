@@ -158,6 +158,7 @@ public:
     NWPLUGIN_EXIT_ALL,         // Exit all network interfaces
     NWPLUGIN_EXIT,
     NWPLUGIN_WRITE,            // Send commands to a network adapter.
+    NWPLUGIN_CREDENTIALS_CHANGED, 
     #ifdef ESP32
     NWPLUGIN_GET_INTERFACE,
     NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO,
@@ -222,6 +223,8 @@ public:
 
   static bool                       isFlagSet(NetforkFlags     flag,
                                               NetworkInterface*networkInterface);
+  
+  static bool forceDHCP_request(NetworkInterface*networkInterface);
 
 
 #endif // ifdef ESP32

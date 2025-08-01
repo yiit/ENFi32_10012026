@@ -9,7 +9,7 @@
 #  include "../Globals/WiFi_AP_Candidates.h"
 
 #  include "../Globals/ESPEasyWiFiEvent.h"
-#  include "../wifi/ESPEasyWiFiEvent_ESP8266.h"
+#  include "../wifi/ESPEasyWiFi_STA_Event_ESP8266.h"
 #  include "../wifi/ESPEasyWifi_ProcessEvent.h"
 
 // #  include "../wifi/ESPEasyWifi.h"
@@ -18,8 +18,8 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-bool WiFi_pre_setup()     {
-  registerWiFiEventHandler();
+bool WiFi_pre_setup() {
+  if (!ESPEasyWiFi_STA_EventHandler::initialized()) return false;
 
   doSetSTA_AP(false, false);
   delay(100);
@@ -209,26 +209,6 @@ void doWifiScan(bool async, uint8_t channel) {
 
 }
 
-void removeWiFiEventHandler() {
-  // Not needed for ESP8266
-}
-
-void registerWiFiEventHandler()
-{
-  // WiFi event handlers
-  static bool handlers_initialized = false;
-
-  if (!handlers_initialized) {
-    stationConnectedHandler          = WiFi.onStationModeConnected(onConnected);
-    stationDisconnectedHandler       = WiFi.onStationModeDisconnected(onDisconnect);
-    stationGotIpHandler              = WiFi.onStationModeGotIP(onGotIP);
-    stationModeDHCPTimeoutHandler    = WiFi.onStationModeDHCPTimeout(onDHCPTimeout);
-    stationModeAuthModeChangeHandler = WiFi.onStationModeAuthModeChanged(onStationModeAuthModeChanged);
-    APModeStationConnectedHandler    = WiFi.onSoftAPModeStationConnected(onConnectedAPmode);
-    APModeStationDisconnectedHandler = WiFi.onSoftAPModeStationDisconnected(onDisconnectedAPmode);
-    handlers_initialized             = true;
-  }
-}
 
 float doGetRSSIthreshold(float& maxTXpwr) {
   maxTXpwr = Settings.getWiFi_TX_power();
@@ -341,6 +321,21 @@ void doSetWiFiDefaultPowerMode() { WiFi.setSleepMode(WIFI_MODEM_SLEEP); }
 
 void doSetWiFiCountryPolicyManual() {
   // Not yet implemented/required for ESP8266
+}
+
+
+class WiFi_Access_Static_IP : public ESP8266WiFiSTAClass
+{
+public:
+
+  void set_use_static_ip(bool enabled);
+};
+
+void WiFi_Access_Static_IP::set_use_static_ip(bool enabled) { _useStaticIp = enabled; }
+
+void doSetUseStaticIP(bool enabled) {
+  WiFi_Access_Static_IP tmp;
+  tmp.set_use_static_ip(enabled);
 }
 
 } // namespace wifi

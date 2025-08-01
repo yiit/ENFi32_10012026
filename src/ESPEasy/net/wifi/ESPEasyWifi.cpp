@@ -125,14 +125,8 @@ bool WiFiConnected() {
   return ESPEasyWiFi.connected();
 }
 
-void WiFiConnectRelaxed() { AttemptWiFiConnect(); }
+//void WiFiConnectRelaxed() { AttemptWiFiConnect(); }
 
-void AttemptWiFiConnect() {
-  if (!WiFiConnected()) {
-    ESPEasyWiFi.setup();
-  }
-  logConnectionStatus();
-}
 
 // ********************************************************************************
 // Set Wifi config
@@ -268,6 +262,8 @@ void WiFiScan_log_to_serial()
 
 // Only internal scope
 void setAPinternal(bool enable) { doSetAPinternal(enable); }
+
+void setUseStaticIP(bool enabled) { doSetUseStaticIP(enabled); }
 
 bool WiFiUseStaticIP()          { return Settings.IP[0] != 0 && Settings.IP[0] != 255; }
 

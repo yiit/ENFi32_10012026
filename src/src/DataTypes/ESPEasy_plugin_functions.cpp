@@ -2,6 +2,8 @@
 
 #ifdef ESP32
 
+#include "../Helpers/StringConverter.h"
+
 # include <esp_netif.h>
 
 bool NWPlugin::canQueryViaNetworkInterface(NWPlugin::Function function)
@@ -171,6 +173,32 @@ bool NWPlugin::isFlagSet(NWPlugin::NetforkFlags flag, NetworkInterface*networkIn
 
   const uint32_t mask = static_cast<int>(flag);
   return flags & mask;
+}
+
+bool NWPlugin::forceDHCP_request(NetworkInterface*networkInterface)
+{
+  if (!NWPlugin::isFlagSet(NWPlugin::NetforkFlags::DHCP_client, networkInterface)) {
+    return false;
+  }
+
+  auto netif = networkInterface->netif();
+
+  if (netif == nullptr) { return false; }
+
+  const char* desc = esp_netif_get_desc(netif);
+  esp_err_t err = esp_netif_dhcpc_stop(netif);
+  if (err != 0) {
+    addLog(LOG_LEVEL_ERROR, strformat(F("%s: DHCPc could not be stopped! Error: 0x%04x: %s"), desc, err, esp_err_to_name(err)));
+    return false;
+  }
+  addLog(LOG_LEVEL_INFO, strformat(F("%s: DHCPc stopped"), desc));
+  err = esp_netif_dhcpc_start(netif);
+  if (err != ESP_OK && err != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED) {
+    addLog(LOG_LEVEL_ERROR, strformat(F("%s: DHCPc could not be started! Error: 0x%04x: %s"), desc, err, esp_err_to_name(err)));
+    return false;
+  }
+  addLog(LOG_LEVEL_INFO, strformat(F("%s: DHCPc Client started"), desc));
+  return true;
 }
 
 #endif // ifdef ESP32

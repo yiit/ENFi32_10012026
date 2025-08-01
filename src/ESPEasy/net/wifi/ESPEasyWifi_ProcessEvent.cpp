@@ -447,7 +447,7 @@ void processScanDone() {
 
       //       ESPEasy::net::wifi::setSTA(false);
 # endif // ifdef ESP32
-      NetworkConnectRelaxed();
+//      NetworkConnectRelaxed();
 # ifdef USES_ESPEASY_NOW
       temp_disable_EspEasy_now_timer = millis() + 20000;
 # endif

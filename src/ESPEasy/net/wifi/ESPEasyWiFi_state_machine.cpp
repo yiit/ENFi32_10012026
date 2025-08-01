@@ -36,8 +36,7 @@ void ESPEasyWiFi_t::setup() {
     return;
   }
 
-  WiFi_pre_setup();
-  begin();
+  if (WiFi_pre_setup()) { begin(); }
 }
 
 void ESPEasyWiFi_t::enable()  {}

@@ -867,7 +867,9 @@ String SaveSecuritySettings(bool forFactoryReset) {
         if (!ESPEasy::net::NetworkConnected()) {
           WiFiEventData.wifiConnectAttemptNeeded = true;
           ESPEasy::net::wifi::resetWiFi();
-          ESPEasy::net::wifi::AttemptWiFiConnect();
+          String dummy;
+          ESPEasy::net::NWPluginCall(
+            NWPlugin::Function::NWPLUGIN_CREDENTIALS_CHANGED, 0, dummy);
         }
       }
     }

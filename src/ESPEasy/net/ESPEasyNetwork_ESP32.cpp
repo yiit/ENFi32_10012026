@@ -87,6 +87,7 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
 /*********************************************************************************************\
    Ethernet or Wifi Support for ESP32 Build flag FEATURE_ETHERNET
 \*********************************************************************************************/
+/*
 void NetworkConnectRelaxed() {
   if (ESPEasy::net::NetworkConnected()) { return; }
 #if FEATURE_ETHERNET
@@ -104,8 +105,9 @@ void NetworkConnectRelaxed() {
 
   // Failed to start the Ethernet network, probably not present of wrong parameters.
   // So set the runtime active medium to WiFi to try connecting to WiFi or at least start the AP.
-  ESPEasy::net::wifi::WiFiConnectRelaxed();
+//  ESPEasy::net::wifi::WiFiConnectRelaxed();
 }
+*/
 
 NetworkInterface* getDefaultNonAP_interface()
 {

@@ -130,7 +130,9 @@ void handle_setup() {
               }
               status       = HANDLE_SETUP_CONNECTING_STAGE;
               refreshCount = 0;
-              ESPEasy::net::wifi::AttemptWiFiConnect();
+              String dummy;
+              ESPEasy::net::NWPluginCall(
+                NWPlugin::Function::NWPLUGIN_CREDENTIALS_CHANGED, 0, dummy);
             }
           }
         }

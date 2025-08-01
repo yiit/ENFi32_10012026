@@ -229,7 +229,7 @@ void ESPEasy_setup()
   CPluginSetup();
   ESPEasy::net::NWPluginSetup();
 
-  ESPEasy::net::wifi::initWiFi();
+//  ESPEasy::net::wifi::initWiFi();
   WiFiEventData.clearAll();
 
 #ifndef BUILD_MINIMAL_OTA
@@ -451,15 +451,6 @@ void ESPEasy_setup()
 
   // FIXME TD-er: This network medium setting may be obsolete as we need a priority scale/order
   ESPEasy::net::setNetworkMedium(Settings.NetworkMedium);
-/*
-  bool initWiFi = active_network_medium == ESPEasy::net::NetworkMedium_t::WIFI;
-
-  // FIXME TD-er: Must add another check for 'delayed start WiFi' for poorly designed ESP8266 nodes.
-
-
-  if (initWiFi) {
-  }
-  */
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("WifiScan()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
@@ -600,7 +591,7 @@ void ESPEasy_setup()
 
   #endif // if FEATURE_ETHERNET
 
-  ESPEasy::net::NetworkConnectRelaxed();
+//  ESPEasy::net::NetworkConnectRelaxed();
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("NetworkConnectRelaxed()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER

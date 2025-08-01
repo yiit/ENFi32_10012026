@@ -9,16 +9,17 @@
 # include "../../../src/Helpers/StringConverter.h"
 
 # define NW_PLUGIN_ID  3
+# define NW_PLUGIN_INTERFACE   ETH
 
 namespace ESPEasy {
 namespace net {
 namespace eth {
 
-static LongTermOnOffTimer _startStopStats;
-static LongTermOnOffTimer _connectedStats;
-static LongTermOnOffTimer _gotIPStats;
+static LongTermOnOffTimer _startStopStats{};
+static LongTermOnOffTimer _connectedStats{};
+static LongTermOnOffTimer _gotIPStats{};
 # if FEATURE_USE_IPV6
-static LongTermOnOffTimer _gotIP6Stats;
+static LongTermOnOffTimer _gotIP6Stats{};
 # endif
 static IPAddress _dns_cache[2]{};
 
@@ -59,10 +60,11 @@ bool NW003_data_struct_ETH_RMII::handle_priority_route_changed()
 {
   bool res{};
 
-  if (ETH.isDefault()) {
+  if (NW_PLUGIN_INTERFACE.isDefault()) {
+    if (NWPlugin::forceDHCP_request(&NW_PLUGIN_INTERFACE)) return true;
     // Check to see if we may need to restore any cached DNS server
     for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-      auto tmp = ETH.dnsIP(i);
+      auto tmp = NW_PLUGIN_INTERFACE.dnsIP(i);
 
       if ((_dns_cache[i] != INADDR_NONE) && (_dns_cache[i] != tmp)) {
         addLog(LOG_LEVEL_INFO, strformat(
@@ -72,7 +74,7 @@ bool NW003_data_struct_ETH_RMII::handle_priority_route_changed()
                  _dns_cache[i].toString().c_str()
                  ));
 
-        ETH.dnsIP(i, _dns_cache[i]);
+        NW_PLUGIN_INTERFACE.dnsIP(i, _dns_cache[i]);
         res = true;
       }
     }
@@ -104,7 +106,7 @@ void NW003_data_struct_ETH_RMII::onEvent(arduino_event_id_t   event,
     case ARDUINO_EVENT_ETH_GOT_IP:
 
       for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-        auto tmp = ETH.dnsIP(i);
+        auto tmp = NW_PLUGIN_INTERFACE.dnsIP(i);
 
         if (tmp != INADDR_NONE) {
           _dns_cache[i] = tmp;

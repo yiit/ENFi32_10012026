@@ -48,10 +48,10 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
 /*********************************************************************************************\
    Ethernet or Wifi Support for ESP32 Build flag FEATURE_ETHERNET
 \*********************************************************************************************/
-void NetworkConnectRelaxed() {
-  if (!ESPEasy::net::NetworkConnected()) 
-  ESPEasy::net::wifi::WiFiConnectRelaxed();
-}
+//void NetworkConnectRelaxed() {
+//  if (!ESPEasy::net::NetworkConnected()) 
+//  ESPEasy::net::wifi::WiFiConnectRelaxed();
+//}
 
 bool        NetworkConnected()           { return ESPEasy::net::wifi::WiFiConnected(); }
 
