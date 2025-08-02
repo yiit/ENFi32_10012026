@@ -66,7 +66,7 @@ enum class SDM_MODEL {
   SDM630                 = 4,
   SDM72_V2               = 5,
   SDM320C                = 6,
-  TAC2100                = 7
+  TAC2100                = 7,
 };
 
 enum class SDM_DIRECTION {
