@@ -51,7 +51,8 @@ enum class SDM_UOM {
   VA,
   VAr,
   kVAh,
-  kVArh
+  kVArh,
+  nat_load
 };
 
 const __FlashStringHelper* SDM_UOMtoString(SDM_UOM uom,

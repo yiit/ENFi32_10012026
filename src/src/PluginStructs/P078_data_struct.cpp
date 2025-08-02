@@ -132,7 +132,7 @@ constexpr p078_register_description register_description_list[] = {
 { TAC2100_APPARENT_POWER_DEMAND                 /* 0x0000 */              ,  SDM_UOM::VA          ,   0   ,  0  ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0     ,    0    ,    1    },
 { TAC2100_MAX_REACTIVE_POWER_DEMAND             /* 0x0000 */              ,  SDM_UOM::VAr         ,   0   ,  0  ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0     ,    0    ,    1    },
 { TAC2100_MAX_APPARENT_POWER_DEMAND             /* 0x0000 */              ,  SDM_UOM::VA          ,   0   ,  0  ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0     ,    0    ,    1    },
-{ TAC2100_NATURE_OF_LOAD                        /* 0x0000 */              ,  SDM_UOM::            ,   0   ,  0  ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0     ,    0    ,    1    }
+{ TAC2100_NATURE_OF_LOAD                        /* 0x0000 */              ,  SDM_UOM::nat_load    ,   0   ,  0  ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0    ,    0     ,    0    ,    1    }
 };
 // *INDENT-ON*
 
