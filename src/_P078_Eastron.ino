@@ -13,6 +13,7 @@
  */
 
 /** Changelog:
+ * 2025-08-02 repa6: Add partial support for TAC2100 meter
  * 2025-01-17 tonhuisman: Implement support for MQTT AutoDiscovery (partial)
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported yet for Eastron)
  */
