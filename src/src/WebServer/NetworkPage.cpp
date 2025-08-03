@@ -343,17 +343,6 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 
         {
           String str;
-          const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED, &TempEvent, str);
-
-          if (res && !str.isEmpty()) {
-            addRowLabel(F("Connected"));
-            str.replace(F("\n"), F("<br>"));
-            addHtml_pre(str);
-          }
-        }
-
-        {
-          String str;
           const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS, &TempEvent, str);
 
           if (res && !TempEvent.String1.isEmpty()) {
@@ -428,6 +417,27 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
           if (NWPlugin::print_IP_address(ip_types[i], TempEvent.networkInterface, str)) {
             addRowLabel(NWPlugin::toString(ip_types[i]));
             addHtml_pre(str.get());
+          }
+        }
+      }
+      {
+        String str;
+        const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED, &TempEvent, str);
+
+        if (res && !str.isEmpty()) {
+          addFormSubHeader(F("Connection"));
+
+          addRowLabel(F("Connected"));
+          str.replace(F("\n"), F("<br>"));
+          addHtml_pre(str);
+
+
+
+          if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT, &TempEvent, str)) {
+            addRowLabel(F("TX Bytes Total"));
+            addHtmlInt(TempEvent.Par1);
+            addRowLabel(F("RX Bytes Total"));
+            addHtmlInt(TempEvent.Par2);
           }
         }
       }

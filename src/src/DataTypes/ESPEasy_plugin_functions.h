@@ -163,6 +163,7 @@ public:
     NWPLUGIN_GET_INTERFACE,
     NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO,
     NWPLUGIN_PRIORITY_ROUTE_CHANGED,  // The default interface was changed, let other interfaces check to see if they need to do something.
+    NWPLUGIN_GET_TRAFFIC_COUNT,     // TX/RX count in event->Par1, resp. event->Par2
     #endif
     NWPLUGIN_PROCESS_EVENT,  // Process received event arduino_event_id_t
     NWPLUGIN_WEBFORM_SHOW_CONNECTED, // Used for showing connected state/speed

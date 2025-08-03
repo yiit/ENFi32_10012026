@@ -14,6 +14,42 @@
 namespace ESPEasy {
 namespace net {
 
+#ifdef ESP32
+struct TX_RX_traffic_count {
+
+  void clear() { _tx_count = 0; _rx_count = 0; }
+
+  uint64_t _tx_count{};
+  uint64_t _rx_count{};
+
+};
+
+typedef std::map<int, TX_RX_traffic_count> InterfaceTrafficCount_t;
+
+static InterfaceTrafficCount_t interfaceTrafficCount;
+
+static void tx_rx_event_handler(void *arg, esp_event_base_t event_base,
+                                int32_t event_id, void *event_data)
+{
+  ip_event_tx_rx_t *event = (ip_event_tx_rx_t *)event_data;
+  const int key           = esp_netif_get_netif_impl_index(event->esp_netif);
+
+  if (event->dir == ESP_NETIF_TX) {
+    interfaceTrafficCount[key]._tx_count += event->len;
+  } else if (event->dir == ESP_NETIF_RX) {
+    interfaceTrafficCount[key]._rx_count += event->len;
+    addLog(LOG_LEVEL_INFO, strformat(
+             F("RX: %s key: %d len: %d total: %d"),
+             esp_netif_get_desc(event->esp_netif),
+             key,
+             event->len,
+             interfaceTrafficCount[key]._rx_count
+             ));
+  }
+}
+
+#endif // ifdef ESP32
+
 
 NWPluginData_base::NWPluginData_base(
   nwpluginID_t nwpluginID, networkIndex_t networkIndex
@@ -31,6 +67,18 @@ NWPluginData_base::NWPluginData_base(
   , _netif(netif)
 #endif
 {
+  #ifdef ESP32
+  const int key = esp_netif_get_netif_impl_index(_netif->netif());
+  interfaceTrafficCount[key].clear();
+  static bool registered_IP_EVENT_TX_RX = false;
+  esp_netif_tx_rx_event_enable(_netif->netif());
+
+  if (!registered_IP_EVENT_TX_RX) {
+    esp_event_handler_register(IP_EVENT, IP_EVENT_TX_RX, &tx_rx_event_handler, NULL);
+    registered_IP_EVENT_TX_RX = true;
+  }
+
+  #endif // ifdef ESP32
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
   if (_kvs == nullptr) {
@@ -41,6 +89,13 @@ NWPluginData_base::NWPluginData_base(
 
 NWPluginData_base::~NWPluginData_base()
 {
+#ifdef ESP32
+  esp_netif_tx_rx_event_disable(_netif->netif());
+  const int key = esp_netif_get_netif_impl_index(_netif->netif());
+  auto it       = interfaceTrafficCount.find(key);
+
+  if (it != interfaceTrafficCount.end()) { interfaceTrafficCount.erase(it); }
+#endif // ifdef ESP32
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
   if (_kvs) { delete _kvs; }
@@ -99,6 +154,17 @@ bool NWPluginData_base::handle_priority_route_changed()
     }
   }
   return res;
+}
+
+bool NWPluginData_base::getTrafficCount(uint64_t& tx, uint64_t& rx) const
+{
+  const int key = esp_netif_get_netif_impl_index(_netif->netif());
+  auto it       = interfaceTrafficCount.find(key);
+
+  if (it == interfaceTrafficCount.end()) { return false; }
+  tx = it->second._tx_count;
+  rx = it->second._rx_count;
+  return true;
 }
 
 #endif // ifdef ESP32

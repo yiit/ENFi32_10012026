@@ -109,6 +109,7 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 #ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO:
+    case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
 #endif // ifdef ESP32
 
       if (!validNetworkIndex(event->NetworkIndex) ||
