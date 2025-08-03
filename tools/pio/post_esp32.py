@@ -67,7 +67,7 @@ def esp32_create_combined_bin(source, target, env):
     print('Command Line: %s' % cmdline)
     result = subprocess.run(cmdline, text=True, check=False, stdout=subprocess.DEVNULL)
     if result.returncode != 0:
-        print(Fore.RED + f"esptool create firmware failed with exit code: {result.returncode}")
+        print(f"esptool create firmware failed with exit code: {result.returncode}")
 
 
 env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", esp32_create_combined_bin)
