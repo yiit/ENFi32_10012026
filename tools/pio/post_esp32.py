@@ -21,6 +21,7 @@ Import("env")
 platform = env.PioPlatform()
 
 import sys
+import os
 from os.path import join
 
 def normalize_paths(cmd):
