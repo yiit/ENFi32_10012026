@@ -17,6 +17,7 @@
 #  include "../../../src/Helpers/ESPEasy_time_calc.h"
 #  include "../../../src/Helpers/StringConverter.h"
 #  include "../../net/ESPEasyNetwork.h"
+#  include "../DataStructs/NWPluginData_static_runtime.h"
 #  include "../Globals/ESPEasyWiFiEvent.h"
 #  include "../Globals/NetworkState.h"
 #  include "../Globals/WiFi_AP_Candidates.h"
@@ -32,14 +33,12 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
+#  ifdef ESP32
+static NWPluginData_static_runtime stats_and_cache(&WiFi.STA);
+#  else
+static NWPluginData_static_runtime stats_and_cache{};
+#  endif // ifdef ESP32
 
-static LongTermOnOffTimer _startStopStats{};
-static LongTermOnOffTimer _connectedStats{};
-static LongTermOnOffTimer _gotIPStats{};
-#  if FEATURE_USE_IPV6
-static LongTermOnOffTimer _gotIP6Stats{};
-#  endif
-static IPAddress _dns_cache[2]{};
 static wifi_event_sta_connected_t _wifi_event_sta_connected;
 static WiFiDisconnectReason _wifi_disconnect_reason = WiFiDisconnectReason::WIFI_DISCONNECT_REASON_UNSPECIFIED;
 
@@ -47,11 +46,7 @@ static bool _ESPEasyWiFi_STA_EventHandler_initialized{};
 
 ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler()
 {
-  _connectedStats.clear();
-  _gotIPStats.clear();
-#  if FEATURE_USE_IPV6
-  _gotIP6Stats.clear();
-#  endif
+  stats_and_cache.clear();
   nw_event_id = Network.onEvent(ESPEasyWiFi_STA_EventHandler::WiFiEvent);
   memset(&_wifi_event_sta_connected, 0, sizeof(_wifi_event_sta_connected));
   _ESPEasyWiFi_STA_EventHandler_initialized = true;
@@ -66,41 +61,31 @@ ESPEasyWiFi_STA_EventHandler::~ESPEasyWiFi_STA_EventHandler()
   _ESPEasyWiFi_STA_EventHandler_initialized = false;
 }
 
-bool               ESPEasyWiFi_STA_EventHandler::initialized()                   { return _ESPEasyWiFi_STA_EventHandler_initialized; }
+bool                         ESPEasyWiFi_STA_EventHandler::initialized()                    { return _ESPEasyWiFi_STA_EventHandler_initialized; }
 
-LongTermOnOffTimer ESPEasyWiFi_STA_EventHandler::getEnabled_OnOffTimer() const   { return _startStopStats; }
+NWPluginData_static_runtime& ESPEasyWiFi_STA_EventHandler::getNWPluginData_static_runtime() { return stats_and_cache; }
 
-LongTermOnOffTimer ESPEasyWiFi_STA_EventHandler::getConnected_OnOffTimer() const { return _connectedStats; }
+WiFiDisconnectReason         ESPEasyWiFi_STA_EventHandler::getLastDisconnectReason() const  { return _wifi_disconnect_reason; }
 
-LongTermOnOffTimer ESPEasyWiFi_STA_EventHandler::getGotIp_OnOffTimer() const     { return _gotIPStats; }
+uint8_t                      ESPEasyWiFi_STA_EventHandler::getAuthMode() const              { return _wifi_event_sta_connected.authmode; }
 
-#  if FEATURE_USE_IPV6
-
-LongTermOnOffTimer ESPEasyWiFi_STA_EventHandler::getGotIp6_OnOffTimer() const { return _gotIP6Stats; }
-
-#  endif // if FEATURE_USE_IPV6
-
-WiFiDisconnectReason ESPEasyWiFi_STA_EventHandler::getLastDisconnectReason() const { return _wifi_disconnect_reason; }
-
-uint8_t              ESPEasyWiFi_STA_EventHandler::getAuthMode() const             { return _wifi_event_sta_connected.authmode; }
-
-bool                 ESPEasyWiFi_STA_EventHandler::restore_dns_from_cache() const
+bool                         ESPEasyWiFi_STA_EventHandler::restore_dns_from_cache() const
 {
   bool res{};
 
   if (WiFi.STA.isDefault()) {
     // Check to see if we may need to restore any cached DNS server
-    for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
+    for (size_t i = 0; i < NR_ELEMENTS(stats_and_cache._dns_cache); ++i) {
       auto tmp = WiFi.STA.dnsIP(i);
 
-      if ((_dns_cache[i] != INADDR_NONE) && (_dns_cache[i] != tmp)) {
+      if ((stats_and_cache._dns_cache[i] != INADDR_NONE) && (stats_and_cache._dns_cache[i] != tmp)) {
         addLog(LOG_LEVEL_INFO, strformat(
                  F("WiFi STA: Restore cached DNS server %d from %s to %s"),
                  i,
                  tmp.toString().c_str(),
-                 _dns_cache[i].toString().c_str()
+                 stats_and_cache._dns_cache[i].toString().c_str()
                  ));
-        WiFi.STA.dnsIP(i, _dns_cache[i]);
+        WiFi.STA.dnsIP(i, stats_and_cache._dns_cache[i]);
         res = true;
       }
     }
@@ -134,23 +119,23 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
       break;
     case ARDUINO_EVENT_WIFI_STA_START:
       clear_wifi_event_sta_connected = true;
-      _startStopStats.setOn();
+      stats_and_cache._startStopStats.setOn();
       addLog(LOG_LEVEL_INFO, F("STA_START"));
       break;
     case ARDUINO_EVENT_WIFI_STA_STOP:
       clear_wifi_event_sta_connected = true;
-      _startStopStats.setOff();
+      stats_and_cache._startStopStats.setOff();
       addLog(LOG_LEVEL_INFO, F("STA_STOP"));
       break;
     case ARDUINO_EVENT_WIFI_STA_CONNECTED:
       memcpy(&_wifi_event_sta_connected, &info.wifi_sta_connected, sizeof(_wifi_event_sta_connected));
-      _connectedStats.setOn();
+      stats_and_cache._connectedStats.setOn();
       addLog(LOG_LEVEL_INFO, F("STA_CONNECTED"));
       break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
       clear_wifi_event_sta_connected = true;
       _wifi_disconnect_reason        = static_cast<WiFiDisconnectReason>(info.wifi_sta_disconnected.reason);
-      _connectedStats.setOff();
+      stats_and_cache._connectedStats.setOff();
       addLog(LOG_LEVEL_INFO, F("STA_DISCONNECTED"));
       break;
     case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
@@ -159,10 +144,11 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
       break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
 
-      for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
+      for (size_t i = 0; i < NR_ELEMENTS(stats_and_cache._dns_cache); ++i) {
         auto tmp = WiFi.STA.dnsIP(i);
 
-        _dns_cache[i] = tmp; // Also set the 'empty' ones so we won't set left-over DNS server from when another interface was active.
+        stats_and_cache._dns_cache[i] = tmp; // Also set the 'empty' ones so we won't set left-over DNS server from when another interface
+                                             // was active.
 
         if (tmp != INADDR_NONE) {
           addLog(LOG_LEVEL_INFO, strformat(F("DNS Cache %d set to %s"), i, tmp.toString(true).c_str()));
@@ -174,8 +160,8 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
       }
 
       // Set OnOffTimer to off so we can also count how often we het new IP
-      _gotIPStats.setOff();
-      _gotIPStats.setOn();
+      stats_and_cache._gotIPStats.setOff();
+      stats_and_cache._gotIPStats.setOn();
       addLog(LOG_LEVEL_INFO, F("STA_GOT_IP"));
       break;
 #  if FEATURE_USE_IPV6
@@ -185,15 +171,15 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
         nonDefaultNetworkInterface_gotIP = true;
       }
 
-      _gotIP6Stats.setOn();
+      stats_and_cache._gotIP6Stats.setOn();
 
       addLog(LOG_LEVEL_INFO, F("STA_GOT_IP6"));
       break;
 #  endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_WIFI_STA_LOST_IP:
-      _gotIPStats.setOff();
+      stats_and_cache._gotIPStats.setOff();
 #  if FEATURE_USE_IPV6
-      _gotIP6Stats.setOff();
+      stats_and_cache._gotIP6Stats.setOff();
 #  endif
 
       addLog(LOG_LEVEL_INFO, F("STA_LOST_IP"));
@@ -346,7 +332,7 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
       case ARDUINO_EVENT_PPP_LOST_IP:
       case ARDUINO_EVENT_PPP_DISCONNECTED:
       case ARDUINO_EVENT_PPP_STOP:
-        // Handled in NW005_data_struct_PPP_modem
+        // Handled in ESPEasyWiFi_STA_EventHandler
         break;
 
    #  endif // if FEATURE_PPP_MODEM

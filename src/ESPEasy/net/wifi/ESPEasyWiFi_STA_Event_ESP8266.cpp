@@ -22,10 +22,7 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-
-static LongTermOnOffTimer   _startStopStats;
-static LongTermOnOffTimer   _connectedStats;
-static LongTermOnOffTimer   _gotIPStats;
+static NWPluginData_static_runtime stats_and_cache{};
 static WiFiDisconnectReason _wifi_disconnect_reason = WiFiDisconnectReason::WIFI_DISCONNECT_REASON_UNSPECIFIED;
 
 static uint8_t _authmode{};
@@ -34,8 +31,7 @@ static bool _ESPEasyWiFi_STA_EventHandler_initialized{};
 
 ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler()
 {
-  _connectedStats.clear();
-  _gotIPStats.clear();
+  stats_and_cache.clear();
 
   // WiFi event handlers
 
@@ -54,31 +50,27 @@ ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler()
 ESPEasyWiFi_STA_EventHandler::~ESPEasyWiFi_STA_EventHandler()
 {}
 
-bool                 ESPEasyWiFi_STA_EventHandler::initialized()                   { return _ESPEasyWiFi_STA_EventHandler_initialized; }
+bool                         ESPEasyWiFi_STA_EventHandler::initialized()                    { return _ESPEasyWiFi_STA_EventHandler_initialized; }
 
-LongTermOnOffTimer   ESPEasyWiFi_STA_EventHandler::getEnabled_OnOffTimer() const   { return _startStopStats; }
+NWPluginData_static_runtime& ESPEasyWiFi_STA_EventHandler::getNWPluginData_static_runtime() { return stats_and_cache; }
 
-LongTermOnOffTimer   ESPEasyWiFi_STA_EventHandler::getConnected_OnOffTimer() const { return _connectedStats; }
+WiFiDisconnectReason         ESPEasyWiFi_STA_EventHandler::getLastDisconnectReason() const  { return _wifi_disconnect_reason; }
 
-LongTermOnOffTimer   ESPEasyWiFi_STA_EventHandler::getGotIp_OnOffTimer() const     { return _gotIPStats; }
-
-WiFiDisconnectReason ESPEasyWiFi_STA_EventHandler::getLastDisconnectReason() const { return _wifi_disconnect_reason; }
-
-uint8_t              ESPEasyWiFi_STA_EventHandler::getAuthMode() const             { return _authmode; }
+uint8_t                      ESPEasyWiFi_STA_EventHandler::getAuthMode() const              { return _authmode; }
 
 // ********************************************************************************
 // Functions called on events.
 // Make sure not to call anything in these functions that result in delay() or yield()
 // ********************************************************************************
 void ESPEasyWiFi_STA_EventHandler::onConnected(const WiFiEventStationModeConnected& event) {
-  _connectedStats.setOn();
+  stats_and_cache._connectedStats.setOn();
 
   //  WiFiEventData.markConnected(event.ssid, event.bssid, event.channel);
 }
 
 void ESPEasyWiFi_STA_EventHandler::onDisconnect(const WiFiEventStationModeDisconnected& event) {
-  _connectedStats.setOff();
-  _gotIPStats.setOff();
+  stats_and_cache._connectedStats.setOff();
+  stats_and_cache._gotIPStats.setOff();
 
   //  WiFiEventData.markDisconnect(event.reason);
 
@@ -93,8 +85,8 @@ void ESPEasyWiFi_STA_EventHandler::onDisconnect(const WiFiEventStationModeDiscon
 void ESPEasyWiFi_STA_EventHandler::onGotIP(const WiFiEventStationModeGotIP& event)
 {
   // Set OnOffTimer to off so we can also count how often we het new IP
-  _gotIPStats.setOff();
-  _gotIPStats.setOn();
+  stats_and_cache._gotIPStats.setOff();
+  stats_and_cache._gotIPStats.setOn();
 
   // WiFiEventData.markGotIP(event.ip, event.mask, event.gw);
 }

@@ -11,7 +11,9 @@
 # include "../wifi/ESPEasyWifi.h"
 
 # define NW_PLUGIN_ID  1
-# define NW_PLUGIN_INTERFACE   WiFi.STA
+# ifdef ESP32
+#  define NW_PLUGIN_INTERFACE   WiFi.STA
+# endif
 
 namespace ESPEasy {
 namespace net {
@@ -19,7 +21,13 @@ namespace wifi {
 
 
 NW001_data_struct_WiFi_STA::NW001_data_struct_WiFi_STA(networkIndex_t networkIndex)
-  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex)
+  : NWPluginData_base(
+    nwpluginID_t(NW_PLUGIN_ID)
+    , networkIndex
+# ifdef ESP32
+    , &NW_PLUGIN_INTERFACE
+# endif
+    )
 {}
 
 NW001_data_struct_WiFi_STA::~NW001_data_struct_WiFi_STA()
@@ -89,6 +97,11 @@ bool NW001_data_struct_WiFi_STA::exit(EventStruct *event) {
   return true;
 }
 
+NWPluginData_static_runtime& NW001_data_struct_WiFi_STA::getNWPluginData_static_runtime() {
+  return _WiFiEventHandler.getNWPluginData_static_runtime();
+}
+
+
 # ifdef ESP32
 
 bool NW001_data_struct_WiFi_STA::handle_priority_route_changed()
@@ -102,10 +115,6 @@ bool NW001_data_struct_WiFi_STA::handle_priority_route_changed()
 
 # endif // ifdef ESP32
 
-LongTermTimer::Duration NW001_data_struct_WiFi_STA::getConnectedDuration_ms() const
-{
-  return _WiFiEventHandler.getConnected_OnOffTimer().getLastOnDuration_ms();
-}
 
 } // namespace wifi
 } // namespace net

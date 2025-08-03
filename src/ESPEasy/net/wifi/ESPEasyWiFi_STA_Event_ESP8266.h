@@ -7,7 +7,7 @@
 
 # ifdef ESP8266
 
-#  include "../../../src/Helpers/LongTermOnOffTimer.h"
+#  include "../DataStructs/NWPluginData_static_runtime.h"
 
 #  include <IPAddress.h>
 
@@ -32,13 +32,12 @@ public:
   ESPEasyWiFi_STA_EventHandler();
   ~ESPEasyWiFi_STA_EventHandler();
 
-  static bool          initialized();
+  static bool                  initialized();
 
-  LongTermOnOffTimer   getEnabled_OnOffTimer() const;
-  LongTermOnOffTimer   getConnected_OnOffTimer() const;
-  LongTermOnOffTimer   getGotIp_OnOffTimer() const;
-  WiFiDisconnectReason getLastDisconnectReason() const;
-  uint8_t              getAuthMode() const;
+  NWPluginData_static_runtime& getNWPluginData_static_runtime();
+
+  WiFiDisconnectReason         getLastDisconnectReason() const;
+  uint8_t                      getAuthMode() const;
 
 
   // ********************************************************************************

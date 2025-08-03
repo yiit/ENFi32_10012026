@@ -3,12 +3,12 @@
 #include "../_NWPlugin_Helper.h"
 #ifdef USES_NW001
 
-#ifdef ESP8266
-#include "../wifi/ESPEasyWiFi_STA_Event_ESP8266.h"
-#endif
-#ifdef ESP32
-#include "../wifi/ESPEasyWiFi_STA_Event_ESP32.h"
-#endif
+# ifdef ESP8266
+#  include "../wifi/ESPEasyWiFi_STA_Event_ESP8266.h"
+# endif
+# ifdef ESP32
+#  include "../wifi/ESPEasyWiFi_STA_Event_ESP32.h"
+# endif
 
 
 namespace ESPEasy {
@@ -21,24 +21,24 @@ struct NW001_data_struct_WiFi_STA : public NWPluginData_base {
   ~NW001_data_struct_WiFi_STA();
 
 
-  void webform_load(EventStruct *event);
-  void webform_save(EventStruct *event);
+  void                         webform_load(EventStruct *event);
+  void                         webform_save(EventStruct *event);
 
-  bool webform_getPort(String& str);
+  bool                         webform_getPort(String& str);
 
-  bool init(EventStruct *event);
+  bool                         init(EventStruct *event);
 
-  bool exit(EventStruct *event);
+  bool                         exit(EventStruct *event);
 
 # ifdef ESP32
-  bool handle_priority_route_changed();
+  bool                         handle_priority_route_changed() override;
 # endif
 
-  LongTermTimer::Duration getConnectedDuration_ms() const;
+  NWPluginData_static_runtime& getNWPluginData_static_runtime();
 
 private:
 
-ESPEasyWiFi_STA_EventHandler _WiFiEventHandler{};
+  ESPEasyWiFi_STA_EventHandler _WiFiEventHandler{};
 
 };
 

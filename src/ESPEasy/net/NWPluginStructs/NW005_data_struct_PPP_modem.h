@@ -32,29 +32,27 @@ struct NW005_data_struct_PPP_modem : public NWPluginData_base {
   NW005_data_struct_PPP_modem(networkIndex_t networkIndex);
   ~NW005_data_struct_PPP_modem();
 
-  String                  getRSSI() const;
-  String                  getBER() const;
-  bool                    attached() const;
-  String                  IMEI() const;
-  String                  operatorName() const;
+  String                       getRSSI() const;
+  String                       getBER() const;
+  bool                         attached() const;
+  String                       IMEI() const;
+  String                       operatorName() const;
 
-  void                    webform_load_UE_system_information();
+  void                         webform_load_UE_system_information();
 
-  void                    webform_load(EventStruct *event);
-  void                    webform_save(EventStruct *event);
+  void                         webform_load(EventStruct *event);
+  void                         webform_save(EventStruct *event);
 
-  bool                    webform_getPort(String& str);
+  bool                         webform_getPort(String& str);
 
-  bool                    init(EventStruct *event);
+  bool                         init(EventStruct *event);
 
-  bool                    exit(EventStruct *event);
+  bool                         exit(EventStruct *event);
 
-  bool                    handle_priority_route_changed();
+  String                       write_AT_cmd(const String& cmd,
+                                            int           timeout = 1000);
 
-  String                  write_AT_cmd(const String& cmd,
-                                       int           timeout = 1000);
-
-  LongTermTimer::Duration getConnectedDuration_ms() const;
+  NWPluginData_static_runtime& getNWPluginData_static_runtime();
 
 private:
 

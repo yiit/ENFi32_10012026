@@ -19,6 +19,7 @@
 #  include <WiFi.h>
 #  include <WiFiType.h>
 
+#  include "../DataStructs/NWPluginData_static_runtime.h"
 #  include "../wifi/WiFiDisconnectReason.h"
 
 
@@ -34,20 +35,16 @@ public:
   ESPEasyWiFi_STA_EventHandler();
   ~ESPEasyWiFi_STA_EventHandler();
 
-  static bool          initialized();
+  static bool                  initialized();
 
-  LongTermOnOffTimer   getEnabled_OnOffTimer() const;
-  LongTermOnOffTimer   getConnected_OnOffTimer() const;
-  LongTermOnOffTimer   getGotIp_OnOffTimer() const;
-#  if FEATURE_USE_IPV6
-  LongTermOnOffTimer   getGotIp6_OnOffTimer() const;
-#  endif
+  NWPluginData_static_runtime& getNWPluginData_static_runtime();
 
-  WiFiDisconnectReason getLastDisconnectReason() const;
 
-  uint8_t              getAuthMode() const;
+  WiFiDisconnectReason         getLastDisconnectReason() const;
 
-  bool                 restore_dns_from_cache() const;
+  uint8_t                      getAuthMode() const;
+
+  bool                         restore_dns_from_cache() const;
 
 private:
 

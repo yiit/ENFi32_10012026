@@ -14,18 +14,16 @@ struct NW004_data_struct_ETH_SPI : public NWPluginData_base {
   ~NW004_data_struct_ETH_SPI();
 
 
-  void webform_load(EventStruct *event);
-  void webform_save(EventStruct *event);
+  void                         webform_load(EventStruct *event);
+  void                         webform_save(EventStruct *event);
 
-  bool webform_getPort(String& str);
+  bool                         webform_getPort(String& str);
 
-  bool init(EventStruct *event);
+  bool                         init(EventStruct *event);
 
-  bool exit(EventStruct *event);
+  bool                         exit(EventStruct *event);
 
-  bool handle_priority_route_changed();
-
-  LongTermTimer::Duration getConnectedDuration_ms() const;
+  NWPluginData_static_runtime& getNWPluginData_static_runtime();
 
 private:
 

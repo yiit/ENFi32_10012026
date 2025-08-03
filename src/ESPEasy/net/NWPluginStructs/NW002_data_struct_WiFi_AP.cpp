@@ -11,18 +11,31 @@
 # include "../wifi/ESPEasyWifi.h"
 
 # define NW_PLUGIN_ID  2
-# define NW_PLUGIN_INTERFACE   WiFi.AP
+# ifdef ESP32
+#  define NW_PLUGIN_INTERFACE   WiFi.AP
+# endif
 
 namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-static LongTermOnOffTimer _startStopStats{};
+# ifdef ESP32
+static NWPluginData_static_runtime stats_and_cache(&NW_PLUGIN_INTERFACE);
+# else
+static NWPluginData_static_runtime stats_and_cache{};
+# endif // ifdef ESP32
 
 
 NW002_data_struct_WiFi_AP::NW002_data_struct_WiFi_AP(networkIndex_t networkIndex)
-  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex)
+  : NWPluginData_base(
+    nwpluginID_t(NW_PLUGIN_ID)
+    , networkIndex
+# ifdef ESP32
+    , &NW_PLUGIN_INTERFACE
+# endif
+    )
 {
+  stats_and_cache.clear();
 # ifdef ESP32
   nw_event_id = Network.onEvent(NW002_data_struct_WiFi_AP::onEvent);
 # endif
@@ -64,6 +77,9 @@ bool NW002_data_struct_WiFi_AP::exit(EventStruct *event)
   return true;
 }
 
+NWPluginData_static_runtime& NW002_data_struct_WiFi_AP::getNWPluginData_static_runtime() { return stats_and_cache; }
+
+
 # ifdef ESP32
 
 bool NW002_data_struct_WiFi_AP::handle_priority_route_changed()
@@ -86,11 +102,11 @@ void NW002_data_struct_WiFi_AP::onEvent(arduino_event_id_t   event,
   switch (event)
   {
     case ARDUINO_EVENT_WIFI_AP_START:
-      _startStopStats.setOn();
+      stats_and_cache._startStopStats.setOn();
       addLog(LOG_LEVEL_INFO, F("AP_START"));
       break;
     case ARDUINO_EVENT_WIFI_AP_STOP:
-      _startStopStats.setOff();
+      stats_and_cache._startStopStats.setOff();
       addLog(LOG_LEVEL_INFO, F("AP_STOP"));
       break;
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:

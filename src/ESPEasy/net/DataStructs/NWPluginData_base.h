@@ -3,9 +3,10 @@
 #include "../../../ESPEasy_common.h"
 
 
-# include "../DataTypes/NWPluginID.h"
-# include "../DataTypes/NetworkIndex.h"
-# include "../../../src/DataStructs/ESPEasy_EventStruct.h"
+#include "../DataTypes/NWPluginID.h"
+#include "../DataTypes/NetworkIndex.h"
+#include "../../../src/DataStructs/ESPEasy_EventStruct.h"
+#include "../DataStructs/NWPluginData_static_runtime.h"
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 # include "../../../src/Helpers/_ESPEasy_key_value_store.h"
@@ -23,8 +24,13 @@ namespace net {
 // N.B. in order to use this, a data object must inherit from this base class.
 //      This is a compile time check.
 struct NWPluginData_base {
-  NWPluginData_base(nwpluginID_t   nwpluginID,
-                    networkIndex_t networkIndex);
+  NWPluginData_base(nwpluginID_t      nwpluginID,
+                    networkIndex_t networkIndex
+#ifdef                                ESP32
+                    ,
+                    NetworkInterface *netif
+#endif // ifdef ESP32
+                    );
 
   virtual ~NWPluginData_base();
 
@@ -38,14 +44,30 @@ struct NWPluginData_base {
 
   // Should only be called from initNWPluginData
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
-  bool         init_KVS();
+  bool                                 init_KVS();
 #endif
 
-  nwpluginID_t getNWPluginID() const { return _nw_data_pluginID; }
+  nwpluginID_t                         getNWPluginID() const { return _nw_data_pluginID; }
+
+  virtual LongTermTimer::Duration      getConnectedDuration_ms();
+
+#ifdef ESP32
+  virtual bool                         handle_priority_route_changed();
+#endif
+
+  virtual NWPluginData_static_runtime& getNWPluginData_static_runtime() = 0;
 
 protected:
 
+  static  void _mark_got_IP(NWPluginData_static_runtime& cache);
+  static void  _mark_disconnected(const NWPluginData_static_runtime& cache);
+
+#ifdef ESP32
+  bool         _restore_DNS_cache();
+#endif
+
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
   bool _KVS_initialized() const { return _kvs != nullptr; }
 
   // Load settings in the _kvs
@@ -55,7 +77,7 @@ protected:
   bool _store();
 
   ESPEasy_key_value_store *_kvs = nullptr;
-#endif
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
   // We cannot use dynamic_cast, so we must keep track of the plugin ID to
   // perform checks on the casting.
@@ -68,10 +90,13 @@ protected:
   bool _baseClassOnly = false;
 #else
   bool _baseClassOnly = true;
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
+#ifdef ESP32
+  NetworkInterface *_netif{};
 #endif
 
 };
 
 } // namespace net
 } // namespace ESPEasy
-

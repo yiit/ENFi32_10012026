@@ -8,7 +8,7 @@
 # include "../../../src/Helpers/LongTermOnOffTimer.h"
 # include "../../../src/Helpers/StringConverter.h"
 
-#include "../Globals/NetworkState.h"
+# include "../Globals/NetworkState.h"
 
 # define NW_PLUGIN_ID  3
 # define NW_PLUGIN_INTERFACE   ETH
@@ -17,22 +17,12 @@ namespace ESPEasy {
 namespace net {
 namespace eth {
 
-static LongTermOnOffTimer _startStopStats{};
-static LongTermOnOffTimer _connectedStats{};
-static LongTermOnOffTimer _gotIPStats{};
-# if FEATURE_USE_IPV6
-static LongTermOnOffTimer _gotIP6Stats{};
-# endif
-static IPAddress _dns_cache[2]{};
+static NWPluginData_static_runtime stats_and_cache(&NW_PLUGIN_INTERFACE);
 
 NW003_data_struct_ETH_RMII::NW003_data_struct_ETH_RMII(networkIndex_t networkIndex)
-  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex)
+  : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex, &NW_PLUGIN_INTERFACE)
 {
-  _connectedStats.clear();
-  _gotIPStats.clear();
-# if FEATURE_USE_IPV6
-  _gotIP6Stats.clear();
-# endif
+  stats_and_cache.clear();
 
   nw_event_id = Network.onEvent(NW003_data_struct_ETH_RMII::onEvent);
 }
@@ -58,86 +48,43 @@ bool NW003_data_struct_ETH_RMII::exit(EventStruct *event) {
   return true;
 }
 
-bool NW003_data_struct_ETH_RMII::handle_priority_route_changed()
-{
-  bool res{};
+NWPluginData_static_runtime& NW003_data_struct_ETH_RMII::getNWPluginData_static_runtime() { return stats_and_cache; }
 
-  if (NW_PLUGIN_INTERFACE.isDefault()) {
-    if (NWPlugin::forceDHCP_request(&NW_PLUGIN_INTERFACE)) return true;
-    // Check to see if we may need to restore any cached DNS server
-    for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-      auto tmp = NW_PLUGIN_INTERFACE.dnsIP(i);
-
-      if ((_dns_cache[i] != INADDR_NONE) && (_dns_cache[i] != tmp)) {
-        addLog(LOG_LEVEL_INFO, strformat(
-                 F("NW003: Restore cached DNS server %d from %s to %s"),
-                 i,
-                 tmp.toString().c_str(),
-                 _dns_cache[i].toString().c_str()
-                 ));
-
-        NW_PLUGIN_INTERFACE.dnsIP(i, _dns_cache[i]);
-        res = true;
-      }
-    }
-  }
-  return res;
-}
-
-LongTermTimer::Duration NW003_data_struct_ETH_RMII::getConnectedDuration_ms() const
-{
-  return _connectedStats.getLastOnDuration_ms();
-}
-
-void NW003_data_struct_ETH_RMII::onEvent(arduino_event_id_t   event,
-                                         arduino_event_info_t info)
+void                         NW003_data_struct_ETH_RMII::onEvent(arduino_event_id_t   event,
+                                                                 arduino_event_info_t info)
 {
   switch (event)
   {
     case ARDUINO_EVENT_ETH_START:
-      _startStopStats.setOn();
+      stats_and_cache._startStopStats.setOn();
       addLog(LOG_LEVEL_INFO, F("ETH_START"));
       break;
     case ARDUINO_EVENT_ETH_STOP:
-      _startStopStats.setOff();
+      stats_and_cache._startStopStats.setOff();
       addLog(LOG_LEVEL_INFO, F("ETH_STOP"));
       break;
     case ARDUINO_EVENT_ETH_CONNECTED:
-      _connectedStats.setOn();
+      stats_and_cache._connectedStats.setOn();
       addLog(LOG_LEVEL_INFO, F("ETH_CONNECTED"));
       break;
     case ARDUINO_EVENT_ETH_DISCONNECTED:
-      _connectedStats.setOff();
-      addLog(LOG_LEVEL_INFO, F("ETH_DISCONNECTED"));
+      stats_and_cache._connectedStats.setOff();
+      NWPluginData_base::_mark_disconnected(stats_and_cache);
       break;
     case ARDUINO_EVENT_ETH_GOT_IP:
-
-      if (!NW_PLUGIN_INTERFACE.isDefault()) {
-        nonDefaultNetworkInterface_gotIP = true;
-      }
-
-      for (size_t i = 0; i < NR_ELEMENTS(_dns_cache); ++i) {
-        auto tmp = NW_PLUGIN_INTERFACE.dnsIP(i);
-
-        if (tmp != INADDR_NONE) {
-          _dns_cache[i] = tmp;
-          addLog(LOG_LEVEL_INFO, strformat(F("DNS Cache %d set to %s"), i, tmp.toString(true).c_str()));
-        }
-
-      }
-      _gotIPStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("ETH_GOT_IP"));
+      NWPluginData_base::_mark_got_IP(stats_and_cache);
+      stats_and_cache._gotIPStats.setOn();
       break;
 # if FEATURE_USE_IPV6
     case ARDUINO_EVENT_ETH_GOT_IP6:
-      _gotIP6Stats.setOn();
+      stats_and_cache._gotIP6Stats.setOn();
       addLog(LOG_LEVEL_INFO, F("ETH_GOT_IP6"));
       break;
 # endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_ETH_LOST_IP:
-      _gotIPStats.setOff();
+      stats_and_cache._gotIPStats.setOff();
 # if FEATURE_USE_IPV6
-      _gotIP6Stats.setOff();
+      stats_and_cache._gotIP6Stats.setOff();
 # endif
 
       addLog(LOG_LEVEL_INFO, F("ETH_LOST_IP"));
