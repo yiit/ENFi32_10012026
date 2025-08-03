@@ -23,6 +23,11 @@ platform = env.PioPlatform()
 import sys
 from os.path import join
 
+def normalize_paths(cmd):
+    for i, arg in enumerate(cmd):
+        if isinstance(arg, str) and '/' in arg:
+            cmd[i] = os.path.normpath(arg)
+    return cmd
 
 def esp32_create_combined_bin(source, target, env):
     print("Generating combined binary for serial flashing")
