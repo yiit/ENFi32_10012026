@@ -44,7 +44,7 @@ void handle_controllers() {
   sendHeadandTail_stdtemplate(_HEAD);
 
   // 'index' value in the URL
-  uint8_t controllerindex  = getFormItemInt(F("index"), 0);
+  uint8_t controllerindex       = getFormItemInt(F("index"), 0);
   const bool controllerIndexSet = controllerindex != 0 && validControllerIndex(controllerindex - 1);
   --controllerindex; // Index in URL is starting from 1, but starting from 0 in the array.
 
@@ -281,7 +281,7 @@ void handle_controllers_ShowAllControllersTable()
 
         html_TD();
         const protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(x);
-        const ProtocolStruct& proto = getProtocolStruct(ProtocolIndex);
+        const ProtocolStruct& proto         = getProtocolStruct(ProtocolIndex);
 
         if ((INVALID_PROTOCOL_INDEX == ProtocolIndex) || proto.usesPort) {
           addHtmlInt(13 == Settings.Protocol[x] ? Settings.UDPPort : ControllerSettings->Port); // P2P/C013 exception
@@ -476,7 +476,8 @@ void handle_controllers_ControllerSettingsPage(controllerIndex_t controllerindex
               addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TRIGGER);
               addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_TOPIC);
               addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_AUTO_DISCOVERY_CONFIG);
-              addControllerParameterForm(*ControllerSettings, controllerindex, ControllerSettingsStruct::CONTROLLER_RETAINED_DISCOVERY_OPTION);
+              addControllerParameterForm(*ControllerSettings, controllerindex,
+                                         ControllerSettingsStruct::CONTROLLER_RETAINED_DISCOVERY_OPTION);
             }
             #  endif // if FEATURE_MQTT_DISCOVER
           }
@@ -505,6 +506,18 @@ void handle_controllers_ControllerSettingsPage(controllerIndex_t controllerindex
         addFormSubHeader(F("Connection Status"));
         addRowLabel(F("MQTT Client Connected"));
         addEnabled(MQTTclient_connected);
+
+        if (MQTTclient_connected) {
+          auto conn_duration = MQTTclient_connected_stats.getLastOnDuration_ms();
+
+          if (conn_duration > 0) {
+            addRowLabel(F("Connection Duration"));
+            addHtml(format_msec_duration_HMS(conn_duration));
+            addRowLabel(F("Number of Reconnects"));
+            addHtmlInt(MQTTclient_connected_stats.getCycleCount());
+          }
+
+        }
 
 #  if FEATURE_MQTT_TLS
 

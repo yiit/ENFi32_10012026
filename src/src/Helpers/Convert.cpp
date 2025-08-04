@@ -146,9 +146,13 @@ String format_msec_duration(int64_t duration, bool useHMS) {
 
   if (duration_s < 60) {
     return strformat(
-      F("%02d.%03d"),
+      useHMS ? F("%02ds.%03d") : F("%02d.%03d"),
       duration_s,
       duration_ms);
+  }
+  if (useHMS && duration_s > 60) {
+    // No need to show msec when time is over 1 minute
+    return secondsToDayHourMinuteSecond(duration_s, useHMS);
   }
   return strformat(
     F("%s.%03d"),

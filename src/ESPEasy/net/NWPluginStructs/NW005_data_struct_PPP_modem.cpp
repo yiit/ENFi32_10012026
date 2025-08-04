@@ -470,11 +470,12 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
     showWebformItem(*_kvs, params);
   }
 
-  addFormSubHeader(F("Connection"));
+  addFormSubHeader(F("Connection Settings"));
   {
     auto params = NW005_makeWebFormItemParams(NW005_KEY_APN);
     params._maxLength = 64;
     showWebformItem(*_kvs, params);
+    addFormNote(F("Optional, can be left empty"));
   }
   {
     auto params = NW005_makeWebFormItemParams(NW005_KEY_SIM_PIN);

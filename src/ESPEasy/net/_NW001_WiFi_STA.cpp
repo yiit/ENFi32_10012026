@@ -92,21 +92,6 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       }
 # endif // ifdef ESP32
 
-      if (success) {
-        ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *NW_data =
-          static_cast<ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *>(getNWPluginData(event->NetworkIndex));
-
-        if (NW_data) {
-          auto connectionDuration_ms = NW_data->getConnectedDuration_ms();
-
-          if (connectionDuration_ms > 0) {
-            string += concat(
-              '\n',
-              format_msec_duration_HMS(connectionDuration_ms));
-          }
-        }
-      }
-
       break;
     }
 

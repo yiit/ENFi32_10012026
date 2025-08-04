@@ -239,6 +239,14 @@ void handle_networks_ShowAllNetworksTable()
         if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED) {
           if (!res || str.isEmpty()) {
             addEnabled(res);
+          } else {
+            String conn_duration;
+            if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent, conn_duration)) {
+              if (conn_duration.length()) {
+                str += '\n';
+                str += conn_duration;
+              }
+            }
           }
         } else if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS) {
           if (res && !TempEvent.String1.isEmpty() && !str.isEmpty()) {
@@ -425,26 +433,29 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
         const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED, &TempEvent, str);
 
         if (res && !str.isEmpty()) {
-          addFormSubHeader(F("Connection"));
+          addFormSubHeader(F("Connection Information"));
 
           addRowLabel(F("Connected"));
           str.replace(F("\n"), F("<br>"));
           addHtml_pre(str);
 
-          if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent, str)) {
+          String conn_duration;
+
+          if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent, conn_duration)) {
             addRowLabel(F("Connection Duration"));
-            addHtml(TempEvent.String1);
+            addHtml(conn_duration);
             addRowLabel(F("Number of Reconnects"));
-            addHtml(TempEvent.Par64_2);
+            addHtmlInt(TempEvent.Par64_2);
           }
 
-
+#ifdef ESP32
           if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT, &TempEvent, str)) {
             addRowLabel(F("TX Bytes Total"));
             addHtmlInt(TempEvent.Par1);
             addRowLabel(F("RX Bytes Total"));
             addHtmlInt(TempEvent.Par2);
           }
+#endif
         }
       }
     }

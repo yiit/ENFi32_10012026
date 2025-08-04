@@ -88,19 +88,6 @@ bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& strin
         string += ETH.fullDuplex() ? F("Mbps FD") : F("Mbps HD");
 
         if (!ETH.autoNegotiation()) { string += F("(manual)"); }
-
-        ESPEasy::net::eth::NW003_data_struct_ETH_RMII *NW_data =
-          static_cast<ESPEasy::net::eth::NW003_data_struct_ETH_RMII *>(getNWPluginData(event->NetworkIndex));
-
-        if (NW_data) {
-          auto connectionDuration_ms = NW_data->getConnectedDuration_ms();
-
-          if (connectionDuration_ms > 0) {
-            string += concat(
-              '\n',
-              format_msec_duration_HMS(connectionDuration_ms));
-          }
-        }
       }
       break;
     }

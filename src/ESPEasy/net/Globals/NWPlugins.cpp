@@ -132,11 +132,12 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
           {
             NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
             auto duration                             = runtime_data._connectedStats.getLastOnDuration_ms();
-            event->String1 = format_msec_duration_HMS(duration);
-            event->Par64_1 = duration;
-            event->Par64_2 = runtime_data._connectedStats.getCycleCount();
-            success        = true;
-
+            if (duration > 0) {
+              str = format_msec_duration_HMS(duration);
+              event->Par64_1 = duration;
+              event->Par64_2 = runtime_data._connectedStats.getCycleCount();
+              success        = true;
+            }
             break;
           }
           default: break;

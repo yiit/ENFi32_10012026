@@ -85,14 +85,6 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
             F("%s (%s dBm)"),
             NW_data->operatorName().c_str(),
             NW_data->getRSSI().c_str());
-
-          auto connectionDuration_ms = NW_data->getConnectedDuration_ms();
-
-          if (connectionDuration_ms > 0) {
-            string += concat(
-              '\n',
-              format_msec_duration_HMS(connectionDuration_ms));
-          }
         }
       }
 
