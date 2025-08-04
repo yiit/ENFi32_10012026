@@ -805,7 +805,7 @@
 
     ``<formula>``: The formula to calculate and return as the value for the derived value. The content of the formula should be escaped, else the rules processor will fill the current values, instead of during retrieval of the derived value. Formulas often contain spaces or commas, if so they have to be quoted. See examples.
 
-    ``<UnitOfMeasure>``: An optional Unit of Measure to be appended after the value. Must be quoted if it contains spaces or commas. (Added:2025/06/08)
+    ``<UnitOfMeasure>``: An optional Unit of Measure to be appended after the value. Must be quoted if it contains spaces or commas. Not case-sensitive, 'official' value will be used if the Unit of Measure selector is included in the build. (Added:2025/06/08)
 
     ``<VType>``: The ValueType to be used for MQTT AutoDiscovery. The same values as available in the Value Type combobox on the Device configuration page can be used (not case-sensitive, 'official' value will be used) (Added: 2025/06/19)
 
@@ -817,9 +817,9 @@
 
     ``TaskValueSetDerived,BME,Fahrenheit,'\%c_c2f\%(\[BME#temperature\])'``
     
-    In other places, like rules, and in Display tasks, you can now use ``[BME#DewPoint]`` and ``[BME#Fahrenheit]`` to retrieve the freshly calculated result of the formulas. NB: If the value doesn't get updated, most likely the formula wasn't escaped properly, and the *calculate result* stored in memory, instead of the formula.
+    In other places, like rules, and in Display tasks, you can now use ``[BME#DewPoint]`` and ``[BME#Fahrenheit]`` to retrieve the freshly calculated result of the formulas. NB: If the value doesn't get updated, most likely the formula wasn't escaped properly, and the *calculated result* is stored in memory, instead of the formula.
 
-    Derived values can be shown on the Devices overview page, and included in the ``/json`` output, by enabling the **Show derived values** checkbox in the device configuration.
+    Derived values can be shown on the Devices overview page, and included in the ``/json`` output, by enabling the **Show derived values** checkbox in the device configuration. The value will be included in event generation if the per-task **Event & Log derived values** checkbox is enabled.
     "
     "
     TaskValueSetPresentation","

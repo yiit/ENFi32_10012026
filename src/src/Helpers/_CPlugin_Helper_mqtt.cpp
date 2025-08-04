@@ -636,7 +636,11 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
                   #  else // if FEATURE_MQTT_STATE_CLASS
                   const String stateClass = EMPTY_STRING;
                   #  endif // if FEATURE_MQTT_STATE_CLASS
+                  #  if FEATURE_MQTT_DEVICECLASS
                   const bool twoWay = MQTT_binary_deviceClassTwoWay(MQTT_binary_deviceClassIndex(valueDeviceClass));
+                  #  else // if FEATURE_MQTT_DEVICECLASS
+                  const bool twoWay = true;
+                  #  endif // if FEATURE_MQTT_DEVICECLASS
 
                   // Discover 2-way as Light
                   const __FlashStringHelper*componentClass = twoWay && discoveryItems[s].canSet ? F("light") : F("binary_sensor");
