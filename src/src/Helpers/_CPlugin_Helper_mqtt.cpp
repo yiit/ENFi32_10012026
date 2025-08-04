@@ -1066,9 +1066,8 @@ bool MQTT_DiscoveryPublishWithStatusAndSet(taskIndex_t               taskIndex,
     const String withSet   = hasSet ? F(",\"cmd_t\":\"~/set\"") : EMPTY_STRING;
     const String schema    = hasSet ? EMPTY_STRING : "\"schema\":\"basic\",";
     const String devOrIcon = hasIcon ? F("ic") : F("dev_cla");
-    const String withUoM   = !unitOfMeasure.isEmpty() ?
-                             strformat(F(",\"unit_of_meas\":\"%s\""), unitOfMeasure.c_str()) :
-                             EMPTY_STRING;
+    const String withUoM   = unitOfMeasure.isEmpty() ? EMPTY_STRING :
+                             strformat(F(",\"unit_of_meas\":\"%s\""), unitOfMeasure.c_str());
     const String stateJson = stateClass.isEmpty() ? EMPTY_STRING :
                              strformat(F(",\"stat_cla\":\"%s\""),     stateClass.c_str());
     const String taskName  = makeHomeAssistantCompliantName(getTaskDeviceName(taskIndex));
