@@ -431,6 +431,12 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
           str.replace(F("\n"), F("<br>"));
           addHtml_pre(str);
 
+          if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent, str)) {
+            addRowLabel(F("Connection Duration"));
+            addHtml(TempEvent.String1);
+            addRowLabel(F("Number of Reconnects"));
+            addHtml(TempEvent.Par64_2);
+          }
 
 
           if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT, &TempEvent, str)) {

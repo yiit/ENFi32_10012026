@@ -58,6 +58,7 @@ public:
   String        String3;
   String        String4;
   String        String5;
+  String        String6;
   #ifdef ESP32
   NetworkInterface* networkInterface = nullptr;
   #endif
@@ -74,8 +75,14 @@ public:
       int Par3;
       int Par4;
       int Par5;
+      int Par6;
     };
-    int ParN[5] = { 0 };
+    struct {
+      int64_t Par64_1;
+      int64_t Par64_2;
+      int64_t Par64_3;
+    };
+    int ParN[6] = { 0 };
   };
 
   // The origin of the values in the event. See EventValueSource.h

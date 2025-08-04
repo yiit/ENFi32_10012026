@@ -34,6 +34,11 @@ struct NWPluginData_base {
 
   virtual ~NWPluginData_base();
 
+virtual    bool                         init(EventStruct *event) = 0;
+
+virtual   bool                         exit(EventStruct *event) = 0;
+
+
   bool baseClassOnly() const {
     return _baseClassOnly;
   }
@@ -44,17 +49,18 @@ struct NWPluginData_base {
 
   // Should only be called from initNWPluginData
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
-  bool                                 init_KVS();
+  bool                            init_KVS();
 #endif
 
-  nwpluginID_t                         getNWPluginID() const { return _nw_data_pluginID; }
+  nwpluginID_t                    getNWPluginID() const { return _nw_data_pluginID; }
 
-  virtual LongTermTimer::Duration      getConnectedDuration_ms();
+  virtual LongTermTimer::Duration getConnectedDuration_ms();
 
 #ifdef ESP32
-  virtual bool                         handle_priority_route_changed();
-  bool getTrafficCount(uint64_t& tx, uint64_t& rx) const;
-#endif
+  virtual bool                    handle_priority_route_changed();
+  bool                            getTrafficCount(uint64_t& tx,
+                                                  uint64_t& rx) const;
+#endif // ifdef ESP32
 
   virtual NWPluginData_static_runtime& getNWPluginData_static_runtime() = 0;
 

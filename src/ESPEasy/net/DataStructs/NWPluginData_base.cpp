@@ -81,6 +81,7 @@ NWPluginData_base::NWPluginData_base(
     registered_IP_EVENT_TX_RX = true;
   }
   esp_netif_tx_rx_event_enable(_netif->netif());
+//  _netif->netif()->tx_rx_events_enabled = true;
 
   #endif // ifdef ESP32
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

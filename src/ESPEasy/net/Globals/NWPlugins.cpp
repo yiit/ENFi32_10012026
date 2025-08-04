@@ -8,6 +8,7 @@
 #include "../../../src/Globals/Settings.h"
 #include "../../../src/Helpers/PrintToString.h"
 #include "../Helpers/_NWPlugin_init.h"
+#include "../_NWPlugin_Helper.h"
 
 namespace ESPEasy {
 namespace net {
@@ -55,7 +56,7 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 #endif
     {
       // Set to true where return value doesn't matter
-      bool success = 
+      bool success =
 #ifdef ESP32
         Function != NWPlugin::Function::NWPLUGIN_PRIORITY_ROUTE_CHANGED &&
 #endif
@@ -70,9 +71,10 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
       }
 
       for (networkIndex_t x = 0; x < NETWORK_MAX; x++) {
-        const bool checkedEnabled = 
-          Settings.getNetworkEnabled(x) || 
+        const bool checkedEnabled =
+          Settings.getNetworkEnabled(x) ||
           Function == NWPlugin::Function::NWPLUGIN_EXIT;
+
         if (Settings.getNWPluginID_for_network(x) && checkedEnabled) {
           event->NetworkIndex = x;
           String command;
@@ -97,6 +99,54 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
       return success;
     }
 
+    // calls to specific network's NWPluginData_base (must be enabled)
+#ifdef ESP32
+    case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
+#endif // ifdef ESP32
+    case NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION:
+    {
+      bool success = false;
+      if (!validNetworkIndex(event->NetworkIndex) ||
+          !Settings.getNetworkEnabled(event->NetworkIndex)) { return false; }
+
+      auto *NW_data = getNWPluginData(event->NetworkIndex);
+
+      if (NW_data) {
+        switch (Function)
+        {
+#ifdef ESP32
+          case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
+          {
+            uint64_t tx{};
+            uint64_t rx{};
+
+            if (NW_data->getTrafficCount(tx, rx)) {
+              event->Par64_1 = tx;
+              event->Par64_2 = rx;
+              success        = true;
+            }
+            break;
+          }
+#endif // ifdef ESP32
+          case NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION:
+          {
+            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+            auto duration                             = runtime_data._connectedStats.getLastOnDuration_ms();
+            event->String1 = format_msec_duration_HMS(duration);
+            event->Par64_1 = duration;
+            event->Par64_2 = runtime_data._connectedStats.getCycleCount();
+            success        = true;
+
+            break;
+          }
+          default: break;
+        }
+      }
+
+      return success;
+    }
+
+
     // calls to specific network which need to be enabled before calling
     case NWPlugin::Function::NWPLUGIN_INIT:
     case NWPlugin::Function::NWPLUGIN_CONNECT_SUCCESS:
@@ -109,7 +159,6 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 #ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO:
-    case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
 #endif // ifdef ESP32
 
       if (!validNetworkIndex(event->NetworkIndex) ||

@@ -68,22 +68,6 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       success                 = event->networkInterface != nullptr;
       break;
     }
-    case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
-    {
-      auto *NW_data = getNWPluginData(event->NetworkIndex);
-
-      if (NW_data) {
-        uint64_t tx{};
-        uint64_t rx{};
-
-        if (NW_data->getTrafficCount(tx, rx)) {
-          event->Par1 = tx;
-          event->Par2 = rx;
-          success     = true;
-        }
-      }
-      break;
-    }
 # endif // ifdef ESP32
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
