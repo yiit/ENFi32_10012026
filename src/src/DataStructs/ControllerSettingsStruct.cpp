@@ -5,6 +5,7 @@
 #include "../CustomBuild/ESPEasyLimits.h"
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../../ESPEasy/net/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/Globals/NWPlugins.h"
 #include "../Helpers/Misc.h"
 #include "../Helpers/Networking.h"
 #include "../Helpers/StringConverter.h"
@@ -369,3 +370,15 @@ String ControllerSettingsStruct::getCertificateFilename(TLS_types tls_type) cons
   return certFile;
 }
 #endif
+
+
+uint32_t ControllerSettingsStruct::getSuggestedTimeout(int index) const
+{
+  if (MustCheckReply) {
+    auto data = ESPEasy::net::getDefaultRoute_NWPluginData_static_runtime();
+    if (data) {
+      return data->getSuggestedTimeout(index, ClientTimeout);
+    }
+  }
+  return ClientTimeout;
+}

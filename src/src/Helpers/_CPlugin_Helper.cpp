@@ -118,7 +118,11 @@ bool count_connection_results(bool success, const __FlashStringHelper *prefix, c
     STOP_TIMER_CONTROLLER(protocolIndex, CPlugin::Function::CPLUGIN_CONNECT_FAIL);
     return false;
   }
-  WiFiEventData.connectDurations[cpluginID] = usecPassedSince(statisticsTimerStart) / 1000ul;
+  auto data = ESPEasy::net::getDefaultRoute_NWPluginData_static_runtime();
+  if (data) {
+    data->setConnectionDuration(cpluginID, usecPassedSince(statisticsTimerStart) / 1000ul);
+  }
+
   STOP_TIMER_CONTROLLER(protocolIndex, CPlugin::Function::CPLUGIN_CONNECT_SUCCESS);
   statusLED(true);
 
@@ -140,9 +144,7 @@ bool try_connect_host(cpluginID_t cpluginID, WiFiUDP& client, ControllerSettings
   // For example because the server does not give an acknowledgement.
   // This way, we always need the set amount of timeout to handle the request.
   // Thus we should not make the timeout dynamic here if set to ignore ack.
-  const uint32_t timeout = ControllerSettings.MustCheckReply
-    ? WiFiEventData.getSuggestedTimeout(cpluginID, ControllerSettings.ClientTimeout)
-    : ControllerSettings.ClientTimeout;
+  const uint32_t timeout = ControllerSettings.getSuggestedTimeout(cpluginID);
 
   client.setTimeout(timeout); // in msec as it should be!
   delay(0);
@@ -187,9 +189,7 @@ bool try_connect_host(cpluginID_t                cpluginID,
   // For example because the server does not give an acknowledgement.
   // This way, we always need the set amount of timeout to handle the request.
   // Thus we should not make the timeout dynamic here if set to ignore ack.
-  const uint32_t timeout = ControllerSettings.MustCheckReply
-    ? WiFiEventData.getSuggestedTimeout(cpluginID, ControllerSettings.ClientTimeout)
-    : ControllerSettings.ClientTimeout;
+  const uint32_t timeout = ControllerSettings.getSuggestedTimeout(cpluginID);
 
   # ifdef MUSTFIX_CLIENT_TIMEOUT_IN_SECONDS
 
@@ -239,10 +239,8 @@ String send_via_http(int                             cpluginID,
   // For example because the server does not give an acknowledgement.
   // This way, we always need the set amount of timeout to handle the request.
   // Thus we should not make the timeout dynamic here if set to ignore ack.
-  const uint32_t timeout = ControllerSettings.MustCheckReply
-    ? WiFiEventData.getSuggestedTimeout(cpluginID, ControllerSettings.ClientTimeout)
-    : ControllerSettings.ClientTimeout;
-
+  const uint32_t timeout = ControllerSettings.getSuggestedTimeout(cpluginID);
+  
   const uint64_t statisticsTimerStart(getMicros64());
   const String result                    = send_via_http(
     get_formatted_Controller_number(cpluginID),

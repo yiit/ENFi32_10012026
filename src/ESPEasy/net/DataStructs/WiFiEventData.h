@@ -80,9 +80,6 @@ struct WiFiEventData_t {
 
   String   ESPeasyWifiStatusToString() const;
 
-  uint32_t getSuggestedTimeout(int      index,
-                               uint32_t minimum_timeout) const;
-
 
   // WiFi related data
   bool          wifiSetup        = false;
@@ -149,7 +146,6 @@ struct WiFiEventData_t {
 
   unsigned long connectionFailures = 0;
 
-  std::map<uint8_t, long>connectDurations;
 
 # ifdef ESP32
   WiFiEventId_t wm_event_id = 0;

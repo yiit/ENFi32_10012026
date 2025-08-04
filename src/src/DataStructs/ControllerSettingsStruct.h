@@ -200,7 +200,9 @@ struct ControllerSettingsStruct
   String    getCertificateFilename() const;
   String    getCertificateFilename(TLS_types tls_type) const;
 #endif
-  
+
+  uint32_t getSuggestedTimeout(int index) const;
+
 
   bool         UseDNS;
   uint8_t      IP[4];

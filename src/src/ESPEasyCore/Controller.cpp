@@ -242,9 +242,8 @@ bool MQTTConnect(controllerIndex_t controller_idx)
       // For example because the server does not give an acknowledgement.
       // This way, we always need the set amount of timeout to handle the request.
       // Thus we should not make the timeout dynamic here if set to ignore ack.
-      const uint32_t timeout = ControllerSettings->MustCheckReply
-      ? WiFiEventData.getSuggestedTimeout(Settings.Protocol[controller_idx], ControllerSettings->ClientTimeout)
-      : ControllerSettings->ClientTimeout;
+
+      const uint32_t timeout = ControllerSettings->getSuggestedTimeout(Settings.Protocol[controller_idx]);
 
   #  ifdef MUSTFIX_CLIENT_TIMEOUT_IN_SECONDS
 
@@ -343,9 +342,8 @@ bool MQTTConnect(controllerIndex_t controller_idx)
     // For example because the server does not give an acknowledgement.
     // This way, we always need the set amount of timeout to handle the request.
     // Thus we should not make the timeout dynamic here if set to ignore ack.
-    const uint32_t timeout = ControllerSettings->MustCheckReply
-      ? WiFiEventData.getSuggestedTimeout(Settings.Protocol[controller_idx], ControllerSettings->ClientTimeout)
-      : ControllerSettings->ClientTimeout;
+    const uint32_t timeout = ControllerSettings->getSuggestedTimeout(Settings.Protocol[controller_idx]);
+    
 
 #  ifdef MUSTFIX_CLIENT_TIMEOUT_IN_SECONDS
 
@@ -380,9 +378,7 @@ bool MQTTConnect(controllerIndex_t controller_idx)
   // For example because the server does not give an acknowledgement.
   // This way, we always need the set amount of timeout to handle the request.
   // Thus we should not make the timeout dynamic here if set to ignore ack.
-  const uint32_t timeout = ControllerSettings->MustCheckReply
-    ? WiFiEventData.getSuggestedTimeout(Settings.Protocol[controller_idx], ControllerSettings->ClientTimeout)
-    : ControllerSettings->ClientTimeout;
+  const uint32_t timeout = ControllerSettings->getSuggestedTimeout(Settings.Protocol[controller_idx]);
 
 #  ifdef MUSTFIX_CLIENT_TIMEOUT_IN_SECONDS
 
