@@ -152,7 +152,8 @@ const __FlashStringHelper* SDM_UOMtoString(SDM_UOM uom, bool display) {
     F("Apparent Power"),  F("VA"),
     F("Reactive Power"),  F("VAr"),
     F("Apparent Energy"), F("kVAh"),
-    F("Reactive Energy"), F("kVArh")
+    F("Reactive Energy"), F("kVArh"),    
+    F("Nature of Load"), F("nat_load"),
   };
   constexpr size_t nrStrings = NR_ELEMENTS(strings);
   size_t index               = 2 * static_cast<size_t>(uom);
@@ -550,3 +551,4 @@ void SDM_resume_loopRegisterReadQueue()
 }
 
 #endif // ifdef USES_P078
+
