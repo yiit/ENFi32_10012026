@@ -35,7 +35,7 @@ NW002_data_struct_WiFi_AP::NW002_data_struct_WiFi_AP(networkIndex_t networkIndex
 # endif
     )
 {
-  stats_and_cache.clear();
+  stats_and_cache.clear(networkIndex);
 # ifdef ESP32
   nw_event_id = Network.onEvent(NW002_data_struct_WiFi_AP::onEvent);
 # endif
@@ -50,6 +50,7 @@ NW002_data_struct_WiFi_AP::~NW002_data_struct_WiFi_AP()
   }
   nw_event_id = 0;
 # endif // ifdef ESP32
+  stats_and_cache.clear();
 }
 
 void NW002_data_struct_WiFi_AP::webform_load(EventStruct *event) {}
@@ -102,12 +103,10 @@ void NW002_data_struct_WiFi_AP::onEvent(arduino_event_id_t   event,
   switch (event)
   {
     case ARDUINO_EVENT_WIFI_AP_START:
-      stats_and_cache._startStopStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("AP_START"));
+      stats_and_cache.mark_start();
       break;
     case ARDUINO_EVENT_WIFI_AP_STOP:
-      stats_and_cache._startStopStats.setOff();
-      addLog(LOG_LEVEL_INFO, F("AP_STOP"));
+      stats_and_cache.mark_stop();
       break;
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
       addLog(LOG_LEVEL_INFO, F("AP_STACONNECTED"));

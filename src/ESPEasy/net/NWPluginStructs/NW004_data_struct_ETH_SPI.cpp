@@ -22,7 +22,7 @@ static NWPluginData_static_runtime stats_and_cache(&NW_PLUGIN_INTERFACE);
 NW004_data_struct_ETH_SPI::NW004_data_struct_ETH_SPI(networkIndex_t networkIndex)
   : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex, &NW_PLUGIN_INTERFACE)
 {
-  stats_and_cache.clear();
+  stats_and_cache.clear(networkIndex);
   nw_event_id = Network.onEvent(NW004_data_struct_ETH_SPI::onEvent);
 }
 
@@ -32,6 +32,7 @@ NW004_data_struct_ETH_SPI::~NW004_data_struct_ETH_SPI()
     Network.removeEvent(nw_event_id);
   }
   nw_event_id = 0;
+  stats_and_cache.clear();
 }
 
 void NW004_data_struct_ETH_SPI::webform_load(EventStruct *event) {}
@@ -59,38 +60,27 @@ void                         NW004_data_struct_ETH_SPI::onEvent(arduino_event_id
   switch (event)
   {
     case ARDUINO_EVENT_ETH_START:
-      stats_and_cache._startStopStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("ETH_START"));
+      stats_and_cache.mark_start();
       break;
     case ARDUINO_EVENT_ETH_STOP:
-      stats_and_cache._startStopStats.setOff();
-      addLog(LOG_LEVEL_INFO, F("ETH_STOP"));
+      stats_and_cache.mark_stop();
       break;
     case ARDUINO_EVENT_ETH_CONNECTED:
-      stats_and_cache._connectedStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("ETH_CONNECTED"));
+      stats_and_cache.mark_connected();
       break;
     case ARDUINO_EVENT_ETH_DISCONNECTED:
-      stats_and_cache._connectedStats.setOff();
-      NWPluginData_base::_mark_disconnected(stats_and_cache);
+      stats_and_cache.mark_disconnected();
       break;
     case ARDUINO_EVENT_ETH_GOT_IP:
-      NWPluginData_base::_mark_got_IP(stats_and_cache);
-      stats_and_cache._gotIPStats.setOn();
+      stats_and_cache.mark_got_IP();
       break;
 # if FEATURE_USE_IPV6
     case ARDUINO_EVENT_ETH_GOT_IP6:
-      stats_and_cache._gotIP6Stats.setOn();
-      addLog(LOG_LEVEL_INFO, F("ETH_GOT_IP6"));
+      stats_and_cache.mark_got_IPv6();
       break;
 # endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_ETH_LOST_IP:
-      stats_and_cache._gotIPStats.setOff();
-# if FEATURE_USE_IPV6
-      stats_and_cache._gotIP6Stats.setOff();
-# endif
-
-      addLog(LOG_LEVEL_INFO, F("ETH_LOST_IP"));
+      stats_and_cache.mark_lost_IP();
       break;
 
     default: break;

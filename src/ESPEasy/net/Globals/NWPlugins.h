@@ -44,6 +44,7 @@ String               getNWPluginNameFromNetworkDriverIndex(networkDriverIndex_t 
 String               getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID);
 
 const NWPluginData_static_runtime* getNWPluginData_static_runtime(networkIndex_t index);
+const NWPluginData_static_runtime* getDefaultRoute_NWPluginData_static_runtime();
 
 } // namespace net
 } // namespace ESPEasy

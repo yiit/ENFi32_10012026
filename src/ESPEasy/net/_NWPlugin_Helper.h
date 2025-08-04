@@ -2,10 +2,10 @@
 
 #include "../../ESPEasy_common.h"
 
-# include "../../src/CustomBuild/ESPEasyLimits.h"
-# include "../../src/DataStructs/ESPEasy_EventStruct.h"
-# include "../../src/Helpers/LongTermTimer.h"
-# include "../net/DataStructs/NWPluginData_base.h"
+#include "../../src/CustomBuild/ESPEasyLimits.h"
+#include "../../src/DataStructs/ESPEasy_EventStruct.h"
+#include "../../src/Helpers/LongTermTimer.h"
+#include "../net/DataStructs/NWPluginData_base.h"
 
 namespace ESPEasy {
 namespace net {
@@ -14,7 +14,7 @@ namespace net {
 extern NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];
 
 // Try to allocate in PSRAM or 2nd heap if possible
-# define special_initNWPluginData(I, T) void *ptr = special_calloc(1, sizeof(T)); \
+#define special_initNWPluginData(I, T) void *ptr = special_calloc(1, sizeof(T)); \
         if (ptr) { initNWPluginData(I, new (ptr) T()); }
 
 
@@ -36,4 +36,3 @@ bool nwpluginTaskData_initialized(ESPEasy::net::networkIndex_t networkIndex);
 
 } // namespace net
 } // namespace ESPEasy
-

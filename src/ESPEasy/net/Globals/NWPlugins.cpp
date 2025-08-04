@@ -323,5 +323,15 @@ const NWPluginData_static_runtime* getNWPluginData_static_runtime(networkIndex_t
   return &NW_data->getNWPluginData_static_runtime();
 }
 
+const NWPluginData_static_runtime* getDefaultRoute_NWPluginData_static_runtime()
+{
+  for (networkIndex_t i = 0; validNetworkIndex(i); ++i) {
+    auto NW_data = getNWPluginData_static_runtime(i);
+    if (NW_data && NW_data->isDefaultRoute()) return NW_data;
+  }
+  return nullptr;
+}
+
+
 } // namespace net
 } // namespace ESPEasy

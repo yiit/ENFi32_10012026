@@ -27,7 +27,8 @@ NW001_data_struct_WiFi_STA::NW001_data_struct_WiFi_STA(networkIndex_t networkInd
 # ifdef ESP32
     , &NW_PLUGIN_INTERFACE
 # endif
-    )
+    ),
+  _WiFiEventHandler(networkIndex)
 {}
 
 NW001_data_struct_WiFi_STA::~NW001_data_struct_WiFi_STA()
@@ -101,11 +102,10 @@ NWPluginData_static_runtime& NW001_data_struct_WiFi_STA::getNWPluginData_static_
   return _WiFiEventHandler.getNWPluginData_static_runtime();
 }
 
-const __FlashStringHelper *  NW001_data_struct_WiFi_STA::getWiFi_encryptionType() const
+const __FlashStringHelper * NW001_data_struct_WiFi_STA::getWiFi_encryptionType() const
 {
   return _WiFiEventHandler.getWiFi_encryptionType();
 }
-
 
 # ifdef ESP32
 

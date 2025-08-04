@@ -38,7 +38,7 @@ struct NWPluginData_base {
 
   virtual bool exit(EventStruct *event) = 0;
 
-  bool baseClassOnly() const {
+  bool         baseClassOnly() const {
     return _baseClassOnly;
   }
 
@@ -65,11 +65,8 @@ struct NWPluginData_base {
 
 protected:
 
-  static void _mark_got_IP(NWPluginData_static_runtime& cache);
-  static void _mark_disconnected(const NWPluginData_static_runtime& cache);
-
 #ifdef ESP32
-  bool        _restore_DNS_cache();
+  bool _restore_DNS_cache();
 #endif
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
@@ -90,7 +87,7 @@ protected:
   // This is also a check to only use these functions and not to insert pointers
   // at random in the Plugin_task_data array.
   nwpluginID_t   _nw_data_pluginID = INVALID_NW_PLUGIN_ID;
-  networkIndex_t _networkIndex     = INVALID_NETWORK_INDEX;
+  networkIndex_t _networkIndex = INVALID_NETWORK_INDEX;
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
   bool _baseClassOnly = false;

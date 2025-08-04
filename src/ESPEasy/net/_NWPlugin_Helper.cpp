@@ -1,9 +1,9 @@
 #include "../net/_NWPlugin_Helper.h"
 
-# include "../../src/CustomBuild/ESPEasyLimits.h"
+#include "../../src/CustomBuild/ESPEasyLimits.h"
 
-# include "../net/Globals/NWPlugins.h"
-# include "../../src/Globals/Settings.h"
+#include "../net/Globals/NWPlugins.h"
+#include "../../src/Globals/Settings.h"
 
 namespace ESPEasy {
 namespace net {
@@ -36,9 +36,9 @@ bool initNWPluginData(ESPEasy::net::networkIndex_t networkIndex, NWPluginData_ba
   }
 
   // 2nd heap may have been active to allocate the NWPluginData, but here we need to keep the default heap active
-  # ifdef USE_SECOND_HEAP
+  #ifdef USE_SECOND_HEAP
   HeapSelectDram ephemeral;
-  # endif // ifdef USE_SECOND_HEAP
+  #endif // ifdef USE_SECOND_HEAP
 
 
   clearNWPluginData(networkIndex);
@@ -46,15 +46,16 @@ bool initNWPluginData(ESPEasy::net::networkIndex_t networkIndex, NWPluginData_ba
   if (data != nullptr) {
     if (Settings.getNetworkEnabled(networkIndex)) {
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+
       if (!data->init_KVS()) {
         delete data;
         data = nullptr;
       } else {
         NWPlugin_task_data[networkIndex] = data;
       }
-#else
+#else // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
       NWPlugin_task_data[networkIndex] = data;
-#endif
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
     } else {
       delete data;
       data = nullptr;

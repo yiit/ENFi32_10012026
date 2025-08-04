@@ -31,9 +31,9 @@ static uint8_t _authmode{};
 
 static bool _ESPEasyWiFi_STA_EventHandler_initialized{};
 
-ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler()
+ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler(networkIndex_t networkIndex)
 {
-  stats_and_cache.clear();
+  stats_and_cache.clear(networkIndex);
 
   // WiFi event handlers
 
@@ -54,7 +54,9 @@ ESPEasyWiFi_STA_EventHandler::~ESPEasyWiFi_STA_EventHandler()
   stats_and_cache.clear();
 }
 
-bool                         ESPEasyWiFi_STA_EventHandler::initialized()                    { return _ESPEasyWiFi_STA_EventHandler_initialized; }
+bool ESPEasyWiFi_STA_EventHandler::initialized()                                            {
+  return _ESPEasyWiFi_STA_EventHandler_initialized;
+}
 
 NWPluginData_static_runtime& ESPEasyWiFi_STA_EventHandler::getNWPluginData_static_runtime() { return stats_and_cache; }
 
@@ -67,20 +69,20 @@ const __FlashStringHelper *  ESPEasyWiFi_STA_EventHandler::getWiFi_encryptionTyp
   return WiFi_encryptionType(_authmode);
 }
 
-
 // ********************************************************************************
 // Functions called on events.
 // Make sure not to call anything in these functions that result in delay() or yield()
 // ********************************************************************************
 void ESPEasyWiFi_STA_EventHandler::onConnected(const WiFiEventStationModeConnected& event) {
-  stats_and_cache._connectedStats.setOn();
+  stats_and_cache.mark_connected();
 
   //  WiFiEventData.markConnected(event.ssid, event.bssid, event.channel);
 }
 
 void ESPEasyWiFi_STA_EventHandler::onDisconnect(const WiFiEventStationModeDisconnected& event) {
-  stats_and_cache._connectedStats.setOff();
-  stats_and_cache._gotIPStats.setOff();
+  stats_and_cache.mark_disconnected();
+  stats_and_cache.mark_lost_IP(); // ESP8266 doesn't have a separate event for lost IP
+  _wifi_disconnect_reason = event.reason;
 
   //  WiFiEventData.markDisconnect(event.reason);
 
@@ -94,9 +96,7 @@ void ESPEasyWiFi_STA_EventHandler::onDisconnect(const WiFiEventStationModeDiscon
 
 void ESPEasyWiFi_STA_EventHandler::onGotIP(const WiFiEventStationModeGotIP& event)
 {
-  // Set OnOffTimer to off so we can also count how often we get new IP
-  stats_and_cache._gotIPStats.setOff();
-  stats_and_cache._gotIPStats.setOn();
+  stats_and_cache.mark_got_IP();
 
   // WiFiEventData.markGotIP(event.ip, event.mask, event.gw);
 }

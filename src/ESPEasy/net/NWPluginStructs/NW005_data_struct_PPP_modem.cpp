@@ -90,7 +90,7 @@ const __FlashStringHelper* NW005_getLabelString(uint32_t key, bool displayString
 NW005_data_struct_PPP_modem::NW005_data_struct_PPP_modem(networkIndex_t networkIndex)
   : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex, &NW_PLUGIN_INTERFACE)
 {
-  stats_and_cache.clear();
+  stats_and_cache.clear(networkIndex);
   nw_event_id = Network.onEvent(NW005_data_struct_PPP_modem::onEvent);
 }
 
@@ -115,6 +115,7 @@ NW005_data_struct_PPP_modem::~NW005_data_struct_PPP_modem() {
     Network.removeEvent(nw_event_id);
   }
   nw_event_id = 0;
+  stats_and_cache.clear();
 }
 
 enum class NW005_modem_model {
@@ -899,28 +900,21 @@ void                         NW005_data_struct_PPP_modem::onEvent(arduino_event_
   // TODO TD-er: Must store flags from events in static (or global) object to act on it later.
   switch (event)
   {
-    case ARDUINO_EVENT_PPP_START:     addLog(LOG_LEVEL_INFO, F("PPP Started"));
-      stats_and_cache._startStopStats.setOn();
-# if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
-      NW_PLUGIN_INTERFACE.setRoutePrio(200);
-# endif
+    case ARDUINO_EVENT_PPP_START:
+      stats_and_cache.mark_start();
       break;
-    case ARDUINO_EVENT_PPP_STOP:      addLog(LOG_LEVEL_INFO, F("PPP Stopped"));
-      stats_and_cache._startStopStats.setOff();
+    case ARDUINO_EVENT_PPP_STOP:
+      stats_and_cache.mark_stop();
       break;
     case ARDUINO_EVENT_PPP_CONNECTED:
-      stats_and_cache._connectedStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("PPP Connected"));
-
+      stats_and_cache.mark_connected();
       break;
     case ARDUINO_EVENT_PPP_DISCONNECTED:
-      stats_and_cache._connectedStats.setOff();
-      NWPluginData_base::_mark_disconnected(stats_and_cache);
+      stats_and_cache.mark_disconnected();
       WiFi.AP.enableNAPT(false);
       break;
     case ARDUINO_EVENT_PPP_GOT_IP:
-      NWPluginData_base::_mark_got_IP(stats_and_cache);
-      stats_and_cache._gotIPStats.setOn();
+      stats_and_cache.mark_got_IP();
 
       //      NW_PLUGIN_INTERFACE.setDefault();
 
@@ -930,16 +924,11 @@ void                         NW005_data_struct_PPP_modem::onEvent(arduino_event_
       break;
 # if FEATURE_USE_IPV6
     case ARDUINO_EVENT_PPP_GOT_IP6:
-      stats_and_cache._gotIP6Stats.setOn();
-      addLog(LOG_LEVEL_INFO, F("PPP Got IPv6"));
+      stats_and_cache.mark_got_IPv6();
       break;
 # endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_PPP_LOST_IP:
-      stats_and_cache._gotIPStats.setOff();
-# if FEATURE_USE_IPV6
-      stats_and_cache._gotIP6Stats.setOff();
-# endif
-      addLog(LOG_LEVEL_INFO, F("PPP Lost IP"));
+      stats_and_cache.mark_lost_IP();
       WiFi.AP.enableNAPT(false);
       break;
 

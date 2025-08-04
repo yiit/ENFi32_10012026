@@ -32,7 +32,7 @@ class ESPEasyWiFi_STA_EventHandler
 {
 public:
 
-  ESPEasyWiFi_STA_EventHandler();
+  ESPEasyWiFi_STA_EventHandler(networkIndex_t networkIndex);
   ~ESPEasyWiFi_STA_EventHandler();
 
   static bool                  initialized();

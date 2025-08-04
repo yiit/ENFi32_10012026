@@ -41,9 +41,9 @@ static WiFiDisconnectReason _wifi_disconnect_reason = WiFiDisconnectReason::WIFI
 
 static bool _ESPEasyWiFi_STA_EventHandler_initialized{};
 
-ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler()
+ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler(networkIndex_t networkIndex)
 {
-  stats_and_cache.clear();
+  stats_and_cache.clear(networkIndex);
   nw_event_id = Network.onEvent(ESPEasyWiFi_STA_EventHandler::WiFiEvent);
   memset(&_wifi_event_sta_connected, 0, sizeof(_wifi_event_sta_connected));
   _ESPEasyWiFi_STA_EventHandler_initialized = true;
@@ -51,12 +51,12 @@ ESPEasyWiFi_STA_EventHandler::ESPEasyWiFi_STA_EventHandler()
 
 ESPEasyWiFi_STA_EventHandler::~ESPEasyWiFi_STA_EventHandler()
 {
-  stats_and_cache.clear();
   if (nw_event_id != 0) {
     Network.removeEvent(nw_event_id);
   }
   nw_event_id                               = 0;
   _ESPEasyWiFi_STA_EventHandler_initialized = false;
+  stats_and_cache.clear();
 }
 
 bool                         ESPEasyWiFi_STA_EventHandler::initialized()                    { return _ESPEasyWiFi_STA_EventHandler_initialized; }
@@ -122,70 +122,35 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
       break;
     case ARDUINO_EVENT_WIFI_STA_START:
       clear_wifi_event_sta_connected = true;
-      stats_and_cache._startStopStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("STA_START"));
+      stats_and_cache.mark_start();
       break;
     case ARDUINO_EVENT_WIFI_STA_STOP:
       clear_wifi_event_sta_connected = true;
-      stats_and_cache._startStopStats.setOff();
-      addLog(LOG_LEVEL_INFO, F("STA_STOP"));
+      stats_and_cache.mark_stop();
       break;
     case ARDUINO_EVENT_WIFI_STA_CONNECTED:
       memcpy(&_wifi_event_sta_connected, &info.wifi_sta_connected, sizeof(_wifi_event_sta_connected));
-      stats_and_cache._connectedStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("STA_CONNECTED"));
+      stats_and_cache.mark_connected();
       break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
       clear_wifi_event_sta_connected = true;
       _wifi_disconnect_reason        = static_cast<WiFiDisconnectReason>(info.wifi_sta_disconnected.reason);
-      stats_and_cache._connectedStats.setOff();
-      addLog(LOG_LEVEL_INFO, F("STA_DISCONNECTED"));
+      stats_and_cache.mark_disconnected();
       break;
     case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
       _wifi_event_sta_connected.authmode = info.wifi_sta_authmode_change.new_mode;
       addLog(LOG_LEVEL_INFO, F("STA_AUTHMODE_CHANGE"));
       break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-
-      for (size_t i = 0; i < NR_ELEMENTS(stats_and_cache._dns_cache); ++i) {
-        auto tmp = WiFi.STA.dnsIP(i);
-
-        stats_and_cache._dns_cache[i] = tmp; // Also set the 'empty' ones so we won't set left-over DNS server from when another interface
-                                             // was active.
-
-        if (tmp != INADDR_NONE) {
-          addLog(LOG_LEVEL_INFO, strformat(F("DNS Cache %d set to %s"), i, tmp.toString(true).c_str()));
-        }
-      }
-
-      if (!WiFi.STA.isDefault()) {
-        nonDefaultNetworkInterface_gotIP = true;
-      }
-
-      // Set OnOffTimer to off so we can also count how often we het new IP
-      stats_and_cache._gotIPStats.setOff();
-      stats_and_cache._gotIPStats.setOn();
-      addLog(LOG_LEVEL_INFO, F("STA_GOT_IP"));
+      stats_and_cache.mark_got_IP();
       break;
 #  if FEATURE_USE_IPV6
     case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
-
-      if (!WiFi.STA.isDefault()) {
-        nonDefaultNetworkInterface_gotIP = true;
-      }
-
-      stats_and_cache._gotIP6Stats.setOn();
-
-      addLog(LOG_LEVEL_INFO, F("STA_GOT_IP6"));
+      stats_and_cache.mark_got_IPv6();
       break;
 #  endif // if FEATURE_USE_IPV6
     case ARDUINO_EVENT_WIFI_STA_LOST_IP:
-      stats_and_cache._gotIPStats.setOff();
-#  if FEATURE_USE_IPV6
-      stats_and_cache._gotIP6Stats.setOff();
-#  endif
-
-      addLog(LOG_LEVEL_INFO, F("STA_LOST_IP"));
+      stats_and_cache.mark_lost_IP();
       break;
 
     default:

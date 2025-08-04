@@ -12,7 +12,7 @@
 
 # include <esp_netif.h>
 # include <esp_netif_types.h>
-#endif
+#endif // ifdef ESP32
 
 namespace ESPEasy {
 namespace net {
@@ -81,7 +81,8 @@ NWPluginData_base::NWPluginData_base(
     registered_IP_EVENT_TX_RX = true;
   }
   esp_netif_tx_rx_event_enable(_netif->netif());
-//  _netif->netif()->tx_rx_events_enabled = true;
+
+  //  _netif->netif()->tx_rx_events_enabled = true;
 
   #endif // ifdef ESP32
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
@@ -174,54 +175,6 @@ bool NWPluginData_base::getTrafficCount(uint64_t& tx, uint64_t& rx) const
 
 #endif // ifdef ESP32
 
-
-#ifdef ESP32
-
-void NWPluginData_base::_mark_got_IP(NWPluginData_static_runtime& cache)
-{
-  if (!cache._netif->isDefault()) {
-    nonDefaultNetworkInterface_gotIP = true;
-  }
-
-  for (size_t i = 0; i < NR_ELEMENTS(cache._dns_cache); ++i) {
-    auto tmp = cache._netif->dnsIP(i);
-
-    if (tmp != INADDR_NONE) {
-      cache._dns_cache[i] = tmp;
-      addLog(LOG_LEVEL_INFO, strformat(
-               F("%s: DNS Cache %d set to %s"),
-               esp_netif_get_desc(cache._netif->netif()),
-               i,
-               tmp.toString(true).c_str()));
-    }
-  }
-  addLog(LOG_LEVEL_INFO, strformat(
-           F("%s: Got IP: %s"),
-           esp_netif_get_desc(cache._netif->netif()),
-           cache._netif->localIP().toString().c_str()
-           ));
-}
-
-#else // ifdef ESP32
-
-void NWPluginData_base::_mark_got_IP(NWPluginData_static_runtime& cache) { addLog(LOG_LEVEL_INFO, F("STA: Got IP")); }
-
-#endif // ifdef ESP32
-
-void NWPluginData_base::_mark_disconnected(const NWPluginData_static_runtime& cache)
-{
-  #ifdef ESP32
-  addLog(LOG_LEVEL_INFO, strformat(
-           F("%s: Disconnected. Connected for: "),
-           esp_netif_get_desc(cache._netif->netif()),
-           format_msec_duration_HMS(
-             cache._connectedStats.getLastOnDuration_ms())));
-#else // ifdef ESP32
-  addLog(LOG_LEVEL_INFO, concat(
-           F("STA: Disconnected. Connected for: "),
-           format_msec_duration_HMS(cache._connectedStats.getLastOnDuration_ms())));
-#endif // ifdef ESP32
-}
 
 #ifdef ESP32
 
