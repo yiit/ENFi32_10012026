@@ -195,7 +195,7 @@ boolean Plugin_078(uint8_t function, struct EventStruct *event, String& string)
           F("SDM630"),
           F("SDM72_V2"),
           F("SDM320C"),
-          F("TAC2100")
+          F("TAC2100"),
         };
         constexpr size_t nrOptions = NR_ELEMENTS(options_model);
         FormSelectorOptions selector(nrOptions, options_model);
