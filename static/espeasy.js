@@ -250,6 +250,17 @@ function initCM() {
     CodeMirror.keyMap.default["Cmd-F"] = function (cm) {
       openFind();
     };
+    // Disable search-related keys to prevent conflics with other shortcuts
+    CodeMirror.keyMap.default["Ctrl-G"] = disableShortcut;
+    CodeMirror.keyMap.default["Cmd-G"] = disableShortcut;
+    CodeMirror.keyMap.default["Shift-Ctrl-G"] = disableShortcut;
+    CodeMirror.keyMap.default["Shift-Cmd-G"] = disableShortcut;
+    CodeMirror.keyMap.default["Ctrl-H"] = disableShortcut;
+    CodeMirror.keyMap.default["Cmd-H"] = disableShortcut;
+    CodeMirror.keyMap.default["Shift-Ctrl-F"] = disableShortcut;
+    CodeMirror.keyMap.default["Shift-Cmd-F"] = disableShortcut;
+    CodeMirror.keyMap.default["Ctrl-Shift-R"] = disableShortcut;
+    CodeMirror.keyMap.default["Cmd-Shift-R"] = disableShortcut;
   }
 }
 
@@ -347,11 +358,8 @@ function addFindButtons() {
       action: () => {
         alert(`Available shortcuts:
 • Ctrl+F / Cmd+F: Open search
-• Enter or
-  Ctrl+G / Cmd+G: Find next
-• Shift+Ctrl+G / Shift+Cmd+G: Find previous
-• Shift+Ctrl+F / Cmd+Option+F: Replace
-• Shift+Ctrl+R / Shift+Cmd+Option+F: Replace all
+• Enter: Find next
+• Shift+Enter: Find previous
 • Use /re/ syntax for regex search`);
       }
     }
@@ -440,15 +448,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Global keydown handler
   document.addEventListener('keydown', function (e) {
     const key = e.key;
-    const isCtrlShiftF = e.ctrlKey && e.shiftKey && key.toLowerCase() === 'f';
 
-    // Ctrl + Shift + F triggers formatting
-    if (isCtrlShiftF) {
-      e.preventDefault();
-      console.log('Keyboard shortcut detected: Formatting...');
-      triggerFormatting();
-      return;
-    }
+    // disabled to prevent conflics with other shortcuts
+    // const isCtrlShiftF = e.ctrlKey && e.shiftKey && key.toLowerCase() === 'f';
+
+    // // Ctrl + Shift + F triggers formatting
+    // if (isCtrlShiftF) {
+    //   e.preventDefault();
+    //   console.log('Keyboard shortcut detected: Formatting...');
+    //   triggerFormatting();
+    //   return;
+    // }
 
     // Keys that cancel character buffering
     const nonCharKeys = [
