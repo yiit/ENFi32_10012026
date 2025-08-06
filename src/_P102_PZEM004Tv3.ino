@@ -3,11 +3,12 @@
 #ifdef USES_P102
 
 // #######################################################################################################
-// #################################### Plugin 102: PZEM004T v30 with modbus mgt##########################
+// ######################## Plugin 102: PZEM004Tv30 / PZEM-017v1  with modbus mgt ########################
 // #######################################################################################################
 //
 
 /** Changelog:
+ * 2025-08-06 tonhuisman: Change plugin name to "Energy - PZEM-004T (AC) / PZEM-017 (DC)"
  * 2025-08-05 tonhuisman: Add support for PZEM-017v1 from a forum suggestion:
  *                        https://www.letscontrolit.com/forum/viewtopic.php?p=74069#p74064
  * 2025-01-17 tonhuisman: Implement support for MQTT AutoDiscovery (partially)
@@ -23,7 +24,7 @@
 # define PLUGIN_102
 # define PLUGIN_ID_102        102
 # define PLUGIN_102_DEBUG     true       // activate extra log info in the debug
-# define PLUGIN_NAME_102      "Energy (AC) - PZEM-004Tv30 / PZEM-017v1"
+# define PLUGIN_NAME_102      "Energy - PZEM-004T (AC) / PZEM-017 (DC)"
 
 # define P102_PZEM_mode       PCONFIG(1) // 0=read value ; 1=reset energy; 2=programm address
 # define P102_PZEM_ADDR       PCONFIG(2)
@@ -164,8 +165,8 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
     {
       {
         const __FlashStringHelper*pzemModels[] = {
-          F("PZEM004Tv30"),
-          F("PZEM017v1"),
+          F("PZEM-004Tv30 (AC)"),
+          F("PZEM-017v1 (DC)"),
         };
         constexpr int pzemCount = NR_ELEMENTS(pzemModels);
         FormSelectorOptions selector(pzemCount, pzemModels);
@@ -183,7 +184,7 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
                   "don't use HW serial (or invert Tx and Rx to configure as SW serial).</B></span>"));
         addFormSubHeader(F("PZEM actions"));
         {
-          const __FlashStringHelper *options_model[] = { F("Read_value"), F("Reset_Energy"), F("Program_adress") };
+          const __FlashStringHelper *options_model[] = { F("Read value"), F("Reset Energy"), F("Program address") };
           constexpr size_t optionCount               = NR_ELEMENTS(options_model);
           const FormSelectorOptions selector(optionCount, options_model);
           selector.addFormSelector(F("PZEM Mode"), F("PZEM_mode"), P102_PZEM_mode);
@@ -204,13 +205,13 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
         }
         else
         {
-          addFormNumericBox(F("Address of PZEM"), F("PZEM_addr"), P102_PZEM_ADDR, 0, 247);
-          addHtml(F("  Address 0 allows to communicate with any <B>single</B> PZEM whatever its address"));
+          addFormNumericBox(F("Address of PZEM"), F("PZEM_addr"), P102_PZEM_ADDR, 0x00, 0xF7);
+          addHtml(F("&nbsp;Address 0 allows to communicate with any <B>single</B> PZEM whatever its address"));
         }
 
         if (P102_PZEM_ADDR_SET == 3) // If address programming done
         {
-          addHtml(F("<span style=\"color:green\"> <br><B>Address programming done ! </B></span>"));
+          addHtml(F("<span style=\"color:green\"><br><B>Address programming done ! </B></span>"));
           P102_PZEM_ADDR_SET = 0;    // Reset programming confirmation
         }
       }
@@ -218,22 +219,22 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
       {
         addFormSubHeader(F("PZEM actions"));
         {
-          const __FlashStringHelper *options_model[] = { F("Read_value"), F("Reset_Energy") };
+          const __FlashStringHelper *options_model[] = { F("Read value"), F("Reset Energy") };
           constexpr size_t optionCount               = NR_ELEMENTS(options_model);
           const FormSelectorOptions selector(optionCount, options_model);
           selector.addFormSelector(F("PZEM Mode"), F("PZEM_mode"), P102_PZEM_mode);
         }
-        addHtml(F(" Tx/Rx Pins config disabled: Configuration is available in the first PZEM plugin.<br>"));
-        addFormNumericBox(F("Address of PZEM"), F("PZEM_addr"), P102_PZEM_ADDR, 1, 247);
+        addHtml(F("&nbsp;Tx/Rx Pins config ignored: Configuration is available in the first PZEM plugin.<br>"));
+        addFormNumericBox(F("Address of PZEM"), F("PZEM_addr"), P102_PZEM_ADDR, 0x01, 0xF7);
       }
-
-      addHtml(F("<br><br> Reset energy can be done also by: http://*espeasyip*/control?cmd=resetenergy,*PZEM address*"));
 
       if (P102_PZEM_ADDR_SET == 4)
       {
         addHtml(F("<span style=\"color:blue\"> <br><B>Energy reset on current PZEM ! </B></span>"));
         P102_PZEM_ADDR_SET = 0; // Reset programming confirmation
       }
+
+      addFormNote(F("Reset Energy can also be done by: http://*espeasyip*/control?cmd=resetenergy,*PZEM address*"));
 
       success = true;
       break;
@@ -357,9 +358,13 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
 # if FEATURE_PACKED_RAW_DATA
     case PLUGIN_GET_PACKED_RAW_DATA:
     {
-      // Matching JS code:
+      // Matching JS code for PZEM-004T:
       // return decode(bytes, [header, int16_1e1, int32_1e3, int32_1e1, int32_1e1, uint16_1e2, uint8_1e1],
       //   ['header', 'voltage', 'current', 'power', 'energy', 'powerfactor', 'frequency']);
+      //
+      // Matching JS code for PZEM-017:
+      // return decode(bytes, [header, int16_1e1, int32_1e3, int32_1e1, int32_1e1],
+      //   ['header', 'voltage', 'current', 'power', 'energy']);
       //
       // Resolutions:
       //  Voltage:     0.1V     => int16_1e1  (range 80-260V)
@@ -417,7 +422,7 @@ const __FlashStringHelper* p102_getQueryString(uint8_t query) {
     case 2: return F("Power_W");
     case 3: return F("Energy_kWh");
     case 4: return F("Power_Factor_cosphi");
-    case 5: return F("Frequency Hz");
+    case 5: return F("Frequency_Hz");
   }
   return F("");
 }
