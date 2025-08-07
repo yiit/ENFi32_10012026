@@ -1197,6 +1197,9 @@ bool BusCmd_Helper_struct::processCommands(struct EventStruct *event) {
   }
 
   if ((BusCmd_CommandState_e::Processing == _commandState) || (BusCmd_CommandState_e::ConditionalExit == _commandState)) {
+    if (_valueIsSet && (BusCmd_CommandSource_e::PluginRead != _commandSource) && (BusCmd_CommandState_e::ConditionalExit != _commandState)) {
+      sendData(event); // Publish changes on succesful Value command from another action than PLUGIN_READ
+    }
     _commandState = BusCmd_CommandState_e::Idle;
     _commands.clear();
     _valueIsSet    = false; // reset afterward
