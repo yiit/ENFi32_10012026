@@ -551,7 +551,7 @@ bool MQTT_HomeAssistant_SendAutoDiscovery(controllerIndex_t         ControllerIn
           const bool useGroupId = groupId != 0 && !usesControllerIDX;
 
           const String elementName = useGroupId ?
-                                     strformat(F("Group %u"), groupId) :
+                                     (Settings.Unit == groupId ? hostName : strformat(F("Group %u"), groupId)) :
                                      strformat(F("%s %s"),    hostName.c_str(), taskName.c_str());
           const String elementIds = useGroupId ?
                                      strformat(F("group_%u"), groupId) :
