@@ -138,13 +138,13 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 #if FEATURE_PLUGIN_STATS
           case NWPlugin::Function::NWPLUGIN_RECORD_STATS:
           {
-            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+//            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
             success = NW_data->record_stats();
             break;
           }
           case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS:
           {
-            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+//            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
             success = NW_data->webformLoad_show_stats(event);
             break;
           }
