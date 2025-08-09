@@ -15,6 +15,10 @@
 #  define NW_PLUGIN_INTERFACE   WiFi.STA
 # endif
 
+# define NW001_RSSI_STATS_INDEX       0
+# define NW001_TX_PWR_STATS_INDEX     1
+
+
 namespace ESPEasy {
 namespace net {
 namespace wifi {
@@ -119,6 +123,82 @@ bool NW001_data_struct_WiFi_STA::handle_priority_route_changed()
 }
 
 # endif // ifdef ESP32
+
+# if FEATURE_PLUGIN_STATS
+
+bool NW001_data_struct_WiFi_STA::initPluginStats()
+{
+  networkStatsVarIndex_t networkStatsVarIndex{};
+  PluginStats_Config_t   displayConfig;
+
+  displayConfig.setAxisPosition(PluginStats_Config_t::AxisPosition::Right);
+  displayConfig.setEnabled(true);
+
+  displayConfig.setAxisIndex(networkStatsVarIndex);
+  NWPluginData_base::initPluginStats(
+    networkStatsVarIndex,
+    F("RSSI"),
+    1,
+    NAN,
+    displayConfig);
+#  if FEATURE_SET_WIFI_TX_PWR
+  ++networkStatsVarIndex;
+  displayConfig.setAxisIndex(networkStatsVarIndex);
+  NWPluginData_base::initPluginStats(
+    networkStatsVarIndex,
+    F("TX Power"),
+    1,
+    NAN,
+    displayConfig);
+#  endif // if FEATURE_SET_WIFI_TX_PWR
+#  ifdef ESP32
+  initPluginStats_trafficCount(++networkStatsVarIndex, true);  // TX
+  initPluginStats_trafficCount(++networkStatsVarIndex, false); // RX
+#  endif // ifdef ESP32
+  return true;
+}
+
+bool NW001_data_struct_WiFi_STA::record_stats()
+{
+  if (_plugin_stats_array != nullptr) {
+#  ifdef ESP32
+
+    EventStruct tmpEvent;
+    size_t valueCount{};
+    tmpEvent.ParfN[valueCount++] = WiFi.STA.RSSI();
+#   if FEATURE_SET_WIFI_TX_PWR
+    tmpEvent.ParfN[valueCount++] = ESPEasy::net::wifi::GetWiFiTXpower();
+#   endif
+
+    bool trackPeaks                  = true;
+    bool onlyUpdateTimestampWhenSame = true;
+    return pushStatsValues(&tmpEvent, valueCount, trackPeaks, onlyUpdateTimestampWhenSame);
+#  endif // ifdef ESP32
+  }
+  return false;
+}
+
+bool NW001_data_struct_WiFi_STA::webformLoad_show_stats(struct EventStruct *event) const
+{
+  if (_plugin_stats_array != nullptr) {
+#  if FEATURE_SET_WIFI_TX_PWR
+#   if FEATURE_CHART_JS
+    plot_ChartJS_scatter(
+      NW001_RSSI_STATS_INDEX,
+      NW001_TX_PWR_STATS_INDEX,
+      F("rssitxpwrscatter"),
+      { F("RSSI/TX pwr Scatter Plot") },
+      { F("rssi/tx_pwr"), F("rgb(255, 99, 132)") },
+      500,
+      500);
+#   endif // if FEATURE_CHART_JS
+#  endif // if FEATURE_SET_WIFI_TX_PWR
+    return _plugin_stats_array->webformLoad_show_stats(event);
+  }
+  return false;
+}
+
+# endif // if FEATURE_PLUGIN_STATS
 
 
 } // namespace wifi

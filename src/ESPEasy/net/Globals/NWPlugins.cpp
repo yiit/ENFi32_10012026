@@ -13,7 +13,7 @@
 namespace ESPEasy {
 namespace net {
 
-# define NETWORK_INDEX_WIFI_STA  0  // Always the first network index
+#define NETWORK_INDEX_WIFI_STA  0 // Always the first network index
 
 bool NWPluginCall(NWPlugin::Function Function, EventStruct *event) {
   #ifdef USE_SECOND_HEAP
@@ -101,13 +101,18 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
       return success;
     }
 
-    // calls to specific network's NWPluginData_base (must be enabled)
+      // calls to specific network's NWPluginData_base (must be enabled)
 #ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
 #endif // ifdef ESP32
+#if FEATURE_PLUGIN_STATS
+    case NWPlugin::Function::NWPLUGIN_RECORD_STATS:
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS:
+#endif // if FEATURE_PLUGIN_STATS
     case NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION:
     {
       bool success = false;
+
       if (!validNetworkIndex(event->NetworkIndex) ||
           !Settings.getNetworkEnabled(event->NetworkIndex)) { return false; }
 
@@ -130,12 +135,28 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
             break;
           }
 #endif // ifdef ESP32
+#if FEATURE_PLUGIN_STATS
+          case NWPlugin::Function::NWPLUGIN_RECORD_STATS:
+          {
+            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+            success = NW_data->record_stats();
+            break;
+          }
+          case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS:
+          {
+            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+            success = NW_data->webformLoad_show_stats(event);
+            break;
+          }
+#endif // if FEATURE_PLUGIN_STATS
+
           case NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION:
           {
             NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
             auto duration                             = runtime_data._connectedStats.getLastOnDuration_ms();
+
             if (duration > 0) {
-              str = format_msec_duration_HMS(duration);
+              str            = format_msec_duration_HMS(duration);
               event->Par64_1 = duration;
               event->Par64_2 = runtime_data._connectedStats.getCycleCount();
               success        = true;
@@ -321,14 +342,16 @@ String getNWPluginNameFromNWPluginID(nwpluginID_t nwpluginID) {
 NWPluginData_static_runtime* getWiFi_STA_NWPluginData_static_runtime()
 {
   auto NW_data = getNWPluginData(NETWORK_INDEX_WIFI_STA);
-  if (!NW_data) return nullptr;
+
+  if (!NW_data) { return nullptr; }
   return &NW_data->getNWPluginData_static_runtime();
 }
 
 NWPluginData_static_runtime* getNWPluginData_static_runtime(networkIndex_t index)
 {
   auto NW_data = getNWPluginData(index);
-  if (!NW_data) return nullptr;
+
+  if (!NW_data) { return nullptr; }
   return &NW_data->getNWPluginData_static_runtime();
 }
 
@@ -336,11 +359,11 @@ const NWPluginData_static_runtime* getDefaultRoute_NWPluginData_static_runtime()
 {
   for (networkIndex_t i = 0; validNetworkIndex(i); ++i) {
     auto NW_data = getNWPluginData_static_runtime(i);
-    if (NW_data && NW_data->isDefaultRoute()) return NW_data;
+
+    if (NW_data && NW_data->isDefaultRoute()) { return NW_data; }
   }
   return nullptr;
 }
-
 
 } // namespace net
 } // namespace ESPEasy

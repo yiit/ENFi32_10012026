@@ -258,6 +258,8 @@ WiFiConnectionProtocol doGetConnectionProtocol()
 
 void doSetWiFiTXpower(float& dBm) { WiFi.setOutputPower(dBm); }
 
+float doGetWiFiTXpower() { return WiFi.getOutputPower(); }
+
 #  endif // if FEATURE_SET_WIFI_TX_PWR
 
 void doSetConnectionSpeed(bool ForceWiFi_bg_mode) {

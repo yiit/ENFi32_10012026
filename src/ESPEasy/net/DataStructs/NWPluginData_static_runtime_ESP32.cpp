@@ -56,7 +56,7 @@ void NWPluginData_static_runtime::mark_start()
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Started"),
-             esp_netif_get_desc(_netif->netif())));
+             _netif->desc()));
   }
 }
 
@@ -67,7 +67,7 @@ void NWPluginData_static_runtime::mark_stop()
   if (_netif && loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Stopped"),
-             esp_netif_get_desc(_netif->netif())));
+             _netif->desc()));
   }
 }
 
@@ -90,7 +90,7 @@ void NWPluginData_static_runtime::mark_got_IP()
     if ((tmp != INADDR_NONE) && loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, strformat(
                F("%s: DNS Cache %d set to %s"),
-               esp_netif_get_desc(_netif->netif()),
+               _netif->desc(),
                i,
                tmp.toString(true).c_str()));
     }
@@ -99,7 +99,7 @@ void NWPluginData_static_runtime::mark_got_IP()
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Got IP: %s"),
-             esp_netif_get_desc(_netif->netif()),
+             _netif->desc(),
              _netif->localIP().toString().c_str()
              ));
   }
@@ -121,7 +121,7 @@ void NWPluginData_static_runtime::mark_got_IPv6()
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Got IPv6"),
-             esp_netif_get_desc(_netif->netif())));
+             _netif->desc()));
   }
 
 }
@@ -138,7 +138,7 @@ void NWPluginData_static_runtime::mark_lost_IP()
   if (_netif && loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Lost IP"),
-             esp_netif_get_desc(_netif->netif())));
+             _netif->desc()));
   }
 }
 
@@ -159,14 +159,14 @@ void NWPluginData_static_runtime::mark_connected()
   if (logDuration) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Connected, took: %s in %d attempts"),
-             esp_netif_get_desc(_netif->netif()),
+             _netif->desc(),
              format_msec_duration_HMS(
                _establishConnectStats.getLastOnDuration_ms()).c_str(),
                _establishConnectStats.getCycleCount()));
   } else {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Connected"),
-             esp_netif_get_desc(_netif->netif())));
+             _netif->desc()));
   }
   _establishConnectStats.resetCount();
 }
@@ -180,7 +180,7 @@ void NWPluginData_static_runtime::mark_disconnected()
   if (_netif && loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Disconnected. Connected for: %s"),
-             esp_netif_get_desc(_netif->netif()),
+             _netif->desc(),
              format_msec_duration_HMS(
                _connectedStats.getLastOnDuration_ms()).c_str()));
   }

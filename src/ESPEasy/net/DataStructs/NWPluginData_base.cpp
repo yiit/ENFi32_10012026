@@ -1,6 +1,6 @@
 #include "../DataStructs/NWPluginData_base.h"
 
-
+#include "../../../src/DataStructs/ESPEasy_EventStruct.h"
 #include "../../../src/Globals/RuntimeData.h"
 #include "../../../src/Globals/Settings.h"
 #include "../../../src/Helpers/StringConverter.h"
@@ -60,6 +60,10 @@ NWPluginData_base::NWPluginData_base(
   , NetworkInterface *netif
 #endif
   ) :
+#if FEATURE_PLUGIN_STATS
+  _plugin_stats_array(nullptr),
+#endif // if FEATURE_PLUGIN_STATS
+
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
   _kvs(nullptr),
 #endif
@@ -71,16 +75,19 @@ NWPluginData_base::NWPluginData_base(
 #endif
 {
   #ifdef ESP32
-  const int key = esp_netif_get_netif_impl_index(_netif->netif());
+  const int key = _netif->impl_index();
   interfaceTrafficCount[key].clear();
-  static bool registered_IP_EVENT_TX_RX = false;
-  esp_netif_tx_rx_event_enable(_netif->netif());
 
-  if (!registered_IP_EVENT_TX_RX) {
-    esp_event_handler_register(IP_EVENT, IP_EVENT_TX_RX, &tx_rx_event_handler, NULL);
-    registered_IP_EVENT_TX_RX = true;
+  if (_netif->netif()) {
+    static bool registered_IP_EVENT_TX_RX = false;
+    esp_netif_tx_rx_event_enable(_netif->netif());
+
+    if (!registered_IP_EVENT_TX_RX) {
+      esp_event_handler_register(IP_EVENT, IP_EVENT_TX_RX, &tx_rx_event_handler, NULL);
+      registered_IP_EVENT_TX_RX = true;
+    }
+    esp_netif_tx_rx_event_enable(_netif->netif());
   }
-  esp_netif_tx_rx_event_enable(_netif->netif());
 
   //  _netif->netif()->tx_rx_events_enabled = true;
 
@@ -95,9 +102,17 @@ NWPluginData_base::NWPluginData_base(
 
 NWPluginData_base::~NWPluginData_base()
 {
+#if FEATURE_PLUGIN_STATS
+  delete _plugin_stats_array;
+  _plugin_stats_array = nullptr;
+#endif // if FEATURE_PLUGIN_STATS
+
 #ifdef ESP32
-  esp_netif_tx_rx_event_disable(_netif->netif());
-  const int key = esp_netif_get_netif_impl_index(_netif->netif());
+
+  if (_netif->netif()) {
+    esp_netif_tx_rx_event_disable(_netif->netif());
+  }
+  const int key = _netif->impl_index();
   auto it       = interfaceTrafficCount.find(key);
 
   if (it != interfaceTrafficCount.end()) { interfaceTrafficCount.erase(it); }
@@ -109,8 +124,226 @@ NWPluginData_base::~NWPluginData_base()
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 }
 
+bool NWPluginData_base::hasPluginStats() const {
+#if FEATURE_PLUGIN_STATS
+
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->hasStats();
+  }
+#endif // if FEATURE_PLUGIN_STATS
+  return false;
+}
+
+bool NWPluginData_base::hasPeaks() const {
+#if FEATURE_PLUGIN_STATS
+
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->hasPeaks();
+  }
+#endif // if FEATURE_PLUGIN_STATS
+  return false;
+}
+
+size_t NWPluginData_base::nrSamplesPresent() const {
+#if FEATURE_PLUGIN_STATS
+
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->nrSamplesPresent();
+  }
+#endif // if FEATURE_PLUGIN_STATS
+  return 0;
+}
+
+#if FEATURE_PLUGIN_STATS
+
+void NWPluginData_base::initPluginStats(
+  networkStatsVarIndex_t      networkStatsVarIndex,
+  const String              & label,
+  uint8_t                     nrDecimals,
+  float                       errorValue,
+  const PluginStats_Config_t& displayConfig)
+{
+  if (networkStatsVarIndex < INVALID_NETWORK_STATS_VAR_INDEX) {
+    if (_plugin_stats_array == nullptr) {
+      constexpr unsigned size = sizeof(PluginStats_array);
+      void *ptr               = special_calloc(1, size);
+
+      if (ptr != nullptr) {
+        _plugin_stats_array = new (ptr) PluginStats_array();
+      }
+    }
+
+    if (_plugin_stats_array != nullptr) {
+      _plugin_stats_array->initPluginStats(
+        networkStatsVarIndex,
+        label,
+        nrDecimals,
+        errorValue,
+        displayConfig);
+    }
+  }
+}
+
+# ifdef ESP32
+
+void NWPluginData_base::initPluginStats_trafficCount(networkStatsVarIndex_t networkStatsVarIndex, bool isTX)
+{
+  PluginStats_Config_t displayConfig;
+
+  displayConfig.setAxisPosition(PluginStats_Config_t::AxisPosition::Left);
+  displayConfig.setEnabled(true);
+  displayConfig.setAxisIndex(3); // Set to a fixed index so RX/TX are on the same axis index
+  initPluginStats(
+    networkStatsVarIndex,
+    isTX ? F("TX") : F("RX"),
+    0,
+    NAN,
+    displayConfig);
+}
+
+# endif // ifdef ESP32
+
+bool NWPluginData_base::initPluginStats()
+{
+# ifdef ESP32
+  initPluginStats_trafficCount(0, true);  // TX
+  initPluginStats_trafficCount(1, false); // RX
+  return true;
+# else // ifdef ESP32
+  return false;
+# endif // ifdef ESP32
+}
+
+void NWPluginData_base::clearPluginStats(networkStatsVarIndex_t networkStatsVarIndex)
+{
+  if ((networkStatsVarIndex < INVALID_NETWORK_STATS_VAR_INDEX) && _plugin_stats_array) {
+    _plugin_stats_array->clearPluginStats(networkStatsVarIndex);
+
+    if (!_plugin_stats_array->hasStats()) {
+      delete _plugin_stats_array;
+      _plugin_stats_array = nullptr;
+    }
+  }
+}
+
+void NWPluginData_base::processTimeSet(const double& time_offset)
+{
+  if (_plugin_stats_array != nullptr) {
+    _plugin_stats_array->processTimeSet(time_offset);
+  }
+}
+
+#endif // if FEATURE_PLUGIN_STATS
+
+bool NWPluginData_base::pushStatsValues(EventStruct *event,
+                                        size_t       valueCount,
+                                        bool         trackPeaks,
+                                        bool         onlyUpdateTimestampWhenSame)
+{
+#if FEATURE_PLUGIN_STATS
+
+  if (_plugin_stats_array != nullptr) {
+# ifdef ESP32
+
+    // Include traffic
+    uint64_t tx{};
+    uint64_t rx{};
+
+    if (getTrafficCount(tx, rx)) {
+      // Only set value when _prevRX/TX was set to make sure there isn't an enormous spike
+      event->ParfN[valueCount++] = _prevTX == 0 ? 0 : tx - _prevTX;
+      event->ParfN[valueCount++] = _prevRX == 0 ? 0 : rx - _prevRX;
+      _prevRX                    = rx;
+      _prevTX                    = tx;
+    }
+# endif // ifdef ESP32
+
+    if (valueCount) {
+      return _plugin_stats_array->pushStatsValues(event, valueCount, trackPeaks, onlyUpdateTimestampWhenSame);
+    }
+  }
+#endif // if FEATURE_PLUGIN_STATS
+  return false;
+}
+
 bool NWPluginData_base::plugin_write_base(EventStruct  *event,
-                                          const String& string) { return false; }
+                                          const String& string)
+{
+#if FEATURE_PLUGIN_STATS
+
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->plugin_write_base(event, string);
+  }
+#endif // if FEATURE_PLUGIN_STATS
+
+  return false;
+}
+
+#if FEATURE_PLUGIN_STATS
+
+bool NWPluginData_base::record_stats()
+{
+  if (_plugin_stats_array != nullptr) {
+    # ifdef ESP32
+
+    EventStruct tmpEvent;
+    size_t valueCount{};
+    bool   trackPeaks                  = true;
+    bool   onlyUpdateTimestampWhenSame = true;
+    return pushStatsValues(&tmpEvent, valueCount, trackPeaks, onlyUpdateTimestampWhenSame);
+# endif // ifdef ESP32
+  }
+  return false;
+}
+
+bool NWPluginData_base::webformLoad_show_stats(EventStruct *event) const
+{
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->webformLoad_show_stats(event);
+  }
+  return false;
+}
+
+# if FEATURE_CHART_JS
+
+void NWPluginData_base::plot_ChartJS(bool onlyJSON) const
+{
+  if (_plugin_stats_array != nullptr) {
+    _plugin_stats_array->plot_ChartJS(onlyJSON);
+  }
+}
+
+void NWPluginData_base::plot_ChartJS_scatter(
+  networkStatsVarIndex_t        values_X_axis_index,
+  networkStatsVarIndex_t        values_Y_axis_index,
+  const __FlashStringHelper    *id,
+  const ChartJS_title         & chartTitle,
+  const ChartJS_dataset_config& datasetConfig,
+  int                           width,
+  int                           height,
+  bool                          showAverage,
+  const String                & options,
+  bool                          onlyJSON) const
+{
+  if (_plugin_stats_array != nullptr) {
+    // TODO TD-er: Show TX-power vs. RSSI as scatter plot
+    _plugin_stats_array->plot_ChartJS_scatter(
+      values_X_axis_index,
+      values_Y_axis_index,
+      id,
+      chartTitle,
+      datasetConfig,
+      width,
+      height,
+      showAverage,
+      options,
+      onlyJSON);
+  }
+}
+
+# endif // if FEATURE_CHART_JS
+#endif // if FEATURE_PLUGIN_STATS
+
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
@@ -148,7 +381,7 @@ bool NWPluginData_base::handle_priority_route_changed()
       if ((cache._dns_cache[i] != INADDR_NONE) && (cache._dns_cache[i] != tmp)) {
         addLog(LOG_LEVEL_INFO, strformat(
                  F("%s: Restore cached DNS server %d from %s to %s"),
-                 esp_netif_get_desc(_netif->netif()),
+                 _netif->desc(),
                  i,
                  tmp.toString().c_str(),
                  cache._dns_cache[i].toString().c_str()
@@ -164,7 +397,7 @@ bool NWPluginData_base::handle_priority_route_changed()
 
 bool NWPluginData_base::getTrafficCount(uint64_t& tx, uint64_t& rx) const
 {
-  const int key = esp_netif_get_netif_impl_index(_netif->netif());
+  const int key = _netif->impl_index();
   auto it       = interfaceTrafficCount.find(key);
 
   if (it == interfaceTrafficCount.end()) { return false; }
@@ -175,6 +408,25 @@ bool NWPluginData_base::getTrafficCount(uint64_t& tx, uint64_t& rx) const
 
 #endif // ifdef ESP32
 
+#if FEATURE_PLUGIN_STATS
+
+PluginStats * NWPluginData_base::getPluginStats(networkStatsVarIndex_t networkStatsVarIndex) const
+{
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->getPluginStats(networkStatsVarIndex);
+  }
+  return nullptr;
+}
+
+PluginStats * NWPluginData_base::getPluginStats(networkStatsVarIndex_t networkStatsVarIndex)
+{
+  if (_plugin_stats_array != nullptr) {
+    return _plugin_stats_array->getPluginStats(networkStatsVarIndex);
+  }
+  return nullptr;
+}
+
+#endif // if FEATURE_PLUGIN_STATS
 
 #ifdef ESP32
 

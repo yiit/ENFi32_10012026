@@ -125,8 +125,7 @@ bool WiFiConnected() {
   return ESPEasyWiFi.connected();
 }
 
-//void WiFiConnectRelaxed() { AttemptWiFiConnect(); }
-
+// void WiFiConnectRelaxed() { AttemptWiFiConnect(); }
 
 // ********************************************************************************
 // Set Wifi config
@@ -173,9 +172,11 @@ void SetWiFiTXpower() {
   SetWiFiTXpower(0); // Just some minimal value, will be adjusted in SetWiFiTXpower
 }
 
-void SetWiFiTXpower(float dBm)             { doSetWiFiTXpower(dBm, WiFi.RSSI()); }
+void  SetWiFiTXpower(float dBm)             { doSetWiFiTXpower(dBm, WiFi.RSSI()); }
 
-void SetWiFiTXpower(float dBm, float rssi) { doSetWiFiTXpower(dBm, rssi); }
+void  SetWiFiTXpower(float dBm, float rssi) { doSetWiFiTXpower(dBm, rssi); }
+
+float GetWiFiTXpower()                      { return doGetWiFiTXpower(); }
 
 # endif // if FEATURE_SET_WIFI_TX_PWR
 
@@ -261,11 +262,11 @@ void WiFiScan_log_to_serial()
 }
 
 // Only internal scope
-void setAPinternal(bool enable) { doSetAPinternal(enable); }
+void setAPinternal(bool enable)   { doSetAPinternal(enable); }
 
 void setUseStaticIP(bool enabled) { doSetUseStaticIP(enabled); }
 
-bool WiFiUseStaticIP()          { return Settings.IP[0] != 0 && Settings.IP[0] != 255; }
+bool WiFiUseStaticIP()            { return Settings.IP[0] != 0 && Settings.IP[0] != 255; }
 
 bool wifiAPmodeActivelyUsed()
 {

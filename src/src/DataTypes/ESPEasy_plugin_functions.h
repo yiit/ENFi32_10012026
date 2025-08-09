@@ -167,6 +167,10 @@ public:
     #endif
     NWPLUGIN_GET_CONNECTED_DURATION,
     NWPLUGIN_PROCESS_EVENT,           // Process received event arduino_event_id_t
+#if FEATURE_PLUGIN_STATS
+    NWPLUGIN_RECORD_STATS,
+    NWPLUGIN_WEBFORM_LOAD_SHOW_STATS,
+#endif
     NWPLUGIN_WEBFORM_SHOW_CONNECTED,  // Used for showing connected state/speed
     NWPLUGIN_WEBFORM_SHOW_HOSTNAME,   // Used for showing hostname
     NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS, // Used for showing MAC

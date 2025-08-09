@@ -84,6 +84,8 @@ void doSetWiFiTXpower();
 void doSetWiFiTXpower(float dBm,
                       float rssi);
 
+float doGetWiFiTXpower();
+
 # endif // if FEATURE_SET_WIFI_TX_PWR
 
 

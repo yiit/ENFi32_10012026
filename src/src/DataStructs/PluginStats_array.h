@@ -17,14 +17,20 @@
 # endif // if FEATURE_CHART_JS
 
 
-class PluginStats_array {
+class PluginStats_array
+{
 public:
 
   PluginStats_array() = default;
   ~PluginStats_array();
 
-  void   initPluginStats(taskIndex_t    taskIndex,
-                         taskVarIndex_t taskVarIndex);
+  void   initPluginStats(taskVarIndex_t taskVarIndex);
+  void   initPluginStats(
+  taskVarIndex_t taskVarIndex,
+  const String& label,
+  uint8_t nrDecimals,
+  float errorValue,
+  const PluginStats_Config_t& displayConfig);
   void   clearPluginStats(taskVarIndex_t taskVarIndex);
 
   // Update any logged timestamp with this newly set system time.
@@ -43,6 +49,12 @@ public:
   void     pushPluginStatsValues(struct EventStruct *event,
                                  bool                trackPeaks,
                                  bool                onlyUpdateTimestampWhenSame);
+
+  bool pushStatsValues(struct EventStruct *event,
+                       size_t              valueCount,
+                       bool                trackPeaks,
+                       bool                onlyUpdateTimestampWhenSame);
+
 
   bool plugin_get_config_value_base(struct EventStruct *event,
                                     String            & string) const;
@@ -80,7 +92,7 @@ private:
 
   PluginStats *_plugin_stats[VARS_PER_TASK]       = {};
   PluginStats_timestamp *_plugin_stats_timestamps = nullptr;
-};
+}; // class PluginStats_array
 
 #endif // if FEATURE_PLUGIN_STATS
 #endif // ifndef HELPERS_PLUGINSTATS_ARRAY_H

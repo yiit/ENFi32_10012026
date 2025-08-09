@@ -46,6 +46,7 @@ void  SetWiFiTXpower();
 void  SetWiFiTXpower(float dBm); // 0-20.5
 void  SetWiFiTXpower(float dBm,
                      float rssi);
+float GetWiFiTXpower();
 # endif // if FEATURE_SET_WIFI_TX_PWR
 float GetRSSIthreshold(float& maxTXpwr);
 

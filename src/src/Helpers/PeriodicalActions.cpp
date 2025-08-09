@@ -39,6 +39,7 @@
 #include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
 #endif
 #include "../../ESPEasy/net/Globals/NetworkState.h"
+#include "../../ESPEasy/net/Globals/NWPlugins.h"
 
 
 #ifdef USES_C015
@@ -125,7 +126,8 @@ void run10TimesPerSecond() {
     Blynk_Run_c015();
   }
   #endif
-  if (!UseRTOSMultitasking) {
+  if (!UseRTOSMultitasking && (ESPEasy::net::NetworkConnected() || WiFi.AP.stationCount())) {
+    // FIXME TD-er: What about client connected via AP?
     START_TIMER
     web_server.handleClient();
     STOP_TIMER(WEBSERVER_HANDLE_CLIENT);
@@ -196,6 +198,13 @@ void runOncePerSecond()
   PluginCall(PLUGIN_ONCE_A_SECOND, 0, dummy);
 //  unsigned long elapsed = micros() - start;
 
+  for (ESPEasy::net::networkIndex_t x = 0; x < NETWORK_MAX; x++) {
+    if (Settings.getNetworkEnabled(x)) {
+      EventStruct tempEvent;
+      tempEvent.NetworkIndex = x;
+      ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_RECORD_STATS, &tempEvent);
+    }
+  }
 
   // I2C Watchdog feed
   if (Settings.WDI2CAddress != 0)

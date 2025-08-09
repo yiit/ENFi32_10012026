@@ -16,6 +16,9 @@
 
 #include "../Globals/EventQueue.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
+#include "../../ESPEasy/net/DataTypes/NetworkIndex.h"
+#include "../../ESPEasy/net/_NWPlugin_Helper.h"
+
 #include "../Globals/Nodes.h"
 #include "../Globals/RTC.h"
 #include "../Globals/Settings.h"
@@ -335,6 +338,15 @@ unsigned long ESPEasy_time::now_() {
 
             if (taskData != nullptr) {
               taskData->processTimeSet(externalUnixTime_offset_usec / 1000000.0);
+            }
+          }
+          // Process for network interfaces too
+          for (ESPEasy::net::networkIndex_t networkIndex = 0; networkIndex < NETWORK_MAX; networkIndex++)
+          {
+            ESPEasy::net::NWPluginData_base *NWdata = ESPEasy::net::getNWPluginDataBaseClassOnly(networkIndex);
+
+            if (NWdata != nullptr) {
+              NWdata->processTimeSet(externalUnixTime_offset_usec / 1000000.0);
             }
           }
         }

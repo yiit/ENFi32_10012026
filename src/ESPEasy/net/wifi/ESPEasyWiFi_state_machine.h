@@ -85,6 +85,8 @@ private:
   LongTermTimer _state_timeout;
   LongTermTimer _last_seen_connected;
 
+  uint8_t _scan_channel{};
+
   //  LongTermTimer _AP_start_timestamp;
 
   //uint32_t _connect_attempt = 0;

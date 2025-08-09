@@ -56,6 +56,11 @@ bool initNWPluginData(ESPEasy::net::networkIndex_t networkIndex, NWPluginData_ba
 #else // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
       NWPlugin_task_data[networkIndex] = data;
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#if FEATURE_PLUGIN_STATS
+
+      NWPlugin_task_data[networkIndex]->initPluginStats();
+#endif // if FEATURE_PLUGIN_STATS
+
     } else {
       delete data;
       data = nullptr;

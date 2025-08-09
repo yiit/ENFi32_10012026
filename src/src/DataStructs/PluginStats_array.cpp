@@ -29,7 +29,36 @@ PluginStats_array::~PluginStats_array()
   }
 }
 
-void PluginStats_array::initPluginStats(taskIndex_t taskIndex, taskVarIndex_t taskVarIndex)
+void PluginStats_array::initPluginStats(taskVarIndex_t taskVarIndex)
+{
+  if (taskVarIndex < VARS_PER_TASK) {
+
+  String label;
+  if (ExtraTaskSettings.enabledPluginStats(taskVarIndex)) {
+    label = ExtraTaskSettings.TaskDeviceValueNames[taskVarIndex];
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    const uint8_t uomIndex = ExtraTaskSettings.getTaskVarUnitOfMeasure(taskVarIndex);
+
+    if (uomIndex != 0) {
+      label = strformat(F("%s (%s)"), ExtraTaskSettings.TaskDeviceValueNames[taskVarIndex], toUnitOfMeasureName(uomIndex).c_str());
+    }
+# endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+  }
+  initPluginStats(
+        taskVarIndex, 
+        label, 
+        ExtraTaskSettings.TaskDeviceValueDecimals[taskVarIndex],
+        ExtraTaskSettings.TaskDeviceErrorValue[taskVarIndex],
+        ExtraTaskSettings.getPluginStatsConfig(taskVarIndex));
+  }
+}
+
+void PluginStats_array::initPluginStats(
+  taskVarIndex_t taskVarIndex,
+  const String& label,
+  uint8_t nrDecimals,
+  float errorValue,
+  const PluginStats_Config_t& displayConfig)
 {
   if (taskVarIndex < VARS_PER_TASK) {
     delete _plugin_stats[taskVarIndex];
@@ -42,35 +71,24 @@ void PluginStats_array::initPluginStats(taskIndex_t taskIndex, taskVarIndex_t ta
       }
     }
 
-    if (ExtraTaskSettings.enabledPluginStats(taskVarIndex)) {
+    if (label.length()) {
       // Try to allocate in PSRAM or 2nd heap if possible
       constexpr unsigned size = sizeof(PluginStats);
       void *ptr               = special_calloc(1, size);
 
       if (ptr == nullptr) { _plugin_stats[taskVarIndex] = nullptr; }
       else {
-        _plugin_stats[taskVarIndex] = new (ptr) PluginStats(
-          ExtraTaskSettings.TaskDeviceValueDecimals[taskVarIndex],
-          ExtraTaskSettings.TaskDeviceErrorValue[taskVarIndex]);
+        _plugin_stats[taskVarIndex] = 
+          new (ptr) PluginStats(nrDecimals, errorValue);
       }
 
 
       if (_plugin_stats[taskVarIndex] != nullptr) {
-        # if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-        const uint8_t uomIndex = ExtraTaskSettings.getTaskVarUnitOfMeasure(taskVarIndex);
-        String label(ExtraTaskSettings.TaskDeviceValueNames[taskVarIndex]);
-
-        if (uomIndex != 0) {
-          label = strformat(F("%s (%s)"), ExtraTaskSettings.TaskDeviceValueNames[taskVarIndex], toUnitOfMeasureName(uomIndex).c_str());
-        }
         _plugin_stats[taskVarIndex]->setLabel(label);
-        # else // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-        _plugin_stats[taskVarIndex]->setLabel(ExtraTaskSettings.TaskDeviceValueNames[taskVarIndex]);
-        # endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
         # if FEATURE_CHART_JS
         const __FlashStringHelper *colors[] = { F("#A52422"), F("#BEA57D"), F("#0F4C5C"), F("#A4BAB7") };
         _plugin_stats[taskVarIndex]->_ChartJS_dataset_config.color         = colors[taskVarIndex];
-        _plugin_stats[taskVarIndex]->_ChartJS_dataset_config.displayConfig = ExtraTaskSettings.getPluginStatsConfig(taskVarIndex);
+        _plugin_stats[taskVarIndex]->_ChartJS_dataset_config.displayConfig = displayConfig;
         # endif // if FEATURE_CHART_JS
 
         if (_plugin_stats_timestamps != nullptr) {
@@ -98,6 +116,8 @@ void PluginStats_array::initPluginStats(taskIndex_t taskIndex, taskVarIndex_t ta
     }
   }
 }
+
+
 
 void PluginStats_array::clearPluginStats(taskVarIndex_t taskVarIndex)
 {
@@ -192,47 +212,60 @@ void PluginStats_array::pushPluginStatsValues(
     if (valueCount > 0) {
       const Sensor_VType sensorType = event->getSensorType();
 
-      const int64_t timestamp_sysmicros = event->getTimestamp_as_systemMicros();
-
-      if (onlyUpdateTimestampWhenSame && (_plugin_stats_timestamps != nullptr)) {
-        // When only updating the timestamp of the last entry,
-        // we should look at the last 2 entries to see if they are the same.
-        bool   isSame = true;
-        size_t i      = 0;
-
-        while (isSame && i < valueCount) {
-          if (_plugin_stats[i] != nullptr) {
-            const float value = UserVar.getAsDouble(event->TaskIndex, i, sensorType);
-
-            if (!_plugin_stats[i]->matchesLastTwoEntries(value)) {
-              isSame = false;
-            }
-          }
-          ++i;
-        }
-
-        if (isSame) {
-          _plugin_stats_timestamps->updateLast(timestamp_sysmicros);
-          return;
-        }
-      }
-
-      if (_plugin_stats_timestamps != nullptr) {
-        _plugin_stats_timestamps->push(timestamp_sysmicros);
-      }
+      EventStruct tempEvent;
 
       for (size_t i = 0; i < valueCount; ++i) {
         if (_plugin_stats[i] != nullptr) {
-          const float value = UserVar.getAsDouble(event->TaskIndex, i, sensorType);
-          _plugin_stats[i]->push(value);
-
-          if (trackPeaks) {
-            _plugin_stats[i]->trackPeak(value, timestamp_sysmicros);
-          }
+          tempEvent.ParfN[i] = UserVar.getAsDouble(event->TaskIndex, i, sensorType);
         }
+      }
+      pushStatsValues(&tempEvent, valueCount, trackPeaks, onlyUpdateTimestampWhenSame);
+    }
+  }
+}
+
+bool PluginStats_array::pushStatsValues(struct EventStruct *event,
+                                        size_t              valueCount,
+                                        bool                trackPeaks,
+                                        bool                onlyUpdateTimestampWhenSame)
+{
+  const int64_t timestamp_sysmicros = event->getTimestamp_as_systemMicros();
+
+  if (onlyUpdateTimestampWhenSame && (_plugin_stats_timestamps != nullptr)) {
+    // When only updating the timestamp of the last entry,
+    // we should look at the last 2 entries to see if they are the same.
+    bool   isSame = true;
+    size_t i      = 0;
+
+    while (isSame && i < valueCount) {
+      if (_plugin_stats[i] != nullptr) {
+        if (!_plugin_stats[i]->matchesLastTwoEntries(event->ParfN[i])) {
+          isSame = false;
+        }
+      }
+      ++i;
+    }
+
+    if (isSame) {
+      _plugin_stats_timestamps->updateLast(timestamp_sysmicros);
+      return false;
+    }
+  }
+
+  if (_plugin_stats_timestamps != nullptr) {
+    _plugin_stats_timestamps->push(timestamp_sysmicros);
+  }
+
+  for (size_t i = 0; i < valueCount; ++i) {
+    if (_plugin_stats[i] != nullptr) {
+      _plugin_stats[i]->push(event->ParfN[i]);
+
+      if (trackPeaks) {
+        _plugin_stats[i]->trackPeak(event->ParfN[i], timestamp_sysmicros);
       }
     }
   }
+  return true;
 }
 
 bool PluginStats_array::plugin_get_config_value_base(struct EventStruct *event,
@@ -323,6 +356,7 @@ bool PluginStats_array::webformLoad_show_stats(struct EventStruct *event, bool s
 }
 
 # if FEATURE_CHART_JS
+
 void PluginStats_array::plot_ChartJS(bool onlyJSON) const
 {
   const size_t nrSamples = nrSamplesPresent();
@@ -499,7 +533,6 @@ void PluginStats_array::plot_ChartJS_scatter(
 }
 
 # endif // if FEATURE_CHART_JS
-
 
 PluginStats * PluginStats_array::getPluginStats(taskVarIndex_t taskVarIndex) const
 {

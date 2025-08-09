@@ -188,6 +188,25 @@ String NW005_data_struct_PPP_modem::getBER() const
   return F("-");
 }
 
+float NW005_data_struct_PPP_modem::getBER_float() const
+{
+  if (_modem_task_data.modem_initialized) {
+    switch (NW_PLUGIN_INTERFACE.BER())
+    {
+      case 0: return 0.01f; // F("<0.01 %");
+      case 1: return 0.1f; // F("0.01 % ... 0.1 %");
+      case 2: return 0.5f; // F("0.1 % ... 0.5 %");
+      case 3: return 1.0f; // F("0.5 % ... 1 %");
+      case 4: return 2.0f; // F("1 % ... 2 %");
+      case 5: return 4.0f; // F("2 % ... 4 %");
+      case 6: return 8.0f; // F("4 % ... 8 %");
+      case 7: return 16.0f; // F(">= 8 %");
+      case 99: break; // Not known or not detectable
+    }
+  }
+  return NAN;
+}
+
 bool NW005_data_struct_PPP_modem::attached() const
 {
   if (!_modem_task_data.modem_initialized) { return false; }
@@ -895,6 +914,54 @@ String NW005_data_struct_PPP_modem::write_AT_cmd(const String& cmd, int timeout)
   NW_PLUGIN_INTERFACE.mode(cur_mode);
   return res;
 }
+
+# if FEATURE_PLUGIN_STATS
+
+bool NW005_data_struct_PPP_modem::initPluginStats()
+{
+  networkStatsVarIndex_t networkStatsVarIndex{};
+  PluginStats_Config_t   displayConfig;
+
+  displayConfig.setAxisPosition(PluginStats_Config_t::AxisPosition::Right);
+  displayConfig.setEnabled(true);
+
+  displayConfig.setAxisIndex(networkStatsVarIndex);
+  NWPluginData_base::initPluginStats(
+    networkStatsVarIndex,
+    F("RSSI"),
+    1,
+    NAN,
+    displayConfig);
+
+  ++networkStatsVarIndex;
+  displayConfig.setAxisIndex(networkStatsVarIndex);
+  NWPluginData_base::initPluginStats(
+    networkStatsVarIndex,
+    F("Bit Error Rate (BER)"),
+    1,
+    NAN,
+    displayConfig);
+
+  initPluginStats_trafficCount(++networkStatsVarIndex, true);  // TX
+  initPluginStats_trafficCount(++networkStatsVarIndex, false); // RX
+  return true;
+}
+
+bool NW005_data_struct_PPP_modem::record_stats()
+{
+  if (_plugin_stats_array != nullptr) {
+    EventStruct tmpEvent;
+    size_t valueCount{};
+    tmpEvent.ParfN[valueCount++] = NW_PLUGIN_INTERFACE.RSSI();
+    tmpEvent.ParfN[valueCount++] = getBER_float();
+    bool trackPeaks                  = true;
+    bool onlyUpdateTimestampWhenSame = true;
+    return pushStatsValues(&tmpEvent, valueCount, trackPeaks, onlyUpdateTimestampWhenSame);
+  }
+  return false;
+}
+
+# endif // if FEATURE_PLUGIN_STATS
 
 NWPluginData_static_runtime& NW005_data_struct_PPP_modem::getNWPluginData_static_runtime() { return stats_and_cache; }
 

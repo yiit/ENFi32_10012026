@@ -2,11 +2,11 @@
 
 #include "../../../ESPEasy_common.h"
 
-
 #include "../DataTypes/NWPluginID.h"
 #include "../DataTypes/NetworkIndex.h"
-#include "../../../src/DataStructs/ESPEasy_EventStruct.h"
 #include "../DataStructs/NWPluginData_static_runtime.h"
+#include "../../../src/DataStructs/ESPEasy_EventStruct.h"
+#include "../../../src/DataStructs/PluginStats_array.h"
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 # include "../../../src/Helpers/_ESPEasy_key_value_store.h"
@@ -42,8 +42,52 @@ struct NWPluginData_base {
     return _baseClassOnly;
   }
 
-  bool plugin_write_base(EventStruct  *event,
-                         const String& string);
+  bool   hasPluginStats() const;
+
+  bool   hasPeaks() const;
+
+  size_t nrSamplesPresent() const;
+
+  #if FEATURE_PLUGIN_STATS
+  virtual bool initPluginStats();
+
+  void clearPluginStats(networkStatsVarIndex_t networkStatsVarIndex);
+
+  // Update any logged timestamp with this newly set system time.
+  void processTimeSet(const double& time_offset);
+  #endif // if FEATURE_PLUGIN_STATS
+
+
+  bool pushStatsValues(EventStruct *event,
+                       size_t              valueCount,
+                       bool                trackPeaks,
+                       bool                onlyUpdateTimestampWhenSame);
+
+
+  bool plugin_write_base(EventStruct *event,
+                         const String      & string);
+
+#if FEATURE_PLUGIN_STATS
+  virtual bool record_stats();
+  virtual bool webformLoad_show_stats(EventStruct *event) const;
+
+# if FEATURE_CHART_JS
+  void plot_ChartJS(bool onlyJSON = false) const;
+
+  void plot_ChartJS_scatter(
+    networkStatsVarIndex_t        values_X_axis_index,
+    networkStatsVarIndex_t        values_Y_axis_index,
+    const __FlashStringHelper    *id,
+    const ChartJS_title         & chartTitle,
+    const ChartJS_dataset_config& datasetConfig,
+    int                           width,
+    int                           height,
+    bool                          showAverage = true,
+    const String                & options     = EMPTY_STRING,
+    bool                          onlyJSON    = false) const;
+
+# endif // if FEATURE_CHART_JS
+#endif  // if FEATURE_PLUGIN_STATS
 
 
   // Should only be called from initNWPluginData
@@ -62,6 +106,31 @@ struct NWPluginData_base {
 #endif // ifdef ESP32
 
   virtual NWPluginData_static_runtime& getNWPluginData_static_runtime() = 0;
+
+
+#if FEATURE_PLUGIN_STATS
+
+  PluginStats* getPluginStats(networkStatsVarIndex_t networkStatsVarIndex) const;
+
+  PluginStats* getPluginStats(networkStatsVarIndex_t networkStatsVarIndex);
+
+protected:
+
+  void   initPluginStats(
+    networkStatsVarIndex_t      networkStatsVarIndex,
+    const String              & label,
+    uint8_t                     nrDecimals,
+    float                       errorValue,
+    const PluginStats_Config_t& displayConfig);
+
+#ifdef ESP32
+void initPluginStats_trafficCount(networkStatsVarIndex_t networkStatsVarIndex, bool isTX);
+#endif
+
+
+  // Array of pointers to PluginStats. One per task value.
+  PluginStats_array *_plugin_stats_array = nullptr;
+#endif // if FEATURE_PLUGIN_STATS
 
 protected:
 
@@ -97,7 +166,11 @@ protected:
 
 #ifdef ESP32
   NetworkInterface *_netif{};
-#endif
+# if FEATURE_PLUGIN_STATS
+  uint64_t _prevTX{};
+  uint64_t _prevRX{};
+# endif // if FEATURE_PLUGIN_STATS
+#endif // ifdef ESP32
 
 };
 

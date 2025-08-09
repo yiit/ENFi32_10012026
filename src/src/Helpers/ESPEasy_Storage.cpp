@@ -945,7 +945,7 @@ void afterloadSettings() {
   applyFactoryDefaultPref();
   Scheduler.setEcoMode(Settings.EcoPowerMode());
   #ifdef ESP32
-  #ifndef ESP32P4
+  #if !defined(CORE32SOLO1) && !defined(ESP32P4)
   setCpuFrequencyMhz(Settings.EcoPowerMode() ? getCPU_MinFreqMHz() : getCPU_MaxFreqMHz());
   #endif
   #endif // ifdef ESP32

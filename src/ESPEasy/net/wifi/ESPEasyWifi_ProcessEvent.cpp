@@ -414,7 +414,7 @@ void processScanDone() {
       }
       return;
     case -2: // WIFI_SCAN_FAILED
-      addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
+      addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed   (old)"));
       WiFi.scanDelete();
       WiFiEventData.processedScanDone = true;
       return;

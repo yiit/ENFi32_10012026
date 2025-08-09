@@ -17,6 +17,8 @@
 # include "../../ESPEasy/net/Globals/NWPlugins.h"
 # include "../../ESPEasy/net/Helpers/_NWPlugin_Helper_webform.h"
 # include "../../ESPEasy/net/Helpers/_NWPlugin_init.h"
+# include "../../ESPEasy/net/_NWPlugin_Helper.h"
+
 
 using namespace ESPEasy::net;
 
@@ -33,7 +35,7 @@ void handle_networks()
 
 
   // 'index' value in the URL
-  uint8_t networkindex  = getFormItemInt(F("index"), 0);
+  uint8_t networkindex       = getFormItemInt(F("index"), 0);
   const bool networkIndexSet = networkindex != 0 && validNetworkIndex(networkindex - 1);
   --networkindex; // Index in URL is starting from 1, but starting from 0 in the array.
 
@@ -163,9 +165,9 @@ void handle_networks_ShowAllNetworksTable()
   html_table_header(F(""),        70);
   html_table_header(F("Enabled"), 100);
   html_table_header(F("Network Adapter"));
-  #ifdef ESP32
-  html_table_header(F("Prio"),   50);
-  #endif
+  # ifdef ESP32
+  html_table_header(F("Prio"),    50);
+  # endif
   html_table_header(F("Connected"));
   html_table_header(F("Hostname/SSID"));
   html_table_header(F("HW Address"));
@@ -206,9 +208,9 @@ void handle_networks_ShowAllNetworksTable()
       addHtml(getNWPluginNameFromNWPluginID(Settings.getNWPluginID_for_network(x)));
 
       const NWPlugin::Function functions[] {
-#ifdef ESP32
+# ifdef ESP32
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO,
-#endif
+# endif
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED,
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME,
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS,
@@ -216,7 +218,7 @@ void handle_networks_ShowAllNetworksTable()
         NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT
       };
 
-//      const networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(x);
+      //      const networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(x);
 
       for (uint8_t i = 0; i < NR_ELEMENTS(functions); ++i) {
         html_TD();
@@ -226,21 +228,25 @@ void handle_networks_ShowAllNetworksTable()
         String str;
 
         const bool res = NWPluginCall(functions[i], &TempEvent, str);
-#ifdef ESP32
+# ifdef ESP32
+
         if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO) {
           if (TempEvent.Par1 > 0) {
             addHtmlInt(TempEvent.Par1);
+
             if (TempEvent.Par2) {
               addHtml(F("(*)"));
             }
           }
-        } else 
-#endif
+        } else
+# endif // ifdef ESP32
+
         if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED) {
           if (!res || str.isEmpty()) {
             addEnabled(res);
           } else {
             String conn_duration;
+
             if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent, conn_duration)) {
               if (conn_duration.length()) {
                 str += '\n';
@@ -279,7 +285,8 @@ void handle_networks_ShowAllNetworksTable()
   html_end_form();
 }
 
-void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex) {
+void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex) 
+{
   if (!validNetworkIndex(networkindex)) { return; }
 
   const networkDriverIndex_t networkDriverIndex =
@@ -448,18 +455,45 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
             addHtmlInt(TempEvent.Par64_2);
           }
 
-#ifdef ESP32
+#  ifdef ESP32
+
           if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT, &TempEvent, str)) {
             addRowLabel(F("TX Bytes Total"));
             addHtmlInt(TempEvent.Par1);
             addRowLabel(F("RX Bytes Total"));
             addHtmlInt(TempEvent.Par2);
           }
-#endif
+#  endif // ifdef ESP32
         }
       }
     }
 # endif // ifdef ESP32
+#  if FEATURE_PLUGIN_STATS
+    {
+      // Task statistics and historic data in a chart
+      auto *NW_data = ESPEasy::net::getNWPluginData(TempEvent.NetworkIndex);
+
+      if (NW_data && NW_data->hasPluginStats()) {
+        addFormSubHeader(F("Statistics"));
+#   if FEATURE_CHART_JS
+
+        if (NW_data->nrSamplesPresent() > 0) {
+          addRowLabel(F("Historic data"));
+          NW_data->plot_ChartJS();
+        }
+#   endif // if FEATURE_CHART_JS
+        String dummy;
+        bool   somethingAdded = false;
+
+        if (!ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS, &TempEvent, dummy)) {
+          somethingAdded = NW_data->webformLoad_show_stats(&TempEvent);
+        } else { somethingAdded = true; }
+      }
+    }
+
+#  endif // if FEATURE_PLUGIN_STATS
+
+
 
     addFormSeparator(2);
 

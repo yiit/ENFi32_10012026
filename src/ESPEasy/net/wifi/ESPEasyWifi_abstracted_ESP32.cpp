@@ -26,7 +26,6 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-
 bool WiFi_pre_setup() {
   if (!ESPEasyWiFi_STA_EventHandler::initialized()) { return false; }
 
@@ -85,7 +84,8 @@ bool doSetWifiMode(WiFiMode_t new_mode)
   if (cur_mode == WIFI_OFF) {
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
-//    WiFiEventData.markWiFiTurnOn();
+
+    //    WiFiEventData.markWiFiTurnOn();
   }
 
   if (new_mode != WIFI_OFF) {
@@ -100,7 +100,8 @@ bool doSetWifiMode(WiFiMode_t new_mode)
 
     //    delay(100);
     processDisconnect();
-//    WiFiEventData.clear_processed_flags();
+
+    //    WiFiEventData.clear_processed_flags();
   }
 
   addLog(LOG_LEVEL_INFO, concat(F("WIFI : Set WiFi to "), doGetWifiModeString(new_mode)));
@@ -130,7 +131,7 @@ bool doSetWifiMode(WiFiMode_t new_mode)
   if (new_mode == WIFI_OFF) {
 
     // FIXME TD-er: Is this correct to mark Turn ON ????
-//    WiFiEventData.markWiFiTurnOn();
+    //    WiFiEventData.markWiFiTurnOn();
 
     // Needs to be set while WiFi is off
     WiFi.hostname(NetworkCreateRFCCompliantHostname());
@@ -209,7 +210,7 @@ void doWifiScan(bool async, uint8_t channel) {
   // Since IDF 4.4 it seems like the active channel may be messed up when running async scan
   // Perform a disconnect after scanning.
   // See: https://github.com/letscontrolit/ESPEasy/pull/3579#issuecomment-967021347
-  async = false;
+  // async = false;
 
   if (Settings.IncludeHiddenSSID()) {
     doSetWiFiCountryPolicyManual();
@@ -369,6 +370,19 @@ void doSetWiFiTXpower(float& dBm)
   }
 }
 
+float doGetWiFiTXpower()
+{
+  int8_t power{};
+
+  if (esp_wifi_get_max_tx_power(&power) == ESP_OK) {
+    float res = power;
+    res /= 4.0f;
+    return res;
+  }
+
+  return NAN;
+}
+
 #  endif // if FEATURE_SET_WIFI_TX_PWR
 
 #  if CONFIG_SOC_WIFI_SUPPORT_5G
@@ -447,15 +461,16 @@ void doSetConnectionSpeed(bool ForceWiFi_bg_mode)
   if (ForceWiFi_bg_mode) {
     protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G; // Default to BG
   }
-/*
-  if (WiFiEventData.connectionFailures > 10) {
-    // Set to allow all protocols
-    protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
-#   if CONFIG_SOC_WIFI_HE_SUPPORT
-    protocol |= WIFI_PROTOCOL_11AX;
-#   endif
-  }
-*/
+
+  /*
+     if (WiFiEventData.connectionFailures > 10) {
+      // Set to allow all protocols
+      protocol = WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N;
+   #   if CONFIG_SOC_WIFI_HE_SUPPORT
+      protocol |= WIFI_PROTOCOL_11AX;
+   #   endif
+     }
+   */
   const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
 
   if (candidate.phy_known()) {
