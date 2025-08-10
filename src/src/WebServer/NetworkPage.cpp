@@ -54,12 +54,12 @@ void handle_networks()
 
     if (Settings.getNWPluginID_for_network(networkindex) != nwpluginID)
     {
-#ifndef LIMIT_BUILD_SIZE
+# ifndef LIMIT_BUILD_SIZE
       addLog(LOG_LEVEL_INFO, strformat(
                F("HandleNW: Driver changed from %d to %d"),
                Settings.getNWPluginID_for_network(networkindex).value,
                nwpluginID.value));
-#endif
+# endif // ifndef LIMIT_BUILD_SIZE
 
       // NetworkDriver has changed.
       Settings.setNWPluginID_for_network(networkindex, nwpluginID);
@@ -77,11 +77,11 @@ void handle_networks()
     else
     {
       // there is a networkDriverIndex selected
-#ifndef LIMIT_BUILD_SIZE
+# ifndef LIMIT_BUILD_SIZE
       addLog(LOG_LEVEL_INFO, concat(
                F("HandleNW: Driver selected: "),
                nwpluginID.value) + (nwpluginID.isValid() ? F("valid") : F("invalid")));
-#endif
+# endif // ifndef LIMIT_BUILD_SIZE
 
       if (nwpluginID.isValid())
       {
@@ -155,9 +155,12 @@ void handle_networks_CopySubmittedSettings_NWPluginCall(ESPEasy::net::networkInd
     TempEvent.NetworkIndex = networkindex;
 
     // Call network plugin to save CustomNetworkSettings
-#ifndef LIMIT_BUILD_SIZE
+# ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("Call network plugin to save CustomNetworkSettings"));
-#endif
+# endif
+# ifdef ESP32
+    Settings.setRoutePrio_for_network(networkindex, getFormItemInt(F("routeprio"), 0));
+# endif
     String dummy;
     NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE, &TempEvent, dummy);
   }
@@ -291,7 +294,7 @@ void handle_networks_ShowAllNetworksTable()
   html_end_form();
 }
 
-void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex) 
+void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex)
 {
   if (!validNetworkIndex(networkindex)) { return; }
 
@@ -353,8 +356,47 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
     struct EventStruct TempEvent;
     TempEvent.NetworkIndex = networkindex;
 
+# ifdef ESP32
+    addFormNumericBox(
+      F("Route Priority"),
+      F("routeprio"),
+      Settings.getRoutePrio_for_network(networkindex),
+      0, 255);
+    addFormNote(F("The active interface with highest priority will be used for default route (gateway)."));
+# endif // ifdef ESP32
+
     String str;
     NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD, &TempEvent, str);
+
+# if FEATURE_PLUGIN_STATS
+    {
+      // Task statistics and historic data in a chart
+      auto *NW_data = ESPEasy::net::getNWPluginData(TempEvent.NetworkIndex);
+
+      if (NW_data && NW_data->hasPluginStats()) {
+        addFormSubHeader(F("Statistics"));
+#  if FEATURE_CHART_JS
+
+        if (NW_data->nrSamplesPresent() > 0) {
+          addRowLabel(F("Historic data"));
+          NW_data->plot_ChartJS();
+        }
+#  endif // if FEATURE_CHART_JS
+        String dummy;
+
+        // bool   somethingAdded = false;
+
+        if (!ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS, &TempEvent, dummy)) {
+          /*somethingAdded =*/ NW_data->webformLoad_show_stats(&TempEvent);
+
+          //        } else {
+          //          somethingAdded = true;
+        }
+      }
+    }
+
+# endif // if FEATURE_PLUGIN_STATS
+
 # ifdef ESP32
 
     if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_INTERFACE, &TempEvent, str))
@@ -474,32 +516,6 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
       }
     }
 # endif // ifdef ESP32
-#  if FEATURE_PLUGIN_STATS
-    {
-      // Task statistics and historic data in a chart
-      auto *NW_data = ESPEasy::net::getNWPluginData(TempEvent.NetworkIndex);
-
-      if (NW_data && NW_data->hasPluginStats()) {
-        addFormSubHeader(F("Statistics"));
-#   if FEATURE_CHART_JS
-
-        if (NW_data->nrSamplesPresent() > 0) {
-          addRowLabel(F("Historic data"));
-          NW_data->plot_ChartJS();
-        }
-#   endif // if FEATURE_CHART_JS
-        String dummy;
-        bool   somethingAdded = false;
-
-        if (!ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS, &TempEvent, dummy)) {
-          somethingAdded = NW_data->webformLoad_show_stats(&TempEvent);
-        } else { somethingAdded = true; }
-      }
-    }
-
-#  endif // if FEATURE_PLUGIN_STATS
-
-
 
     addFormSeparator(2);
 

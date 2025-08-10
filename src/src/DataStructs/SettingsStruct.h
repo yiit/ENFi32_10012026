@@ -424,6 +424,11 @@ public:
 
   void setNWPluginID_for_network(ESPEasy::net::networkIndex_t index, ESPEasy::net::nwpluginID_t id);
 
+#ifdef ESP32
+  uint8_t getRoutePrio_for_network(ESPEasy::net::networkIndex_t index) const;
+
+  void setRoutePrio_for_network(ESPEasy::net::networkIndex_t index, uint8_t prio);
+#endif
 
   unsigned long PID = 0;
   int           Version = 0;
@@ -671,7 +676,9 @@ public:
   uint8_t       NetworkUnused_1{};
   uint8_t       NetworkUnused_2{};
   uint8_t       NetworkUnused_3{};
-
+#ifdef ESP32
+  uint8_t       NetworkRoutePrio[NETWORK_MAX] = {0};
+#endif
 
 
   // Try to extend settings to make the checksum 4-uint8_t aligned.

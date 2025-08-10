@@ -194,14 +194,14 @@ float NW005_data_struct_PPP_modem::getBER_float() const
     switch (NW_PLUGIN_INTERFACE.BER())
     {
       case 0: return 0.01f; // F("<0.01 %");
-      case 1: return 0.1f; // F("0.01 % ... 0.1 %");
-      case 2: return 0.5f; // F("0.1 % ... 0.5 %");
-      case 3: return 1.0f; // F("0.5 % ... 1 %");
-      case 4: return 2.0f; // F("1 % ... 2 %");
-      case 5: return 4.0f; // F("2 % ... 4 %");
-      case 6: return 8.0f; // F("4 % ... 8 %");
+      case 1: return 0.1f;  // F("0.01 % ... 0.1 %");
+      case 2: return 0.5f;  // F("0.1 % ... 0.5 %");
+      case 3: return 1.0f;  // F("0.5 % ... 1 %");
+      case 4: return 2.0f;  // F("1 % ... 2 %");
+      case 5: return 4.0f;  // F("2 % ... 4 %");
+      case 6: return 8.0f;  // F("4 % ... 8 %");
       case 7: return 16.0f; // F(">= 8 %");
-      case 99: break; // Not known or not detectable
+      case 99: break;       // Not known or not detectable
     }
   }
   return NAN;

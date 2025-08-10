@@ -38,7 +38,11 @@ NW001_data_struct_WiFi_STA::NW001_data_struct_WiFi_STA(networkIndex_t networkInd
 NW001_data_struct_WiFi_STA::~NW001_data_struct_WiFi_STA()
 {}
 
-void NW001_data_struct_WiFi_STA::webform_load(EventStruct *event) {}
+void NW001_data_struct_WiFi_STA::webform_load(EventStruct *event)
+{
+
+
+}
 
 void NW001_data_struct_WiFi_STA::webform_save(EventStruct *event) {}
 

@@ -1333,4 +1333,26 @@ void SettingsStruct_tmpl<N_TASKS>::setNWPluginID_for_network(ESPEasy::net::netwo
 }
 
 
+
+#ifdef ESP32
+template<unsigned int N_TASKS>
+uint8_t SettingsStruct_tmpl<N_TASKS>::getRoutePrio_for_network(ESPEasy::net::networkIndex_t index) const
+{
+  if (validNetworkIndex(index)) {
+    return NetworkRoutePrio[index];
+  }
+  return 0;
+}
+
+template<unsigned int N_TASKS>
+void SettingsStruct_tmpl<N_TASKS>::setRoutePrio_for_network(ESPEasy::net::networkIndex_t index, uint8_t prio)
+{
+  if (validNetworkIndex(index)) {
+    NetworkRoutePrio[index] = prio;
+  }
+}
+#endif
+
+
+
 #endif // ifndef DATASTRUCTS_SETTINGSSTRUCT_CPP

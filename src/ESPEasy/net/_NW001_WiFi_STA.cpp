@@ -57,6 +57,14 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
+# ifdef ESP32
+    case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
+    {
+      Settings.setRoutePrio_for_network(event->NetworkIndex, 100);
+      break;
+    }
+# endif // ifdef ESP32
+
     case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
     {
       string = F(NWPLUGIN_NAME_001);

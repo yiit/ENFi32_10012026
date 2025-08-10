@@ -1,5 +1,6 @@
 #include "../DataStructs/NWPluginData_static_runtime.h"
 
+#include "../../../src/Globals/Settings.h"
 
 namespace ESPEasy {
 namespace net {
@@ -15,6 +16,9 @@ void NWPluginData_static_runtime::clear(networkIndex_t networkIndex)
   _gotIP6Stats.clear();
 #endif
   _networkIndex = networkIndex;
+#ifdef ESP32
+  _route_prio = Settings.getRoutePrio_for_network(_networkIndex);
+#endif
 
   _connectionFailures = 0;
 
