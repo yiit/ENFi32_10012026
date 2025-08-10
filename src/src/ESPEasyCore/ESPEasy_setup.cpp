@@ -178,8 +178,8 @@ void ESPEasy_setup()
           // - Single core @160 MHz
           // - Dual   core @240 MHz
           // See: https://www.letscontrolit.com/forum/viewtopic.php?t=10735
-          gpio_num_t PSRAM_CLK = GPIO_NUM_NC; //GPIO_NUM_17;
-          gpio_num_t PSRAM_CS  = GPIO_NUM_NC; //GPIO_NUM_16;
+          PSRAM_CLK = GPIO_NUM_NC; //GPIO_NUM_17;
+          PSRAM_CS  = GPIO_NUM_NC; //GPIO_NUM_16;
           break;
         case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5:
           PSRAM_CLK = static_cast<gpio_num_t>(CONFIG_D2WD_PSRAM_CLK_IO);
