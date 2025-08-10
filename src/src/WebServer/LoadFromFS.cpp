@@ -298,7 +298,7 @@ bool loadFromFS(String path) {
   }
 
   if (!web_server.client().connected()) {
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, strformat(
       F("loadFromFS: Client %s not connected"), 
       web_server.client().remoteIP().toString().c_str()

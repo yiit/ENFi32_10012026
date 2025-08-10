@@ -2,7 +2,7 @@
 
 
 #include "../../ESPEasy_common.h"
-#ifndef BUILD_MINIMAL_OTA
+#ifndef LIMIT_BUILD_SIZE
 
 #include "../DataStructs/CRCStruct.h"
 #include "../DataStructs/ControllerSettingsStruct.h"
@@ -79,7 +79,6 @@ void check_max_size() {
 // ********************************************************************************
 
 void run_compiletime_checks() {
-  #ifndef LIMIT_BUILD_SIZE
   check_size<CRCStruct,                             204u>();
   check_size<SecurityStruct,                        593u>();
   check_max_size<SecurityStruct,                    DAT_SECURITYSETTINGS_SIZE>();
@@ -197,11 +196,7 @@ void run_compiletime_checks() {
   // to determine nr of bits in a struct.
   static_assert(GPIO_DIRECTION_NR_BITS== NR_BITS(static_cast<uint8_t>(gpio_direction::gpio_direction_MAX)), "Correct GPIO_DIRECTION_NR_BITS");
 
-
-  #endif
 }
-
-#ifndef LIMIT_BUILD_SIZE
 String ReportOffsetErrorInStruct(const String& structname, size_t offset) {
   String error;
   if (error.reserve(48 + structname.length())) {
@@ -211,7 +206,6 @@ String ReportOffsetErrorInStruct(const String& structname, size_t offset) {
   }
   return error;
 }
-#endif
 
 /*********************************************************************************************\
 *  Analyze SettingsStruct and report inconsistencies

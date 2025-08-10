@@ -155,7 +155,7 @@ bool NodesHandler::addNode(const NodeStruct& node, const ESPEasy_now_traceroute_
   }
 
   ESPEasy_now_peermanager.addPeer(node.ESPEasy_Now_MAC(), node.channel);  
-
+#ifndef BUILD_NO_DEBUG
   if (!node.isThisNode()) {
     if (traceRoute.getDistance() != 255) {
       if (loglevelActiveFor(LOG_LEVEL_INFO)) {
@@ -171,6 +171,7 @@ bool NodesHandler::addNode(const NodeStruct& node, const ESPEasy_now_traceroute_
       }
     } else {}
   }
+#endif
   return isNewNode;
 }
 #endif

@@ -54,10 +54,12 @@ void handle_networks()
 
     if (Settings.getNWPluginID_for_network(networkindex) != nwpluginID)
     {
+#ifndef LIMIT_BUILD_SIZE
       addLog(LOG_LEVEL_INFO, strformat(
                F("HandleNW: Driver changed from %d to %d"),
                Settings.getNWPluginID_for_network(networkindex).value,
                nwpluginID.value));
+#endif
 
       // NetworkDriver has changed.
       Settings.setNWPluginID_for_network(networkindex, nwpluginID);
@@ -75,9 +77,11 @@ void handle_networks()
     else
     {
       // there is a networkDriverIndex selected
+#ifndef LIMIT_BUILD_SIZE
       addLog(LOG_LEVEL_INFO, concat(
                F("HandleNW: Driver selected: "),
                nwpluginID.value) + (nwpluginID.isValid() ? F("valid") : F("invalid")));
+#endif
 
       if (nwpluginID.isValid())
       {
@@ -151,7 +155,9 @@ void handle_networks_CopySubmittedSettings_NWPluginCall(ESPEasy::net::networkInd
     TempEvent.NetworkIndex = networkindex;
 
     // Call network plugin to save CustomNetworkSettings
+#ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("Call network plugin to save CustomNetworkSettings"));
+#endif
     String dummy;
     NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE, &TempEvent, dummy);
   }

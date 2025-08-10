@@ -686,7 +686,7 @@ bool Erase_WiFi_Calibration() {
   ESPEasy::net::wifi::setWifiMode(WIFI_OFF);
   if (!ESP.eraseConfig())
     return false;
-  #ifndef BUILD_MINIMAL_OTA
+  #ifndef LIMIT_BUILD_SIZE
   addLog(LOG_LEVEL_INFO, F("WiFi : Erased WiFi calibration data"));
   #endif
   #endif
@@ -829,12 +829,12 @@ String SaveSettings(bool forFactoryReset)
     return err;
   }
 
-#ifndef BUILD_MINIMAL_OTA
+#ifndef LIMIT_BUILD_SIZE
 
   // Must check this after saving, or else it is not possible to fix multiple
   // issues which can only corrected on different pages.
   if (!SettingsCheck(err)) { return err; }
-#endif // ifndef BUILD_MINIMAL_OTA
+#endif 
 
   //  }
 
@@ -1405,8 +1405,7 @@ String SaveTaskSettings(taskIndex_t TaskIndex)
                      reinterpret_cast<const uint8_t *>(&ExtraTaskSettings),
                      sizeof(struct ExtraTaskSettingsStruct));
 
-#if !defined(PLUGIN_BUILD_MINIMAL_OTA) && !defined(ESP8266_1M)
-
+#ifndef LIMIT_BUILD_SIZE
     if (err.isEmpty()) {
       err = checkTaskSettings(TaskIndex);
     }

@@ -3495,7 +3495,7 @@ To create/register a plugin, you have to :
 #endif
 
 #ifndef FEATURE_DEFINE_SERIAL_CONSOLE_PORT
-  #ifdef ESP8266_1M
+  #if defined(ESP8266_1M) || defined(LIMIT_BUILD_SIZE)
     #define FEATURE_DEFINE_SERIAL_CONSOLE_PORT 0
   #else
     #define FEATURE_DEFINE_SERIAL_CONSOLE_PORT 1
@@ -3602,7 +3602,7 @@ To create/register a plugin, you have to :
 #endif
 
 #ifndef FEATURE_CHART_STORAGE_LAYOUT
-  #if defined(LIMIT_BUILD_SIZE) || defined(BUILD_MINIMAL_OTA)
+  #if defined(LIMIT_BUILD_SIZE) || defined(BUILD_MINIMAL_OTA) || defined(BUILD_NO_DEBUG)
     #define FEATURE_CHART_STORAGE_LAYOUT 0
   #else
     #define FEATURE_CHART_STORAGE_LAYOUT 1

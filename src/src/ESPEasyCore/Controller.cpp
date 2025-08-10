@@ -178,7 +178,7 @@ bool MQTTConnect(controllerIndex_t controller_idx)
   MakeControllerSettings(ControllerSettings); // -V522
 
   if (!AllocatedControllerSettings()) {
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot connect, out of RAM"));
     #endif
     return false;

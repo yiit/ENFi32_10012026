@@ -44,7 +44,7 @@ void addButtonWithSvg(const String& url, const String& label, const String& svgP
   addHtml(F("<a "));
   addHtmlAttribute(F("class"), F("button link"));
   addHtmlAttribute(F("href"),  url);
-  #ifndef BUILD_MINIMAL_OTA
+  #ifndef LIMIT_BUILD_SIZE
   bool hasSVG = svgPath.length() > 0;
 
   if (hasSVG)
@@ -58,7 +58,7 @@ void addButtonWithSvg(const String& url, const String& label, const String& svgP
   }
   addHtml('>');
 
-  #ifndef BUILD_MINIMAL_OTA
+  #ifndef LIMIT_BUILD_SIZE
 
   if (hasSVG) {
     addHtml(F("<svg width='24' height='24' viewBox='-1 -1 26 26' style='position: relative; top: 5px;'>"));

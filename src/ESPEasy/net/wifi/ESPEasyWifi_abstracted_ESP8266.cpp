@@ -87,8 +87,9 @@ bool doSetWifiMode(WiFiMode_t new_mode)
     WiFi.forceSleepWake(); // Make sure WiFi is really active.
     delay(100);
   }
-
+#ifndef BUILD_NO_DEBUG
   addLog(LOG_LEVEL_INFO, concat(F("WIFI : Set WiFi to "), doGetWifiModeString(new_mode)));
+#endif
 
   int retry = 2;
 
@@ -99,13 +100,17 @@ bool doSetWifiMode(WiFiMode_t new_mode)
   retry = 2;
 
   while (WiFi.getMode() != new_mode && retry > 0) {
+#ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_INFO, F("WIFI : mode not yet set"));
+#endif
     delay(100);
     --retry;
   }
 
   if (WiFi.getMode() != new_mode) {
+#ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_ERROR, F("WIFI : Cannot set mode!!!!!"));
+#endif
     return false;
   }
 
@@ -273,10 +278,14 @@ void doSetConnectionSpeed(bool ForceWiFi_bg_mode) {
     if (candidate.phy_known() && (candidate.bits.phy_11g != candidate.bits.phy_11n)) {
       if ((WIFI_PHY_MODE_11G == phyMode) && !candidate.bits.phy_11g) {
         phyMode = WIFI_PHY_MODE_11N;
+#ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11n only"));
+#endif
       } else if ((WIFI_PHY_MODE_11N == phyMode) && !candidate.bits.phy_11n) {
         phyMode = WIFI_PHY_MODE_11G;
+#ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_INFO, F("WIFI : AP is set to 802.11g only"));
+#endif
       }
 /*
     } else {

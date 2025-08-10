@@ -80,7 +80,7 @@ void ESPEasy_loop()
   bool firstLoopConnectionsEstablished = ESPEasy::net::NetworkConnected() && firstLoop;
 
   if (firstLoopConnectionsEstablished) {
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("firstLoopConnectionsEstablished"));
     #endif
     firstLoop               = false;

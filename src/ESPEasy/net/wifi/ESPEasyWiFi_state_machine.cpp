@@ -149,9 +149,11 @@ void ESPEasyWiFi_t::loop()
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
         WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
 # endif
+#ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_INFO, strformat(
                  F("WiFi : Scan done, found %d APs"),
                  WiFi_AP_Candidates.scanComplete()));
+#endif
       } else if (scanCompleteStatus == -2) { // WIFI_SCAN_FAILED
         addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
         WiFi.scanDelete();
@@ -183,10 +185,12 @@ void ESPEasyWiFi_t::loop()
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
         WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
 # endif
+#ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_INFO, strformat(
                  F("WiFi : Scan channel %d done, found %d APs"),
                  _scan_channel,
                  WiFi_AP_Candidates.scanComplete()));
+#endif
       } else if (scanCompleteStatus == -2) { // WIFI_SCAN_FAILED
         addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
         WiFi.scanDelete();
@@ -388,9 +392,11 @@ bool ESPEasyWiFi_t::connectSTA()
   }
 
   if (WiFiEventData.lastDisconnectReason != WIFI_DISCONNECT_REASON_UNSPECIFIED) {
+#ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_INFO, concat(
              F("WiFi : Disconnect reason: "),
              getLastDisconnectReason()));
+#endif
     WiFiEventData.processedDisconnect = true;
   }
 

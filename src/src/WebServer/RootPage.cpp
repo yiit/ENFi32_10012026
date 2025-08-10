@@ -107,14 +107,14 @@ void handle_root() {
   // disconnect here could result into a crash/reboot...
   if (strcasecmp_P(sCommand.c_str(), PSTR("wifidisconnect")) == 0)
   {
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("WIFI : Disconnecting..."));
     #endif
     cmd_within_mainloop = CMD_WIFI_DISCONNECT;
     addHtml(F("OK"));
   } else if (strcasecmp_P(sCommand.c_str(), PSTR("reboot")) == 0)
   {
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("     : Rebooting..."));
     #endif
     cmd_within_mainloop = CMD_REBOOT;
@@ -122,7 +122,7 @@ void handle_root() {
   } else if (strcasecmp_P(sCommand.c_str(), PSTR("reset")) == 0)
   {
     if (loggedIn) {
-      #ifndef BUILD_MINIMAL_OTA
+      #ifndef LIMIT_BUILD_SIZE
       addLog(LOG_LEVEL_INFO, F("     : factory reset..."));
       #endif
       cmd_within_mainloop = CMD_REBOOT;

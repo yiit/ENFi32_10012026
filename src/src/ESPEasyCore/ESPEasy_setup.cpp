@@ -173,6 +173,14 @@ void ESPEasy_setup()
 
       switch (pkg_version)
       {
+        case EFUSE_RD_CHIP_VER_PKG_ESP32U4WDH:
+          // Very strange model as the same model exists as:
+          // - Single core @160 MHz
+          // - Dual   core @240 MHz
+          // See: https://www.letscontrolit.com/forum/viewtopic.php?t=10735
+          gpio_num_t PSRAM_CLK = GPIO_NUM_NC; //GPIO_NUM_17;
+          gpio_num_t PSRAM_CS  = GPIO_NUM_NC; //GPIO_NUM_16;
+          break;
         case EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5:
           PSRAM_CLK = static_cast<gpio_num_t>(CONFIG_D2WD_PSRAM_CLK_IO);
           PSRAM_CS  = static_cast<gpio_num_t>(CONFIG_D2WD_PSRAM_CS_IO);
@@ -232,9 +240,9 @@ void ESPEasy_setup()
 //  ESPEasy::net::wifi::initWiFi();
   WiFiEventData.clearAll();
 
-#ifndef BUILD_MINIMAL_OTA
+#ifndef LIMIT_BUILD_SIZE
   run_compiletime_checks();
-#endif // ifndef BUILD_MINIMAL_OTA
+#endif
 #ifdef ESP8266
 
   //  ets_isr_attach(8, sw_watchdog_callback, nullptr);  // Set a callback for feeding the watchdog.

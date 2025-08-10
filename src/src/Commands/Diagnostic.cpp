@@ -31,9 +31,9 @@
 #include <stdint.h>
 
 
-#ifndef BUILD_MINIMAL_OTA
+#ifndef BUILD_NO_DEBUG
 bool showSettingsFileLayout = false;
-#endif // ifndef BUILD_MINIMAL_OTA
+#endif 
 
 #ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
 String Command_Lowmem(struct EventStruct *event, const char *Line)
@@ -91,7 +91,7 @@ const __FlashStringHelper * Command_MemInfo(struct EventStruct *event, const cha
 
 const __FlashStringHelper * Command_MemInfo_detail(struct EventStruct *event, const char *Line)
 {
-#ifndef BUILD_MINIMAL_OTA
+#ifndef BUILD_NO_DEBUG
   showSettingsFileLayout = true;
   Command_MemInfo(event, Line);
 
@@ -124,7 +124,7 @@ const __FlashStringHelper * Command_MemInfo_detail(struct EventStruct *event, co
   return return_see_serial(event);
   #else
   return return_command_failed_flashstr();
-  #endif // ifndef BUILD_MINIMAL_OTA
+  #endif
 }
 
 const __FlashStringHelper * Command_Background(struct EventStruct *event, const char *Line)

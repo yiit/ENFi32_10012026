@@ -393,13 +393,13 @@ void setWebserverRunning(bool state) {
   if (state) {
     WebServerInit();
     web_server.begin(Settings.WebserverPort);
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("Webserver: start"));
     #endif
   } else {
     web_server.client().stop();
     web_server.stop();
-    #ifndef BUILD_MINIMAL_OTA
+    #ifndef LIMIT_BUILD_SIZE
     addLog(LOG_LEVEL_INFO, F("Webserver: stop"));
     #endif
   }

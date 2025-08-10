@@ -28,7 +28,7 @@ const __FlashStringHelper * Command_logPortStatus(struct EventStruct *event, con
 #endif
 
 
-#ifndef BUILD_MINIMAL_OTA
+#ifndef BUILD_NO_DEBUG
 // Show settings file layout in charts on sysinfo page.
 // Will be enabled after running command "meminfodetail"
 extern bool showSettingsFileLayout;

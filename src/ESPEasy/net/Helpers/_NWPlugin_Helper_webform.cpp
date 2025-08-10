@@ -23,10 +23,10 @@ const __FlashStringHelper* toString(NetworkSettingsStruct::VarType parameterIdx,
 {
   switch (parameterIdx)
   {
-    case NetworkSettingsStruct::NETWORK_IP:                       return F("Network IP");
-    case NetworkSettingsStruct::NETWORK_PORT:                     return F("Network Port");
-    case NetworkSettingsStruct::NETWORK_USER:                     return F("Network User");
-    case NetworkSettingsStruct::NETWORK_PASS:                     return F("Network Password");
+    case NetworkSettingsStruct::NETWORK_IP:                       return F("IP");
+    case NetworkSettingsStruct::NETWORK_PORT:                     return F("Port");
+    case NetworkSettingsStruct::NETWORK_USER:                     return F("User");
+    case NetworkSettingsStruct::NETWORK_PASS:                     return F("Password");
     case NetworkSettingsStruct::NETWORK_ENABLED:
 
       if (displayName) { return F("Enabled"); }

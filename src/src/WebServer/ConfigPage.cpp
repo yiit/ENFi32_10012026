@@ -52,7 +52,7 @@ void handle_config() {
     Settings.Unit = getFormItemInt(F("unit"), Settings.Unit);
 
     if (strcmp(Settings.Name, name.c_str()) != 0) {
-      #ifndef BUILD_MINIMAL_OTA
+      #ifndef LIMIT_BUILD_SIZE
       addLog(LOG_LEVEL_INFO, F("Unit Name changed."));
       #endif
 
