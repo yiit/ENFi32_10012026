@@ -244,8 +244,8 @@ SettingsType::SettingsFileEnum SettingsType::getSettingsFile(Enum settingsType)
 #endif
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
     case Enum::NetworkInterfaceSettings_Type:
-      return SettingsFileEnum::FILE_CONFIG_type;
 #endif
+      return SettingsFileEnum::FILE_CONFIG_type;
     case Enum::NotificationSettings_Type:
       return SettingsFileEnum::FILE_NOTIFICATION_type;
     case Enum::SecuritySettings_Type:
