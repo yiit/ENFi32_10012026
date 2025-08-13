@@ -173,10 +173,11 @@ void handle_networks_ShowAllNetworksTable()
   html_table_class_multirow();
   html_TR();
   html_table_header(F(""),        70);
+  html_table_header(F("Nr"),      50);
   html_table_header(F("Enabled"), 100);
   html_table_header(F("Network Adapter"));
   # ifdef ESP32
-  html_table_header(F("Prio"),    50);
+  html_table_header(F("Route Prio"),    50);
   # endif
   html_table_header(F("Connected"));
   html_table_header(F("Hostname/SSID"));
@@ -207,6 +208,8 @@ void handle_networks_ShowAllNetworksTable()
         addHtml(F("Add"));
       }
       addHtml(F("</a><TD>"));
+      addHtmlInt(x + 1);
+      html_TD();
     }
 
     if (nwplugin_set)
