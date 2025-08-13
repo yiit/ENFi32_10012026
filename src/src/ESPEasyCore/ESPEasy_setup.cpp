@@ -677,3 +677,4 @@ void ESPEasy_setup()
   logMemUsageAfter(F("Scheduler.setIntervalTimerOverride"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
 }
+
