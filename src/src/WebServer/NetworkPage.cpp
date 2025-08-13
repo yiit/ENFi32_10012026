@@ -160,6 +160,7 @@ void handle_networks_CopySubmittedSettings_NWPluginCall(ESPEasy::net::networkInd
 # endif
 # ifdef ESP32
     Settings.setRoutePrio_for_network(networkindex, getFormItemInt(F("routeprio"), 0));
+    Settings.setNetworkInterfaceSubnetBlockClientIP(networkindex, isFormItemChecked(F("block_web_access")));
 # endif
     String dummy;
     NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE, &TempEvent, dummy);
@@ -364,6 +365,8 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
       0, 255);
     addFormNote(F("The active interface with highest priority will be used for default route (gateway)."));
 # endif // ifdef ESP32
+    addFormCheckBox(F("Block Web Access"), F("block_web_access"), Settings.getNetworkInterfaceSubnetBlockClientIP(networkindex));
+    addFormNote(F("When checked, any host from a subnet on this network interface will be blocked"));
 
     String str;
     NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD, &TempEvent, str);

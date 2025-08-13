@@ -51,6 +51,7 @@ bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& strin
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
       Settings.setRoutePrio_for_network(event->NetworkIndex, 50);
+      Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, false);
       # if CONFIG_IDF_TARGET_ESP32P4
       Settings.ETH_Clock_Mode    = EthClockMode_t::Ext_crystal;
       Settings.ETH_Phy_Type      = EthPhyType_t::TLK110;

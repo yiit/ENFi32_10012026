@@ -54,9 +54,31 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
 //  ESPEasy::net::wifi::WiFiConnectRelaxed();
 // }
 
-bool        NetworkConnected()           { return ESPEasy::net::wifi::WiFiConnected(); }
+bool      NetworkConnected() { return ESPEasy::net::wifi::WiFiConnected(); }
 
-IPAddress   NetworkLocalIP()             { return WiFi.localIP(); }
+IPAddress NetworkLocalIP()   { return WiFi.localIP(); }
+
+IPAddress NetworkID()
+{
+  const IPAddress subnet = NetworkSubnetMask();
+  IPAddress networkID    = NetworkLocalIP();
+
+  for (uint8_t i = 0; i < 4; ++i) {
+    networkID[i] &= subnet[i];
+  }
+  return networkID;
+}
+
+IPAddress NetworkBroadcast()
+{
+  const IPAddress subnet = NetworkSubnetMask();
+  IPAddress broadcast    = NetworkLocalIP();
+
+  for (uint8_t i = 0; i < 4; ++i) {
+    broadcast[i] |= ~subnet[i];
+  }
+  return broadcast;
+}
 
 IPAddress   NetworkSubnetMask()          { return WiFi.subnetMask(); }
 

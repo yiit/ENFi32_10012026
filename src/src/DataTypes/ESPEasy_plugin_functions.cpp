@@ -2,7 +2,7 @@
 
 #ifdef ESP32
 
-#include "../Helpers/StringConverter.h"
+# include "../Helpers/StringConverter.h"
 
 # include <esp_netif.h>
 
@@ -15,6 +15,8 @@ bool NWPlugin::canQueryViaNetworkInterface(NWPlugin::Function function)
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
+    case NWPlugin::Function::NWPLUGIN_CLIENT_IP_WEB_ACCESS_ALLOWED:
+
       return true;
     default: break;
   }
@@ -27,7 +29,7 @@ const __FlashStringHelper * NWPlugin::toString(ConnectionState connectionState, 
     switch (connectionState)
     {
       case NWPlugin::ConnectionState::Disabled:     return F("&#10060;");         // Same icon as used everywhere else in ESPEasy to
-                                                                                  // indicate disabled
+      // indicate disabled
       case NWPlugin::ConnectionState::Error:        return F("&#x26A0;");         // Warning Emoji
       case NWPlugin::ConnectionState::Initializing: return F("&#x23F3;");         // Hourglass Not Done Emoji
       case NWPlugin::ConnectionState::Connecting:   return F("&#x23F6;&#x23F3;"); // LinkUp & Initializing
@@ -145,6 +147,131 @@ IPAddress NWPlugin::get_IP_address(NWPlugin::IP_type ip_type, NetworkInterface*n
   return ip;
 }
 
+bool NWPlugin::get_subnet(NWPlugin::IP_type ip_type, NetworkInterface*networkInterface, IPAddress& networkID, IPAddress& broadcast)
+{
+  if (!networkInterface) { return false; }
+  IPAddress ip = get_IP_address(ip_type, networkInterface);
+
+  if (ip == INADDR_NONE) { return false; }
+
+# if CONFIG_LWIP_IPV6
+
+  if (ip.type() == IPv6) {
+    // FIXME TD-er: For now, just assume /64 subnets until we have actually access to some subnet info.
+    networkID = ip;
+    broadcast = ip;
+
+    uint8_t i = 8;
+
+    if ((ip[0] == 0xFD) || (ip[0] == 0xFE)) {
+      // /8 subnet for local IPv6
+      // 0xFD: Unique Local
+      // 0xFE: Link Local
+      i = 1;
+    }
+
+    for (; i < 16; ++i) {
+      networkID[i] = 0;
+      broadcast[i] = 0xFF;
+    }
+    return true;
+  }
+# endif // if CONFIG_LWIP_IPV6
+
+  networkID = networkInterface->networkID();
+  broadcast = networkInterface->broadcastIP();
+  return true;
+}
+#endif
+
+bool NWPlugin::ipLessEqual(const IPAddress& ip, const IPAddress& high)
+{
+  // FIXME TD-er: Must check whether both are of same type and check full range IPv6
+  int nrOctets = 4;
+
+  # if FEATURE_USE_IPV6
+
+  if (ip.type() != high.type()) { return false; }
+
+  if (ip.type() == IPv6) {
+    nrOctets = 16;
+  }
+  # endif // if FEATURE_USE_IPV6
+
+  for (int i = 0; i < nrOctets; ++i) {
+    if (ip[i] != high[i]) {
+      return ip[i] < high[i];
+    }
+  }
+
+  // Is equal
+  return true;
+}
+
+bool NWPlugin::ipInRange(const IPAddress& ip, const IPAddress& low, const IPAddress& high) { 
+  return ipLessEqual(low, ip) && ipLessEqual(ip, high); 
+}
+
+#ifdef ESP32
+bool NWPlugin::IP_in_subnet(const IPAddress & ip,
+                            NetworkInterface *networkInterface)
+{
+  const NWPlugin::IP_type ip_type = get_IP_type(ip);
+  IPAddress networkID;
+  IPAddress broadcast;
+
+  if (!get_subnet(ip_type, networkInterface, networkID, broadcast)) { 
+    return false; 
+  }
+#if FEATURE_USE_IPV6
+  if (ip_type == NWPlugin::IP_type::ipv6_link_local) {
+    // Must match zone, or else it will always match.
+    return  (ip.zone() == networkID.zone());
+  }
+#endif
+
+  return ipLessEqual(networkID, ip) && ipLessEqual(ip, broadcast);
+}
+
+NWPlugin::IP_type NWPlugin::get_IP_type(const IPAddress& ip)
+{
+# if FEATURE_USE_IPV6
+
+  if (ip.type() == IPv6) {
+    switch (ip.addr_type())
+    {
+      case ESP_IP6_ADDR_IS_UNKNOWN:
+      {
+        return NWPlugin::IP_type::ipv6_unknown;
+      }
+      case ESP_IP6_ADDR_IS_GLOBAL:
+      {
+        return NWPlugin::IP_type::ipv6_global;
+      }
+      case ESP_IP6_ADDR_IS_LINK_LOCAL:
+      {
+        return NWPlugin::IP_type::ipv6_link_local;
+      }
+      case ESP_IP6_ADDR_IS_SITE_LOCAL:
+      {
+        return NWPlugin::IP_type::ipv6_site_local;
+      }
+      case ESP_IP6_ADDR_IS_UNIQUE_LOCAL:
+      {
+        return NWPlugin::IP_type::ipv6_unique_local;
+      }
+      case ESP_IP6_ADDR_IS_IPV4_MAPPED_IPV6:
+      {
+        return NWPlugin::IP_type::ipv4_mapped_ipv6;
+      }
+    }
+  }
+# endif // if FEATURE_USE_IPV6
+
+  // FIXME TD-er: Maybe also try to determine whether we have a netmask/broadcast/etc?
+  return NWPlugin::IP_type::inet;
+}
+
 const __FlashStringHelper * NWPlugin::toString(NWPlugin::NetforkFlags flag)
 {
   switch (flag)
@@ -185,15 +312,17 @@ bool NWPlugin::forceDHCP_request(NetworkInterface*networkInterface)
 
   if (netif == nullptr) { return false; }
 
-  const char* desc = esp_netif_get_desc(netif);
-  esp_err_t err = esp_netif_dhcpc_stop(netif);
+  const char*desc = esp_netif_get_desc(netif);
+  esp_err_t  err  = esp_netif_dhcpc_stop(netif);
+
   if (err != 0) {
     addLog(LOG_LEVEL_ERROR, strformat(F("%s: DHCPc could not be stopped! Error: 0x%04x: %s"), desc, err, esp_err_to_name(err)));
     return false;
   }
   addLog(LOG_LEVEL_INFO, strformat(F("%s: DHCPc stopped"), desc));
   err = esp_netif_dhcpc_start(netif);
-  if (err != ESP_OK && err != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED) {
+
+  if ((err != ESP_OK) && (err != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED)) {
     addLog(LOG_LEVEL_ERROR, strformat(F("%s: DHCPc could not be started! Error: 0x%04x: %s"), desc, err, esp_err_to_name(err)));
     return false;
   }

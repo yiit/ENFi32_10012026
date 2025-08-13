@@ -143,6 +143,26 @@ IPAddress NetworkLocalIP() {
   return network_if->localIP();
 }
 
+IPAddress NetworkID()
+{
+  auto network_if = getDefaultNonAP_interface();
+
+  if (network_if == nullptr) {
+    return IPAddress();
+  }
+  return network_if->networkID();
+}
+
+IPAddress NetworkBroadcast()
+{
+  auto network_if = getDefaultNonAP_interface();
+
+  if (network_if == nullptr) {
+    return IPAddress();
+  }
+  return network_if->broadcastIP();
+}
+
 IPAddress NetworkSubnetMask() {
   auto network_if = getDefaultNonAP_interface();
 

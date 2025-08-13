@@ -33,6 +33,9 @@
 # include "../net/wifi/ESPEasyWifi.h"
 # include "../net/wifi/ESPEasyWifi_ProcessEvent.h"
 
+# ifdef ESP8266
+#  include "../net/Helpers/NWAccessControl.h"
+# endif
 
 # ifdef ESP32P4
 #  include <esp_hosted.h>
@@ -57,13 +60,14 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
-# ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
+# ifdef ESP32
       Settings.setRoutePrio_for_network(event->NetworkIndex, 100);
+# endif // ifdef ESP32
+      Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, false);
       break;
     }
-# endif // ifdef ESP32
 
     case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
     {
@@ -138,6 +142,24 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     {
       string  = WiFi.localIP().toString();
       success = true;
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_CLIENT_IP_WEB_ACCESS_ALLOWED:
+    {
+      IPAddress client_ip;
+      client_ip.fromString(string);
+
+      if ((SecuritySettings.IPblockLevel == LOCAL_SUBNET_ALLOWED) &&
+          !Settings.getNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex)) {
+        success = NWPlugin::ipInRange(client_ip, NetworkID(), NetworkBroadcast());
+      } else if (SecuritySettings.IPblockLevel == ONLY_IP_RANGE_ALLOWED) {
+        const IPAddress low(SecuritySettings.AllowedIPrangeLow);
+        const IPAddress high(SecuritySettings.AllowedIPrangeHigh);
+        success = NWPlugin::ipInRange(client_ip, low, high);
+      } else {
+        success = true;
+      }
       break;
     }
 # endif // ifdef ESP8266

@@ -26,10 +26,11 @@ IPAddress ESPEasyWiFi_t::getIP() const
   if (WiFi.STA.hasIP()) {
     return WiFi.STA.localIP();
   }
-
+/*
   if (WiFi.AP.hasIP()) {
     return WiFi.AP.localIP();
   }
+*/
   return IPAddress();
 }
 

@@ -16,6 +16,7 @@
 
 #include "../ESPEasyCore/Controller.h"
 #include "../../ESPEasy/net/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/Helpers/NWAccessControl.h"
 
 #include "../Globals/MQTT.h"
 #include "../Globals/Nodes.h"
@@ -102,24 +103,14 @@ void handle_config() {
     // TD-er Read access control from form.
     SecuritySettings.IPblockLevel = getFormItemInt(F("ipblocklevel"));
 
-    switch (SecuritySettings.IPblockLevel) {
-      case LOCAL_SUBNET_ALLOWED:
-      {
-        IPAddress low, high;
-        getSubnetRange(low, high);
-
-        for (uint8_t i = 0; i < 4; ++i) {
-          SecuritySettings.AllowedIPrangeLow[i]  = low[i];
-          SecuritySettings.AllowedIPrangeHigh[i] = high[i];
-        }
-        break;
-      }
-      case ONLY_IP_RANGE_ALLOWED:
-      case ALL_ALLOWED:
-
+    if (SecuritySettings.IPblockLevel == ONLY_IP_RANGE_ALLOWED) {
         webArg2ip(F("iprangelow"),  SecuritySettings.AllowedIPrangeLow);
         webArg2ip(F("iprangehigh"), SecuritySettings.AllowedIPrangeHigh);
-        break;
+    } else {
+      for (size_t i = 0; i < 4; ++i) {
+        SecuritySettings.AllowedIPrangeLow[i] = 0;
+        SecuritySettings.AllowedIPrangeHigh[i] = 255;
+      }
     }
 
     #ifdef USES_ESPEASY_NOW
@@ -209,18 +200,12 @@ void handle_config() {
   // TD-er add IP access box F("ipblocklevel")
   addFormSubHeader(F("Client IP filtering"));
   {
-    IPAddress low, high;
-    getIPallowedRange(low, high);
-    uint8_t iplow[4];
-    uint8_t iphigh[4];
-
-    for (uint8_t i = 0; i < 4; ++i) {
-      iplow[i]  = low[i];
-      iphigh[i] = high[i];
-    }
     addFormIPaccessControlSelect(F("Client IP block level"), F("ipblocklevel"), SecuritySettings.IPblockLevel);
-    addFormIPBox(F("Access IP lower range"), F("iprangelow"),  iplow);
-    addFormIPBox(F("Access IP upper range"), F("iprangehigh"), iphigh);
+    
+    if (SecuritySettings.IPblockLevel == ONLY_IP_RANGE_ALLOWED) {
+      addFormIPBox(F("Access IP lower range"), F("iprangelow"),  SecuritySettings.AllowedIPrangeLow);
+      addFormIPBox(F("Access IP upper range"), F("iprangehigh"), SecuritySettings.AllowedIPrangeHigh);
+    }
   }
 #ifndef WEBSERVER_NETWORK
   addFormSubHeader(F("WiFi IP Settings"));

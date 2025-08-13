@@ -22,6 +22,8 @@ void           setNetworkMedium(NetworkMedium_t medium);
 // void           NetworkConnectRelaxed();
 bool           NetworkConnected();
 IPAddress      NetworkLocalIP();
+IPAddress      NetworkID();
+IPAddress      NetworkBroadcast();
 IPAddress      NetworkSubnetMask();
 IPAddress      NetworkGatewayIP();
 IPAddress      NetworkDnsIP(uint8_t dns_no);

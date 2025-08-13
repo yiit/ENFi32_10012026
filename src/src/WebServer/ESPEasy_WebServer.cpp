@@ -129,7 +129,7 @@ void sendHeadandTail_stdtemplate(bool Tail, bool rebooting) {
   sendHeadandTail(F("TmplStd"), Tail, rebooting);
 
   if (!Tail) {
-    if (!clientIPinSubnet() &&  ESPEasy::net::wifi::WifiIsAP(WiFi.getMode()) && (WiFi.softAPgetStationNum() > 0)) {
+    if (!clientIPinSubnetDefaultNetwork() &&  ESPEasy::net::wifi::WifiIsAP(WiFi.getMode()) && (WiFi.softAPgetStationNum() > 0)) {
       addHtmlError(F("Warning: Connected via AP"));
     }
 

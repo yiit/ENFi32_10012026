@@ -981,27 +981,12 @@ void SSDP_update() {
 #endif  // if defined(ESP8266)
 
 // ********************************************************************************
-// Return subnet range of WiFi.
+// Return subnet range of active network interface.
 // ********************************************************************************
 bool getSubnetRange(IPAddress& low, IPAddress& high)
 {
-  if (!WiFiEventData.WiFiGotIP()) {
-    return false;
-  }
-
-  const IPAddress ip     = ESPEasy::net::NetworkLocalIP();
-  const IPAddress subnet = ESPEasy::net::NetworkSubnetMask();
-
-  low  = ip;
-  high = ip;
-
-  // Compute subnet range.
-  for (uint8_t i = 0; i < 4; ++i) {
-    if (subnet[i] != 255) {
-      low[i]  = low[i] & subnet[i];
-      high[i] = high[i] | ~subnet[i];
-    }
-  }
+  low = ESPEasy::net::NetworkID();
+  high = ESPEasy::net::NetworkBroadcast();
   return true;
 }
 

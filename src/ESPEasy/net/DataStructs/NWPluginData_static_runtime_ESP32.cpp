@@ -73,7 +73,7 @@ void NWPluginData_static_runtime::mark_stop()
 
 void NWPluginData_static_runtime::mark_got_IP()
 {
-  // Set OnOffTimer to off so we can also count how often we het new IP
+  // Set OnOffTimer to off so we can also count how often we get new IP
   _gotIPStats.forceSet(true);
 
   if (!_netif) { return; }

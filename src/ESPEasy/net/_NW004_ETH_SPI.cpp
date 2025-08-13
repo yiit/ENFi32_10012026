@@ -53,6 +53,7 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
       Settings.setRoutePrio_for_network(event->NetworkIndex, 50);
+      Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, false);
 
       /*
        # if CONFIG_IDF_TARGET_ESP32P4

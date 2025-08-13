@@ -1,15 +1,15 @@
 #include "../Commands/Networks.h"
 
+#include "../../ESPEasy/net/DataTypes/NetworkIndex.h"
+#include "../../ESPEasy/net/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/Globals/NetworkState.h"
+#include "../../ESPEasy/net/Helpers/NWAccessControl.h"
+#include "../../ESPEasy/net/eth/ESPEasyEth.h"
 #include "../../ESPEasy_common.h"
 #include "../Commands/Common.h"
-#include "../../ESPEasy/net/ESPEasyNetwork.h"
-#include "../../ESPEasy/net/eth/ESPEasyEth.h"
-#include "../../ESPEasy/net/DataTypes/NetworkIndex.h"
-#include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/Settings.h"
 #include "../Helpers/StringConverter.h"
 #include "../WebServer/AccessControl.h"
-
 
 #if FEATURE_ETHERNET
 #include <ETH.h>
@@ -39,7 +39,7 @@ const __FlashStringHelper * Command_Network_Enable(struct EventStruct *event, co
 
 String Command_AccessInfo_Ls(struct EventStruct *event, const char* Line)
 {
-  return return_result(event, concat(F("Allowed IP range : "), describeAllowedIPrange()));
+  return return_result(event, concat(F("Allowed IP range : "), ESPEasy::net::describeAllowedIPrange()));
 }
 
 String Command_AccessInfo_Clear (struct EventStruct *event, const char* Line)

@@ -420,6 +420,17 @@ public:
     }
   }
 
+  bool getNetworkInterfaceSubnetBlockClientIP(ESPEasy::net::networkIndex_t index) const {
+    if (validNetworkIndex(index)) return bitRead(NetworkInterfaceSubnetBlockClientIP_bits, index);
+    return false;
+  }
+
+  void setNetworkInterfaceSubnetBlockClientIP(ESPEasy::net::networkIndex_t index, bool enabled) {
+    if (validNetworkIndex(index)) {
+      bitWrite(NetworkInterfaceSubnetBlockClientIP_bits, index, enabled);
+    }
+  }
+
   ESPEasy::net::nwpluginID_t getNWPluginID_for_network(ESPEasy::net::networkIndex_t index) const;
 
   void setNWPluginID_for_network(ESPEasy::net::networkIndex_t index, ESPEasy::net::nwpluginID_t id);
@@ -673,7 +684,7 @@ public:
   // FIXME TD-er: Must change to nwpluginID_t, but then also another check must be added since changing the pluginID_t will also render settings incompatible
   uint8_t       NWPluginID[NETWORK_MAX] = {0};
   uint8_t       NetworkEnabled_bits{};
-  uint8_t       NetworkUnused_1{};
+  uint8_t       NetworkInterfaceSubnetBlockClientIP_bits{}; // Client IP Block Level. Allow from subnet of this interface
   uint8_t       NetworkUnused_2{};
   uint8_t       NetworkUnused_3{};
 #ifdef ESP32

@@ -50,13 +50,14 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
-# ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
+# ifdef ESP32
       Settings.setRoutePrio_for_network(event->NetworkIndex, 10);
+# endif
+      Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, false);
       break;
     }
-# endif // ifdef ESP32
 
     case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
     {
@@ -135,6 +136,27 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
     {
       string  = WiFi.softAPIP().toString();
       success = true;
+      break;
+    }
+
+    case NWPlugin::Function::NWPLUGIN_CLIENT_IP_WEB_ACCESS_ALLOWED:
+    {
+      // FIXME TD-er: Shouldn't we just always allow access from AP?
+      if (!Settings.getNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex)) {
+        IPAddress client_ip;
+        client_ip.fromString(string);
+
+        // FIXME TD-er: Do we allow to set the subnetmask for AP to anything else?
+        const IPAddress subnet(255, 255, 255, 0);
+        const IPAddress localIP = WiFi.softAPIP();
+        bool success            = true;
+
+        for (uint8_t i = 0; success && i < 4; ++i) {
+          if ((localIP[i] & subnet[i]) != (client_ip[i] & subnet[i])) {
+            success = false;
+          }
+        }
+      }
       break;
     }
 # endif // ifdef ESP8266

@@ -9,6 +9,7 @@
 #include "../CustomBuild/CompiletimeDefines.h"
 
 #include "../../ESPEasy/net/ESPEasyNetwork.h"
+#include "../../ESPEasy/net/Helpers/NWAccessControl.h"
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 #if FEATURE_ETHERNET
@@ -502,7 +503,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::DNS:                    return strformat(F("%s / %s"), getValue(LabelType::DNS_1).c_str(), getValue(LabelType::DNS_2).c_str());
     case LabelType::DNS_1:                  return formatIP(ESPEasy::net::NetworkDnsIP(0));
     case LabelType::DNS_2:                  return formatIP(ESPEasy::net::NetworkDnsIP(1));
-    case LabelType::ALLOWED_IP_RANGE:       return describeAllowedIPrange();
+    case LabelType::ALLOWED_IP_RANGE:       return ESPEasy::net::describeAllowedIPrange();
 #if FEATURE_WIFI
     case LabelType::STA_MAC:                return ESPEasy::net::WifiSTAmacAddress().toString();
     case LabelType::AP_MAC:                 return ESPEasy::net::WifiSoftAPmacAddress().toString();

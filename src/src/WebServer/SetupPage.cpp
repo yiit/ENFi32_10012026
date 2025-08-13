@@ -183,7 +183,7 @@ void handle_setup() {
         html_TD();
         
         #if SETUP_PAGE_SHOW_CONFIG_BUTTON
-        if (!clientIPinSubnet()) {
+        if (!clientIPinSubnetDefaultNetwork()) {
           String host = formatIP(ESPEasy::net::NetworkLocalIP());
           String url  = F("http://");
           url += host;

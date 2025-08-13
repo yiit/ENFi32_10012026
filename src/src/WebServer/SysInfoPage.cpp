@@ -19,13 +19,14 @@
 
 # include "../../ESPEasy/net/eth/ESPEasyEth.h"
 # include "../../ESPEasy/net/ESPEasyNetwork.h"
+# include "../../ESPEasy/net/Helpers/NWAccessControl.h"
 # include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 
 
 # include "../Globals/CRCValues.h"
 # include "../Globals/ESPEasy_time.h"
 # include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
-#include "../../ESPEasy/net/Globals/NetworkState.h"
+# include "../../ESPEasy/net/Globals/NetworkState.h"
 # include "../Globals/RTC.h"
 # include "../Globals/Settings.h"
 
@@ -140,7 +141,7 @@ void handle_sysinfo_json() {
   json_prop(F("gw"),            getValue(LabelType::GATEWAY));
   json_prop(F("dns1"),          getValue(LabelType::DNS_1));
   json_prop(F("dns2"),          getValue(LabelType::DNS_2));
-  json_prop(F("allowed_range"), describeAllowedIPrange());
+  json_prop(F("allowed_range"), ESPEasy::net::describeAllowedIPrange());
   json_prop(F("sta_mac"),       getValue(LabelType::STA_MAC));
   json_prop(F("ap_mac"),        getValue(LabelType::AP_MAC));
   json_prop(F("ssid"),          getValue(LabelType::SSID));

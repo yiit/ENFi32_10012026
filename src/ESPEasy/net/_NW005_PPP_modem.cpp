@@ -53,9 +53,8 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
-      # ifdef ESP32
       Settings.setRoutePrio_for_network(event->NetworkIndex, 20);
-      # endif
+      Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, true);
       break;
     }
 
@@ -65,7 +64,6 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
-# ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     {
       ESPEasy::net::ppp::NW005_data_struct_PPP_modem *NW_data =
@@ -77,8 +75,6 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
       }
       break;
     }
-# endif // ifdef ESP32
-
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED:
     {

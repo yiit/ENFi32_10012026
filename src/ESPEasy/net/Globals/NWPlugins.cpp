@@ -5,9 +5,11 @@
 #include "../../../src/DataStructs/TimingStats.h"
 #include "../../../src/DataTypes/ESPEasy_plugin_functions.h"
 #include "../../../src/ESPEasyCore/ESPEasy_Log.h"
+#include "../../../src/Globals/SecuritySettings.h"
 #include "../../../src/Globals/Settings.h"
 #include "../../../src/Helpers/PrintToString.h"
 #include "../Helpers/_NWPlugin_init.h"
+#include "../Helpers/NWAccessControl.h"
 #include "../_NWPlugin_Helper.h"
 
 namespace ESPEasy {
@@ -138,13 +140,13 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 #if FEATURE_PLUGIN_STATS
           case NWPlugin::Function::NWPLUGIN_RECORD_STATS:
           {
-//            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+            //            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
             success = NW_data->record_stats();
             break;
           }
           case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD_SHOW_STATS:
           {
-//            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
+            //            NWPluginData_static_runtime& runtime_data = NW_data->getNWPluginData_static_runtime();
             success = NW_data->webformLoad_show_stats(event);
             break;
           }
@@ -180,6 +182,8 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_IP:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HOSTNAME:
+    case NWPlugin::Function::NWPLUGIN_CLIENT_IP_WEB_ACCESS_ALLOWED:
+
 #ifdef ESP32
     case NWPlugin::Function::NWPLUGIN_GET_INTERFACE:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_ROUTE_PRIO:
@@ -259,6 +263,27 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
                     str = prstr.get();
                     break;
                   }
+
+                  case NWPlugin::Function::NWPLUGIN_CLIENT_IP_WEB_ACCESS_ALLOWED:
+                  {
+                    IPAddress client_ip;
+                    client_ip.fromString(str);
+
+                    if ((SecuritySettings.IPblockLevel == LOCAL_SUBNET_ALLOWED) &&
+                        !Settings.getNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex)) {
+                      success = NWPlugin::IP_in_subnet(client_ip, event->networkInterface);
+                    } else if (SecuritySettings.IPblockLevel == ONLY_IP_RANGE_ALLOWED) {
+                      const IPAddress low(SecuritySettings.AllowedIPrangeLow);
+                      const IPAddress high(SecuritySettings.AllowedIPrangeHigh);
+                      success = NWPlugin::ipInRange(client_ip, low, high) &&
+                                NWPlugin::IP_in_subnet(low,  event->networkInterface) &&
+                                NWPlugin::IP_in_subnet(high, event->networkInterface);
+                    } else {
+                      success = true;
+                    }
+                    break;
+                  }
+
                   default: break;
                 }
               }

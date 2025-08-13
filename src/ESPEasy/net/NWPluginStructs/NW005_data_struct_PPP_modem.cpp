@@ -45,7 +45,6 @@ static NWPluginData_static_runtime stats_and_cache(&NW_PLUGIN_INTERFACE);
 # define NW005_KEY_MODEM_MODEL          11
 # define NW005_KEY_APN                  12
 # define NW005_KEY_SIM_PIN              13
-# define NW005_KEY_SET_DEFAULT_ROUTE    14
 
 const __FlashStringHelper* NW005_getLabelString(uint32_t key, bool displayString, ESPEasy_key_value_store::StorageType& storageType)
 {
@@ -78,10 +77,6 @@ const __FlashStringHelper* NW005_getLabelString(uint32_t key, bool displayString
     case NW005_KEY_SIM_PIN:
       storageType = ESPEasy_key_value_store::StorageType::string_type;
       return displayString ? F("SIM Card Pin") : F("pin");
-    case NW005_KEY_SET_DEFAULT_ROUTE:
-      storageType = ESPEasy_key_value_store::StorageType::bool_type;
-      return displayString ? F("Set as Default Route") : F("default_route");
-
 
   }
   return F("");
@@ -369,11 +364,6 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
 void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
 {
   _load();
-
-  showWebformItem(
-    *_kvs,
-    NW005_makeWebFormItemParams(NW005_KEY_SET_DEFAULT_ROUTE));
-
 
   addFormSubHeader(F("Device Settings"));
   {
@@ -698,8 +688,7 @@ void NW005_data_struct_PPP_modem::webform_save(EventStruct *event)
     NW005_KEY_FLOWCTRL,
     NW005_KEY_MODEM_MODEL,
     NW005_KEY_APN,
-    NW005_KEY_SIM_PIN,
-    NW005_KEY_SET_DEFAULT_ROUTE
+    NW005_KEY_SIM_PIN
   };
 
 

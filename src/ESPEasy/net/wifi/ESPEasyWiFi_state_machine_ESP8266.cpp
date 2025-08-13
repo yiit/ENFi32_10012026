@@ -16,11 +16,13 @@ IPAddress ESPEasyWiFi_t::getIP() const
   if (ip.isSet()) {
     return ip;
   }
+/*
   ip = WiFi.softAPIP();
 
   if (ip.isSet()) {
     return ip;
   }
+*/
   return IPAddress();
 }
 
