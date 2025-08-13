@@ -95,6 +95,7 @@ void doSetAPinternal(bool enable)
                dns.toString().c_str())
              );
     }
+    WiFi.AP.bandwidth(WIFI_BW_HT20);
     # endif // ifdef ESP32
     # ifdef ESP8266
 

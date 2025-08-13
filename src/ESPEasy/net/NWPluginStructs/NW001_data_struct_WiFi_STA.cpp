@@ -165,11 +165,14 @@ bool NW001_data_struct_WiFi_STA::initPluginStats()
 bool NW001_data_struct_WiFi_STA::record_stats()
 {
   if (_plugin_stats_array != nullptr) {
-#  ifdef ESP32
-
     EventStruct tmpEvent;
     size_t valueCount{};
-    tmpEvent.ParfN[valueCount++] = WiFi.STA.RSSI();
+    tmpEvent.ParfN[valueCount++] = 
+    #ifdef ESP32
+      WiFi.STA.RSSI();
+    #else
+      WiFi.RSSI();
+    #endif
 #   if FEATURE_SET_WIFI_TX_PWR
     tmpEvent.ParfN[valueCount++] = ESPEasy::net::wifi::GetWiFiTXpower();
 #   endif
@@ -177,7 +180,6 @@ bool NW001_data_struct_WiFi_STA::record_stats()
     bool trackPeaks                  = true;
     bool onlyUpdateTimestampWhenSame = true;
     return pushStatsValues(&tmpEvent, valueCount, trackPeaks, onlyUpdateTimestampWhenSame);
-#  endif // ifdef ESP32
   }
   return false;
 }
