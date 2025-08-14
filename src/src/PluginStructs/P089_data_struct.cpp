@@ -1,13 +1,114 @@
 #include "../PluginStructs/P089_data_struct.h"
 
-#if defined(USES_P089) && defined(ESP8266)
+#ifdef USES_P089
 
 
-#include "../Helpers/Networking.h"
+# include "../Helpers/Networking.h"
 
-#include "../Helpers/_Plugin_init.h"
+# include "../Helpers/_Plugin_init.h"
 
+# ifdef ESP32
+P089_data_struct::P089_data_struct() {
+  espPing                     = new (std::nothrow) PingClass();
+  _ping_task_data.initialized = isInitialized();
+}
 
+P089_data_struct::~P089_data_struct() {
+  if (_ping_task_data.taskHandle) {
+    vTaskDelete(_ping_task_data.taskHandle);
+  }
+  delete espPing;
+}
+
+void P089_execute_ping_task(void *parameter)
+{
+  P089_ping_task_data*ping_task_data = static_cast<P089_ping_task_data *>(parameter);
+
+  if ((ping_task_data->status == P089_status::Working) && (nullptr != ping_task_data->espPing)) {
+    // Blocking operation
+    ping_task_data->result = ping_task_data->espPing->ping(ping_task_data->pingIp, ping_task_data->count);
+
+    // Results are in
+    ping_task_data->avgTime = ping_task_data->espPing->averageTime();
+    ping_task_data->status  = P089_status::Ready;
+  }
+
+  ping_task_data->taskHandle = NULL;
+  vTaskDelete(ping_task_data->taskHandle);
+}
+
+bool P089_data_struct::send_ping(struct EventStruct *event) {
+  /* This ping lost for sure */
+  if (!isInitialized() || !NetworkConnected()) {
+    return true;
+  }
+
+  if (!_ping_task_data.initialized) {
+    // addLog(LOG_LEVEL_ERROR, F("PING : Not initialized."));
+    return true; // Not (yet?) initialized
+  }
+
+  if (_ping_task_data.status == P089_status::Working) {
+    // addLog(LOG_LEVEL_INFO, F("PING : Still working."));
+    return false; // Busy, but not a failure
+  }
+
+  if (_ping_task_data.status == P089_status::Ready) {
+    if (_ping_task_data.result) {
+      addLog(LOG_LEVEL_INFO, strformat(F("PING : Successfully pinged %s (%s) count: %d avg: %.03f ms"),
+                                       _ping_task_data.hostname.c_str(),
+                                       _ping_task_data.pingIp.toString().c_str(),
+                                       _ping_task_data.count,
+                                       _ping_task_data.avgTime));
+    } else {
+      addLog(LOG_LEVEL_ERROR, strformat(F("PING : Error pinging %s (%s)"),
+                                        _ping_task_data.hostname.c_str(),
+                                        _ping_task_data.pingIp.toString().c_str()));
+    }
+    UserVar.setFloat(event->TaskIndex, 1, _ping_task_data.avgTime); // Set always, even when not specifically enabled
+
+    _ping_task_data.status = P089_status::Initial;                  // Ready for new work
+    return !_ping_task_data.result;                                 // Inverted result to report back!
+  }
+
+  IPAddress ip;
+  char hostname[PLUGIN_089_HOSTNAME_SIZE]{};
+
+  LoadCustomTaskSettings(event->TaskIndex, (uint8_t *)&hostname, PLUGIN_089_HOSTNAME_SIZE);
+
+  /* This one lost as well, DNS dead? */
+  if (!resolveHostByName(hostname, ip)) {
+    return true;
+  }
+
+  int16_t pingCount = P089_PING_COUNT;
+
+  if ((pingCount < 1) || (pingCount > 100)) {
+    pingCount = 5;
+  }
+
+  _ping_task_data.status   = P089_status::Working;
+  _ping_task_data.count    = pingCount;
+  _ping_task_data.pingIp   = ip;
+  _ping_task_data.hostname = hostname; // Bring all data to the task
+  _ping_task_data.espPing  = espPing;
+
+  xTaskCreatePinnedToCore(
+    P089_execute_ping_task,      // Function that should be called
+    "PingClass.ping()",          // Name of the task (for debugging)
+    4000,                        // Stack size (bytes)
+    &_ping_task_data,            // Parameter to pass
+    1,                           // Task priority
+    &_ping_task_data.taskHandle, // Task handle
+    xPortGetCoreID()             // Core you want to run the task on (0 or 1)
+    );
+
+  return false;                  // Started work, not a failure
+}
+
+# endif // ifdef ESP32
+
+# ifdef ESP8266
 P089_data_struct::P089_data_struct() {
   destIPAddress.addr = 0;
   idseq              = 0;
@@ -159,4 +260,5 @@ uint8_t PingReceiver(void *origin, struct raw_pcb *pcb, struct pbuf *packetBuffe
   return 1;
 }
 
-#endif // if defined(USES_P089) && defined(ESP8266)
+# endif // ifdef ESP8266
+#endif // ifdef USES_P089
