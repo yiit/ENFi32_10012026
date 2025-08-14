@@ -40,5 +40,7 @@ void addSubmitButton(const String& value, const String& name, const String& clas
 void addCopyButton(const String& value, const String& delimiter, const String& name);
 
 
+void addPlugin_Add_Edit_Button(const __FlashStringHelper * urlPrefix, size_t index, bool plugin_set, bool plugin_supported, const String& symbol = EMPTY_STRING);
+
 
 #endif

@@ -239,25 +239,7 @@ void handle_controllers_ShowAllControllersTable()
       LoadControllerSettings(x, *ControllerSettings);
       html_TR_TD();
 
-      if (cplugin_set && !supportedCPluginID(Settings.Protocol[x])) {
-        html_add_button_prefix(F("red"), true);
-      } else {
-        html_add_button_prefix();
-      }
-      {
-        addHtml(F("controllers?index="));
-        addHtmlInt(x + 1);
-        addHtml(F("'>"));
-
-        if (cplugin_set) {
-          addHtml(F("Edit"));
-        } else {
-          addHtml(F("Add"));
-        }
-        addHtml(F("</a><TD>"));
-        addHtml(getControllerSymbol(x));
-      }
-      html_TD();
+      addPlugin_Add_Edit_Button(F("controllers"), x, cplugin_set, supportedCPluginID(Settings.Protocol[x]), getControllerSymbol(x));
 
       if (cplugin_set)
       {

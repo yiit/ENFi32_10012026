@@ -152,22 +152,20 @@ void handle_notifications() {
       {
         LoadNotificationSettings(x, reinterpret_cast<uint8_t *>(NotificationSettings.get()), sizeof(NotificationSettingsStruct));
         NotificationSettings->validate();
-        html_TR_TD();
-        html_add_button_prefix();
-        addHtml(F("notifications?index="));
-        addHtmlInt(x + 1);
-        addHtml(F("'>Edit</a>"));
-        html_TD();
-        addHtmlInt(x + 1);
-        html_TD();
+        const bool nplugin_set = Settings.Notification[x] != INVALID_N_PLUGIN_ID.value;
 
-        if (Settings.Notification[x] != INVALID_N_PLUGIN_ID.value)
+        uint8_t NotificationProtocolIndex = getNProtocolIndex(npluginID_t::toPluginID(Settings.Notification[x]));
+
+        html_TR_TD();
+
+        addPlugin_Add_Edit_Button(F("notifications"), x, nplugin_set, validNProtocolIndex(NotificationProtocolIndex));
+
+        if (nplugin_set)
         {
           addEnabled(Settings.NotificationEnabled[x]);
 
           html_TD();
-          uint8_t NotificationProtocolIndex = getNProtocolIndex(npluginID_t::toPluginID(Settings.Notification[x]));
-          String  NotificationName          = F("(plugin not found?)");
+          String NotificationName = F("(plugin not found?)");
 
           if (validNProtocolIndex(NotificationProtocolIndex))
           {

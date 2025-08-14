@@ -186,3 +186,30 @@ void addCopyButton(const String& value, const String& delimiter, const String& n
   html_copyText_marker();
   addHtml(F(")</button>"));
 }
+
+void addPlugin_Add_Edit_Button(const __FlashStringHelper * urlPrefix, size_t index, bool plugin_set, bool plugin_supported, const String& symbol)
+{
+  if (plugin_set && !plugin_supported) {
+    html_add_button_prefix(F("red"), true);
+  } else {
+    html_add_button_prefix();
+  }
+  
+  addHtml(urlPrefix);
+  addHtml(F("?index="));
+  addHtmlInt(index + 1);
+  addHtml(F("'>"));
+
+  if (plugin_set) {
+    addHtml(F("Edit"));
+  } else {
+    addHtml(F("Add"));
+  }
+  addHtml(F("</a><TD>"));
+  if (symbol.isEmpty()) {
+    addHtmlInt(index + 1);
+  } else {
+    addHtml(symbol);
+  }
+  html_TD();
+}

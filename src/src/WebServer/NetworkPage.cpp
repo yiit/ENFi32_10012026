@@ -19,6 +19,13 @@
 # include "../../ESPEasy/net/Helpers/_NWPlugin_init.h"
 # include "../../ESPEasy/net/_NWPlugin_Helper.h"
 
+#ifdef ESP8266
+#define MAX_NR_NETWORKS_IN_TABLE  2
+#endif
+#ifdef ESP32
+#define MAX_NR_NETWORKS_IN_TABLE  NETWORK_MAX
+#endif
+
 
 using namespace ESPEasy::net;
 
@@ -185,32 +192,14 @@ void handle_networks_ShowAllNetworksTable()
   html_table_header(F("IP"));
   html_table_header(F("Port"));
 
-  for (ESPEasy::net::networkIndex_t x = 0; x < NETWORK_MAX; x++)
+  for (ESPEasy::net::networkIndex_t x = 0; x < MAX_NR_NETWORKS_IN_TABLE; x++)
   {
     const nwpluginID_t nwpluginID = Settings.getNWPluginID_for_network(x);
     const bool nwplugin_set       = nwpluginID.isValid();
 
     html_TR_TD();
 
-    if (nwplugin_set && !supportedNWPluginID(nwpluginID)) {
-      html_add_button_prefix(F("red"), true);
-    } else {
-      html_add_button_prefix();
-    }
-    {
-      addHtml(F("network?index="));
-      addHtmlInt(x + 1);
-      addHtml(F("'>"));
-
-      if (nwplugin_set) {
-        addHtml(F("Edit"));
-      } else {
-        addHtml(F("Add"));
-      }
-      addHtml(F("</a><TD>"));
-      addHtmlInt(x + 1);
-      html_TD();
-    }
+    addPlugin_Add_Edit_Button(F("network"), x, nwplugin_set, supportedNWPluginID(nwpluginID));
 
     if (nwplugin_set)
     {
