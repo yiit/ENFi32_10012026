@@ -9,31 +9,27 @@
 
 # ifdef ESP32
 P089_data_struct::P089_data_struct() {
-  espPing = new (std::nothrow) PingClass();
+  if (nullptr == P089_ping_service) {
+    P089_ping_service = new (std::nothrow) P089_ping_service_struct();
+    addLog(LOG_LEVEL_INFO, F("PING : Starting ping service."));
+  }
+
+  if ((nullptr != P089_ping_service) && P089_ping_service->isInitialized()) {
+    addLog(LOG_LEVEL_INFO, F("PING : Increment task instance counter."));
+    P089_ping_service->increment();
+  }
 }
 
 P089_data_struct::~P089_data_struct() {
-  if (_ping_task_data.taskHandle) {
-    vTaskDelete(_ping_task_data.taskHandle);
+  if (nullptr != P089_ping_service) {
+    addLog(LOG_LEVEL_INFO, F("PING : Decrement task instance counter."));
+
+    if (0 == P089_ping_service->decrement()) {
+      addLog(LOG_LEVEL_INFO, F("PING : Stopping ping service."));
+      delete P089_ping_service;
+      P089_ping_service = nullptr;
+    }
   }
-  delete espPing;
-}
-
-void P089_execute_ping_task(void *parameter)
-{
-  P089_ping_task_data*ping_task_data = static_cast<P089_ping_task_data *>(parameter);
-
-  if ((ping_task_data->status == P089_status::Working) && (nullptr != ping_task_data->espPing)) {
-    // Blocking operation
-    ping_task_data->result = ping_task_data->espPing->ping(ping_task_data->pingIp, ping_task_data->count);
-
-    // Results are in
-    ping_task_data->avgTime = ping_task_data->espPing->averageTime();
-    ping_task_data->status  = P089_status::Ready;
-  }
-
-  ping_task_data->taskHandle = NULL;
-  vTaskDelete(ping_task_data->taskHandle);
 }
 
 bool P089_data_struct::send_ping(struct EventStruct *event) {
@@ -42,28 +38,41 @@ bool P089_data_struct::send_ping(struct EventStruct *event) {
     return true;
   }
 
-  if (_ping_task_data.status == P089_status::Working) {
+  if ((nullptr == P089_ping_service) ||
+      !P089_ping_service->isInitialized()) {
+    return true; // Service not available
+  }
+
+  if (P089_ping_service->getPingResult(event->TaskIndex, _ping_request)) {
+    // Get requested result
+
+    if (_ping_request.status == P089_request_status::Result) {
+      if (_ping_request.result) {
+        addLog(LOG_LEVEL_INFO, strformat(F("PING : Successfully pinged %s (%s) count: %d avg: %.03f ms for task: %d"),
+                                         _ping_request.hostname.c_str(),
+                                         _ping_request.ip.toString().c_str(),
+                                         _ping_request.count,
+                                         _ping_request.avgTime,
+                                         event->TaskIndex + 1));
+      } else {
+        addLog(LOG_LEVEL_ERROR, strformat(F("PING : Error pinging %s (%s) for task: %d"),
+                                          _ping_request.hostname.c_str(),
+                                          _ping_request.ip.toString().c_str(),
+                                          event->TaskIndex + 1));
+      }
+      UserVar.setFloat(event->TaskIndex, 1, _ping_request.avgTime); // Set always, even when not specifically enabled
+
+      _ping_request.status = P089_request_status::Finished;         // Ready for new work
+      return !_ping_request.result;                                 // Inverted result to report back!
+    }
+  }
+
+  if ((_ping_request.status > P089_request_status::Request) && (_ping_request.status < P089_request_status::Result)) {
     // addLog(LOG_LEVEL_INFO, F("PING : Still working."));
     return false; // Busy, but not a failure
   }
 
-  if (_ping_task_data.status == P089_status::Ready) {
-    if (_ping_task_data.result) {
-      addLog(LOG_LEVEL_INFO, strformat(F("PING : Successfully pinged %s (%s) count: %d avg: %.03f ms"),
-                                       _ping_task_data.hostname.c_str(),
-                                       _ping_task_data.pingIp.toString().c_str(),
-                                       _ping_task_data.count,
-                                       _ping_task_data.avgTime));
-    } else {
-      addLog(LOG_LEVEL_ERROR, strformat(F("PING : Error pinging %s (%s)"),
-                                        _ping_task_data.hostname.c_str(),
-                                        _ping_task_data.pingIp.toString().c_str()));
-    }
-    UserVar.setFloat(event->TaskIndex, 1, _ping_task_data.avgTime); // Set always, even when not specifically enabled
-
-    _ping_task_data.status = P089_status::Initial;                  // Ready for new work
-    return !_ping_task_data.result;                                 // Inverted result to report back!
-  }
+  // New request
 
   IPAddress ip;
   char hostname[PLUGIN_089_HOSTNAME_SIZE]{};
@@ -77,27 +86,24 @@ bool P089_data_struct::send_ping(struct EventStruct *event) {
 
   int16_t pingCount = P089_PING_COUNT;
 
-  if ((pingCount < 1) || (pingCount > 100)) {
+  if ((pingCount < 1) || (pingCount > P089_MAX_PING_COUNT)) {
     pingCount = 5;
   }
 
-  _ping_task_data.status   = P089_status::Working;
-  _ping_task_data.count    = pingCount;
-  _ping_task_data.pingIp   = ip;
-  _ping_task_data.hostname = hostname; // Bring all data to the task
-  _ping_task_data.espPing  = espPing;
+  _ping_request.status   = P089_request_status::Request;
+  _ping_request.count    = pingCount;
+  _ping_request.ip       = ip;
+  _ping_request.hostname = hostname; // Bring all data to the request
+  const bool result = !P089_ping_service->addPingRequest(event->TaskIndex, _ping_request);
+  P089_ping_service->loop();         // Kick-off if not already working
+  return result;
+}
 
-  xTaskCreatePinnedToCore(
-    P089_execute_ping_task,      // Function that should be called
-    "PingClass.ping()",          // Name of the task (for debugging)
-    4000,                        // Stack size (bytes)
-    &_ping_task_data,            // Parameter to pass
-    1,                           // Task priority
-    &_ping_task_data.taskHandle, // Task handle
-    xPortGetCoreID()             // Core you want to run the task on (0 or 1)
-    );
-
-  return false;                  // Started work, not a failure
+bool P089_data_struct::loop() {
+  if ((nullptr != P089_ping_service) && P089_ping_service->isInitialized()) {
+    return P089_ping_service->loop();
+  }
+  return false; // We did nothing
 }
 
 # endif // ifdef ESP32

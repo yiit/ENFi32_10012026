@@ -19,6 +19,10 @@
    Maintainer: Denys Fedoryshchenko, denys AT nuclearcat.com
  */
 /** Changelog:
+ * 2025-08-15 tonhuisman: Move actual ping action to a service, instantiated by the first task instance, and deleted by the last stopped
+ *                        task instance. Service is looped in 10 per second function.
+ *                        Enable PluginStats for ESP32, so the trend of average ping-time can be displayed.
+ * 2025-08-15 tonhuisman: Reduce max. ping count from 100 to 25
  * 2025-08-14 tonhuisman: Add code to plugin to use dvarrel/ESPping library that works for ESP32.
  *                        ESP32 handles the ping in an independent RTOS task, to make it non-blocking.
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for Ping)
@@ -51,6 +55,9 @@ boolean Plugin_089(uint8_t function, struct EventStruct *event, String& string)
       dev.DecimalsOnly   = true;
       dev.SendDataOption = true;
       dev.TimerOption    = true;
+      # ifdef ESP32
+      dev.PluginStats = true;
+      # endif // ifdef ESP32
       break;
     }
 
@@ -121,7 +128,7 @@ boolean Plugin_089(uint8_t function, struct EventStruct *event, String& string)
       if (P089_PING_COUNT < 1) {
         P089_PING_COUNT = 5;
       }
-      addFormNumericBox(F("Ping count"), F("pcount"), P089_PING_COUNT, 1, 100);
+      addFormNumericBox(F("Ping count"), F("pcount"), P089_PING_COUNT, 1, P089_MAX_PING_COUNT);
 
       const __FlashStringHelper*countOptions[] = {
         F("Fails"),
@@ -164,6 +171,18 @@ boolean Plugin_089(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
+    # ifdef ESP32
+    case PLUGIN_TEN_PER_SECOND:
+    {
+      P089_data_struct *P089_taskdata =
+        static_cast<P089_data_struct *>(getPluginTaskData(event->TaskIndex));
+
+      if ((nullptr != P089_taskdata) && P089_taskdata->isInitialized()) {
+        success = P089_taskdata->loop();
+      }
+      break;
+    }
+    # endif // ifdef ESP32
     case PLUGIN_READ:
     {
       P089_data_struct *P089_taskdata =

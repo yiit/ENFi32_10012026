@@ -13,29 +13,13 @@
 # define ICMP_PAYLOAD_LEN          32
 
 # ifdef ESP32
+
+#  include "../PluginStructs/P089_ping_service_struct.h"
+
 #  define P089_PING_COUNT          PCONFIG(0)
 #  define P089_VALUE_COUNT         PCONFIG(1)
 
-#  include <ESPping.h>
-
-enum class P089_status : uint8_t {
-  Initial = 0,
-  Working = 1,
-  Ready   = 2,
-};
-
-struct P089_ping_task_data {
-  P089_status status = P089_status::Initial;
-  IPAddress   pingIp;
-  String      hostname;
-  bool        result{};
-  uint16_t    count{};
-  float       avgTime{};
-  PingClass  *espPing = nullptr;
-
-  // This is C-code, so not set to nullptr, but to NULL
-  TaskHandle_t taskHandle = NULL;
-};
+#  define P089_MAX_PING_COUNT      25
 
 struct P089_data_struct : public PluginTaskData_base {
 public:
@@ -45,15 +29,15 @@ public:
   virtual ~P089_data_struct();
 
   bool isInitialized() const {
-    return nullptr != espPing;
+    return true;
   }
 
   bool send_ping(struct EventStruct *event);
+  bool loop();
 
 private:
 
-  PingClass          *espPing = nullptr;
-  P089_ping_task_data _ping_task_data;
+  P089_ping_request _ping_request;
 };
 # endif // ifdef ESP32
 
