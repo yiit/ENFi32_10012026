@@ -380,15 +380,19 @@ std::vector<BusCmd_Command_struct>BusCmd_Helper_struct::parseBusCmdCommands(cons
                 #endif // if FEATURE_BUSCMD_STRING
                 break;
               case BusCmd_Command_e::Calculate: // calc - c.<calculation>
-              case BusCmd_Command_e::If:        // if - i.<calculation>
+              case BusCmd_Command_e::If:        // if - i.<calculation>[.skip]
                 fmt         = BusCmd_DataFormat_e::undefined;
                 val         = 0;
                 calculation = args[arg - 1];
                 stripEscapeCharacters(calculation);
+
+                if ((BusCmd_Command_e::If == cmd) && !args[arg].isEmpty()) {
+                  validUIntFromString(args[arg], len); // destination, 0 = exit, 1.. skip n commands
+                }
                 break;
-              case BusCmd_Command_e::Let:    // let - l.<variable>.<calculation>
+              case BusCmd_Command_e::Let:              // let - l.<variable>.<calculation>
               #if FEATURE_BUSCMD_STRING && FEATURE_STRING_VARIABLES
-              case BusCmd_Command_e::LetStr: // letstr - m.<variable>.<calculation>
+              case BusCmd_Command_e::LetStr:           // letstr - m.<variable>.<calculation>
               #endif // if FEATURE_BUSCMD_STRING && FEATURE_STRING_VARIABLES
                 fmt         = BusCmd_DataFormat_e::undefined;
                 val         = 0;
@@ -543,6 +547,7 @@ bool BusCmd_Helper_struct::executeBusCmdCommands() {
       DIRECT_pinWrite(_rstPin, _lastReg ? LOW : HIGH); // Revert ResetGPIO state
     }
   }
+  uint32_t toSkip{};                                   // Skip nr of commands after if.<cond>.<skip>
 
   while (_it != _commands.end() && BusCmd_CommandState_e::Processing == _commandState) {
     bool wideReg = false;
@@ -940,8 +945,13 @@ bool BusCmd_Helper_struct::executeBusCmdCommands() {
 
             if (BusCmd_Command_e::If == _it->command) {
               if (essentiallyZero(tmp)) { // 0 = false => cancel execution
-                _commandState = BusCmd_CommandState_e::ConditionalExit;
-                result        = false;    // PLUGIN_READ failed
+                if (0 == _it->len) {
+                  _commandState = BusCmd_CommandState_e::ConditionalExit;
+                  result        = false;  // PLUGIN_READ failed
+                } else {
+                  // skip <len> commands
+                  toSkip = _it->len;
+                }
               }
             } else if (BusCmd_Command_e::Let == _it->command) {
               String toVar(replacePluginValues(_it->variable));
@@ -1060,6 +1070,11 @@ bool BusCmd_Helper_struct::executeBusCmdCommands() {
                                        _it->toString().c_str(), _varIndex, _valueIsSet ? 't' : 'f', valStr.c_str()));
     }
     ++_it; // Next command
+
+    while (toSkip > 0 && _it != _commands.end()) {
+      ++_it;
+      --toSkip; // Skip commands, forward-only, for now
+    }
   }
 
   if ((BusCmd_CommandState_e::Processing == _commandState) &&

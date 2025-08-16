@@ -2,6 +2,8 @@
 #define _HELPERS_BUSCMD_HELPER_H
 
 /** Changelog:
+ * 2025-08-16 tonhuisman: Extend If I2C command to optionally skip forward N commands on false (0) result
+ * 2025-08-07 tonhuisman: Add LetStr I2C command, analogue to Rules LetStr command
  * 2025-06-03 tonhuisman: Add PLUGIN_GET_CONFIG_VALUE support, guarded with ifndef LIMIT_BUILD_SIZE
  * 2025-05-13 tonhuisman: Add String format support, guarded with FEATURE_BUSCMD_STRING
  * 2025-05-10 tonhuisman: Extracted from Plugin P180 I2C Generic into a separate Bus Command processor

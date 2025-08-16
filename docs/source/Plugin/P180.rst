@@ -143,7 +143,7 @@ The commands available can either be used with the full command, or the 1 charac
 * ``eval``: ``(e)``: Evaluate the previous command, and set as selected data for ``calc`` or ``if`` commands.
 * ``value.<valueIndex>``: ``(v)``: (1..4 or a value name) Store the last calculated result, or last read value, in the specified Value field.
 * ``calc.<calculation>``: ``(c)``: Calculate a result, like Rules, extra available vars: ``%value%``, ``%pvalue%``, ``%h%``, ``%b0%..%b<n>%``, ``%bx0%..%bx<n>%``, ``%w0%..%w<n>%``, ``%wx0%..%wx<n>%``
-* ``if.<calculation>``: ``(i)``: Similar to ``calc`` command, when the calculation-result is 0 execution is cancelled
+* ``if.<calculation>[.<skip>]``: ``(i)``: Similar to ``calc`` command, when the calculation-result is 0 execution is cancelled, or ``<skip>`` commands are skipped (forward only) to act somewhat similar to an ``else`` clause.
 * ``delay.<msec>``: ``(d)``: (range: 0..500, 0..10 for 1/sec, 10/sec, 50/sec events) Some devices, f.e. after starting a measurement, require some time to process data. This can be handled by a delay. If the delay is <= 10 msec, it will be handled immediately, longer delays are processed asynchronous to avoid blocking the ESP for too long.
 * ``enable.<state>``: ``(a)``: (0 or 1) Set the configured **'Enable' GPIO** pin to the provided state. If the pin is not configured, this command is ignored, and processing continues.
 * ``reset.<state>.<msec>``: ``(z)``: (state = 0 or 1, msec = range: 0..500) Pulse the configured **'Reset' GPIO** pin for the provided time (msec) to the state requested, to reset the device. If the pin is not configured, this command is ignored, and processing continues.
@@ -391,8 +391,10 @@ This device needs a Rule to handle the result, as we can't store string values i
 .. code:: none
 
   On QR#Size Do
-    If %eventvalue1%=0 // Length 0 then reset last received QR code
-      LetStr,qrlast,''
+    If %eventvalue1%=0 // Length 0 and timer finished then reset last received QR code
+      If '[str#qrlast]'<>'' And %v180180%=0
+        LetStr,qrlast,''
+      Endif
     Else
       If '[str#qrtxt]'<>'[str#qrlast]' // Is the received QR code different from the last? (using quotes as strings can contain spaces or commas)
         LetStr,qrlast,'[str#qrtxt]' // Store for de-duplication
