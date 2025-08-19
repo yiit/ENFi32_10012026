@@ -2,6 +2,7 @@
 
 #ifdef USES_P111
 
+# include "../ESPEasyCore/ESPEasyRules.h"
 # include "../PluginStructs/P111_data_struct.h"
 # include "../Helpers/PrintToString.h"
 
@@ -276,7 +277,7 @@ bool P111_data_struct::loop(struct EventStruct *event) {
   const bool ComIrqReg_bits = (mfrc522->PCD_ReadRegister(MFRC522::ComIrqReg) & (1<<5)) != 0;
   mfrc522->PCD_WriteRegister(MFRC522::ComIrqReg, 0x34);
 
-  if (counter >= 10 || ComIrqReg_bits) { // Only every 3rd 0.1 second we do a read
+  if (counter >= 5 || ComIrqReg_bits) { // Only every 3rd 0.1 second we do a read
     counter = 0;
 
     uint32_t key        = P111_NO_KEY;
@@ -297,6 +298,11 @@ bool P111_data_struct::loop(struct EventStruct *event) {
       if ((old_key != key) && (key != P111_NO_KEY)) {
         UserVar.setSensorTypeLong(event->TaskIndex, key);
         new_key = true;
+        if (Settings.UseRules)
+        {
+          String event = strformat(F("MFRC522#tag=%u,%u"), key, old_key);
+          rulesProcessing(event); // TD-er: Process event of read key now.
+        }
       }
 
       if (loglevelActiveFor(LOG_LEVEL_INFO) && (key != P111_NO_KEY)) {
