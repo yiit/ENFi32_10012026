@@ -3,10 +3,13 @@
 #if FEATURE_WIFI
 
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
+# include "../../../src/Globals/EventQueue.h"
 # include "../../../src/Globals/RTC.h"
 # include "../../../src/Globals/Settings.h"
+# include "../../../src/Helpers/NetworkStatusLED.h"
 # include "../../../src/Helpers/StringConverter.h"
 # include "../../../src/Helpers/StringGenerator_WiFi.h"
+
 
 # include "../ESPEasyNetwork.h" // for setNetworkMedium, however this should not be part of the WiFi code
 # include "../Globals/ESPEasyWiFiEvent.h"
@@ -247,6 +250,12 @@ void ESPEasyWiFi_t::loop()
       // Check if still connected
       if (getSTA_connected_state() != STA_connected_state::Connected) {
         setState(WiFiState_e::WiFiOFF);
+          if (Settings.UseRules)
+  {
+    eventQueue.add(F("WiFi#Disonnected"));
+  }
+  statusLED(false);
+
       } else {
         // Else mark last timestamp seen as connected
         _last_seen_connected.setNow();
@@ -346,6 +355,12 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
     # endif // ifdef ESP32
       _last_seen_connected.setNow();
       _state_timeout.clear();
+        if (Settings.UseRules)
+  {
+    eventQueue.add(F("WiFi#Connected"));
+  }
+  statusLED(true);
+
       break;
   }
 }
