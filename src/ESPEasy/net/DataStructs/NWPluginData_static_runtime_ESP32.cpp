@@ -9,6 +9,7 @@
 # include <esp_netif.h>
 # include <esp_netif_types.h>
 
+#define NW_PLUGIN_LOG_EVENTS   false
 
 namespace ESPEasy {
 namespace net {
@@ -52,23 +53,25 @@ void NWPluginData_static_runtime::mark_start()
     _netif->setRoutePrio(_route_prio);
   }
 # endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 5, 0)
-
+#if NW_PLUGIN_LOG_EVENTS
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Started"),
              _netif->desc()));
   }
+#endif
 }
 
 void NWPluginData_static_runtime::mark_stop()
 {
   _startStopStats.setOff();
-
+#if NW_PLUGIN_LOG_EVENTS
   if (_netif && loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Stopped"),
              _netif->desc()));
   }
+#endif
 }
 
 void NWPluginData_static_runtime::mark_got_IP()
@@ -86,7 +89,7 @@ void NWPluginData_static_runtime::mark_got_IP()
     auto tmp = _netif->dnsIP(i);
 
     _dns_cache[i] = tmp; // Also set the 'empty' ones so we won't set left-over DNS server from when another interface was active.
-
+#if NW_PLUGIN_LOG_EVENTS
     if ((tmp != INADDR_NONE) && loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, strformat(
                F("%s: DNS Cache %d set to %s"),
@@ -94,8 +97,9 @@ void NWPluginData_static_runtime::mark_got_IP()
                i,
                tmp.toString(true).c_str()));
     }
+#endif
   }
-
+#if NW_PLUGIN_LOG_EVENTS
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Got IP: %s"),
@@ -103,6 +107,7 @@ void NWPluginData_static_runtime::mark_got_IP()
              _netif->localIP().toString().c_str()
              ));
   }
+#endif
 
 }
 
@@ -117,7 +122,7 @@ void NWPluginData_static_runtime::mark_got_IPv6(ip_event_got_ip6_t *event)
   if (!_netif->isDefault()) {
     nonDefaultNetworkInterface_gotIP = true;
   }
-
+#if NW_PLUGIN_LOG_EVENTS
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     if (event) {
       esp_ip6_addr_type_t addr_type    = esp_netif_ip6_get_addr_type(&event->ip6_info.ip);
@@ -136,6 +141,7 @@ void NWPluginData_static_runtime::mark_got_IPv6(ip_event_got_ip6_t *event)
                _netif->desc()));
     }
   }
+#endif
 }
 
 # endif // if FEATURE_USE_IPV6
@@ -146,12 +152,13 @@ void NWPluginData_static_runtime::mark_lost_IP()
 # if FEATURE_USE_IPV6
   _gotIP6Stats.setOff();
 # endif
-
+#if NW_PLUGIN_LOG_EVENTS
   if (_netif && loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Lost IP"),
              _netif->desc()));
   }
+#endif
 }
 
 void NWPluginData_static_runtime::mark_begin_establish_connection()
@@ -166,7 +173,7 @@ void NWPluginData_static_runtime::mark_connected()
 
   _establishConnectStats.setOff();
   _connectedStats.setOn();
-
+#if NW_PLUGIN_LOG_EVENTS
   if (logDuration) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Connected, took: %s in %d attempts"),
@@ -179,6 +186,7 @@ void NWPluginData_static_runtime::mark_connected()
              F("%s: Connected"),
              _netif->desc()));
   }
+#endif
   _establishConnectStats.resetCount();
 }
 
@@ -187,7 +195,7 @@ void NWPluginData_static_runtime::mark_disconnected()
   _connectedStats.setOff();
 
   // TODO TD-er: Also clear _gotIPStats and _gotIP6Stats ?
-
+#if NW_PLUGIN_LOG_EVENTS
   if (_netif && loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(LOG_LEVEL_INFO, strformat(
              F("%s: Disconnected. Connected for: %s"),
@@ -195,6 +203,7 @@ void NWPluginData_static_runtime::mark_disconnected()
              format_msec_duration_HMS(
                _connectedStats.getLastOnDuration_ms()).c_str()));
   }
+#endif
 }
 
 } // namespace net

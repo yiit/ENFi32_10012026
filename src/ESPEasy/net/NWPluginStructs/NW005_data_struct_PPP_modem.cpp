@@ -2,6 +2,8 @@
 
 #ifdef USES_NW005
 
+# include "../../../src/ESPEasyCore/Controller.h" // For SendStatus  (should we move that function?)
+
 # include "../../../src/Globals/Settings.h"
 
 # include "../../../src/Helpers/ESPEasy_time_calc.h"
@@ -898,11 +900,34 @@ String NW005_data_struct_PPP_modem::write_AT_cmd(const String& cmd, int timeout)
 
   if (NW_PLUGIN_INTERFACE.mode() != ESP_MODEM_MODE_CMUX) {
     NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
-    res = NW_PLUGIN_INTERFACE.cmd(cmd.c_str(), timeout);
   }
+  res = NW_PLUGIN_INTERFACE.cmd(cmd.c_str(), timeout);
   NW_PLUGIN_INTERFACE.mode(cur_mode);
   return res;
 }
+
+bool  NW005_data_struct_PPP_modem::handle_nwplugin_write(EventStruct *event, String& str)
+{
+  bool success = false;
+  const String command = parseString(str, 1);
+
+  if (equals(command, F("ppp"))) {
+    const String subcommand = parseString(str, 2);
+
+    if (equals(subcommand, F("write"))) {
+      const String writeCommand = parseStringToEnd(str, 3);
+      const String res          = write_AT_cmd(writeCommand);
+      addLog(LOG_LEVEL_INFO, strformat(
+        F("PPP cmd: %s -> %s"), 
+        writeCommand.c_str(), 
+        res.c_str()));
+      success = true;
+      SendStatus(event, res);
+    }
+  }
+  return success;
+}
+
 
 # if FEATURE_PLUGIN_STATS
 

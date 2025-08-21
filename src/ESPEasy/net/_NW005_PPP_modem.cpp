@@ -224,6 +224,16 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
+    case NWPlugin::Function::NWPLUGIN_WRITE:
+    {
+      auto *NW_data = getNWPluginData(event->NetworkIndex);
+
+      if (NW_data) {
+        success = NW_data->handle_nwplugin_write(event, string);
+      }
+      break;
+    }
+
 
     default:
       break;

@@ -378,6 +378,11 @@ LongTermTimer::Duration NWPluginData_base::getConnectedDuration_ms() {
   return 0;
 }
 
+bool NWPluginData_base::handle_nwplugin_write(EventStruct *event, String& str)
+{
+  return false;
+}
+
 #ifdef ESP32
 
 bool NWPluginData_base::handle_priority_route_changed()

@@ -98,6 +98,7 @@ struct NWPluginData_base {
   nwpluginID_t                    getNWPluginID() const { return _nw_data_pluginID; }
 
   virtual LongTermTimer::Duration getConnectedDuration_ms();
+  virtual bool handle_nwplugin_write(EventStruct *event, String& str);
 
 #ifdef ESP32
   virtual bool                    handle_priority_route_changed();
