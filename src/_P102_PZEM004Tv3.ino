@@ -331,12 +331,15 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
         PZEM[4] = P102_PZEM_sensor->pf();
         PZEM[5] = P102_PZEM_sensor->frequency();
 
-        for (uint8_t i = 0; i < 6; i++) // Check each PZEM field
+        // Skip non-available values
+        const uint8_t toCheckMax = PZEM_model::PZEM004Tv30 == static_cast<PZEM_model>(P102_PZEM_TYPE) ? 6 : 4;
+
+        for (uint8_t i = 0; i < toCheckMax; i++) // Check each PZEM field
         {
-          if (PZEM[i] != PZEM[i])       // Check if NAN
+          if (PZEM[i] != PZEM[i])                // Check if NAN
           {
             P102_PZEM_ATTEMPT == P102_PZEM_MAX_ATTEMPT ? P102_PZEM_ATTEMPT = 0 : P102_PZEM_ATTEMPT++;
-            break;                      // if one is Not A Number, break
+            break;                               // if one is Not A Number, break
           }
           P102_PZEM_ATTEMPT = 0;
         }
@@ -376,13 +379,13 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
 
       // FIXME TD-er: Calling these functions is probably done within the 200 msec timeout used in the library.
       // If not, this should be cached in a task data struct.
-      string += LoRa_addFloat(P102_PZEM_sensor->voltage(),       PackedData_int16_1e1);
-      string += LoRa_addFloat(P102_PZEM_sensor->current(),       PackedData_int32_1e3);
-      string += LoRa_addFloat(P102_PZEM_sensor->power(),         PackedData_int32_1e1);
-      string += LoRa_addFloat(P102_PZEM_sensor->energy(),        PackedData_int32_1e1);
+      string += LoRa_addFloat(P102_PZEM_sensor->voltage(), PackedData_int16_1e1);
+      string += LoRa_addFloat(P102_PZEM_sensor->current(), PackedData_int32_1e3);
+      string += LoRa_addFloat(P102_PZEM_sensor->power(),   PackedData_int32_1e1);
+      string += LoRa_addFloat(P102_PZEM_sensor->energy(),  PackedData_int32_1e1);
 
       if (PZEM_model::PZEM004Tv30 == static_cast<PZEM_model>(P102_PZEM_TYPE)) {
-        string     += LoRa_addFloat(P102_PZEM_sensor->pf(),            PackedData_uint16_1e2);
+        string     += LoRa_addFloat(P102_PZEM_sensor->pf(),             PackedData_uint16_1e2);
         string     += LoRa_addFloat(P102_PZEM_sensor->frequency() - 40, PackedData_uint8_1e1);
         event->Par1 = P102_PZEM004_VALUE_COUNT; // valuecount
       } else {
