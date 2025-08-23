@@ -29,6 +29,10 @@ bool MQTTclient_connected               = false;
 int  mqtt_reconnect_count               = 0;
 LongTermTimer MQTTclient_next_connect_attempt;
 
+# if FEATURE_MQTT_CONNECT_BACKGROUND
+MQTT_connect_request MQTT_task_data;
+# endif // if FEATURE_MQTT_CONNECT_BACKGROUND
+
 # if FEATURE_MQTT_DISCOVER
 
 controllerIndex_t mqttDiscoveryController = INVALID_CONTROLLER_INDEX;
