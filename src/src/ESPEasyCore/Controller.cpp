@@ -673,6 +673,8 @@ void MQTT_execute_connect_task(void *parameter)
 }
 
 bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) {
+  if (!Settings.MQTTConnectInBackground()) { return false; }
+
   if ((MQTT_task_data.status == MQTT_connect_status_e::Connected) || (MQTT_task_data.status == MQTT_connect_status_e::Failure)) {
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Background Connect request %s, took %d msec"),
@@ -684,7 +686,7 @@ bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) 
     return MQTT_task_data.result;
   }
   
-  if (MQTT_task_data.status == MQTT_connect_status_e::Ready) {
+  if ((MQTT_task_data.status == MQTT_connect_status_e::Ready) && MQTTclient.connected()) {
     if (!MQTT_task_data.logged && loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, F("MQTT : Background Connect request Ready"));
     }
@@ -704,7 +706,18 @@ bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) 
     return false; // Not ready yet
   }
 
-  if (!reportOnly && (MQTT_task_data.status == MQTT_connect_status_e::Disconnected)) {
+  if ((MQTT_task_data.status == MQTT_connect_status_e::Ready) &&
+      MQTTclient_should_reconnect &&
+      !MQTTclient.connected() &&
+      NetworkConnected(10)) { // Unexpected network disconnect and reconnect?
+    MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
+    reportOnly            = false; // Reconnect ASAP
+    if (CONTROLLER_MAX == controller_idx) {
+      controller_idx = firstEnabledMQTT_ControllerIndex();
+    }
+  }
+
+  if (!reportOnly && (MQTT_task_data.status == MQTT_connect_status_e::Disconnected) && (controller_idx < CONTROLLER_MAX)) {
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Start background connect for controller %d"), controller_idx + 1));
     }
