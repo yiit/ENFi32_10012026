@@ -662,6 +662,9 @@ void MQTT_execute_connect_task(void *parameter)
           && !MQTTclient.connected()
         ) {
           delay(1);
+          if (timePassedSince(MQTT_task_data->startTime) > 120000) { // Quit after 120 seconds
+            break;
+          }
         }
   MQTT_task_data->result     = MQTTclient.connected();
   MQTT_task_data->status     = MQTT_task_data->result
