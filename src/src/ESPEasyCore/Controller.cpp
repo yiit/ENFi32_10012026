@@ -158,6 +158,13 @@ void incoming_mqtt_callback(char *c_topic, uint8_t *b_payload, unsigned int leng
 void MQTTDisconnect()
 {
   if (MQTTclient.connected()) {
+    #if FEATURE_MQTT_CONNECT_BACKGROUND
+    if (MQTT_task_data.taskHandle) {
+      vTaskDelete(MQTT_task_data.taskHandle);
+      MQTT_task_data.taskHandle = NULL;
+    }
+    MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
+    #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
     MQTTclient.disconnect();
     addLog(LOG_LEVEL_INFO, F("MQTT : Disconnected from broker"));
   }
@@ -190,6 +197,11 @@ bool MQTTConnect(controllerIndex_t controller_idx)
   }
 
   if (MQTTclient.connected()) {
+    #if FEATURE_MQTT_CONNECT_BACKGROUND
+    if (MQTT_task_data.status != MQTT_connect_status_e::Connecting) {
+      MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
+    }
+    #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
     MQTTclient.disconnect();
     # if FEATURE_MQTT_TLS
 
@@ -396,8 +408,18 @@ bool MQTTConnect(controllerIndex_t controller_idx)
 # endif // if FEATURE_MQTT_TLS
 
   if (ControllerSettings->UseDNS) {
+    #if !defined(BUILD_NO_DEBUG) && FEATURE_MQTT_CONNECT_BACKGROUND
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Connecting to: %s:%u"), ControllerSettings->getHost().c_str(), ControllerSettings->Port));
+    }
+    #endif // if !defined(BUILD_NO_DEBUG) && FEATURE_MQTT_CONNECT_BACKGROUND
     MQTTclient.setServer(ControllerSettings->getHost().c_str(), ControllerSettings->Port);
   } else {
+    #if !defined(BUILD_NO_DEBUG) && FEATURE_MQTT_CONNECT_BACKGROUND
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Connecting to: %s:%u"), ControllerSettings->getIP().toString().c_str(), ControllerSettings->Port));
+    }
+    #endif // if !defined(BUILD_NO_DEBUG) && FEATURE_MQTT_CONNECT_BACKGROUND
     MQTTclient.setServer(ControllerSettings->getIP(), ControllerSettings->Port);
   }
   MQTTclient.setCallback(incoming_mqtt_callback);
@@ -522,6 +544,11 @@ bool MQTTConnect(controllerIndex_t controller_idx)
     }
     # endif // if FEATURE_MQTT_TLS
 
+    #if FEATURE_MQTT_CONNECT_BACKGROUND
+    if (MQTT_task_data.status != MQTT_connect_status_e::Connecting) {
+      MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
+    }
+    #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
     MQTTclient.disconnect();
     # if FEATURE_MQTT_TLS
 
@@ -623,6 +650,85 @@ String getMQTTclientID(const ControllerSettingsStruct& ControllerSettings) {
   return clientid;
 }
 
+#if FEATURE_MQTT_CONNECT_BACKGROUND
+void MQTT_execute_connect_task(void *parameter)
+{
+  MQTT_connect_request*MQTT_task_data = static_cast<MQTT_connect_request *>(parameter);
+
+  while (!MQTTConnect(MQTT_task_data->ControllerIndex)
+          # if FEATURE_MQTT_TLS
+          && mqtt_tls_last_errorstr.isEmpty()
+          # endif // if FEATURE_MQTT_TLS
+          && !MQTTclient.connected()
+        ) {
+          delay(1);
+        }
+  MQTT_task_data->result     = MQTTclient.connected();
+  MQTT_task_data->status     = MQTT_task_data->result
+                               ? MQTT_connect_status_e::Connected
+                               : MQTT_connect_status_e::Failure;
+  MQTT_task_data->endTime    = millis();
+  MQTT_task_data->taskHandle = NULL;
+  vTaskDelete(MQTT_task_data->taskHandle);
+}
+
+bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) {
+  if ((MQTT_task_data.status == MQTT_connect_status_e::Connected) || (MQTT_task_data.status == MQTT_connect_status_e::Failure)) {
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Background Connect request %s, took %d msec"),
+                                       FsP(MQTT_task_data.result ? F("success") : F("FAILED")),
+                                       MQTT_task_data.endTime - MQTT_task_data.startTime
+                                      ));
+    }
+    MQTT_task_data.status = MQTT_connect_status_e::Ready;
+    return MQTT_task_data.result;
+  }
+  
+  if (MQTT_task_data.status == MQTT_connect_status_e::Ready) {
+    if (!MQTT_task_data.logged && loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLog(LOG_LEVEL_INFO, F("MQTT : Background Connect request Ready"));
+    }
+    MQTT_task_data.logged = true;
+    return MQTT_task_data.result;
+  }
+
+  if (MQTT_task_data.status == MQTT_connect_status_e::Connecting) {
+    if (timePassedSince(MQTT_task_data.loopTime) > 1000) {
+      if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+        addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Background waiting to Connect, %d sec"),
+                                         timePassedSince(MQTT_task_data.startTime) / 1000
+                                        ));
+      }
+      MQTT_task_data.loopTime = millis();
+    }
+    return false; // Not ready yet
+  }
+
+  if (!reportOnly && (MQTT_task_data.status == MQTT_connect_status_e::Disconnected)) {
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Start background connect for controller %d"), controller_idx + 1));
+    }
+    MQTT_task_data.status          = MQTT_connect_status_e::Connecting;
+    MQTT_task_data.result          = false;
+    MQTT_task_data.logged          = false;
+    MQTT_task_data.ControllerIndex = controller_idx;
+    MQTT_task_data.startTime       = millis();
+    MQTT_task_data.loopTime        = millis();
+
+    xTaskCreatePinnedToCore(
+      MQTT_execute_connect_task,   // Function that should be called
+      "MQTTConnect()",             // Name of the task (for debugging)
+      8192,                        // Stack size (bytes)
+      &MQTT_task_data,             // Parameter to pass
+      1,                           // Task priority
+      &MQTT_task_data.taskHandle,  // Task handle
+      xPortGetCoreID()             // Core you want to run the task on (0 or 1)
+      );
+  }
+  return false;
+}
+#endif // if FEATURE_MQTT_CONNECT_BACKGROUND
+
 /*********************************************************************************************\
 * Check connection MQTT message broker
 \*********************************************************************************************/
@@ -678,6 +784,11 @@ bool MQTTCheck(controllerIndex_t controller_idx)
 
     if (MQTTclient_should_reconnect || !MQTTclient.connected())
     {
+      #if FEATURE_MQTT_CONNECT_BACKGROUND
+      if (Settings.MQTTConnectInBackground()) {
+        return MQTTConnectInBackground(controller_idx, false);
+      }
+      #endif // ifdef ESP32
       return MQTTConnect(controller_idx);
     }
 

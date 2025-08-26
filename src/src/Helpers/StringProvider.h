@@ -96,6 +96,9 @@ struct LabelType {
 #if CONFIG_SOC_WIFI_SUPPORT_5G
     WIFI_BAND_MODE,
 #endif
+    #if FEATURE_MQTT_CONNECT_BACKGROUND
+    MQTT_CONNECT_IN_BACKGROUND,
+    #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
 
     BOOT_TYPE,               // Cold boot
     BOOT_COUNT,              // 0

@@ -448,6 +448,9 @@ void updateMQTTclient_connected() {
   }
   Scheduler.setIntervalTimer(SchedulerIntervalTimer_e::TIMER_MQTT);
   scheduleNextMQTTdelayQueue();
+  #if FEATURE_MQTT_CONNECT_BACKGROUND
+  MQTTConnectInBackground(CONTROLLER_MAX, true); // Report state
+  #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
 }
 
 void runPeriodicalMQTT() {
@@ -467,6 +470,13 @@ void runPeriodicalMQTT() {
     }
   } else {
     if (MQTTclient.connected()) {
+      #if FEATURE_MQTT_CONNECT_BACKGROUND
+      if (MQTT_task_data.taskHandle) {
+        vTaskDelete(MQTT_task_data.taskHandle);
+        MQTT_task_data.taskHandle = NULL;
+      }
+      MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
+      #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
       MQTTclient.disconnect();
       updateMQTTclient_connected();
     }
@@ -543,6 +553,13 @@ void flushAndDisconnectAllClients() {
     }
 #if FEATURE_MQTT
     if (mqttControllerEnabled && MQTTclient.connected()) {
+      #if FEATURE_MQTT_CONNECT_BACKGROUND
+      if (MQTT_task_data.taskHandle) {
+        vTaskDelete(MQTT_task_data.taskHandle);
+        MQTT_task_data.taskHandle = NULL;
+      }
+      MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
+      #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
       MQTTclient.disconnect();
       updateMQTTclient_connected();
     }

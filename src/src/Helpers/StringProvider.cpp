@@ -146,7 +146,10 @@ const __FlashStringHelper * getLabel(LabelType::Enum label) {
 #endif // if FEATURE_TARSTREAM_SUPPORT
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     case LabelType::SHOW_UOM_ON_DEVICES_PAGE: return F("Show Unit of Measure");
-#endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    #if FEATURE_MQTT_CONNECT_BACKGROUND
+    case LabelType::MQTT_CONNECT_IN_BACKGROUND: return F("MQTT Connect in background");
+    #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
 
 #if CONFIG_SOC_WIFI_SUPPORT_5G
     case LabelType::WIFI_BAND_MODE: return F("WiFi Band Mode");
@@ -447,6 +450,9 @@ String getValue(LabelType::Enum label) {
     #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     case LabelType::SHOW_UOM_ON_DEVICES_PAGE:   return jsonBool(Settings.ShowUnitOfMeasureOnDevicesPage());
     #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    #if FEATURE_MQTT_CONNECT_BACKGROUND
+    case LabelType::MQTT_CONNECT_IN_BACKGROUND: return jsonBool(Settings.MQTTConnectInBackground());
+    #endif // if FEATURE_MQTT_CONNECT_BACKGROUND
 
 #if CONFIG_SOC_WIFI_SUPPORT_5G
     case LabelType::WIFI_BAND_MODE:        return ESPEasy::net::wifi::getWifiBandModeString(Settings.WiFi_band_mode());

@@ -119,11 +119,16 @@ bool setControllerEnableStatus(controllerIndex_t controllerIndex, bool enabled)
     }
 
     Settings.ControllerEnabled[controllerIndex] = enabled;
-    if (enabled) {
-      if (!CPluginCall(CPlugin::Function::CPLUGIN_INIT, &TempEvent, dummy))
-        return false;
+    const protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(controllerIndex);
+
+    if (validProtocolIndex(ProtocolIndex)) {
+      struct EventStruct TempEvent;
+      TempEvent.ControllerIndex = controllerIndex;
+      String dummy;
+      const CPlugin::Function cfunction =
+        enabled ? CPlugin::Function::CPLUGIN_INIT : CPlugin::Function::CPLUGIN_EXIT;
+      return CPluginCall(ProtocolIndex, cfunction, &TempEvent, dummy) || CPlugin::Function::CPLUGIN_EXIT == cfunction;
     }
-    return true;
   }
   return false;
 }
