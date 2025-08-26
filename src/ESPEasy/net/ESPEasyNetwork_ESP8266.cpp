@@ -54,7 +54,9 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
 //  ESPEasy::net::wifi::WiFiConnectRelaxed();
 // }
 
-bool      NetworkConnected() { return ESPEasy::net::wifi::WiFiConnected(); }
+bool      NetworkConnected() { 
+  processNetworkEvents();
+  return ESPEasy::net::wifi::WiFiConnected(); }
 
 IPAddress NetworkLocalIP()   { return WiFi.localIP(); }
 

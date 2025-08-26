@@ -655,7 +655,7 @@ public:
     uint32_t WiFi_AP_enable_NAPT              : 1; // Bit 10  // inverted
     uint32_t unused_11                        : 1; // Bit 11
     uint32_t unused_12                        : 1; // Bit 12
-    uint32_t unused_13                        : 1; // Bit 13
+    uint32_t MQTTConnectInBackground          : 1; // Bit 13 // inverted
     uint32_t unused_14                        : 1; // Bit 14
     uint32_t unused_15                        : 1; // Bit 15
     uint32_t unused_16                        : 1; // Bit 16

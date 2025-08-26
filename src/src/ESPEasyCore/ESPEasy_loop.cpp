@@ -77,7 +77,7 @@ void ESPEasy_loop()
 
   ESPEasy::net::wifi::handle_unprocessedNetworkEvents();
 
-  bool firstLoopConnectionsEstablished = ESPEasy::net::NetworkConnected() && firstLoop;
+  bool firstLoopConnectionsEstablished = firstLoop && ESPEasy::net::NetworkConnected();
 
   if (firstLoopConnectionsEstablished) {
     #ifndef LIMIT_BUILD_SIZE

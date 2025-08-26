@@ -22,6 +22,12 @@ void NWPluginData_static_runtime::clear(networkIndex_t networkIndex)
   _networkIndex = networkIndex;
 #ifdef ESP32
   _route_prio = Settings.getRoutePrio_for_network(_networkIndex);
+  if (_netif) {
+    if (_eventInterfaceName.length() == 0 && _netif) {
+      _eventInterfaceName = _netif->desc();
+      _eventInterfaceName.toUpperCase();
+    }
+  }
 #endif
 
   _connectionFailures = 0;

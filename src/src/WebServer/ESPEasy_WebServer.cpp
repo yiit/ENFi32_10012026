@@ -389,6 +389,7 @@ void setWebserverRunning(bool state) {
   if (webserverRunning == state) {
     return;
   }
+  ESPEasy::net::processNetworkEvents();
 
   if (state) {
     WebServerInit();

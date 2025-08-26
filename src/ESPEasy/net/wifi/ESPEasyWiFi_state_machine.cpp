@@ -249,12 +249,15 @@ void ESPEasyWiFi_t::loop()
 
       // Check if still connected
       if (getSTA_connected_state() != STA_connected_state::Connected) {
-        setState(WiFiState_e::WiFiOFF);
+//        setState(WiFiState_e::WiFiOFF);
+        setState(WiFiState_e::Disabled);
+        /*
         if (Settings.UseRules)
         {
           eventQueue.add(F("WiFi#Disconnected"));
         }
         statusLED(false);
+        */
 
       } else {
         // Else mark last timestamp seen as connected
@@ -316,6 +319,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
   {
     case WiFiState_e::Disabled:
       // Do nothing here, as the device is disabled.
+      setSTA(false);
       break;
     case WiFiState_e::WiFiOFF:
       // TODO TD-er: Must cancel all and turn off WiFi.
@@ -355,11 +359,13 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
     # endif // ifdef ESP32
       _last_seen_connected.setNow();
       _state_timeout.clear();
+      /*
       if (Settings.UseRules)
       {
         eventQueue.add(F("WiFi#Connected"));
       }
       statusLED(true);
+      */
 
       break;
   }

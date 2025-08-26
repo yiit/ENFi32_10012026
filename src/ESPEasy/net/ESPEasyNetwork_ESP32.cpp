@@ -131,6 +131,7 @@ bool NetworkConnected() {
   if (network_if == nullptr) {
     return false;
   }
+  processNetworkEvents();
   return network_if->connected();
 }
 

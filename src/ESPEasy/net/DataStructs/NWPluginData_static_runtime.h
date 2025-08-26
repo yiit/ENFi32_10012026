@@ -20,12 +20,7 @@ struct NWPluginData_static_runtime {
 #ifdef ESP32
   NWPluginData_static_runtime(NetworkInterface *netif, const String& eventInterfaceName = EMPTY_STRING) 
   : _netif(netif), _eventInterfaceName(eventInterfaceName) 
-  {
-    if (_eventInterfaceName.length() == 0 && _netif) {
-      _eventInterfaceName = _netif->desc();
-      _eventInterfaceName.toUpperCase();
-    }
-  }
+  {}
 
 #else // ifdef ESP32
   NWPluginData_static_runtime(bool isSTA, String& eventInterfaceName) 
