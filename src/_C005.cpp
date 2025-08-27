@@ -87,9 +87,8 @@ bool CPlugin_005(CPlugin::Function function, struct EventStruct *event, String& 
         LoadControllerSettings(event->ControllerIndex, *ControllerSettings);
 
         if (ControllerSettings->mqtt_autoDiscovery() &&
-
-            // (ControllerSettings->MqttAutoDiscoveryTrigger[0] != 0) &&
-            (ControllerSettings->MqttAutoDiscoveryTopic[0] != 0)) {
+            (ControllerSettings->MqttAutoDiscoveryTopic[0] != 0) &&
+            (0 == mqttDiscoveryTimeout)) {
           mqttDiscoveryController = event->ControllerIndex;
           mqttDiscoveryTimeout    = random(10, MQTT_DISCOVERY_MAX_DELAY_0_1_SECONDS);
 
