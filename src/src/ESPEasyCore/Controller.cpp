@@ -710,7 +710,6 @@ bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) 
   }
 
   if ((MQTT_task_data.status == MQTT_connect_status_e::Ready) &&
-      MQTTclient_should_reconnect &&
       !MQTTclient.connected() &&
       NetworkConnected(10)) { // Unexpected network disconnect and reconnect?
     MQTT_task_data.status = MQTT_connect_status_e::Disconnected;
