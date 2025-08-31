@@ -1021,6 +1021,7 @@ To create/register a plugin, you have to :
 #endif
 
 #ifdef PLUGIN_SET_COLLECTION_E_ESP32
+  #define BUILD_NO_DEBUG
   #ifndef PLUGIN_DESCR // COLLECTION_E_ESP32_IRExt also passes here
     #define PLUGIN_DESCR  "Collection_E ESP32"
   #endif
