@@ -87,22 +87,6 @@ static void usbcdcEventCallback(void *arg, esp_event_base_t event_base, int32_t 
 }
 */
 
-extern "C" {
-
-// Stub implementation of the HID report received callback
-// This is required by TinyUSB HID host but not used in ESPEasy
-void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t idx, uint8_t const*report, uint16_t len)
-{
-  // Empty implementation - HID host functionality is not used in ESPEasy
-  // Thanks Jason8266 for this fix :)
-  (void)dev_addr;
-  (void)idx;
-  (void)report;
-  (void)len;
-}
-
-}
-
 Port_ESPEasySerial_USBCDC_t::Port_ESPEasySerial_USBCDC_t(const ESPEasySerialConfig& config)
 {
   # if ARDUINO_USB_CDC_ON_BOOT
