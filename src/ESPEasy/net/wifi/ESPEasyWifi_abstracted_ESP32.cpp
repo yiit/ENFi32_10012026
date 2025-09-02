@@ -45,8 +45,12 @@ bool WiFi_pre_STA_setup()
 }
 
 void doWiFiDisconnect() {
-  WiFi.disconnect(Settings.WiFiRestart_connection_lost());
-  delay(100);
+  uint8_t retry = 3;
+  while (!WiFi.disconnect(Settings.WiFiRestart_connection_lost()) && retry) {
+    --retry;
+    delay(100);
+  }
+/*
   {
     const IPAddress ip;
     const IPAddress gw;
@@ -54,6 +58,7 @@ void doWiFiDisconnect() {
     const IPAddress dns;
     WiFi.config(ip, gw, subnet, dns);
   }
+*/
 }
 
 bool doWifiIsAP(WiFiMode_t wifimode)  { return (wifimode == WIFI_MODE_AP) || (wifimode == WIFI_MODE_APSTA); }

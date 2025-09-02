@@ -102,8 +102,9 @@ struct NWPluginData_base {
 
 #ifdef ESP32
   virtual bool                    handle_priority_route_changed();
+  void                            enable_txrx_events();
   bool                            getTrafficCount(uint64_t& tx,
-                                                  uint64_t& rx) const;
+                                                  uint64_t& rx);
 #endif // ifdef ESP32
 
   virtual NWPluginData_static_runtime* getNWPluginData_static_runtime() = 0;

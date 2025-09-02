@@ -26,6 +26,12 @@ struct NWPluginData_static_runtime {
 
 #endif // ifdef ESP32
 
+#ifdef ESP32
+  void   enable_txrx_events();
+
+  bool   getTrafficCount(uint64_t& tx, uint64_t& rx) const;
+#endif
+
   void   clear(networkIndex_t networkIndex = INVALID_NETWORK_INDEX);
 
   void   processEvent_and_clear();

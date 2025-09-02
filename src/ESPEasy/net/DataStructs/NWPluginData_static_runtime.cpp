@@ -12,6 +12,84 @@ namespace net {
 #define CONNECTION_CONSIDERED_STABLE_MSEC    60000
 #define CONNECT_TIMEOUT_MAX                  10000 // in milliSeconds
 
+#ifdef ESP32
+struct TX_RX_traffic_count {
+
+  void clear() { _tx_count = 0; _rx_count = 0; }
+
+  uint64_t _tx_count{};
+  uint64_t _rx_count{};
+
+};
+
+typedef std::map<int, TX_RX_traffic_count> InterfaceTrafficCount_t;
+
+static InterfaceTrafficCount_t interfaceTrafficCount;
+
+static void tx_rx_event_handler(void *arg, esp_event_base_t event_base,
+                                int32_t event_id, void *event_data)
+{
+  if (event_data == nullptr) { return; }
+  ip_event_tx_rx_t *event = (ip_event_tx_rx_t *)event_data;
+  const int key           = esp_netif_get_netif_impl_index(event->esp_netif);
+
+  if (event->dir == ESP_NETIF_TX) {
+    interfaceTrafficCount[key]._tx_count += event->len;
+  } else if (event->dir == ESP_NETIF_RX) {
+    interfaceTrafficCount[key]._rx_count += event->len;
+/*
+    addLog(LOG_LEVEL_INFO, strformat(
+             F("RX: %s key: %d len: %d total: %d"),
+             esp_netif_get_desc(event->esp_netif),
+             key,
+             event->len,
+             interfaceTrafficCount[key]._rx_count
+             ));
+*/
+  }
+}
+
+#endif // ifdef ESP32
+
+
+#ifdef ESP32
+void NWPluginData_static_runtime::enable_txrx_events()
+{
+  if (_netif) {
+    const int key = _netif->impl_index();
+    interfaceTrafficCount[key].clear();
+
+    if (_netif->netif()) {
+      static bool registered_IP_EVENT_TX_RX = false;
+      const int key = esp_netif_get_netif_impl_index(_netif->netif());
+      interfaceTrafficCount[key].clear();
+      esp_netif_tx_rx_event_enable(_netif->netif());
+
+      if (!registered_IP_EVENT_TX_RX) {
+        esp_event_handler_register(IP_EVENT, IP_EVENT_TX_RX, &tx_rx_event_handler, NULL);
+        registered_IP_EVENT_TX_RX = true;
+      }
+      esp_netif_tx_rx_event_enable(_netif->netif());
+    }
+
+    //  _netif->netif()->tx_rx_events_enabled = true;
+  }
+}
+
+bool NWPluginData_static_runtime::getTrafficCount(uint64_t& tx, uint64_t& rx) const
+{
+  const int key = _netif->impl_index();
+  auto it       = interfaceTrafficCount.find(key);
+
+  if (it == interfaceTrafficCount.end()) { return false; }
+  tx = it->second._tx_count;
+  rx = it->second._rx_count;
+  return true;
+}
+
+#endif
+
+
 void NWPluginData_static_runtime::clear(networkIndex_t networkIndex)
 {
   _connectedStats.clear();
@@ -19,6 +97,7 @@ void NWPluginData_static_runtime::clear(networkIndex_t networkIndex)
 #if FEATURE_USE_IPV6
   _gotIP6Stats.clear();
 #endif
+  _operationalStats.clear();
   _networkIndex = networkIndex;
 #ifdef ESP32
   _route_prio = Settings.getRoutePrio_for_network(_networkIndex);
@@ -65,6 +144,7 @@ void NWPluginData_static_runtime::processEvents()
 
   _operationalStats.set(operational());
   if (_operationalStats.changedSinceLastCheck_and_clear()) {
+    enable_txrx_events();
     // Send out event
     if (Settings.UseRules && _eventInterfaceName.length())
     {
