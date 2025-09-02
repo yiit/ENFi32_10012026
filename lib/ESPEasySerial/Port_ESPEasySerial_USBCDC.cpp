@@ -3,12 +3,14 @@
 
 #if USES_USBCDC
 
+#include <USB.h>
+
 # if !ARDUINO_USB_CDC_ON_BOOT
 USBCDC ESPEasySerial_USBCDC_port0(0);
 
 // USBCDC ESPEasySerial_USBCDC_port1(1);
 # endif // if !ARDUINO_USB_CDC_ON_BOOT
-
+/*
 volatile bool usbActive = false;
 
 volatile int32_t eventidTriggered = ESP_EVENT_ANY_ID;
@@ -59,15 +61,15 @@ static void usbcdcEventCallback(void *arg, esp_event_base_t event_base, int32_t 
         usbActive = true;
         break;
       case ARDUINO_USB_CDC_RX_EVENT:
-        /*
-           Serial.printf("CDC RX EVENT [%u]: ", data->rx.len);
-           {
-            uint8_t buf[data->rx.len];
-            size_t len = Serial.read(buf, data->rx.len);
-            Serial.write(buf, len);
-           }
-           Serial.println();
-         */
+        
+//           Serial.printf("CDC RX EVENT [%u]: ", data->rx.len);
+//           {
+//            uint8_t buf[data->rx.len];
+//            size_t len = Serial.read(buf, data->rx.len);
+//            Serial.write(buf, len);
+//           }
+//           Serial.println();
+         
         usbActive = true;
         break;
       case ARDUINO_USB_CDC_TX_EVENT:
@@ -82,6 +84,23 @@ static void usbcdcEventCallback(void *arg, esp_event_base_t event_base, int32_t 
         break;
     }
   }
+}
+*/
+
+extern "C" {
+
+// Stub implementation of the HID report received callback
+// This is required by TinyUSB HID host but not used in ESPEasy
+void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t idx, uint8_t const*report, uint16_t len)
+{
+  // Empty implementation - HID host functionality is not used in ESPEasy
+  // Thanks Jason8266 for this fix :)
+  (void)dev_addr;
+  (void)idx;
+  (void)report;
+  (void)len;
+}
+
 }
 
 Port_ESPEasySerial_USBCDC_t::Port_ESPEasySerial_USBCDC_t(const ESPEasySerialConfig& config)
