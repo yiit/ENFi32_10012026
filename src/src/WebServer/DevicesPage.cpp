@@ -409,9 +409,9 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
     #if FEATURE_STRING_VARIABLES
     Settings.SendDerivedTaskValues(taskIndex, controllerNr, isFormItemChecked(getPluginCustomArgName(F("TSND"), controllerNr)));
     #endif // if FEATURE_STRING_VARIABLES
-    #if FEATURE_MQTT
+    #if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
     Settings.SendRetainedTaskValues(taskIndex, controllerNr, isFormItemChecked(getPluginCustomArgName(F("TSRT"), controllerNr)));
-    #endif // if FEATURE_MQTT
+    #endif // if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
   }
 
   if (device.PullUpOption) {
@@ -461,6 +461,10 @@ void handle_devices_CopySubmittedSettings(taskIndex_t taskIndex, pluginID_t task
     #if FEATURE_CUSTOM_TASKVAR_VTYPE
     ExtraTaskSettings.setTaskVarCustomVType(varNr, getFormItemInt(getPluginCustomArgName(F("TDTV"), varNr)));
     #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+    #if FEATURE_MQTT_STATE_CLASS
+    ExtraTaskSettings.setTaskVarStateClass(varNr, getFormItemInt(getPluginCustomArgName(F("TDSC"), varNr)));
+    #endif // if FEATURE_MQTT_STATE_CLASS
   }
   ExtraTaskSettings.clearUnusedValueNames(valueCount);
 
@@ -1736,6 +1740,13 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
     }
     #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
 
+    #if FEATURE_MQTT_STATE_CLASS
+    if (device.MqttStateClass) {
+      html_table_header(F("MQTT State Class"), 350);
+      ++colCount;
+    }
+    #endif // if FEATURE_MQTT_STATE_CLASS
+
 
     // placeholder header
     html_table_header(F(""));
@@ -1838,6 +1849,25 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
           static_cast<Sensor_VType>(Cache.getTaskVarCustomVType(taskIndex, varNr)));
       }
       #endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
+
+      #if FEATURE_MQTT_STATE_CLASS
+      if (device.MqttStateClass) {
+        html_TD();
+        const __FlashStringHelper *stateClasses[] = {
+          MQTT_sensor_StateClass(0),
+          MQTT_sensor_StateClass(1),
+          MQTT_sensor_StateClass(4),
+          MQTT_sensor_StateClass(2),
+          MQTT_sensor_StateClass(3),
+        };
+
+        constexpr size_t stateCount = NR_ELEMENTS(stateClasses);
+        const FormSelectorOptions selectorSC(stateCount, stateClasses);
+        selectorSC.addSelector(
+          getPluginCustomArgName(F("TDSC"), varNr),
+          Cache.getTaskVarStateClass(taskIndex, varNr));
+      }
+      #endif // if FEATURE_MQTT_STATE_CLASS
     }
     addFormSeparator(colCount);
   }
