@@ -132,7 +132,9 @@ bool CPlugin_006(CPlugin::Function function, struct EventStruct *event, String& 
         break;
       }
 
-      success = MQTT_protocol_send(event, CPlugin_006_pubname, CPlugin_006_mqtt_retainFlag);
+      const bool taskRetained = Settings.SendRetainedTaskValues(event->TaskIndex, event->ControllerIndex);
+
+      success = MQTT_protocol_send(event, CPlugin_006_pubname, CPlugin_006_mqtt_retainFlag || taskRetained);
 
       break;
     }
