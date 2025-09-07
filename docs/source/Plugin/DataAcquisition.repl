@@ -30,7 +30,7 @@ For the Domoticz controllers the value index (IDX) has to be configured.
 
 For some controllers, like Home Assistant/openHAB, there are extra options available.
 
-* **Group**: This represents the group id to combine all values from multiple tasks into a single grouped-device during MQTT AutoDiscovery. Groups, by design, can span multiple ESPEasy devices, if desired, as long as the Task/Valuename combinations are unique. If a group should only combine Tasks from a single ESPEasy unit, the group id should be unique across multiple ESPEasy units. The group description, default *Group <n>*, can be adjusted in Home Assistant.
+* **Group**: This represents the group id to combine all values from multiple tasks into a single grouped-device during MQTT AutoDiscovery. Groups, by design, can span multiple ESPEasy devices, if desired, as long as the Task/Valuename combinations are unique. If a group should only combine Tasks from a single ESPEasy unit, the group id should be unique across multiple ESPEasy units. The group description, default *Group <n>*, can be adjusted in Home Assistant. If the Group value matches the current Unit nr, the Unit name, ``%sysname%``, is used instead of Group <nr>.
 
 * **Retained**: For MQTT Controllers, this setting can be enabled to send the values for the current task with the Retain flag set. The **Publish Retain flag** in the Controller settings will override this by sending *all* task values with Retain flag enabled.
 
