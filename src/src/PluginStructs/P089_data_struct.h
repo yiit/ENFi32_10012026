@@ -4,6 +4,8 @@
 #include "../../_Plugin_Helper.h"
 #ifdef USES_P089
 
+# include "src/ESPEasyCore/ESPEasyNetwork.h"
+
 
 # define PLUGIN_ID_089             89
 
@@ -51,8 +53,6 @@ extern "C"
 #  include <lwip/sys.h>         // needed for sys_now()
 #  include <lwip/netif.h>
 }
-
-#  include "src/ESPEasyCore/ESPEasyNetwork.h"
 
 
 struct P089_icmp_pcb {
