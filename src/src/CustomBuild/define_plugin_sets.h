@@ -1756,6 +1756,9 @@ To create/register a plugin, you have to :
    #ifndef USES_P085
      #define USES_P085   // AcuDC24x
    #endif
+  #ifndef USES_P089
+    #define USES_P089 // Ping
+  #endif
    #ifndef USES_P093
      #define USES_P093   // Mitsubishi Heat Pump
    #endif
@@ -1986,6 +1989,9 @@ To create/register a plugin, you have to :
   #ifndef USES_P083
     #define USES_P083 // SGP30
   #endif
+  #ifndef USES_P089
+    #define USES_P089 // Ping
+  #endif
   #ifndef USES_P090
     #define USES_P090 // CCS811
   #endif
@@ -2105,6 +2111,9 @@ To create/register a plugin, you have to :
   #endif
   #ifndef USES_P070
     #define USES_P070   // NeoPixel_Clock
+  #endif
+  #ifndef USES_P089
+    #define USES_P089 // Ping
   #endif
   #ifndef USES_P128
     #define USES_P128   // NeoPixelBusFX
@@ -2342,6 +2351,9 @@ To create/register a plugin, you have to :
   #endif
   #ifndef USES_P088
     #define USES_P088   // ToniA IR plugin
+  #endif
+  #ifndef USES_P089
+    #define USES_P089   // Ping
   #endif
   #ifndef USES_P094
     #define USES_P094  // CUL Reader
@@ -3155,6 +3167,18 @@ To create/register a plugin, you have to :
 #if !FEATURE_MQTT_DISCOVER && FEATURE_MQTT_DEVICECLASS
   #undef FEATURE_MQTT_DEVICECLASS
   #define FEATURE_MQTT_DEVICECLASS 0
+#endif
+
+#if !defined(FEATURE_MQTT_STATE_CLASS) && FEATURE_MQTT
+  #if defined(LIMIT_BUILD_SIZE) || defined(ESP8266) // Must enable this explicitly for ESP8266 Custom build
+    #define FEATURE_MQTT_STATE_CLASS 0
+  #else
+    #define FEATURE_MQTT_STATE_CLASS 1
+  #endif
+#endif
+#if !FEATURE_MQTT_DISCOVER && FEATURE_MQTT_STATE_CLASS
+  #undef FEATURE_MQTT_STATE_CLASS
+  #define FEATURE_MQTT_STATE_CLASS 0
 #endif
 
 #ifndef FEATURE_CUSTOM_TASKVAR_VTYPE
