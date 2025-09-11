@@ -289,6 +289,7 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
 
       if (P102_PZEM_sensor != nullptr) {
         P102_PZEM_sensor->init(P102_PZEM_ADDR);
+        P102_PZEM_sensor->setModel(static_cast<PZEM_model>(P102_PZEM_TYPE));
 
         // Sequence for reseting PZEM energy
         if (P102_PZEM_mode == 1)
@@ -323,6 +324,7 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
       {
         // When new data is available, return true
         P102_PZEM_sensor->init(P102_PZEM_ADDR);
+        P102_PZEM_sensor->setModel(static_cast<PZEM_model>(P102_PZEM_TYPE));
 
         float PZEM[6];
         PZEM[0] = P102_PZEM_sensor->voltage();
