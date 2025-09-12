@@ -51,14 +51,14 @@ void P111_data_struct::init() {
 /**
  * read status and tag
  */
-uint8_t P111_data_struct::readCardStatus(uint32_t *key,
+uint8_t P111_data_struct::readCardStatus(uint64_t *key,
                                          bool     *removedTag) {
   if (initPhase != P111_initPhases::Ready) { // No read during reset
     return P111_ERROR_RESET_BUSY;
   }
 
   uint8_t error = P111_NO_ERROR;
-  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };
+  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   uint8_t uidLength;
 
   error = readPassiveTargetID(uid, &uidLength);
@@ -96,9 +96,10 @@ uint8_t P111_data_struct::readCardStatus(uint32_t *key,
       return P111_ERROR_RESET_BUSY;
     }
   }
-  uint32_t tmpKey = uid[0];
+  uint64_t tmpKey = uid[0];
 
-  for (uint8_t i = 1; i < 4; i++) {
+  for (uint8_t i = 1; i < uidLength && i < sizeof(uid); i++) {
+    // FIXME TD-er: 10-byte UID will not fit in an uint64_t
     tmpKey <<= 8;
     tmpKey  += uid[i];
   }
@@ -227,10 +228,10 @@ uint8_t P111_data_struct::readPassiveTargetID(uint8_t *uid,
   // Until we support 7 uint8_t PICCs
   addLog(LOG_LEVEL_INFO, F("MFRC522: Scanned PICC's UID"));
 
-  for (uint8_t i = 0; i < 4; i++) { //
+  for (uint8_t i = 0; i < mfrc522->uid.size; i++) { //
     uid[i] = mfrc522->uid.uidByte[i];
   }
-  *uidLength = 4;
+  *uidLength = mfrc522->uid.size;
 
 
   #ifndef BUILD_NO_DEBUG
@@ -280,12 +281,16 @@ bool P111_data_struct::loop(struct EventStruct *event) {
   if (counter >= 5 || ComIrqReg_bits) { // Only every 3rd 0.1 second we do a read
     counter = 0;
 
-    uint32_t key        = P111_NO_KEY;
+    uint64_t key        = P111_NO_KEY;
     bool     removedTag = false;
     const uint8_t error = readCardStatus(&key, &removedTag);
 
     if (error == P111_NO_ERROR) {
-      const uint32_t old_key = UserVar.getSensorTypeLong(event->TaskIndex);
+#if FEATURE_EXTENDED_TASK_VALUE_TYPES
+      const uint64_t old_key = UserVar.getUint64(event->TaskIndex, 0);
+#else
+      const uint64_t old_key = UserVar.getSensorTypeLong(event->TaskIndex, 0);
+#endif
       bool new_key           = false;
 
       # ifdef P111_USE_REMOVAL
@@ -296,12 +301,30 @@ bool P111_data_struct::loop(struct EventStruct *event) {
       # endif // P111_USE_REMOVAL
 
       if ((old_key != key) && (key != P111_NO_KEY)) {
-        UserVar.setSensorTypeLong(event->TaskIndex, key);
+#if FEATURE_EXTENDED_TASK_VALUE_TYPES
+        UserVar.setUint64(event->TaskIndex, 0, key);
+#else
+        UserVar.setSensorTypeLong(event->TaskIndex, 0, key);
+#endif
         new_key = true;
         if (Settings.UseRules)
         {
-          String event = strformat(F("MFRC522#tag=%u,%u"), key, old_key);
-          rulesProcessing(event); // TD-er: Process event of read key now.
+          // Event values:
+          // - Full tag UID
+          // - Least significant 32 bit (byte 0 .. 3)
+          // - Extra bytes of 7-byte UID (byte 4 .. 6)
+          // - Extra bytes of 10-byte UID (byte 7 .. 9)
+
+          // TODO TD-er: No support yet for 10 byte UIDs
+
+          // TD-er: Process event of read key now.
+          rulesProcessing(strformat(
+            F("%s#taguid=%s,%s,%s"), 
+            getTaskDeviceName(event->TaskIndex).c_str(),
+            formatULLtoHex(key, 1).c_str(),
+            formatToHex(static_cast<uint32_t>(key & 0xFFFFFFFF), 1).c_str(),
+            formatToHex(static_cast<uint32_t>((key >> 32) & 0xFFFFFF), 1).c_str())
+          );
         }
       }
 
@@ -313,7 +336,7 @@ bool P111_data_struct::loop(struct EventStruct *event) {
         } else {
           log += F("Old Tag: ");
         }
-        log += formatToHex_decimal(key);
+        log += formatULLtoHex_decimal(key);
 
         if (!removedTag) {
           log += F(" card: ");

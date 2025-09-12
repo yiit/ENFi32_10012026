@@ -39,12 +39,17 @@ boolean Plugin_111(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_DEVICE_ADD:
     {
       auto& dev = Device[++deviceCount];
-      dev.Number         = PLUGIN_ID_111;
-      dev.Type           = DEVICE_TYPE_SPI3;
-      dev.VType          = Sensor_VType::SENSOR_TYPE_ULONG;
-      dev.ValueCount     = 1;
-      dev.SendDataOption = true;
-      dev.CustomVTypeVar = true;
+      dev.Number           = PLUGIN_ID_111;
+      dev.Type             = DEVICE_TYPE_SPI3;
+#if FEATURE_EXTENDED_TASK_VALUE_TYPES
+      dev.VType            = Sensor_VType::SENSOR_TYPE_UINT64_SINGLE;
+#else
+      dev.VType            = Sensor_VType::SENSOR_TYPE_ULONG;
+#endif
+      dev.ValueCount       = 1;
+      dev.HasFormatUserVar = true;
+      dev.SendDataOption   = true;
+      dev.CustomVTypeVar   = true;
       break;
     }
 
@@ -65,6 +70,21 @@ boolean Plugin_111(uint8_t function, struct EventStruct *event, String& string)
       event->String1 = formatGpioName_output(F("CS PIN"));            // P111_CS_PIN
       event->String2 = formatGpioName_output_optional(F("RST PIN ")); // P111_RST_PIN
       event->String3 = formatGpioName_input_optional(F("IRQ PIN "));  // P111_IRQ_PIN
+      break;
+    }
+
+    case PLUGIN_FORMAT_USERVAR:
+    {
+#if FEATURE_EXTENDED_TASK_VALUE_TYPES
+      string = formatULLtoHex(
+        UserVar.getUint64(event->TaskIndex, event->idx), 
+        1);
+#else
+      string = formatToHex(
+        UserVar.getSensorTypeLong(event->TaskIndex, event->idx), 
+        1);
+#endif
+      success = true;
       break;
     }
 

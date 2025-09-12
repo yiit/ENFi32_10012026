@@ -123,6 +123,20 @@ void appendHexChar(uint8_t data, String& string);
 // Returned string length will be twice the size of the data array.
 String formatToHex_array(const uint8_t* data, size_t size);
 
+String formatULLtoHex(const uint64_t& value,
+                   const __FlashStringHelper * prefix,
+                   unsigned int minimal_hex_digits);
+
+String formatULLtoHex(const uint64_t& value,
+                   const __FlashStringHelper * prefix);
+
+String formatULLtoHex(const uint64_t& value, unsigned int minimal_hex_digits = 0);
+
+String formatULLtoHex_no_prefix(const uint64_t& value, unsigned int minimal_hex_digits = 0);
+
+String formatULLtoHex_decimal(const uint64_t& value);
+
+
 String formatToHex(unsigned long value,
                    const __FlashStringHelper * prefix,
                    unsigned int minimal_hex_digits);
