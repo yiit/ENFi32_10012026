@@ -168,12 +168,14 @@ bool NW001_data_struct_WiFi_STA::record_stats()
   if (_plugin_stats_array != nullptr) {
     EventStruct tmpEvent;
     size_t valueCount{};
-    tmpEvent.ParfN[valueCount++] =
-    #  ifdef ESP32
+    const int rssi = 
+#  ifdef ESP32
       WiFi.STA.RSSI();
-    #  else
+#  else
       WiFi.RSSI();
-    #  endif // ifdef ESP32
+#  endif // ifdef ESP32
+
+    tmpEvent.ParfN[valueCount++] = rssi < 0 ? rssi : NAN;
 #  if FEATURE_SET_WIFI_TX_PWR
     tmpEvent.ParfN[valueCount++] = ESPEasy::net::wifi::GetWiFiTXpower();
 #  endif

@@ -186,7 +186,7 @@ void WiFiEventData_t::setWiFiServicesInitialized() {
     setWiFiGotIP();
   }
 
-  if (/*!unprocessedWifiEvents() && */ WiFiConnected() && WiFiGotIP()) {
+  if ( WiFiConnected() && WiFiGotIP()) {
     # ifndef BUILD_NO_DEBUG
 
     //    addLog(LOG_LEVEL_DEBUG, F("WiFi : WiFi services initialized"));
@@ -250,13 +250,6 @@ void WiFiEventData_t::markLostIP() {
 }
 
 void WiFiEventData_t::markDisconnect(WiFiDisconnectReason reason) {
-  /*
-   #if defined(ESP32)
-     if ((WiFi.getMode() & WIFI_MODE_STA) == 0) return;
-   #else // if defined(ESP32)
-     if ((WiFi.getMode() & WIFI_STA) == 0) return;
-   #endif // if defined(ESP32)
-   */
   lastDisconnectMoment.setNow();
   usedChannel = 0;
 

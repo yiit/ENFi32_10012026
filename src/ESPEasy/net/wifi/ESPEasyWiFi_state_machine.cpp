@@ -46,7 +46,20 @@ void ESPEasyWiFi_t::enable()  {}
 
 void ESPEasyWiFi_t::disable() { setState(WiFiState_e::Disabled, 100); }
 
-void ESPEasyWiFi_t::begin()   { setState(WiFiState_e::IdleWaiting, 100); }
+void ESPEasyWiFi_t::begin()   {
+  if (WiFi_AP_Candidates.hasCandidates()) {
+    setState(WiFiState_e::IdleWaiting, 100);
+  } else {
+    if (WifiIsAP(WiFi.getMode())) {
+      // TODO TD-er: Must check if any client is connected.
+      // If not, then we can disable AP mode and switch to WiFiState_e::STA_Scanning
+      setState(WiFiState_e::STA_AP_Scanning, WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT);
+    } else {
+      //            setState(WiFiState_e::STA_AP_Scanning, WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT);
+      setState(WiFiState_e::STA_Scanning, WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT);
+    }
+  }
+}
 
 void ESPEasyWiFi_t::loop()
 {
@@ -110,7 +123,7 @@ void ESPEasyWiFi_t::loop()
                     WiFiEventData.wifiConnectAttemptNeeded = false;
                     setState(WiFiState_e::AP_only, WIFI_STATE_MACHINE_AP_ONLY_TIMEOUT);
            */
-        } else if (WiFi_AP_Candidates.scanComplete() == 0
+        } else if (WiFi_AP_Candidates.scanComplete() == 0 || WiFi_AP_Candidates.scanComplete() == -3
 # ifdef ESP32
 #  if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)
                    || WiFi.status() == WL_STOPPED
@@ -147,12 +160,12 @@ void ESPEasyWiFi_t::loop()
     case WiFiState_e::STA_Scanning:
     {
       // -1 if scan not finished
-      auto scanCompleteStatus = WiFi.scanComplete();
+      auto scanCompleteStatus = WiFi_AP_Candidates.scanComplete();
 
       if (scanCompleteStatus >= 0) {
         WiFi_AP_Candidates.load_knownCredentials();
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
-        WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
+        WiFi_AP_Candidates.process_WiFiscan();
 # endif
 # ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_INFO, strformat(
@@ -183,12 +196,12 @@ void ESPEasyWiFi_t::loop()
     case WiFiState_e::STA_AP_Scanning:
     {
       // -1 if scan not finished
-      auto scanCompleteStatus = WiFi.scanComplete();
+      auto scanCompleteStatus = WiFi_AP_Candidates.scanComplete();
 
       if (scanCompleteStatus >= 0) {
         WiFi_AP_Candidates.load_knownCredentials();
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
-        WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
+        WiFi_AP_Candidates.process_WiFiscan();
 # endif
 # ifndef BUILD_NO_DEBUG
         addLog(LOG_LEVEL_INFO, strformat(
@@ -252,7 +265,11 @@ void ESPEasyWiFi_t::loop()
       // Check if still connected
       if (getSTA_connected_state() != STA_connected_state::Connected) {
         //        setState(WiFiState_e::WiFiOFF);
-        setState(WiFiState_e::Disabled);
+        if (WiFi_AP_Candidates.hasCandidates()) {
+          setState(WiFiState_e::STA_Connecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
+        } else {
+          setState(WiFiState_e::STA_Scanning, WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT);
+        }
 
         /*
            if (Settings.UseRules)
@@ -287,7 +304,8 @@ bool ESPEasyWiFi_t::connected() const
 void ESPEasyWiFi_t::disconnect() { doWiFiDisconnect(); }
 
 void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
-  if (newState == _state) return;
+  if (newState == _state) { return; }
+
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(
       LOG_LEVEL_INFO,

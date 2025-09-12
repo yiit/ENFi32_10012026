@@ -63,7 +63,7 @@ void NWPluginData_static_runtime::enable_txrx_events()
       esp_netif_tx_rx_event_enable(_netif->netif());
 
       if (!registered_IP_EVENT_TX_RX) {
-        esp_event_handler_register(IP_EVENT, IP_EVENT_TX_RX, &tx_rx_event_handler, NULL);
+        esp_event_handler_instance_register(IP_EVENT, IP_EVENT_TX_RX, &tx_rx_event_handler, NULL, &_handler_inst);
         registered_IP_EVENT_TX_RX = true;
       }
       esp_netif_tx_rx_event_enable(_netif->netif());

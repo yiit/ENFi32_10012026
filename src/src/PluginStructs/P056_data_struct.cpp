@@ -1,6 +1,8 @@
 
 #include "../PluginStructs/P056_data_struct.h"
 
+#ifdef USES_P056
+
 P056_data_struct::P056_data_struct(EventStruct *event) {
   delete SDS;
 
@@ -60,3 +62,5 @@ void P056_data_struct::SetWorkingPeriod(int minutes) {
     this->SDS->SetWorkingPeriod(minutes);
   }
 }
+
+#endif

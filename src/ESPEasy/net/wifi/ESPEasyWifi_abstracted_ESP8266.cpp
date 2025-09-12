@@ -31,8 +31,8 @@ bool WiFi_pre_STA_setup() {
   if (!doSetSTA(true)) { return false; }
 
   // Assign to 2 separate bools to make sure both are executed.
-  const bool autoConnect   = WiFi.setAutoConnect(false);
-  const bool autoReconnect = WiFi.setAutoReconnect(false);
+  const bool autoConnect   = WiFi.setAutoConnect(true);
+  const bool autoReconnect = WiFi.setAutoReconnect(true);
 
   if (!autoConnect || !autoReconnect) {
     addLog(LOG_LEVEL_ERROR, F("WiFi  : Disabling auto (re)connect failed"));
@@ -158,8 +158,8 @@ void doWifiScan(bool async, uint8_t channel) {
   unsigned int nrScans = 1 + (async ? 0 : Settings.NumberExtraWiFiScans);
 
   while (nrScans > 0) {
+    WiFi_AP_Candidates.begin_scan();
     if (!async) {
-      WiFi_AP_Candidates.begin_sync_scan();
       FeedSW_watchdog();
     }
     --nrScans;

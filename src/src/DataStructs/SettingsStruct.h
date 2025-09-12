@@ -640,7 +640,7 @@ public:
   int8_t        PinBootStates_ESP32[24] = {0}; // pins 17 ... 39
   #endif
   uint8_t       WiFi_TX_power = 70; // 70 = 17.5dBm. unit: 0.25 dBm
-  int8_t        WiFi_sensitivity_margin = 3;  // Margin in dBm on top of sensitivity.
+  int8_t        WiFi_sensitivity_margin = 5;  // Margin in dBm on top of sensitivity.
   uint8_t       NumberExtraWiFiScans = 0;
   int8_t        SPI_SCLK_pin = -1;
   int8_t        SPI_MISO_pin = -1;

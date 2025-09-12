@@ -50,6 +50,7 @@ namespace wifi {
 // Called from the loop() to make sure events are processed as soon as possible.
 // These functions are called from Setup() or Loop() and thus may call delay() or yield()
 // ********************************************************************************
+/*
 void handle_unprocessedNetworkEvents()
 {
 # if FEATURE_ETHERNET
@@ -87,18 +88,10 @@ void handle_unprocessedNetworkEvents()
     }
 
     if (WiFiEventData.WiFiServicesInitialized() && processedSomething) {
-
-      // #ifdef ESP32
       setWebserverRunning(false);
       delay(1);
       setWebserverRunning(true);
       delay(1);
-
-      /*
-       #else
-              CheckRunningServices();
-       #endif
-       */
     }
   }
 
@@ -110,6 +103,7 @@ void handle_unprocessedNetworkEvents()
   updateUDPport(false);
 # endif
 }
+*/
 
 // ********************************************************************************
 // Functions to process the data gathered from the events.
@@ -430,7 +424,7 @@ void processScanDone() {
 # endif // ifndef BUILD_NO_DEBUG
 
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
-  WiFi_AP_Candidates.process_WiFiscan(scanCompleteStatus);
+  WiFi_AP_Candidates.process_WiFiscan();
 # endif
   WiFi_AP_Candidates.load_knownCredentials();
 

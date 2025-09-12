@@ -11,6 +11,8 @@ namespace net {
 namespace wifi {
 
 
+# define WIFI_AP_CANDIDATE_MAX_AGE   300000 // 5 minutes in msec
+
 struct WiFi_AP_Candidate {
   WiFi_AP_Candidate();
   WiFi_AP_Candidate(const WiFi_AP_Candidate& other);

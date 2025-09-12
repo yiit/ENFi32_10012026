@@ -164,6 +164,7 @@ public:
     NWPLUGIN_WEBFORM_SAVE,
     NWPLUGIN_WEBFORM_LOAD,
     NWPLUGIN_GET_PARAMETER_DISPLAY_NAME,
+    NWPLUGIN_TIMER_IN,
     NWPLUGIN_INIT,
     NWPLUGIN_TEN_PER_SECOND,   // Called 10x per second (typical for checking new data instead of waiting)
     NWPLUGIN_FIFTY_PER_SECOND, // Called 50x per second (typical for checking new data instead of waiting)
@@ -191,9 +192,15 @@ public:
     NWPLUGIN_WEBFORM_SHOW_HOSTNAME,   // Used for showing hostname
     NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS, // Used for showing MAC
     NWPLUGIN_WEBFORM_SHOW_IP,         // Used for showing IP
-    NWPLUGIN_WEBFORM_SHOW_PORT        // Used for showing host information for the network adapter.
+    NWPLUGIN_WEBFORM_SHOW_PORT,        // Used for showing host information for the network adapter.
+
+
+    NWPLUGIN_MAX_FUNCTION  // Keep as last
 
   };
+
+#define NrBitsNWPluginFunctions   NR_BITS(static_cast<unsigned>(NWPlugin::Function::NWPLUGIN_MAX_FUNCTION))
+
 
 #ifdef ESP32
   static bool canQueryViaNetworkInterface(Function function);

@@ -55,8 +55,15 @@ void setNetworkMedium(NetworkMedium_t new_medium) {
 // }
 
 bool      NetworkConnected() { 
-  processNetworkEvents();
-  return ESPEasy::net::wifi::WiFiConnected(); }
+  static bool last_result = false;
+  static uint32_t last_check_millis = 0;
+  if (timePassedSince(last_check_millis) > 50 || last_check_millis == 0) {
+    last_check_millis = millis();
+    processNetworkEvents();
+    last_result = ESPEasy::net::wifi::WiFiConnected();
+  }
+  return last_result;
+}
 
 IPAddress NetworkLocalIP()   { return WiFi.localIP(); }
 

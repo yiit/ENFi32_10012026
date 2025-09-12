@@ -7,7 +7,7 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-void handle_unprocessedNetworkEvents();
+//void handle_unprocessedNetworkEvents();
 void processDisconnect();
 void processConnect();
 void processGotIP();

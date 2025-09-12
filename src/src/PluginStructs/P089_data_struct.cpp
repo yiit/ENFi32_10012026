@@ -4,8 +4,9 @@
 
 
 # include "../Helpers/Networking.h"
-
 # include "../Helpers/_Plugin_init.h"
+
+# include "../../ESPEasy/net/ESPEasyNetwork.h"
 
 # ifdef ESP32
 P089_data_struct::P089_data_struct() {

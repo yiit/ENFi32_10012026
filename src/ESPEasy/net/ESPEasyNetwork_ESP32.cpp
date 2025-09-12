@@ -126,13 +126,19 @@ NetworkInterface* getDefaultNonAP_interface()
 }
 
 bool NetworkConnected() {
-  auto network_if = getDefaultNonAP_interface();
+  static bool last_result = false;
+  static uint32_t last_check_millis = 0;
+  if (timePassedSince(last_check_millis) > 50 || last_check_millis == 0) {
+    last_check_millis = millis();
+    auto network_if = getDefaultNonAP_interface();
 
-  if (network_if == nullptr) {
-    return false;
+    if (network_if == nullptr) {
+      return false;
+    }
+    processNetworkEvents();
+    last_result = network_if->connected();
   }
-  processNetworkEvents();
-  return network_if->connected();
+  return last_result;
 }
 
 IPAddress NetworkLocalIP() {

@@ -68,38 +68,36 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
         Function != NWPlugin::Function::NWPLUGIN_WRITE &&
         Function != NWPlugin::Function::NWPLUGIN_WEBSERVER_SHOULD_RUN;
 
-      if (Function == NWPlugin::Function::NWPLUGIN_INIT_ALL) {
-        Function = NWPlugin::Function::NWPLUGIN_INIT;
-      }
-
-      if (Function == NWPlugin::Function::NWPLUGIN_EXIT_ALL) {
-        Function = NWPlugin::Function::NWPLUGIN_EXIT;
-      }
-
       for (networkIndex_t x = 0; x < NETWORK_MAX; x++) {
         const bool checkedEnabled =
           Settings.getNetworkEnabled(x) ||
           Function == NWPlugin::Function::NWPLUGIN_EXIT;
 
         if (Settings.getNWPluginID_for_network(x) && checkedEnabled) {
-          event->NetworkIndex = x;
-          String command;
+          if (Function == NWPlugin::Function::NWPLUGIN_INIT_ALL) {
+            Scheduler.setNetworkInitTimer(Settings.getNetworkInterfaceStartupDelayAtBoot(x), x);
+          } else if (Function == NWPlugin::Function::NWPLUGIN_EXIT_ALL) {
+            Scheduler.setNetworkExitTimer(Settings.getNetworkInterfaceStartupDelayAtBoot(x), x);
+          } else {
+            event->NetworkIndex = x;
+            String command;
 
-          if (Function == NWPlugin::Function::NWPLUGIN_WRITE) {
-            command = str;
-          }
-
-          if (do_NWPluginCall(
-                getNetworkDriverIndex_from_NetworkIndex(x),
-                Function,
-                event,
-                command)) {
-            if ((Function == NWPlugin::Function::NWPLUGIN_WRITE) ||
-                (Function == NWPlugin::Function::NWPLUGIN_WEBSERVER_SHOULD_RUN)) {
-              // Need to stop when call was handled
-              return true;
+            if (Function == NWPlugin::Function::NWPLUGIN_WRITE) {
+              command = str;
             }
-            success = true;
+
+            if (do_NWPluginCall(
+                  getNetworkDriverIndex_from_NetworkIndex(x),
+                  Function,
+                  event,
+                  command)) {
+              if ((Function == NWPlugin::Function::NWPLUGIN_WRITE) ||
+                  (Function == NWPlugin::Function::NWPLUGIN_WEBSERVER_SHOULD_RUN)) {
+                // Need to stop when call was handled
+                return true;
+              }
+              success = true;
+            }
           }
         }
       }

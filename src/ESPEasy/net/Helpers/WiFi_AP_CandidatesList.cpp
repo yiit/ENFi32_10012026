@@ -107,7 +107,8 @@ void WiFi_AP_CandidatesList::force_reload() {
   loadCandidatesFromScanned();
 }
 
-void WiFi_AP_CandidatesList::begin_sync_scan() {
+void WiFi_AP_CandidatesList::begin_scan() {
+  _last_scan.setNow();
   candidates.clear();
   _addedKnownCandidate = false;
 }
@@ -124,9 +125,10 @@ void WiFi_AP_CandidatesList::purge_expired() {
 
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
-void WiFi_AP_CandidatesList::process_WiFiscan(uint8_t scancount) {
+void WiFi_AP_CandidatesList::process_WiFiscan() {
   // Append or update found APs from scan.
-  for (uint8_t i = 0; i < scancount; ++i) {
+  int scancount = WiFi.scanComplete();
+  for (int i = 0; i < scancount; ++i) {
     const WiFi_AP_Candidate tmp(i);
 
     scanned_new.push_back(tmp);
@@ -273,9 +275,11 @@ void WiFi_AP_CandidatesList::markCurrentConnectionStable() {
 }
 
 int8_t WiFi_AP_CandidatesList::scanComplete() const {
-  const int8_t scanCompleteStatus = WiFi.scanComplete();
+  if (!_last_scan.isSet() || 
+      (_last_scan.millisPassedSince() > WIFI_AP_CANDIDATE_MAX_AGE))  return -3;
 
-  if (scanCompleteStatus == -1) {
+  const int8_t scanCompleteStatus = WiFi.scanComplete();
+  if (scanCompleteStatus < 0) {
     // Still scanning
     return scanCompleteStatus;
   }

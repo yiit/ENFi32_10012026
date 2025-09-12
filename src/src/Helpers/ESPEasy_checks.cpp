@@ -129,7 +129,7 @@ void run_compiletime_checks() {
   #if FEATURE_CUSTOM_PROVISIONING
   check_size<ProvisioningStruct,                    256u>();
   #endif
-  check_size<systemTimerStruct,                     28u>();
+  check_size<systemTimerStruct,                     32u>();
   check_size<RTCStruct,                             32u>();
   check_size<portStatusStruct,                      6u>();
   check_size<ResetFactoryDefaultPreference_struct,  4u>();

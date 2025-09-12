@@ -3,6 +3,7 @@
 #include "../../../ESPEasy_common.h"
 
 #include "../DataStructs/WiFi_AP_Candidate.h"
+#include "../../../src/Helpers/LongTermTimer.h"
 
 #include <list>
 
@@ -30,14 +31,14 @@ struct WiFi_AP_CandidatesList {
   // Called after WiFi credentials have changed.
   void force_reload();
 
-  void begin_sync_scan();
+  void begin_scan();
 
   void purge_expired();
 
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
   // Add found WiFi access points to the list if they are possible candidates.
-  void process_WiFiscan(uint8_t scancount);
+  void process_WiFiscan();
 # endif // if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
 # ifdef ESP8266
@@ -69,6 +70,10 @@ struct WiFi_AP_CandidatesList {
 
   bool                             addedKnownCandidate() const { return _addedKnownCandidate; }
 
+  // Return number of found access points
+  // @retval -1: WIFI_SCAN_RUNNING
+  // @retval -2: WIFI_SCAN_FAILED
+  // @retval -3: No scan performed (recently)
   int8_t                           scanComplete() const;
 
   WiFi_AP_Candidate_const_iterator scanned_begin() const {
@@ -119,6 +124,7 @@ private:
 
   bool _mustLoadCredentials = true;
   bool _addedKnownCandidate = false;
+  LongTermTimer _last_scan;
 
 public:
 

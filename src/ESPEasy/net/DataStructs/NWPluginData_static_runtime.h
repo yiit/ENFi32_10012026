@@ -148,6 +148,10 @@ private:
 
   mutable uint32_t _connectionFailures{};
 
+#if FEATURE_NETWORK_TRAFFIC_COUNT
+  esp_event_handler_instance_t _handler_inst{};
+#endif
+
 };
 
 

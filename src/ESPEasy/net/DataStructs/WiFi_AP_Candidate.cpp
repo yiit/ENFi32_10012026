@@ -25,7 +25,7 @@ namespace net {
 namespace wifi {
 
 
-# define WIFI_AP_CANDIDATE_MAX_AGE   300000 // 5 minutes in msec
+
 
 
 WiFi_AP_Candidate::WiFi_AP_Candidate() :
