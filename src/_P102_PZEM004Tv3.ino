@@ -8,6 +8,7 @@
 //
 
 /** Changelog:
+ * 2025-09-14 tonhuisman: Add extra instruction to submit page once more after 'Reset energy' is used, to save 'Read energy' default Mode.
  * 2025-08-06 tonhuisman: Change plugin name to "Energy - PZEM-004T (AC) / PZEM-017 (DC)"
  * 2025-08-05 tonhuisman: Add support for PZEM-017v1 from a forum suggestion:
  *                        https://www.letscontrolit.com/forum/viewtopic.php?p=74069#p74064
@@ -232,6 +233,7 @@ boolean                    Plugin_102(uint8_t function, struct EventStruct *even
       if (P102_PZEM_ADDR_SET == 4)
       {
         addHtml(F("<span style=\"color:blue\"> <br><B>Energy reset on current PZEM ! </B></span>"));
+        addHtml(F("<span style=\"color:red\"> <br>Click <B>Submit</B> button once more to save 'Read value' PZEM Mode!</span>"));
         P102_PZEM_ADDR_SET = 0; // Reset programming confirmation
       }
 
