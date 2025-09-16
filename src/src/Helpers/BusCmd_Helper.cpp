@@ -1057,7 +1057,7 @@ bool BusCmd_Helper_struct::executeBusCmdCommands() {
         #endif // if FEATURE_BUSCMD_STRING
       }
     }
-
+#ifndef LIMIT_BUILD_SIZE
     if (loglevelActiveFor(LOG_LEVEL_INFO) && _showLog && ((BusCmd_CommandSource_e::PluginRead == _commandSource) ||
                                                           (BusCmd_CommandSource_e::PluginGetConfigVar == _commandSource))) {
       #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
@@ -1069,6 +1069,7 @@ bool BusCmd_Helper_struct::executeBusCmdCommands() {
       addLog(LOG_LEVEL_INFO, strformat(F("BUSCMD: Executing command: %s, value[%d]:(%c): %s"),
                                        _it->toString().c_str(), _varIndex, _valueIsSet ? 't' : 'f', valStr.c_str()));
     }
+#endif
     ++_it; // Next command
 
     while (toSkip > 0 && _it != _commands.end()) {
