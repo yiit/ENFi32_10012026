@@ -68,6 +68,12 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
         Function != NWPlugin::Function::NWPLUGIN_WRITE &&
         Function != NWPlugin::Function::NWPLUGIN_WEBSERVER_SHOULD_RUN;
 
+      if (Function == NWPlugin::Function::NWPLUGIN_EXIT_ALL) {
+        // Called before shutdown, so must immediately exit network adapters
+        // Especially PPP modem may no longer respond if not turned off properly before reboot
+        Function = NWPlugin::Function::NWPLUGIN_EXIT;
+      }
+
       for (networkIndex_t x = 0; x < NETWORK_MAX; x++) {
         const bool checkedEnabled =
           Settings.getNetworkEnabled(x) ||
@@ -76,8 +82,6 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
         if (Settings.getNWPluginID_for_network(x) && checkedEnabled) {
           if (Function == NWPlugin::Function::NWPLUGIN_INIT_ALL) {
             Scheduler.setNetworkInitTimer(Settings.getNetworkInterfaceStartupDelayAtBoot(x), x);
-          } else if (Function == NWPlugin::Function::NWPLUGIN_EXIT_ALL) {
-            Scheduler.setNetworkExitTimer(Settings.getNetworkInterfaceStartupDelayAtBoot(x), x);
           } else {
             event->NetworkIndex = x;
             String command;
