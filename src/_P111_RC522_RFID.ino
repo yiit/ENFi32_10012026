@@ -6,6 +6,8 @@
 // #######################################################################################################
 
 /** Changelog:
+ * 2025-09-12 TD-er:      Add support for 7-byte UID
+ * 2025-08-20 TD-er:      Speed-up reading + send immediate event
  * 2025-06-14 tonhuisman: Add support for Custom Value Type per task value
  * 2025-01-12 tonhuisman: Add support for MQTT AutoDiscovery (not supported for RFID)
  *                        Update changelog
