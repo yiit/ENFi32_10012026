@@ -64,6 +64,9 @@ enum class EthPhyType_t : uint8_t {
   DP83848 = 4,
   KSZ8041 = 5,
   KSZ8081 = 6,
+# if ETH_PHY_LAN867X_SUPPORTED
+  LAN867X = 7,
+# endif
 # endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 # if ESP_IDF_VERSION_MAJOR >= 5
 #  if CONFIG_ETH_SPI_ETHERNET_DM9051

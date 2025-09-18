@@ -10,6 +10,9 @@ bool isValid(EthPhyType_t phyType) {
   {
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     case EthPhyType_t::LAN8720:
+# if ETH_PHY_LAN867X_SUPPORTED
+    case EthPhyType_t::LAN867X:
+# endif
     case EthPhyType_t::TLK110:
     case EthPhyType_t::RTL8201:
 #  if ETH_TYPE_JL1101_SUPPORTED
@@ -62,6 +65,9 @@ eth_phy_type_t to_ESP_phy_type(EthPhyType_t phyType)
   {
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     case EthPhyType_t::LAN8720:  return ETH_PHY_LAN8720;
+#  if ETH_PHY_LAN867X_SUPPORTED
+    case EthPhyType_t::LAN867X:  return ETH_PHY_LAN867X;
+#  endif
     case EthPhyType_t::TLK110:   return ETH_PHY_TLK110;
     case EthPhyType_t::RTL8201:  return ETH_PHY_RTL8201;
 #  if ETH_TYPE_JL1101_SUPPORTED
@@ -94,6 +100,9 @@ const __FlashStringHelper* toString(EthPhyType_t phyType) {
   {
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     case EthPhyType_t::LAN8720:  return F("LAN8710 / LAN8720");
+#  if ETH_PHY_LAN867X_SUPPORTED
+    case EthPhyType_t::LAN867X:  return F("LAN867X");
+#  endif
     case EthPhyType_t::TLK110:   return F("TLK110 / IP101");
     case EthPhyType_t::RTL8201:  return F("RTL8201");
 #  if ETH_TYPE_JL1101_SUPPORTED

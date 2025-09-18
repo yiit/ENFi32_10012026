@@ -348,7 +348,11 @@ void handle_hardware() {
       toString(ESPEasy::net::EthPhyType_t::notSet),			  
 
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-      toString(ESPEasy::net::EthPhyType_t::LAN8720),			  
+      toString(ESPEasy::net::EthPhyType_t::LAN8720),		
+# if ETH_PHY_LAN867X_SUPPORTED
+      toString(ESPEasy::net::EthPhyType_t::LAN867X),
+# endif
+	  
       toString(ESPEasy::net::EthPhyType_t::TLK110),				  
       toString(ESPEasy::net::EthPhyType_t::RTL8201),				
 #if ETH_TYPE_JL1101_SUPPORTED
@@ -376,6 +380,9 @@ void handle_hardware() {
 
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
       static_cast<int>(ESPEasy::net::EthPhyType_t::LAN8720),			  
+# if ETH_PHY_LAN867X_SUPPORTED
+      static_cast<int>(ESPEasy::net::EthPhyType_t::LAN867X),
+# endif
       static_cast<int>(ESPEasy::net::EthPhyType_t::TLK110),				  
       static_cast<int>(ESPEasy::net::EthPhyType_t::RTL8201),			
 #if ETH_TYPE_JL1101_SUPPORTED	
