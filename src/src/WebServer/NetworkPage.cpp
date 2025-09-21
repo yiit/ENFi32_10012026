@@ -511,10 +511,17 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 #  if FEATURE_NETWORK_TRAFFIC_COUNT
 
           if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT, &TempEvent, str)) {
-            addRowLabel(F("TX Bytes Total"));
-            addHtmlInt(TempEvent.Par64_1);
-            addRowLabel(F("RX Bytes Total"));
-            addHtmlInt(TempEvent.Par64_2);
+            addRowLabel(F("TX / RX Frames"));
+            addHtml(strformat(
+              F("%d / %d"), 
+              TempEvent.Par5, 
+              TempEvent.Par6));
+
+            addRowLabel(F("TX / RX Frame Bytes"));
+            addHtml(strformat(
+              F("%siB / %siB"),
+              formatHumanReadable(TempEvent.Par64_1, 1024).c_str(),
+              formatHumanReadable(TempEvent.Par64_2, 1024).c_str()));
           }
 #  endif // if FEATURE_NETWORK_TRAFFIC_COUNT
         }

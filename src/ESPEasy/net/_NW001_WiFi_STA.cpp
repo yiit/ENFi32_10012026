@@ -119,7 +119,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       if (success) {
         string += strformat(
           F("\n%s\nRSSI: %d dBm"),
-          FsP(toString(ESPEasy::net::wifi::getConnectionProtocol())),
+          FsP(ESPEasy::net::wifi::toString(ESPEasy::net::wifi::getConnectionProtocol())),
           WiFi.RSSI());
 
         ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *NW_data =

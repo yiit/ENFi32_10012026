@@ -25,6 +25,7 @@
 
 # include "../Globals/CRCValues.h"
 # include "../Globals/ESPEasy_time.h"
+# include "../../ESPEasy/net/Globals/ESPEasyWiFi.h"
 # include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 # include "../../ESPEasy/net/Globals/NetworkState.h"
 # include "../Globals/RTC.h"
@@ -486,16 +487,15 @@ void handle_sysinfo_Network() {
 
   addTableSeparator(F("WiFi"), 2, 3, F("Wifi"));
 
-  const bool showWiFiConnectionInfo = !WiFiEventData.WiFiDisconnected();
-
+  const bool showWiFiConnectionInfo = ESPEasyWiFi.connected();
 
   addRowLabel(LabelType::WIFI_CONNECTION);
   if (showWiFiConnectionInfo)
   {
-    addHtml(toString(ESPEasy::net::wifi::getConnectionProtocol()));
-    addHtml(F(" (RSSI "));
-    addHtmlInt(WiFi.RSSI());
-    addHtml(F(" dBm)"));
+    addHtml(strformat(
+      F("%s (RSSI %d dBm)"),
+      FsP(toString(ESPEasy::net::wifi::getConnectionProtocol())),
+      WiFi.RSSI()));
   } else addHtml('-');
 
   addRowLabel(LabelType::SSID);

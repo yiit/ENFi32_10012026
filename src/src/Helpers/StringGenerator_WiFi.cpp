@@ -3,6 +3,8 @@
 #include "../Helpers/StringConverter.h"
 
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
+#include "../../ESPEasy/net/_NWPlugin_Helper.h"
+#include "../../ESPEasy/net/NWPluginStructs/NW001_data_struct_WiFi_STA.h"
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
@@ -130,13 +132,33 @@ const __FlashStringHelper * getLastDisconnectReason(WiFiDisconnectReason reason)
   }
 }
 
-String getLastDisconnectReason() {
+WiFiDisconnectReason getWiFi_disconnectReason()
+{
+  ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *NW_data =
+          static_cast<ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *>(ESPEasy::net::getNWPluginData(NETWORK_INDEX_WIFI_STA));
+  if (NW_data) {
+    return NW_data->getWiFi_disconnectReason();
+  }
+  return WIFI_DISCONNECT_REASON_UNSPECIFIED;
+}
+
+String getWiFi_disconnectReason_str() {
   #ifndef LIMIT_BUILD_SIZE
-  String reason = wrap_braces(String(WiFiEventData.lastDisconnectReason));
-  reason += ' ';
-  reason += getLastDisconnectReason(WiFiEventData.lastDisconnectReason);
-  return reason;
+  const WiFiDisconnectReason reason = getWiFi_disconnectReason();
+  return strformat(
+    F("(%d) %s"), 
+    reason, 
+    FsP(getLastDisconnectReason(reason)));
   #else
-  return wrap_braces(String(WiFiEventData.lastDisconnectReason));
+  return wrap_braces(String(getWiFi_disconnectReason()));
   #endif
+}
+
+const __FlashStringHelper*   getWiFi_encryptionType() {
+  ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *NW_data =
+          static_cast<ESPEasy::net::wifi::NW001_data_struct_WiFi_STA *>(ESPEasy::net::getNWPluginData(NETWORK_INDEX_WIFI_STA));
+  if (NW_data) {
+    return NW_data->getWiFi_encryptionType();
+  }
+  return F("-");
 }

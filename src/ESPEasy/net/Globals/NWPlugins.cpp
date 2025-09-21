@@ -15,9 +15,6 @@
 namespace ESPEasy {
 namespace net {
 
-#define NETWORK_INDEX_WIFI_STA  0 // Always the first network index
-#define NETWORK_INDEX_WIFI_AP   1 // Always the 2nd network index
-
 bool NWPluginCall(NWPlugin::Function Function, EventStruct *event) {
   #ifdef USE_SECOND_HEAP
   HeapSelectDram ephemeral;
@@ -133,12 +130,12 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
 #if FEATURE_NETWORK_TRAFFIC_COUNT
           case NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT:
           {
-            uint64_t tx{};
-            uint64_t rx{};
-
-            if (NW_data->getTrafficCount(tx, rx)) {
-              event->Par64_1 = tx;
-              event->Par64_2 = rx;
+            TX_RX_traffic_count traffic{};  
+            if (NW_data->getTrafficCount(traffic)) {
+              event->Par64_1 = traffic._tx_count;
+              event->Par64_2 = traffic._rx_count;
+              event->Par5    = traffic._tx_packets;
+              event->Par6    = traffic._rx_packets;
               success        = true;
             }
             break;

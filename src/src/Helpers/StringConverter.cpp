@@ -372,14 +372,17 @@ String formatToHex_no_prefix(unsigned long value, unsigned int minimal_hex_digit
   return strformat(fmt, value);
 }
 
-String formatHumanReadable(unsigned long value, unsigned long factor) {
+String formatHumanReadable(uint64_t value,
+                           uint32_t factor) {
   String result = formatHumanReadable(value, factor, 2);
 
   result.replace(F(".00"), EMPTY_STRING);
   return result;
 }
 
-String formatHumanReadable(unsigned long value, unsigned long factor, int NrDecimals) {
+String formatHumanReadable(uint64_t value,
+                           uint32_t factor, 
+                           int NrDecimals) {
   float floatValue(value);
   uint8_t  steps = 0;
 

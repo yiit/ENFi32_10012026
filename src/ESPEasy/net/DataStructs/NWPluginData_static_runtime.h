@@ -16,6 +16,19 @@
 namespace ESPEasy {
 namespace net {
 
+#if FEATURE_NETWORK_TRAFFIC_COUNT
+struct TX_RX_traffic_count {
+
+  void clear() { _tx_count = 0; _rx_count = 0; _tx_packets = 0; _rx_packets = 0; }
+
+  uint64_t _tx_count{};
+  uint64_t _rx_count{};
+  uint32_t _tx_packets{};
+  uint32_t _rx_packets{};
+
+};
+#endif
+
 struct NWPluginData_static_runtime {
 #ifdef ESP32
   NWPluginData_static_runtime(
@@ -35,8 +48,7 @@ struct NWPluginData_static_runtime {
 #if FEATURE_NETWORK_TRAFFIC_COUNT
   void enable_txrx_events();
 
-  bool getTrafficCount(uint64_t& tx,
-                       uint64_t& rx) const;
+  bool getTrafficCount(TX_RX_traffic_count& traffic) const;
 #endif // if FEATURE_NETWORK_TRAFFIC_COUNT
 
   void   clear(networkIndex_t networkIndex = INVALID_NETWORK_INDEX);

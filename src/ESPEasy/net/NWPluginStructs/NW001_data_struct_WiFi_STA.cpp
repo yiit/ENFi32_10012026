@@ -115,6 +115,11 @@ const __FlashStringHelper * NW001_data_struct_WiFi_STA::getWiFi_encryptionType()
   return _WiFiEventHandler.getWiFi_encryptionType();
 }
 
+WiFiDisconnectReason NW001_data_struct_WiFi_STA::getWiFi_disconnectReason() const
+{
+  return _WiFiEventHandler.getLastDisconnectReason();
+}
+
 # ifdef ESP32
 
 bool NW001_data_struct_WiFi_STA::handle_priority_route_changed()

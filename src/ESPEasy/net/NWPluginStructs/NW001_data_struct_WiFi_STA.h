@@ -43,6 +43,8 @@ struct NW001_data_struct_WiFi_STA : public NWPluginData_base {
   NWPluginData_static_runtime* getNWPluginData_static_runtime();
   const __FlashStringHelper*   getWiFi_encryptionType() const;
 
+  WiFiDisconnectReason getWiFi_disconnectReason() const;
+
 private:
 
   ESPEasyWiFi_STA_EventHandler _WiFiEventHandler;

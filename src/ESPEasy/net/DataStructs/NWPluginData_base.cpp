@@ -183,15 +183,14 @@ bool NWPluginData_base::pushStatsValues(EventStruct *event,
 # if FEATURE_NETWORK_TRAFFIC_COUNT
 
     // Include traffic
-    uint64_t tx{};
-    uint64_t rx{};
+    TX_RX_traffic_count traffic{};
 
-    if (getTrafficCount(tx, rx)) {
+    if (getTrafficCount(traffic)) {
       // Only set value when _prevRX/TX was set to make sure there isn't an enormous spike
-      event->ParfN[valueCount++] = _prevTX == 0 ? 0 : tx - _prevTX;
-      event->ParfN[valueCount++] = _prevRX == 0 ? 0 : rx - _prevRX;
-      _prevRX                    = rx;
-      _prevTX                    = tx;
+      event->ParfN[valueCount++] = _prevTX == 0 ? 0 : traffic._tx_count - _prevTX;
+      event->ParfN[valueCount++] = _prevRX == 0 ? 0 : traffic._rx_count - _prevRX;
+      _prevRX                    = traffic._rx_count;
+      _prevTX                    = traffic._tx_count;
     } else {
       event->ParfN[valueCount++] = NAN;
       event->ParfN[valueCount++] = NAN;
@@ -359,11 +358,11 @@ void NWPluginData_base::enable_txrx_events()
   }
 }
 
-bool NWPluginData_base::getTrafficCount(uint64_t& tx, uint64_t& rx)
+bool NWPluginData_base::getTrafficCount(TX_RX_traffic_count& traffic)
 {
   if (!_netif) { return false; }
   auto cache = getNWPluginData_static_runtime();
-  return cache && cache->getTrafficCount(tx, rx);
+  return cache && cache->getTrafficCount(traffic);
 }
 
 #endif // if FEATURE_NETWORK_TRAFFIC_COUNT

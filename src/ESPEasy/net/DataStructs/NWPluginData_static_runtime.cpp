@@ -13,14 +13,6 @@ namespace net {
 #define CONNECT_TIMEOUT_MAX                  10000 // in milliSeconds
 
 #if FEATURE_NETWORK_TRAFFIC_COUNT
-struct TX_RX_traffic_count {
-
-  void clear() { _tx_count = 0; _rx_count = 0; }
-
-  uint64_t _tx_count{};
-  uint64_t _rx_count{};
-
-};
 
 typedef std::map<int, TX_RX_traffic_count> InterfaceTrafficCount_t;
 
@@ -38,8 +30,10 @@ static void tx_rx_event_handler(void *arg, esp_event_base_t event_base,
 
     if (event->dir == ESP_NETIF_TX) {
       interfaceTrafficCount[key]._tx_count += event->len;
+      interfaceTrafficCount[key]._tx_packets++;
     } else if (event->dir == ESP_NETIF_RX) {
       interfaceTrafficCount[key]._rx_count += event->len;
+      interfaceTrafficCount[key]._rx_packets++;
 
       /*
           addLog(LOG_LEVEL_INFO, strformat(
@@ -77,14 +71,13 @@ void NWPluginData_static_runtime::enable_txrx_events()
   }
 }
 
-bool NWPluginData_static_runtime::getTrafficCount(uint64_t& tx, uint64_t& rx) const
+bool NWPluginData_static_runtime::getTrafficCount(TX_RX_traffic_count& traffic) const
 {
   const int key = _netif->impl_index();
   auto it       = interfaceTrafficCount.find(key);
 
   if (it == interfaceTrafficCount.end()) { return false; }
-  tx = it->second._tx_count;
-  rx = it->second._rx_count;
+  traffic = it->second;
   return true;
 }
 

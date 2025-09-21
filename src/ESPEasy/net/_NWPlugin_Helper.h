@@ -11,6 +11,10 @@ namespace ESPEasy {
 namespace net {
 
 
+#define NETWORK_INDEX_WIFI_STA  0 // Always the first network index
+#define NETWORK_INDEX_WIFI_AP   1 // Always the 2nd network index
+
+
 extern NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];
 
 // Try to allocate in PSRAM or 2nd heap if possible

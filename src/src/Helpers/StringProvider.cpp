@@ -516,8 +516,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::SSID:                   return WiFi.SSID();
     case LabelType::BSSID:                  return WiFi.BSSIDstr();
     case LabelType::CHANNEL:                retval = WiFi.channel(); break;
-    case LabelType::ENCRYPTION_TYPE_STA:    return // ESPEasy::net::wifi::WiFi_AP_Candidates.getCurrent().encryption_type();
-                                                   WiFi_encryptionType(WiFiEventData.auth_mode);
+    case LabelType::ENCRYPTION_TYPE_STA:    return getWiFi_encryptionType();
 #endif
     case LabelType::CONNECTED:
         return format_msec_duration(ESPEasy::net::NetworkConnectDuration_ms());
@@ -525,8 +524,8 @@ String getValue(LabelType::Enum label) {
     // Use only the nr of seconds to fit it in an int32, plus append '000' to have msec format again.
     case LabelType::CONNECTED_MSEC:         
       return String(static_cast<int32_t>(ESPEasy::net::NetworkConnectDuration_ms() / 1000ll)) + F("000");
-    case LabelType::LAST_DISCONNECT_REASON: return String(WiFiEventData.lastDisconnectReason);
-    case LabelType::LAST_DISC_REASON_STR:   return getLastDisconnectReason();
+    case LabelType::LAST_DISCONNECT_REASON: retval = getWiFi_disconnectReason(); break;
+    case LabelType::LAST_DISC_REASON_STR:   return getWiFi_disconnectReason_str();
     case LabelType::NUMBER_RECONNECTS:      retval = ESPEasy::net::NetworkConnectCount(); break;
     case LabelType::WIFI_STORED_SSID1:      return String(SecuritySettings.WifiSSID);
     case LabelType::WIFI_STORED_SSID2:      return String(SecuritySettings.WifiSSID2);

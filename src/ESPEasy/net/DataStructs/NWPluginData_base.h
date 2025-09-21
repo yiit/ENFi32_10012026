@@ -106,8 +106,7 @@ struct NWPluginData_base {
 #endif
 #if FEATURE_NETWORK_TRAFFIC_COUNT
   void         enable_txrx_events();
-  bool         getTrafficCount(uint64_t& tx,
-                               uint64_t& rx);
+  bool         getTrafficCount(TX_RX_traffic_count& traffic);
 #endif // if FEATURE_NETWORK_TRAFFIC_COUNT
 
   virtual NWPluginData_static_runtime* getNWPluginData_static_runtime() = 0;

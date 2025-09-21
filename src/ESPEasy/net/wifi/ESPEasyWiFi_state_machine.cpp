@@ -456,7 +456,7 @@ bool ESPEasyWiFi_t::connectSTA()
 # ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_INFO, concat(
              F("WiFi : Disconnect reason: "),
-             getLastDisconnectReason()));
+             getWiFi_disconnectReason_str()));
 # endif // ifndef BUILD_NO_DEBUG
     WiFiEventData.processedDisconnect = true;
   }

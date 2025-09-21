@@ -149,11 +149,11 @@ String formatToHex(unsigned long value, unsigned int minimal_hex_digits = 0);
 
 String formatToHex_no_prefix(unsigned long value, unsigned int minimal_hex_digits = 0);
 
-String formatHumanReadable(unsigned long value,
-                           unsigned long factor);
+String formatHumanReadable(uint64_t value,
+                           uint32_t factor);
 
-String formatHumanReadable(unsigned long value,
-                           unsigned long factor,
+String formatHumanReadable(uint64_t value,
+                           uint32_t factor,
                            int           NrDecimals);
 
 String formatToHex_decimal(unsigned long value);
