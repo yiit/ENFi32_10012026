@@ -68,6 +68,7 @@ void handle_wifiscanner() {
 
   WiFiMode_t cur_wifimode = WiFi.getMode();
   ESPEasy::net::wifi::WifiScan(false);
+  ESPEasy::net::wifi::WiFi_AP_Candidates.process_WiFiscan();
   int8_t scanCompleteStatus = ESPEasy::net::wifi::WiFi_AP_Candidates.scanComplete();
   ESPEasy::net::wifi::setWifiMode(cur_wifimode);
 

@@ -3,7 +3,7 @@
 #include "../../../ESPEasy_common.h"
 
 #include "../DataStructs/WiFi_AP_Candidate.h"
-#include "../../../src/Helpers/LongTermTimer.h"
+#include "../../../src/Helpers/LongTermOnOffTimer.h"
 
 #include <list>
 
@@ -31,7 +31,7 @@ struct WiFi_AP_CandidatesList {
   // Called after WiFi credentials have changed.
   void force_reload();
 
-  void begin_scan();
+  void begin_scan(uint8_t channel = 0);
 
   void purge_expired();
 
@@ -124,7 +124,7 @@ private:
 
   bool _mustLoadCredentials = true;
   bool _addedKnownCandidate = false;
-  LongTermTimer _last_scan;
+  uint8_t _last_scan_channel{};
 
 public:
 

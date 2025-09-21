@@ -109,25 +109,23 @@ void handle_unprocessedNetworkEvents()
 // Functions to process the data gathered from the events.
 // These functions are called from Setup() or Loop() and thus may call delay() or yield()
 // ********************************************************************************
+/*
 void processDisconnect() {}
 
 void processConnect() {
   if (WiFiEventData.processedConnect) { return; }
 
-  /*
        // delay(100); // FIXME TD-er: See https://github.com/letscontrolit/ESPEasy/issues/1987#issuecomment-451644424
-       if (checkAndResetWiFi()) {
-        return;
-       }
-   */
+//   if (checkAndResetWiFi()) {
+//        return;
+//       }
+  
   WiFiEventData.processedConnect = true;
 
-  /*
-       if (WiFi.status() == WL_DISCONNECTED) {
-        // Apparently not really connected
-        return;
-       }
-   */
+// if (WiFi.status() == WL_DISCONNECTED) {
+      // Apparently not really connected
+//        return;
+//       }
   WiFiEventData.setWiFiConnected();
   ++WiFiEventData.wifi_reconnects;
 
@@ -200,6 +198,7 @@ void processConnect() {
 
   logConnectionStatus();
 }
+
 
 void processGotIP() {
   if (WiFiEventData.processedGotIP) {
@@ -290,6 +289,7 @@ void processGotIP() {
   logConnectionStatus();
 }
 
+
 # if FEATURE_USE_IPV6
 
 void processGotIPv6() {
@@ -307,6 +307,7 @@ void processGotIPv6() {
 }
 
 # endif // if FEATURE_USE_IPV6
+
 
 // A client disconnected from the AP on this node.
 void processDisconnectAPmode() {
@@ -451,6 +452,7 @@ void processScanDone() {
   }
 
 }
+  */
 
 } // namespace wifi
 } // namespace net

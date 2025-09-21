@@ -174,13 +174,13 @@ void ESPEasyWiFi_t::loop()
 # endif // ifndef BUILD_NO_DEBUG
       } else if (scanCompleteStatus == -2) { // WIFI_SCAN_FAILED
         addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
-        WiFi.scanDelete();
+//        WiFi.scanDelete();
         setState(WiFiState_e::WiFiOFF, 1000);
         WiFiEventData.processedScanDone = true;
       }
 
       if (_state_timeout.timeReached() || (scanCompleteStatus >= 0)) {
-        WiFi.scanDelete();
+//        WiFi.scanDelete();
 
         if (_state_timeout.timeReached()) {
 # ifndef BUILD_NO_DEBUG
@@ -211,13 +211,13 @@ void ESPEasyWiFi_t::loop()
 # endif // ifndef BUILD_NO_DEBUG
       } else if (scanCompleteStatus == -2) { // WIFI_SCAN_FAILED
         addLog(LOG_LEVEL_ERROR, F("WiFi : Scan failed"));
-        WiFi.scanDelete();
+//        WiFi.scanDelete();
         setState(WiFiState_e::WiFiOFF, 1000);
         WiFiEventData.processedScanDone = true;
       }
 
       if (_state_timeout.timeReached() || (scanCompleteStatus >= 0)) {
-        WiFi.scanDelete();
+//        WiFi.scanDelete();
 
         if (_state_timeout.timeReached()) {
 # ifndef BUILD_NO_DEBUG
@@ -331,7 +331,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
   if ((_state == WiFiState_e::STA_AP_Scanning) ||
       (_state == WiFiState_e::STA_Scanning))
   {
-    WiFi.scanDelete();
+    WiFi_AP_Candidates.process_WiFiscan();
   }
 
   if (timeout == 0)

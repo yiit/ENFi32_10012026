@@ -104,5 +104,26 @@ void CheckRunningServices() {
   #endif
 }
 
+uint64_t NetworkConnectDuration_ms()
+{
+  auto data = getDefaultRoute_NWPluginData_static_runtime();
+
+  if (data == nullptr) {
+    return 0ull;
+  }
+  return data->_connectedStats.getLastOnDuration_ms();
+}
+
+uint32_t NetworkConnectCount()
+{
+  auto data = getDefaultRoute_NWPluginData_static_runtime();
+
+  if (data == nullptr) {
+    return 0ul;
+  }
+  return data->_connectedStats.getCycleCount();
+}
+
+
 } // namespace net
 } // namespace ESPEasy

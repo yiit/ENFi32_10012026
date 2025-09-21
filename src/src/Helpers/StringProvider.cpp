@@ -520,24 +520,14 @@ String getValue(LabelType::Enum label) {
                                                    WiFi_encryptionType(WiFiEventData.auth_mode);
 #endif
     case LabelType::CONNECTED:
-      #if FEATURE_ETHERNET
-      if(active_network_medium == ESPEasy::net::NetworkMedium_t::Ethernet) {
-        return format_msec_duration(EthEventData.lastConnectMoment.millisPassedSince());
-      }
-      #endif // if FEATURE_ETHERNET
-      return format_msec_duration(WiFiEventData.lastConnectMoment.millisPassedSince());
+        return format_msec_duration(ESPEasy::net::NetworkConnectDuration_ms());
 
     // Use only the nr of seconds to fit it in an int32, plus append '000' to have msec format again.
     case LabelType::CONNECTED_MSEC:         
-      #if FEATURE_ETHERNET
-      if(active_network_medium == ESPEasy::net::NetworkMedium_t::Ethernet) {
-        return String(static_cast<int32_t>(EthEventData.lastConnectMoment.millisPassedSince() / 1000ll)) + F("000"); 
-      }
-      #endif // if FEATURE_ETHERNET
-      return String(static_cast<int32_t>(WiFiEventData.lastConnectMoment.millisPassedSince() / 1000ll)) + F("000");
+      return String(static_cast<int32_t>(ESPEasy::net::NetworkConnectDuration_ms() / 1000ll)) + F("000");
     case LabelType::LAST_DISCONNECT_REASON: return String(WiFiEventData.lastDisconnectReason);
     case LabelType::LAST_DISC_REASON_STR:   return getLastDisconnectReason();
-    case LabelType::NUMBER_RECONNECTS:      retval = WiFiEventData.wifi_reconnects; break;
+    case LabelType::NUMBER_RECONNECTS:      retval = ESPEasy::net::NetworkConnectCount(); break;
     case LabelType::WIFI_STORED_SSID1:      return String(SecuritySettings.WifiSSID);
     case LabelType::WIFI_STORED_SSID2:      return String(SecuritySettings.WifiSSID2);
 

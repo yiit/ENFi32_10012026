@@ -31,22 +31,26 @@ static void tx_rx_event_handler(void *arg, esp_event_base_t event_base,
 {
   if (event_data == nullptr) { return; }
   ip_event_tx_rx_t *event = (ip_event_tx_rx_t *)event_data;
-  const int key           = esp_netif_get_netif_impl_index(event->esp_netif);
 
-  if (event->dir == ESP_NETIF_TX) {
-    interfaceTrafficCount[key]._tx_count += event->len;
-  } else if (event->dir == ESP_NETIF_RX) {
-    interfaceTrafficCount[key]._rx_count += event->len;
+  if (event->len > 0) {
+    const int key = esp_netif_get_netif_impl_index(event->esp_netif);
 
-    /*
-        addLog(LOG_LEVEL_INFO, strformat(
-                 F("RX: %s key: %d len: %d total: %d"),
-                 esp_netif_get_desc(event->esp_netif),
-                 key,
-                 event->len,
-                 interfaceTrafficCount[key]._rx_count
-                 ));
-     */
+
+    if (event->dir == ESP_NETIF_TX) {
+      interfaceTrafficCount[key]._tx_count += event->len;
+    } else if (event->dir == ESP_NETIF_RX) {
+      interfaceTrafficCount[key]._rx_count += event->len;
+
+      /*
+          addLog(LOG_LEVEL_INFO, strformat(
+                   F("RX: %s key: %d len: %d total: %d"),
+                   esp_netif_get_desc(event->esp_netif),
+                   key,
+                   event->len,
+                   interfaceTrafficCount[key]._rx_count
+                   ));
+       */
+    }
   }
 }
 
@@ -95,11 +99,12 @@ void NWPluginData_static_runtime::clear(networkIndex_t networkIndex)
 #endif
   _operationalStats.clear();
 #if FEATURE_NETWORK_TRAFFIC_COUNT
+
   if (_netif) {
     const int key = _netif->impl_index();
     interfaceTrafficCount[key].clear();
   }
-#endif
+#endif // if FEATURE_NETWORK_TRAFFIC_COUNT
 
   _networkIndex = networkIndex;
 #ifdef ESP32
@@ -126,8 +131,17 @@ void NWPluginData_static_runtime::processEvent_and_clear()
 
 bool NWPluginData_static_runtime::operational() const
 {
-  return connected() && hasIP()
-         && Settings.getNetworkEnabled(_networkIndex);
+  if (!Settings.getNetworkEnabled(_networkIndex)) { return false; }
+
+  if (_isAP) {
+    return
+#ifdef ESP32
+      WiFi.AP.stationCount() > 0;
+#else
+      WiFi.softAPgetStationNum() > 0;
+#endif // ifdef ESP32
+  }
+  return connected() && hasIP();
 
   // FIXME TD-er: WiFi STA keeps reporting it is
   // connected and has IP even after call to networkdisable,1
@@ -156,11 +170,7 @@ void NWPluginData_static_runtime::processEvents()
     }
   }
 
-//  if (connected_changed || establishConnect_changed || gotIP_changed) {
-//    _operationalStats.forceSet(operational());
-//  } else {
-    _operationalStats.set(operational());
-//  }
+  _operationalStats.set(operational());
 
   if (_operationalStats.changedSinceLastCheck_and_clear()) {
 #if FEATURE_NETWORK_TRAFFIC_COUNT
@@ -184,6 +194,14 @@ void NWPluginData_static_runtime::processEvents()
       }
     }
     statusLED(true);
+  }
+
+  if (_startStopStats.changedSinceLastCheck_and_clear() && _isAP && Settings.UseRules) {
+      if (_startStopStats.isOn()) {
+        eventQueue.add(F("WiFi#APmodeEnabled"));
+      } else if (_startStopStats.isOff()) {
+        eventQueue.add(F("WiFi#APmodeDisabled"));
+      }
   }
 }
 

@@ -14,8 +14,21 @@
 namespace ESPEasy {
 namespace net {
 
-NWPluginData_static_runtime::NWPluginData_static_runtime(NetworkInterface *netif, const String& eventInterfaceName)
-  : _netif(netif), _eventInterfaceName(eventInterfaceName)
+NWPluginData_static_runtime::NWPluginData_static_runtime(
+  NetworkInterface *netif,
+  const String    & eventInterfaceName)
+  : _netif(netif),
+  _isAP(false),
+  _eventInterfaceName(eventInterfaceName)
+{}
+
+NWPluginData_static_runtime::NWPluginData_static_runtime(
+  bool              isAP,
+  NetworkInterface *netif,
+  const String    & eventInterfaceName)
+  : _netif(netif),
+  _isAP(isAP),
+  _eventInterfaceName(eventInterfaceName)
 {}
 
 bool NWPluginData_static_runtime::started() const

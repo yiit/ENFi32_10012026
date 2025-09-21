@@ -18,10 +18,16 @@ namespace net {
 
 struct NWPluginData_static_runtime {
 #ifdef ESP32
-  NWPluginData_static_runtime(NetworkInterface *netif,
-                              const String    & eventInterfaceName = EMPTY_STRING);
+  NWPluginData_static_runtime(
+    NetworkInterface *netif,
+    const String    & eventInterfaceName = EMPTY_STRING);
+
+  NWPluginData_static_runtime(
+    bool              isAP,
+    NetworkInterface *netif,
+    const String    & eventInterfaceName = EMPTY_STRING);
 #else // ifdef ESP32
-  NWPluginData_static_runtime(bool        isSTA,
+  NWPluginData_static_runtime(bool        isAP,
                               const char *eventInterfaceName);
 
 #endif // ifdef ESP32
@@ -134,9 +140,7 @@ private:
 #endif // ifdef ESP32
 
   networkIndex_t _networkIndex = INVALID_NETWORK_INDEX;
-#ifdef ESP8266
-  const bool _isSTA;
-#endif
+  const bool _isAP;
 
   String _eventInterfaceName;
 

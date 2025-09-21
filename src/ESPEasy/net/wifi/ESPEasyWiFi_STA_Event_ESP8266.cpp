@@ -24,7 +24,7 @@ namespace ESPEasy {
 namespace net {
 namespace wifi {
 
-static NWPluginData_static_runtime stats_and_cache(true, "WiFi"); // Cannot use flash strings during init of static objects
+static NWPluginData_static_runtime stats_and_cache(false, "WiFi"); // Cannot use flash strings during init of static objects
 static WiFiDisconnectReason _wifi_disconnect_reason = WiFiDisconnectReason::WIFI_DISCONNECT_REASON_UNSPECIFIED;
 
 static uint8_t _authmode{};
@@ -131,7 +131,6 @@ void ESPEasyWiFi_STA_EventHandler::onWiFiScanDone(void ESPEasyWiFi_STA_EventHand
       ++scanCount;
     }
     WiFi_AP_Candidates.after_process_WiFiscan();
-    WiFiEventData.lastGetScanMoment.setNow();
 
     //    WiFiEventData.processedScanDone = true;
 #   ifndef BUILD_NO_DEBUG

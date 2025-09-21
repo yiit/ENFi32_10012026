@@ -27,9 +27,9 @@ namespace net {
 namespace wifi {
 
 # ifdef ESP32
-static NWPluginData_static_runtime stats_and_cache(&NW_PLUGIN_INTERFACE);
+static NWPluginData_static_runtime stats_and_cache(true, &NW_PLUGIN_INTERFACE);
 # else
-static NWPluginData_static_runtime stats_and_cache(false, "AP"); // Cannot use flash strings during init of static objects
+static NWPluginData_static_runtime stats_and_cache(true, "AP"); // Cannot use flash strings during init of static objects
 # endif // ifdef ESP32
 static bool nw002_initialized{};
 # ifdef ESP32

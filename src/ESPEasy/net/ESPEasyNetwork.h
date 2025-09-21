@@ -27,6 +27,9 @@ IPAddress      NetworkBroadcast();
 IPAddress      NetworkSubnetMask();
 IPAddress      NetworkGatewayIP();
 IPAddress      NetworkDnsIP(uint8_t dns_no);
+uint64_t       NetworkConnectDuration_ms();
+uint32_t       NetworkConnectCount();
+
 #if FEATURE_USE_IPV6
 
 IPAddress      NetworkLocalIP6();

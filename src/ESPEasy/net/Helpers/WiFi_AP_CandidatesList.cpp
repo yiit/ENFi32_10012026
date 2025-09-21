@@ -31,14 +31,18 @@ namespace wifi {
 # define WIFI_CUSTOM_SUPPORT_KEY_INDEX        4
 # define WIFI_CREDENTIALS_FALLBACK_SSID_INDEX 5
 
+static LongTermOnOffTimer _last_scan;
+
 
 WiFi_AP_CandidatesList::WiFi_AP_CandidatesList() {
+  _last_scan.clear();
   known.clear();
   candidates.clear();
   known_it = known.begin();
 }
 
 WiFi_AP_CandidatesList::~WiFi_AP_CandidatesList() {
+  _last_scan.clear();
   candidates.clear();
   known.clear();
   scanned.clear();
@@ -104,11 +108,11 @@ void WiFi_AP_CandidatesList::force_reload() {
   RTC.clearLastWiFi(); // Invalidate the RTC WiFi data.
   candidates.clear();
   load_knownCredentials();
-  loadCandidatesFromScanned();
 }
 
-void WiFi_AP_CandidatesList::begin_scan() {
-  _last_scan.setNow();
+void WiFi_AP_CandidatesList::begin_scan(uint8_t channel) {
+  _last_scan.setOn();
+  _last_scan_channel = channel;
   candidates.clear();
   _addedKnownCandidate = false;
 }
@@ -126,15 +130,21 @@ void WiFi_AP_CandidatesList::purge_expired() {
 # if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
 
 void WiFi_AP_CandidatesList::process_WiFiscan() {
-  // Append or update found APs from scan.
-  int scancount = WiFi.scanComplete();
-  for (int i = 0; i < scancount; ++i) {
-    const WiFi_AP_Candidate tmp(i);
+//  if (_last_scan.isOn()) {
+    // Append or update found APs from scan.
+    int scancount = WiFi.scanComplete();
+    if (scancount < 0) {
 
-    scanned_new.push_back(tmp);
-  }
+    } else {
+      for (int i = 0; i < scancount; ++i) {
+        const WiFi_AP_Candidate tmp(i);
 
-  after_process_WiFiscan();
+        scanned_new.push_back(tmp);
+      }
+
+      after_process_WiFiscan();
+    }
+//  }
 }
 
 # endif // if !FEATURE_ESP8266_DIRECT_WIFI_SCAN
@@ -152,6 +162,7 @@ void WiFi_AP_CandidatesList::process_WiFiscan(const bss_info& ap) {
 # endif // ifdef ESP8266
 
 void WiFi_AP_CandidatesList::after_process_WiFiscan() {
+  _last_scan.setOff();
   scanned_new.sort();
   scanned_new.unique();
   _mustLoadCredentials = true;
@@ -165,14 +176,6 @@ bool WiFi_AP_CandidatesList::getNext(bool scanAllowed) {
 
   if (candidates.empty()) {
     return false;
-
-    /*     if (scanAllowed) {
-          return false;
-        }
-        loadCandidatesFromScanned();
-        attemptsLeft = WiFi_CONNECT_ATTEMPTS;
-        if (candidates.empty()) { return false; }
-     */
   }
 
   currentCandidate = candidates.front();
@@ -275,11 +278,11 @@ void WiFi_AP_CandidatesList::markCurrentConnectionStable() {
 }
 
 int8_t WiFi_AP_CandidatesList::scanComplete() const {
-  if (!_last_scan.isSet() || 
-      (_last_scan.millisPassedSince() > WIFI_AP_CANDIDATE_MAX_AGE))  return -3;
+//  if (!_last_scan.isOn() || 
+//      (_last_scan.getLastOnDuration_ms() > WIFI_AP_CANDIDATE_MAX_AGE))  return -3;
 
   const int8_t scanCompleteStatus = WiFi.scanComplete();
-  if (scanCompleteStatus < 0) {
+  if (scanCompleteStatus == -1) {
     // Still scanning
     return scanCompleteStatus;
   }

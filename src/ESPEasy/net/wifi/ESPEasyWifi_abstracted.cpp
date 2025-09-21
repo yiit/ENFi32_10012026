@@ -116,7 +116,8 @@ void doSetAPinternal(bool enable)
     }
 
     if (WiFi.softAP(softAPSSID.c_str(), pwd.c_str(), channel)) {
-      eventQueue.add(F("WiFi#APmodeEnabled"));
+      auto data = getWiFi_AP_NWPluginData_static_runtime();
+      if (data) data->mark_start();
 
       if (loglevelActiveFor(LOG_LEVEL_INFO)) {
         addLogMove(LOG_LEVEL_INFO, strformat(
@@ -162,6 +163,8 @@ void doSetAPinternal(bool enable)
       dnsServer.stop();
     }
     # endif // if FEATURE_DNS_SERVER
+    auto data = getWiFi_AP_NWPluginData_static_runtime();
+    if (data) data->mark_stop();
   }
 }
 

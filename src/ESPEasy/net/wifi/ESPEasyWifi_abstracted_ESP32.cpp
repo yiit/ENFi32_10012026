@@ -104,7 +104,7 @@ bool doSetWifiMode(WiFiMode_t new_mode)
     doWiFiDisconnect();
 
     //    delay(100);
-    processDisconnect();
+    //processDisconnect();
 
     //    WiFiEventData.clear_processed_flags();
   }
@@ -265,7 +265,8 @@ void doWifiScan(bool async, uint8_t channel) {
 
     if (!async) {
       FeedSW_watchdog();
-      processScanDone();
+      WiFi_AP_Candidates.process_WiFiscan();
+//      processScanDone();
     }
   }
 #  if FEATURE_TIMING_STATS
