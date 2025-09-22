@@ -108,21 +108,6 @@ void ESPEasyWiFi_t::loop()
         // Do we have candidate to connect to ?
         if (WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::STA_Connecting, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
-
-          /*
-                  } else if (!WiFi_AP_Candidates.hasCandidateCredentials() ||
-                             !Settings.DoNotStartAP()) {
-                    if (!WiFi_AP_Candidates.hasCandidateCredentials() &&
-                        !WiFiEventData.warnedNoValidWiFiSettings)
-                    {
-                      addLog(LOG_LEVEL_ERROR, F("WIFI : No valid wifi settings"));
-                      WiFiEventData.warnedNoValidWiFiSettings = true;
-                    }
-
-                    wifi_STA_data->_establishConnectStats.clear();
-                    WiFiEventData.wifiConnectAttemptNeeded = false;
-                    setState(WiFiState_e::AP_only, WIFI_STATE_MACHINE_AP_ONLY_TIMEOUT);
-           */
         } else if (WiFi_AP_Candidates.scanComplete() == 0 || WiFi_AP_Candidates.scanComplete() == -3
 # ifdef ESP32
 #  if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 2)

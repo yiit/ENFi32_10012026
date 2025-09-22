@@ -27,7 +27,7 @@ namespace wifi {
 static NWPluginData_static_runtime stats_and_cache(false, "WiFi"); // Cannot use flash strings during init of static objects
 static WiFiDisconnectReason _wifi_disconnect_reason = WiFiDisconnectReason::WIFI_DISCONNECT_REASON_UNSPECIFIED;
 
-static uint8_t _authmode{};
+static uint8_t _enc_type{};
 
 static bool _ESPEasyWiFi_STA_EventHandler_initialized{};
 
@@ -62,11 +62,11 @@ NWPluginData_static_runtime* ESPEasyWiFi_STA_EventHandler::getNWPluginData_stati
 
 WiFiDisconnectReason         ESPEasyWiFi_STA_EventHandler::getLastDisconnectReason() const  { return _wifi_disconnect_reason; }
 
-uint8_t                      ESPEasyWiFi_STA_EventHandler::getAuthMode() const              { return _authmode; }
+uint8_t                      ESPEasyWiFi_STA_EventHandler::getAuthMode() const              { return _enc_type; }
 
 const __FlashStringHelper *  ESPEasyWiFi_STA_EventHandler::getWiFi_encryptionType() const
 {
-  return WiFi_encryptionType(_authmode);
+  return WiFi_encryptionType(_enc_type);
 }
 
 // ********************************************************************************
@@ -76,15 +76,13 @@ const __FlashStringHelper *  ESPEasyWiFi_STA_EventHandler::getWiFi_encryptionTyp
 void ESPEasyWiFi_STA_EventHandler::onConnected(const WiFiEventStationModeConnected& event) {
   stats_and_cache.mark_connected();
 
-  //  WiFiEventData.markConnected(event.ssid, event.bssid, event.channel);
+  _enc_type = WiFi_AP_Candidates.getCurrent().enc_type;
 }
 
 void ESPEasyWiFi_STA_EventHandler::onDisconnect(const WiFiEventStationModeDisconnected& event) {
   stats_and_cache.mark_disconnected();
   stats_and_cache.mark_lost_IP(); // ESP8266 doesn't have a separate event for lost IP
   _wifi_disconnect_reason = event.reason;
-
-  //  WiFiEventData.markDisconnect(event.reason);
 
   if (WiFi.status() == WL_CONNECTED) {
     // See https://github.com/esp8266/Arduino/issues/5912
@@ -114,7 +112,7 @@ void ESPEasyWiFi_STA_EventHandler::onDisconnectedAPmode(const WiFiEventSoftAPMod
 }
 
 void ESPEasyWiFi_STA_EventHandler::onStationModeAuthModeChanged(const WiFiEventStationModeAuthModeChanged& event) {
-  _authmode = event.newMode;
+  _enc_type = event.newMode;
 
   //  WiFiEventData.setAuthMode(event.newMode);
 }
