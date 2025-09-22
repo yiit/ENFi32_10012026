@@ -398,6 +398,19 @@ NWPluginData_static_runtime* getWiFi_AP_NWPluginData_static_runtime()
   return getNWPluginData_static_runtime(NETWORK_INDEX_WIFI_AP);
 }
 
+NWPluginData_static_runtime* getFirst_ETH_NWPluginData_static_runtime()
+{
+  for (networkIndex_t i = 0; validNetworkIndex(i); ++i) {
+    if (Settings.getNetworkEnabled(i)) {
+      const auto nwpluginID = Settings.getNWPluginID_for_network(i);
+      if (nwpluginID.value == 3 || nwpluginID.value == 4) {
+        return getNWPluginData_static_runtime(i);
+      }
+    }
+  }
+  return nullptr;
+}
+
 NWPluginData_static_runtime* getNWPluginData_static_runtime(networkIndex_t index)
 {
   auto NW_data = getNWPluginData(index);

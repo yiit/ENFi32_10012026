@@ -43,6 +43,15 @@ bool NWPluginData_static_runtime::connected() const
   return _netif->connected();
 }
 
+#if FEATURE_ETHERNET
+bool NWPluginData_static_runtime::linkUp() const
+{
+  if (!_netif) { return false; }
+  return _netif->linkUp();
+}
+#endif
+
+
 bool NWPluginData_static_runtime::isDefaultRoute() const
 {
   if (!_netif) { return false; }

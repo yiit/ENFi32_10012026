@@ -5,6 +5,7 @@
 
 #if FEATURE_ETHERNET
 
+# include "../DataStructs/NWPluginData_static_runtime.h"
 # include "../DataStructs/MAC_address.h"
 
 # include <IPAddress.h>
@@ -18,14 +19,12 @@ void        ethSetupStaticIPconfig();
 bool        ethCheckSettings();
 bool        ethPrepare();
 void        ethPrintSettings();
-bool        ETHConnectRelaxed();
+bool        ETHConnectRelaxed(NWPluginData_static_runtime& runtimeData);
 bool        ETHConnected();
-void        ethPower(bool enable);
+void        ethPower(NWPluginData_static_runtime& runtimeData, bool enable);
 void        ethResetGPIOpins();
 MAC_address ETHMacAddress();
 
-void        removeEthEventHandler();
-void        registerEthEventHandler();
 
 } // namespace eth
 } // namespace net

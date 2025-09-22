@@ -7,8 +7,6 @@
 # include "../wifi/ESPEasyWifi.h"
 # include "../../../src/ESPEasyCore/ESPEasy_Log.h"
 # include "../../../src/ESPEasyCore/ESPEasyGPIO.h"
-# include "../eth/ESPEasyEthEvent.h"
-# include "../Globals/ESPEasyEthEvent.h"
 # include "../Globals/NetworkState.h"
 # include "../../../src/Globals/Settings.h"
 # include "../../../src/Helpers/Hardware_GPIO.h"
@@ -41,10 +39,6 @@ void ethSetupStaticIPconfig() {
   const IPAddress subnet = Settings.ETH_Subnet;
   const IPAddress dns    = Settings.ETH_DNS;
 
-  EthEventData.dns0_cache = dns;
-  EthEventData.dns1_cache = IP_zero;
-
-
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log = F("ETH IP   : Static IP : ");
     log += formatIP(ip);
@@ -57,8 +51,6 @@ void ethSetupStaticIPconfig() {
     addLogMove(LOG_LEVEL_INFO, log);
   }
   ETH.config(ip, gw, subnet, dns);
-  setDNS(0, EthEventData.dns0_cache);
-  setDNS(1, EthEventData.dns1_cache);
 }
 
 bool ethCheckSettings() {
@@ -114,31 +106,18 @@ void ethPrintSettings() {
 
 MAC_address ETHMacAddress() {
   MAC_address mac;
-
+/*
   if (!EthEventData.ethInitSuccess) {
     addLog(LOG_LEVEL_ERROR, F("Call NetworkMacAddress() only on connected Ethernet!"));
   } else {
     ETH.macAddress(mac.mac);
   }
+    */
   return mac;
 }
 
-void removeEthEventHandler()
-{
-  WiFi.removeEvent(EthEventData.wm_event_id);
-  EthEventData.wm_event_id = 0;
-}
-
-void registerEthEventHandler()
-{
-  if (EthEventData.wm_event_id != 0) {
-    removeEthEventHandler();
-  }
-  EthEventData.wm_event_id = WiFi.onEvent(EthEvent);
-}
-
-bool ETHConnectRelaxed() {
-  if (EthEventData.ethInitSuccess) {
+bool ETHConnectRelaxed(NWPluginData_static_runtime& runtimeData) {
+  if (runtimeData.started() && runtimeData.connected()) {
     return EthLinkUp();
   }
   ethPrintSettings();
@@ -146,29 +125,16 @@ bool ETHConnectRelaxed() {
   if (!ethCheckSettings())
   {
     addLog(LOG_LEVEL_ERROR, F("ETH: Settings not correct!!!"));
-    EthEventData.ethInitSuccess = false;
+    runtimeData.mark_stop();
     return false;
   }
 
-  // Re-register event listener
-  removeEthEventHandler();
+  ethPower(runtimeData, true);
+  runtimeData.mark_begin_establish_connection(); 
 
-  ethPower(true);
-  EthEventData.markEthBegin();
+  bool success = runtimeData.started();
 
-  // Re-register event listener
-  registerEthEventHandler();
-
-  if (!EthEventData.ethInitSuccess) {
-# if ESP_IDF_VERSION_MAJOR < 5
-    EthEventData.ethInitSuccess = ETH.begin(
-      Settings.ETH_Phy_Addr,
-      Settings.ETH_Pin_power_rst,
-      Settings.ETH_Pin_mdc_cs,
-      Settings.ETH_Pin_mdio_irq,
-      (eth_phy_type_t)Settings.ETH_Phy_Type,
-      (eth_clock_mode_t)Settings.ETH_Clock_Mode);
-# else // if ESP_IDF_VERSION_MAJOR < 5
+  if (!success) {
 #  if FEATURE_USE_IPV6
 
     if (Settings.EnableIPv6()) {
@@ -195,7 +161,7 @@ bool ETHConnectRelaxed() {
       // else
       {
 #  if ETH_SPI_SUPPORTS_CUSTOM
-        EthEventData.ethInitSuccess = ETH.begin(
+        success = ETH.begin(
           to_ESP_phy_type(Settings.ETH_Phy_Type),
           Settings.ETH_Phy_Addr,
           Settings.ETH_Pin_mdc_cs,
@@ -203,7 +169,7 @@ bool ETHConnectRelaxed() {
           Settings.ETH_Pin_power_rst,
           SPI);
 #  else // if ETH_SPI_SUPPORTS_CUSTOM
-        EthEventData.ethInitSuccess = ETH.begin(
+        success = ETH.begin(
           to_ESP_phy_type(Settings.ETH_Phy_Type),
           Settings.ETH_Phy_Addr,
           Settings.ETH_Pin_mdc_cs,
@@ -220,7 +186,7 @@ bool ETHConnectRelaxed() {
 #   ifndef ESP32P4
       ethResetGPIOpins();
 #   endif
-      EthEventData.ethInitSuccess = ETH.begin(
+      success = ETH.begin(
         to_ESP_phy_type(Settings.ETH_Phy_Type),
         Settings.ETH_Phy_Addr,
         Settings.ETH_Pin_mdc_cs,
@@ -229,11 +195,9 @@ bool ETHConnectRelaxed() {
         (eth_clock_mode_t)Settings.ETH_Clock_Mode);
 #  endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     }
-
-# endif // if ESP_IDF_VERSION_MAJOR < 5
   }
 
-  if (EthEventData.ethInitSuccess) {
+  if (success) {
     // FIXME TD-er: Not sure if this is correctly set to false
     // EthEventData.ethConnectAttemptNeeded = false;
 
@@ -260,15 +224,15 @@ bool ETHConnectRelaxed() {
 
     if (EthLinkUp()) {
       // We might miss the connected event, since we are already connected.
-      EthEventData.markConnected();
+      runtimeData.mark_connected();
     }
   } else {
     addLog(LOG_LEVEL_ERROR, F("ETH  : Failed to initialize ETH"));
   }
-  return EthEventData.ethInitSuccess;
+  return success;
 }
 
-void ethPower(bool enable) {
+void ethPower(NWPluginData_static_runtime& runtimeData, bool enable) {
   if (isSPI_EthernetType(Settings.ETH_Phy_Type)) {
     return;
   }
@@ -280,6 +244,7 @@ void ethPower(bool enable) {
     }
     addLog(LOG_LEVEL_INFO, enable ? F("ETH power ON") : F("ETH power OFF"));
 
+/*
     if (!enable) {
       EthEventData.ethInitSuccess = false;
       EthEventData.clearAll();
@@ -296,6 +261,7 @@ void ethPower(bool enable) {
 
       //      ETH = ETHClass();
     }
+*/
 
     if (enable) {
       //      ethResetGPIOpins();
@@ -363,40 +329,8 @@ void ethResetGPIOpins() {
 }
 
 bool ETHConnected() {
-  if (EthEventData.EthServicesInitialized()) {
-    if (EthLinkUp()) {
-      return true;
-    }
-
-    // Apparently we missed an event
-    EthEventData.processedDisconnect = false;
-  } else if (EthEventData.ethInitSuccess) {
-    if (EthLinkUp()) {
-      EthEventData.setEthConnected();
-
-      if ((NetworkLocalIP() != IPAddress(0, 0, 0, 0)) &&
-          !EthEventData.EthGotIP()) {
-        EthEventData.processedGotIP = false;
-      }
-
-      if (EthEventData.lastConnectMoment.isSet()) {
-        if (!EthEventData.EthServicesInitialized()) {
-          if ((EthEventData.lastConnectMoment.millisPassedSince() > 10000) &&
-              EthEventData.lastGetIPmoment.isSet()) {
-            EthEventData.processedGotIP = false;
-            EthEventData.markLostIP();
-          }
-        }
-      }
-      return EthEventData.EthServicesInitialized();
-    } else {
-      if (EthEventData.last_eth_connect_attempt_moment.isSet() &&
-          (EthEventData.last_eth_connect_attempt_moment.millisPassedSince() < 5000)) {
-        return false;
-      }
-      setNetworkMedium(NetworkMedium_t::WIFI);
-    }
-  }
+  auto data = getFirst_ETH_NWPluginData_static_runtime();
+  if (data) return data->connected();
   return false;
 }
 

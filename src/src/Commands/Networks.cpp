@@ -171,12 +171,14 @@ String Command_ETH_Wifi_Mode (struct EventStruct *event, const char* Line)
 String Command_ETH_Disconnect (struct EventStruct *event, const char* Line)
 {
 
+  // FIXME TD-er: Must implement support for multiple and default eth interface
+/*
   ESPEasy::net::eth::ethPower(0);
   delay(400);
 //  ethPower(1);
   ESPEasy::net::setNetworkMedium(ESPEasy::net::NetworkMedium_t::Ethernet);
   ESPEasy::net::eth::ETHConnectRelaxed();
-
+*/
   return return_command_success();
 }
 

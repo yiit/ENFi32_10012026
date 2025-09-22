@@ -25,10 +25,6 @@
 #  include "../eth/ESPEasyEth.h"
 #  include "../wifi/ESPEasyWifi.h"
 
-#  if FEATURE_ETHERNET
-#   include "../Globals/ESPEasyEthEvent.h"
-#  endif // if FEATURE_ETHERNET
-
 namespace ESPEasy {
 namespace net {
 namespace wifi {

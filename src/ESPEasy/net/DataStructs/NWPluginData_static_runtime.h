@@ -59,6 +59,10 @@ struct NWPluginData_static_runtime {
 
   bool   connected() const;
 
+#if FEATURE_ETHERNET
+  bool   linkUp() const;
+#endif
+
   bool   isDefaultRoute() const;
 
   bool   hasIP() const;

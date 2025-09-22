@@ -22,10 +22,6 @@
 #include "../Globals/ESPEasy_time.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 
-#if FEATURE_ETHERNET
-#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
-#endif
-
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Settings.h"
@@ -372,7 +368,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::CPU_ECO_MODE:           return jsonBool(Settings.EcoPowerMode());
 #if FEATURE_SET_WIFI_TX_PWR
     case LabelType::WIFI_TX_MAX_PWR:        return toString(Settings.getWiFi_TX_power(), 2);
-    case LabelType::WIFI_CUR_TX_PWR:        return toString(WiFiEventData.wifi_TX_pwr, 2);
+    case LabelType::WIFI_CUR_TX_PWR:        return toString(ESPEasy::net::wifi::GetWiFiTXpower(), 2);
     case LabelType::WIFI_SENS_MARGIN:       retval = Settings.WiFi_sensitivity_margin; break;
     case LabelType::WIFI_SEND_AT_MAX_TX_PWR:return jsonBool(Settings.UseMaxTXpowerForSending());
 #endif

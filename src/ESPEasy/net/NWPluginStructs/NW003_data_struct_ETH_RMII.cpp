@@ -48,8 +48,9 @@ bool NW003_data_struct_ETH_RMII::init(EventStruct *event)
 {
   auto data = getNWPluginData_static_runtime();
 
-  if (data) { data->mark_begin_establish_connection(); }
-  ESPEasy::net::eth::ETHConnectRelaxed();
+  if (data) { 
+    ESPEasy::net::eth::ETHConnectRelaxed(*data);
+  }
 
   return true;
 }

@@ -11,8 +11,6 @@
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../../src/Globals/Settings.h"
 
-#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
-
 #include "../../src/Helpers/NetworkStatusLED.h"
 #include "../../src/Helpers/Networking.h"
 #include "../../src/Helpers/StringConverter.h"
@@ -333,25 +331,22 @@ MAC_address WifiSTAmacAddress() {
 
 bool EthFullDuplex()
 {
-  if (EthEventData.ethInitSuccess) {
-    return ETH.fullDuplex();
-  }
+  auto data = getFirst_ETH_NWPluginData_static_runtime();
+  if (data && data->connected()) return ETH.fullDuplex();
   return false;
 }
 
 bool EthLinkUp()
 {
-  if (EthEventData.ethInitSuccess) {
-    return ETH.linkUp();
-  }
+  auto data = getFirst_ETH_NWPluginData_static_runtime();
+  if (data) return data->linkUp();
   return false;
 }
 
 uint8_t EthLinkSpeed()
 {
-  if (EthEventData.ethInitSuccess) {
-    return ETH.linkSpeed();
-  }
+  auto data = getFirst_ETH_NWPluginData_static_runtime();
+  if (data && data->connected()) return ETH.linkSpeed();
   return 0;
 }
 

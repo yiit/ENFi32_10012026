@@ -35,9 +35,6 @@
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
-#if FEATURE_ETHERNET
-#include "../../ESPEasy/net/Globals/ESPEasyEthEvent.h"
-#endif
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../../ESPEasy/net/Globals/NWPlugins.h"
 
@@ -272,8 +269,8 @@ void runEach30Seconds()
         logWiFiStatus = false;
         log += F( " EthSpeedState ");
         log += getValue(LabelType::ETH_SPEED_STATE);
-        log += F(" ETH status: ");
-        log += EthEventData.ESPEasyEthStatusToString();
+//        log += F(" ETH status: ");
+//        log += EthEventData.ESPEasyEthStatusToString();
       }
       #endif // if FEATURE_ETHERNET
       if (logWiFiStatus) {
