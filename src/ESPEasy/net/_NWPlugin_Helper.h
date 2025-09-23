@@ -6,13 +6,10 @@
 #include "../../src/DataStructs/ESPEasy_EventStruct.h"
 #include "../../src/Helpers/LongTermTimer.h"
 #include "../net/DataStructs/NWPluginData_base.h"
+#include "../net/ESPEasyNetwork.h"
 
 namespace ESPEasy {
 namespace net {
-
-
-#define NETWORK_INDEX_WIFI_STA  0 // Always the first network index
-#define NETWORK_INDEX_WIFI_AP   1 // Always the 2nd network index
 
 
 extern NWPluginData_base *NWPlugin_task_data[NETWORK_MAX];

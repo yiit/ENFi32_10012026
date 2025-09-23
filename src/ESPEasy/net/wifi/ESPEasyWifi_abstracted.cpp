@@ -57,7 +57,7 @@ bool doSetSTA_AP(bool sta_enable, bool ap_enable)
 # else
 
   if (ap_enable) {
-    return doSetWifiMode(sta_enable ? WIFI_AP_STA : WIFI_AP);
+    return doSetWifiMode(sta_enable ? WIFI_AP_STA : WIFI_AP);    
   }
   return doSetWifiMode(sta_enable ? WIFI_STA : WIFI_OFF);
 # endif // ifndef SOC_WIFI_SUPPORTED
@@ -77,6 +77,7 @@ bool doWiFiScanAllowed() {
 void doSetAPinternal(bool enable)
 {
   if (enable) {
+    if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_AP)) return;
     // create and store unique AP SSID/PW to prevent ESP from starting AP mode with default SSID and No password!
     // setup ssid for AP Mode when needed
     String softAPSSID = NetworkCreateRFCCompliantHostname();
@@ -114,6 +115,8 @@ void doSetAPinternal(bool enable)
     if (WifiIsSTA(WiFi.getMode()) && WiFiConnected()) {
       channel = WiFi.channel();
     }
+
+    doSetAP(true);
 
     if (WiFi.softAP(softAPSSID.c_str(), pwd.c_str(), channel)) {
       auto data = getWiFi_AP_NWPluginData_static_runtime();
@@ -165,6 +168,8 @@ void doSetAPinternal(bool enable)
     # endif // if FEATURE_DNS_SERVER
     auto data = getWiFi_AP_NWPluginData_static_runtime();
     if (data) data->mark_stop();
+
+    doSetAP(false);
   }
 }
 

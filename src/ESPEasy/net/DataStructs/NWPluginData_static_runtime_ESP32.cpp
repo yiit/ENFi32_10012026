@@ -224,6 +224,12 @@ void NWPluginData_static_runtime::log_connected()
                format_msec_duration_HMS(
                  _establishConnectStats.getLastOnDuration_ms()).c_str(),
                _establishConnectStats.getCycleCount()));
+    } else if (_establishConnectStats.isOff()) {
+      addLog(LOG_LEVEL_INFO, strformat(
+               F("%s: Connected, took: %s"),
+               _netif->desc(),
+               format_msec_duration_HMS(
+                 _establishConnectStats.getLastOnDuration_ms()).c_str()));
     } else {
       addLog(LOG_LEVEL_INFO, strformat(
                F("%s: Connected"),

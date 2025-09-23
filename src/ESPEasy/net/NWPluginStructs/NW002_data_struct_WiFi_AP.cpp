@@ -101,6 +101,7 @@ bool NW002_data_struct_WiFi_AP::init(EventStruct *event)
 
 bool NW002_data_struct_WiFi_AP::exit(EventStruct *event)
 {
+  ESPEasy::net::wifi::setAPinternal(false);
 # ifdef ESP32
   NW_PLUGIN_INTERFACE.enableNAPT(false);
   NW_PLUGIN_INTERFACE.end();

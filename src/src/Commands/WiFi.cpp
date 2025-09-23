@@ -98,7 +98,7 @@ const __FlashStringHelper* Command_Wifi_Disconnect(struct EventStruct *event, co
 
 const __FlashStringHelper* Command_Wifi_APMode(struct EventStruct *event, const char *Line)
 {
-   ESPEasy::net::wifi::setAP(true);
+   ESPEasy::net::wifi::setAPinternal(true);
   return return_command_success_flashstr();
 }
 

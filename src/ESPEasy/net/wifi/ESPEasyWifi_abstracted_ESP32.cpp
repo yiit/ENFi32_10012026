@@ -62,10 +62,19 @@ void doWiFiDisconnect() {
 
 bool doWifiIsAP(WiFiMode_t wifimode)  { return (wifimode == WIFI_MODE_AP) || (wifimode == WIFI_MODE_APSTA); }
 
-bool doWifiIsSTA(WiFiMode_t wifimode) { return (wifimode & WIFI_MODE_STA) != 0; }
+bool doWifiIsSTA(WiFiMode_t wifimode) { return (wifimode == WIFI_MODE_STA) || (wifimode == WIFI_MODE_APSTA); }
 
 bool doSetWifiMode(WiFiMode_t new_mode)
 {
+  if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_AP)) {
+    if (new_mode == WIFI_MODE_AP) new_mode = WIFI_OFF;
+    if (new_mode == WIFI_MODE_APSTA) new_mode = WIFI_MODE_STA;
+  }
+  if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_STA)) {
+    if (new_mode == WIFI_MODE_STA) new_mode = WIFI_OFF;
+    if (new_mode == WIFI_MODE_APSTA) new_mode = WIFI_MODE_AP;
+  }
+
   const WiFiMode_t cur_mode = WiFi.getMode();
 
   // Made this static flag an int as ESP8266 and ESP32 differ in the "not set" values

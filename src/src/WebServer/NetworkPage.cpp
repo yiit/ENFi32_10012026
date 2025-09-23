@@ -131,15 +131,6 @@ void handle_networks()
 }
 
 void handle_networks_clearLoadDefaults(ESPEasy::net::networkIndex_t networkindex, NetworkSettingsStruct& NetworkSettings) {
-  networkDriverIndex_t NetworkDriverIndex = getNetworkDriverIndex_from_NetworkIndex(networkindex);
-
-  if (validNetworkDriverIndex(NetworkDriverIndex)) {
-    struct EventStruct TempEvent;
-    TempEvent.NetworkIndex = networkindex;
-
-    String dummy;
-    NWPluginCall(NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS, &TempEvent, dummy);
-  }
 
   // TODO TD-er: Must also check NetworkDriverStruct to see if something else must be done
 }
@@ -519,9 +510,12 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 
             addRowLabel(F("TX / RX Frame Bytes"));
             addHtml(strformat(
-              F("%siB / %siB"),
+              F("%s%cB / %s%cB"),
               formatHumanReadable(TempEvent.Par64_1, 1024).c_str(),
-              formatHumanReadable(TempEvent.Par64_2, 1024).c_str()));
+              TempEvent.Par64_1 < 1024 ? ' ' : 'i',
+              formatHumanReadable(TempEvent.Par64_2, 1024).c_str(),
+              TempEvent.Par64_2 < 1024 ? ' ' : 'i'
+            ));
           }
 #  endif // if FEATURE_NETWORK_TRAFFIC_COUNT
         }

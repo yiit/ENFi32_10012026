@@ -57,7 +57,7 @@ STA_connected_state ESPEasyWiFi_t::getSTA_connected_state() const
       return STA_connected_state::Error_Connect_Failed;
 
     case WL_IDLE_STATUS:
-      return STA_connected_state::Connecting;
+      break; // return STA_connected_state::Connecting;
 
 
     case WL_NO_SHIELD:

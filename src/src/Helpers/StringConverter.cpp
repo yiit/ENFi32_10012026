@@ -393,6 +393,8 @@ String formatHumanReadable(uint64_t value,
   }
   String result = toString(floatValue, NrDecimals);
 
+  if (steps != 0) result += ' ';
+
   switch (steps) {
     case 0: break;
     case 1: result += 'k'; break;

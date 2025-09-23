@@ -34,9 +34,11 @@
 #include "../Helpers/StringProvider.h"
 
 #include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
+#include "../../ESPEasy/net/Globals/ESPEasyWiFi.h"
 #include "../../ESPEasy/net/Globals/ESPEasyWiFiEvent.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../../ESPEasy/net/Globals/NWPlugins.h"
+#include "../../ESPEasy/net/wifi/WiFi_State.h"
 
 
 #ifdef USES_C015
@@ -275,8 +277,9 @@ void runEach30Seconds()
       #endif // if FEATURE_ETHERNET
       if (logWiFiStatus) {
         log += strformat(
-          F(" WiFiStatus: %s ESPeasy internal wifi status: %s"),
+          F(" WiFiStatus: %s ESPeasy internal wifi status: %s (%s)"),
           ArduinoWifiStatusToString(WiFi.status()).c_str(),
+          FsP(ESPEasy::net::wifi::toString(ESPEasyWiFi.getState())),
           data->statusToString().c_str());
       }
   //    log += F(" ListenInterval ");

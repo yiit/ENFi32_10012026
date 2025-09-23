@@ -158,7 +158,7 @@ void NWPluginData_static_runtime::processEvents()
       log_connected();
 
       //    _establishConnectStats.resetCount();
-    } else if (_connectedStats.isOff()) {
+    } else if (_connectedStats.isOff() && !_establishConnectStats.isOn()) {
       log_disconnected();
     }
   }

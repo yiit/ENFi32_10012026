@@ -21,6 +21,8 @@
 #include "../Helpers/StringParser.h"
 #include "../ESPEasy/net/Helpers/_NWPlugin_init.h"
 
+#include "../../ESPEasy/net/Globals/NWPlugins.h"
+
 #if FEATURE_I2C_MULTIPLE
 #include "../Helpers/Hardware_device_info.h"
 #endif
@@ -1346,6 +1348,18 @@ void SettingsStruct_tmpl<N_TASKS>::setNWPluginID_for_network(ESPEasy::net::netwo
 {
   if (validNetworkIndex(index)) {
     NWPluginID[index] = id.value;
+    if (id.isValid()) {
+      ESPEasy::net::networkDriverIndex_t NetworkDriverIndex = 
+        ESPEasy::net::getNetworkDriverIndex_from_NetworkIndex(index);
+
+      if (ESPEasy::net::validNetworkDriverIndex(NetworkDriverIndex)) {
+        struct EventStruct TempEvent;
+        TempEvent.NetworkIndex = index;
+
+        String dummy;
+        ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS, &TempEvent, dummy);
+      }
+    }
   }
 }
 
