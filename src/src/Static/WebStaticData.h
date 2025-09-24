@@ -154,7 +154,7 @@ static const char DATA_ESPEASY_DEFAULT_MIN_CSS[] PROGMEM = {
 "losebtn{cursor:pointer;font-size:22px;line-height:20px;margin-left:15px;transition:.3s}.closebtn:hover{color:#000}section{overflow-x"
 ":auto;padding:10px 0}footer{padding:0 5px;word-break:break-all}.closebtn,.div_r{float:right;color:var(--c6)}a,h1,h6{color:var(--c5)}"
 ".button,.container input:checked~.checkmark:not(.disabled),.container2 input:checked~.dotmark{background-color:var(--bg10)}canvas{fi"
-"lter:invert(var(--iv)) hue-rotate(var(--ro))}@media screen and (max-width:780px){.showmenulabel{display:none}a.menu{width:12%}}@medi"
+"lter:invert(var(--iv)) hue-rotate(var(--ro))}@media screen and (max-width:830px){.showmenulabel{display:none}a.menu{width:11%}}@medi"
 "a screen and (max-width:450px){.normal{min-width:300px}input.wide:focus{left:4px;position:absolute;z-index:1}}"
 };
 #else // ifndef EMBED_ESPEASY_DEFAULT_MIN_CSS_USE_GZ
