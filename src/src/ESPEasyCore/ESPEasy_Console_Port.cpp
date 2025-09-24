@@ -98,6 +98,9 @@ void EspEasy_Console_Port::endPort()
 
 void EspEasy_Console_Port::addToSerialBuffer(char c)
 {
+#ifdef ESP32
+    if (!xPortCanYield()) return;
+#endif
   if (_serial != nullptr) {
     _serialWriteBuffer.add(c);
   }
@@ -105,6 +108,9 @@ void EspEasy_Console_Port::addToSerialBuffer(char c)
 
 void EspEasy_Console_Port::addToSerialBuffer(const String& line)
 {
+#ifdef ESP32
+    if (!xPortCanYield()) return;
+#endif
   if (_serial != nullptr) {
     _serialWriteBuffer.add(line);
   }
@@ -112,6 +118,10 @@ void EspEasy_Console_Port::addToSerialBuffer(const String& line)
 
 void EspEasy_Console_Port::addNewlineToSerialBuffer()
 {
+#ifdef ESP32
+    if (!xPortCanYield()) return;
+#endif
+
   if (_serial != nullptr) {
     _serialWriteBuffer.addNewline();
   }
@@ -120,6 +130,9 @@ void EspEasy_Console_Port::addNewlineToSerialBuffer()
 bool EspEasy_Console_Port::process_serialWriteBuffer()
 {
   if (_serial != nullptr) {
+#ifdef ESP32
+    if (!xPortCanYield()) return false;
+#endif
     const int snip = _serial->availableForWrite();
     
     if (snip > 0) {

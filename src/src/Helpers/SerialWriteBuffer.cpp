@@ -72,7 +72,7 @@ size_t SerialWriteBuffer_t::write(Stream& stream, size_t nrBytesToWrite)
     }
 
     while (nrBytesToWrite > 0 && !_buffer.empty()) {
-      uint8_t tmpBuffer[16]{};
+      uint8_t tmpBuffer[32]{};
 
       size_t tmpBufferUsed = 0;
 
