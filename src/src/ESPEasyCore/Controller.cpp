@@ -690,25 +690,12 @@ void MQTT_execute_connect_task(void *parameter)
 {
   MQTT_connect_request*MQTT_task_data = static_cast<MQTT_connect_request *>(parameter);
 
-  MakeControllerSettings(ControllerSettings); // -V522
-
-  if (!AllocatedControllerSettings()) {
-    #ifndef BUILD_MINIMAL_OTA
-    addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot load Controller settings, out of RAM"));
-    #endif
-    MQTT_task_data->taskHandle = NULL;
-    vTaskDelete(MQTT_task_data->taskHandle);
-    return;
-  }
-  LoadControllerSettings(MQTT_task_data->ControllerIndex, *ControllerSettings);
-
-  uint32_t timeout = ControllerSettings->MustCheckReply
-                     ? WiFiEventData.getSuggestedTimeout(Settings.Protocol[MQTT_task_data->ControllerIndex], ControllerSettings->ClientTimeout)
-                     : ControllerSettings->ClientTimeout;
-  uint8_t incr = 5; // Increment timeout between connection attempts 5 times by 100 msec
+  uint32_t timeout = MQTT_task_data->timeout;
+  uint8_t  incr    = 5; // Increment timeout between connection attempts 5 times by 100 msec
 
   while (!MQTTConnect_clientConnect(MQTT_task_data->ControllerIndex) && !MQTTclient.connected()) {
-    delay(timeout); // Use regular controller timeout also for delay between connection attempts (range 10..4000)
+    const TickType_t xDelay = timeout / portTICK_PERIOD_MS;
+    vTaskDelay(xDelay); // Use regular controller timeout also for delay between connection attempts (range 10..4000)
     if (incr > 0) {
       timeout += 100; // Increment next few (5) times with 100 msec
       incr--;
@@ -787,11 +774,26 @@ bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) 
     MQTT_task_data.result          = false;
 
     if (MQTTConnect_prepareClient(controller_idx)) {
+      MakeControllerSettings(ControllerSettings); // -V522
+
+      if (!AllocatedControllerSettings()) {
+        #ifndef BUILD_MINIMAL_OTA
+        addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot load Controller settings, out of RAM"));
+        #endif
+        return false;
+      }
+      LoadControllerSettings(controller_idx, *ControllerSettings);
+
+      const uint32_t timeout = ControllerSettings->MustCheckReply
+                               ? WiFiEventData.getSuggestedTimeout(Settings.Protocol[controller_idx], ControllerSettings->ClientTimeout)
+                               : ControllerSettings->ClientTimeout;
+
       MQTT_task_data.status          = MQTT_connect_status_e::Connecting;
       MQTT_task_data.logged          = false;
       MQTT_task_data.ControllerIndex = controller_idx;
       MQTT_task_data.startTime       = millis();
       MQTT_task_data.loopTime        = millis();
+      MQTT_task_data.timeout         = timeout;
 
       xTaskCreatePinnedToCore(
         MQTT_execute_connect_task,   // Function that should be called
