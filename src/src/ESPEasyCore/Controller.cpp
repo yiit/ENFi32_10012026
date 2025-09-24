@@ -674,7 +674,8 @@ void MQTT_execute_connect_task(void *parameter)
                      : ControllerSettings->ClientTimeout;
   uint8_t incr = 5; // Increment timeout between connection attempts 5 times by 100 msec
 
-  while (!MQTTConnect(MQTT_task_data->ControllerIndex)
+  while (ESPEasy::net::NetworkConnected() &&
+         !MQTTConnect(MQTT_task_data->ControllerIndex)
           # if FEATURE_MQTT_TLS
           && mqtt_tls_last_errorstr.isEmpty()
           # endif // if FEATURE_MQTT_TLS
