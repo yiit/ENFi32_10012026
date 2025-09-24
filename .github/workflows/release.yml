@@ -21,13 +21,14 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - id: set-matrix
         run: |
-          pip install platformio
+          pip install uv
+          uv pip install --system platformio
           python tools/ci/generate-matrix.py
 
   build:
@@ -36,28 +37,13 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-${{ hashFiles('requirements.txt') }}
-      - uses: actions/cache@v4
-        if: ${{ contains(matrix.env, 'esp32') }}
-        with:
-          path: ~/.platformio
-          key: ${{ runner.os }}-esp32-${{ hashFiles('platformio*.ini') }}
-      - uses: actions/cache@v4
-        if: ${{ contains(matrix.env, 'esp8266') }}
-        with:
-          path: ~/.platformio
-          key: ${{ runner.os }}-esp8266-${{ hashFiles('platformio*.ini') }}
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
       - name: Dependencies
         run: |
           sudo apt install binutils build-essential libffi-dev libgit2-dev
-          pip install -r requirements.txt
+          pip install uv
+          uv pip install --system -r requirements.txt
           pio pkg update -e ${{ matrix.env }}
       - name: Build and archive
         id: build-and-archive
@@ -81,19 +67,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-docs-${{ hashFiles('docs/requirements.txt') }}
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
       - name: Build documentation
         run: |
           cd docs
           sudo apt install imagemagick zip
-          pip install -r requirements.txt
+          pip install uv
+          uv pip install --system -r requirements.txt
           make html
           cd ..
           zip -r -qq ESPEasy_docs.zip docs/build/*
@@ -116,7 +97,7 @@ jobs:
       notes: ${{ steps.release-notes.outputs.result }}
     steps:
       - id: release-notes
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           result-encoding: string
           script: |
@@ -138,7 +119,7 @@ jobs:
     needs: [build, prepare-dist, prepare-notes]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - name: Get current date
@@ -146,13 +127,13 @@ jobs:
         run: |
           echo "builddate=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       - name: Download all successfully compiled artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts/bin/
           pattern: Bin-*
           merge-multiple: true
       - name: Download dist and docs zip files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: distribution/
           name: Distribution

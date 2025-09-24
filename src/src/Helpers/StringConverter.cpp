@@ -301,6 +301,17 @@ String formatToHex_array(const uint8_t* data, size_t size)
   return res;
 }
 
+String formatToHex_wordarray(const uint16_t* data, size_t size)
+{
+  String res;
+  res.reserve(2 * size);
+  for (size_t i = 0; i < size; ++i) {
+    appendHexChar(data[i] << 8, res);
+    appendHexChar(data[i] & 0xFF, res);
+  }
+  return res;
+}
+
 String formatToHex(unsigned long value, 
                    const __FlashStringHelper * prefix,
                    unsigned int minimal_hex_digits) {
@@ -1711,7 +1722,8 @@ void parseStandardConversions(String& s, bool useURLencode) {
   SMART_CONV(F("%c_alt_pres_sea%"), toString(altitudeFromPressure(data.arg1, data.arg2), 2))
   SMART_CONV(F("%c_sea_pres_alt%"), toString(pressureElevation(data.arg1, data.arg2), 2))
   #if FEATURE_STRING_VARIABLES
-  SMART_CONV(F("%c_ts2date%"),      get_date_time_from_timestamp(static_cast<uint32_t>(data.arg1), !essentiallyZero(data.arg2)))
+  SMART_CONV(F("%c_ts2date%"),      get_date_time_from_timestamp(static_cast<uint32_t>(data.arg1), !essentiallyZero(data.arg2), false))
+  SMART_CONV(F("%c_ts2isodate%"),   get_date_time_from_timestamp(static_cast<uint32_t>(data.arg1), !essentiallyZero(data.arg2), true))
   #endif // if FEATURE_STRING_VARIABLES
 
   #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
@@ -1736,11 +1748,12 @@ void parseStandardConversions(String& s, bool useURLencode) {
 }
 
 #if FEATURE_STRING_VARIABLES
-String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm) {
+String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm, bool iso_format) {
   struct tm ts;
   ts = *localtime(&unix_timestamp);
 
-  return formatDateTimeString(ts, '-', ':', ' ', am_pm);
+  return formatDateTimeString(ts, '-', ':', iso_format ? 'T' : ' ', am_pm && !iso_format)
+          + (iso_format && am_pm ? node_time.getTimeZoneOffsetString() : F("Z"));
 }
 
 String get_weekday_from_timestamp(time_t unix_timestamp) {

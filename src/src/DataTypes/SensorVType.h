@@ -3,6 +3,8 @@
 
 #include "../../ESPEasy_common.h"
 
+# define Sensor_VType_CAN_SET 0x0100 // 8 bits of Sensor_VType and the 9th bit to enable /set
+
 enum class Sensor_VType : uint8_t {
   SENSOR_TYPE_NONE            =    0,
   SENSOR_TYPE_SINGLE          =    1,
@@ -66,6 +68,33 @@ enum class Sensor_VType : uint8_t {
   SENSOR_TYPE_NOX_ONLY        = 129,
   SENSOR_TYPE_SWITCH_INVERTED = 130,
   SENSOR_TYPE_WIND_SPEED      = 131,
+  SENSOR_TYPE_DURATION        = 132,
+  SENSOR_TYPE_DATE            = 133,
+  SENSOR_TYPE_TIMESTAMP       = 134,
+  SENSOR_TYPE_DATA_RATE       = 135,
+  SENSOR_TYPE_DATA_SIZE       = 136,
+  SENSOR_TYPE_SOUND_PRESSURE  = 137,
+  SENSOR_TYPE_SIGNAL_STRENGTH = 138,
+  SENSOR_TYPE_REACTIVE_ENERGY = 139,
+  SENSOR_TYPE_FREQUENCY       = 140,
+  SENSOR_TYPE_ENERGY          = 141,
+  SENSOR_TYPE_ENERGY_STORAGE  = 142,
+  SENSOR_TYPE_ABS_HUMIDITY    = 143,
+  SENSOR_TYPE_ATMOS_PRESSURE  = 144,
+  SENSOR_TYPE_BLOOD_GLUCOSE_C = 145,
+  SENSOR_TYPE_CO_ONLY         = 146,
+  SENSOR_TYPE_ENERGY_DISTANCE = 147,
+  SENSOR_TYPE_GAS_ONLY        = 148,
+  SENSOR_TYPE_NITROUS_OXIDE   = 149,
+  SENSOR_TYPE_OZONE_ONLY      = 150,
+  SENSOR_TYPE_PRECIPITATION   = 151,
+  SENSOR_TYPE_PRECIPITATION_INTEN = 152,
+  SENSOR_TYPE_SULPHUR_DIOXIDE = 153,
+  SENSOR_TYPE_VOC_PARTS       = 154,
+  SENSOR_TYPE_VOLUME          = 155,
+  SENSOR_TYPE_VOLUME_FLOW_RATE = 156,
+  SENSOR_TYPE_VOLUME_STORAGE  = 157,
+  SENSOR_TYPE_WATER           = 158,
 
   SENSOR_TYPE_NOT_SET = 255
 };
@@ -108,7 +137,14 @@ bool isIntegerOutputDataType(Sensor_VType sensorType);
 
 bool is32bitOutputDataType(Sensor_VType sensorType);
 
+# if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
+String getValueType2HADeviceClass(Sensor_VType sensorType);
+String getValueType2DefaultHAUoM(Sensor_VType sensorType);
+# endif // if FEATURE_MQTT && FEATURE_MQTT_DISCOVER
 
+#if FEATURE_CUSTOM_TASKVAR_VTYPE
+bool isMQTTDiscoverySensorType(Sensor_VType sensorType);
+#endif // if FEATURE_CUSTOM_TASKVAR_VTYPE
 
 
 #endif

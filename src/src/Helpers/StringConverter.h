@@ -122,6 +122,7 @@ void appendHexChar(uint8_t data, String& string);
 // Binary data to HEX
 // Returned string length will be twice the size of the data array.
 String formatToHex_array(const uint8_t* data, size_t size);
+String formatToHex_wordarray(const uint16_t* data, size_t size);
 
 String formatToHex(unsigned long value,
                    const __FlashStringHelper * prefix,
@@ -484,7 +485,7 @@ void parseStandardConversions(String& s,
                               bool useURLencode);
 
 #if FEATURE_STRING_VARIABLES
-String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm);
+String get_date_time_from_timestamp(time_t unix_timestamp, bool am_pm, bool iso_format);
 String get_weekday_from_timestamp(time_t unix_timestamp);
 #endif // if FEATURE_STRING_VARIABLES
 

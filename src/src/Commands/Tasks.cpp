@@ -293,7 +293,24 @@ const __FlashStringHelper * taskValueSetString(struct EventStruct *event, const 
       if (GetArgv(Line, argument, 5)) { // check for extra argument holding UoM
         key = strformat(uomTemplate, taskName.c_str(), valueName.c_str());
         if (!argument.isEmpty()) {
-          setCustomStringVar(key, argument);
+          #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
+          uint8_t i = 1; // Index 0 is empty/None
+          String uom = toUnitOfMeasureName(i);
+          while (i < 255 && !uom.isEmpty()) {
+            if (argument.equalsIgnoreCase(uom)) {
+              setCustomStringVar(key, uom);
+              argument.clear();
+              break;
+            }
+            ++i;
+            uom = toUnitOfMeasureName(i);
+          }
+          if (!argument.isEmpty()) 
+          #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+          {
+            setCustomStringVar(key, argument);
+          }
         } else {
           clearCustomStringVar(key);
         }
