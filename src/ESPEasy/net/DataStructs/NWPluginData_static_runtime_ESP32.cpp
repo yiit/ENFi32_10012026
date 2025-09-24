@@ -160,9 +160,10 @@ void NWPluginData_static_runtime::mark_got_IPv6(ip_event_got_ip6_t *event)
   }
   
   if (event) {
-    ip_event_got_ip6_t ip6Event;
-    memcpy(&ip6Event, event, sizeof(ip_event_got_ip6_t));
-    _gotIP6Events.push_back(ip6Event);
+    if (event->ip_index < NR_ELEMENTS(_gotIP6Events)) {
+      memcpy(&_gotIP6Events[event->ip_index], event, sizeof(ip_event_got_ip6_t));
+      _gotIP6Stats.forceSet(true);
+    }
   }
 
 #  if NW_PLUGIN_LOG_EVENTS

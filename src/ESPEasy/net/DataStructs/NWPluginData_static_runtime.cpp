@@ -189,10 +189,12 @@ void NWPluginData_static_runtime::processEvents()
 
 #if FEATURE_USE_IPV6
 
-  if (_gotIP6Stats.changedSinceLastCheck_and_clear() || !_gotIP6Events.empty()) {
-    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      while (!_gotIP6Events.empty()) {
-        auto ip6Event                    = _gotIP6Events.front();
+  if (_gotIP6Stats.changedSinceLastCheck_and_clear()) {
+    for (uint8_t i = 0; i < NR_ELEMENTS(_gotIP6Events); ++i) {
+      ip_event_got_ip6_t ip6Event;
+      memcpy(&ip6Event, &_gotIP6Events[i], sizeof(ip_event_got_ip6_t));
+      memset(&_gotIP6Events[i], 0, sizeof(ip_event_got_ip6_t));
+      if (loglevelActiveFor(LOG_LEVEL_INFO) && ip6Event.esp_netif != nullptr) {
         esp_ip6_addr_type_t addr_type    = esp_netif_ip6_get_addr_type(&ip6Event.ip6_info.ip);
         static const char  *addr_types[] = { "UNKNOWN", "GLOBAL", "LINK_LOCAL", "SITE_LOCAL", "UNIQUE_LOCAL", "IPV4_MAPPED_IPV6" };
 
@@ -206,7 +208,6 @@ void NWPluginData_static_runtime::processEvents()
                    IPV62STR(ip6Event.ip6_info.ip)
                    ));
         }
-        _gotIP6Events.pop_front();
       }
     }
   }

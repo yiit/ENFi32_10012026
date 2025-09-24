@@ -139,7 +139,7 @@ struct NWPluginData_static_runtime {
   LongTermOnOffTimer _gotIPStats{};
 #if FEATURE_USE_IPV6
   LongTermOnOffTimer _gotIP6Stats{};
-  std::list<ip_event_got_ip6_t> _gotIP6Events{};
+  ip_event_got_ip6_t _gotIP6Events[6]{};
 #endif
   LongTermOnOffTimer _operationalStats{}; // is started, connected and had IP
 
