@@ -33,6 +33,7 @@ struct MQTT_connect_request {
   uint32_t              startTime{};
   uint32_t              loopTime{};
   uint32_t              endTime{};
+  uint32_t              timeout{};
   bool                  result{};
   bool                  logged{};
 

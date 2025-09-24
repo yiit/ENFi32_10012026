@@ -171,17 +171,7 @@ void MQTTDisconnect()
   updateMQTTclient_connected();
 }
 
-/*********************************************************************************************\
-* Connect to MQTT message broker
-\*********************************************************************************************/
-bool MQTTConnect(controllerIndex_t controller_idx)
-{
-  if (MQTTclient_next_connect_attempt.isSet() && !MQTTclient_next_connect_attempt.timeoutReached(timermqtt_interval)) {
-    return false;
-  }
-  MQTTclient_next_connect_attempt.setNow();
-  ++mqtt_reconnect_count;
-
+bool MQTTConnect_prepareClient(controllerIndex_t controller_idx) {
   MakeControllerSettings(ControllerSettings); // -V522
 
   if (!AllocatedControllerSettings()) {
@@ -424,43 +414,48 @@ bool MQTTConnect(controllerIndex_t controller_idx)
   }
   MQTTclient.setCallback(incoming_mqtt_callback);
 
+  if (MQTTclient_should_reconnect) {
+    addLog(LOG_LEVEL_ERROR, F("MQTT : Intentional reconnect"));
+  }
+
+  return true;
+}
+
+bool MQTTConnect_clientConnect(controllerIndex_t controller_idx) {
+  MakeControllerSettings(ControllerSettings); // -V522
+
+  if (!AllocatedControllerSettings()) {
+    #ifndef BUILD_MINIMAL_OTA
+    addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot connect, out of RAM"));
+    #endif
+    return false;
+  }
+  LoadControllerSettings(controller_idx, *ControllerSettings);
+
+  bool MQTTresult                   = false;
+
   // MQTT needs a unique clientname to subscribe to broker
   const String clientid = getMQTTclientID(*ControllerSettings);
 
   const String LWTTopic             = getLWT_topic(*ControllerSettings);
   const String LWTMessageDisconnect = getLWT_messageDisconnect(*ControllerSettings);
-  bool MQTTresult                   = false;
   const uint8_t willQos             = 0;
   const bool    willRetain          = ControllerSettings->mqtt_willRetain() && ControllerSettings->mqtt_sendLWT();
-  const bool    cleanSession        = ControllerSettings->mqtt_cleanSession(); // As suggested here:
-
-  if (MQTTclient_should_reconnect) {
-    addLog(LOG_LEVEL_ERROR, F("MQTT : Intentional reconnect"));
-  }
+  // As suggested here: https://github.com/knolleary/pubsubclient/issues/458#issuecomment-493875150
+  const bool    cleanSession        = ControllerSettings->mqtt_cleanSession();
+  const bool    hasCredentials      = hasControllerCredentialsSet(controller_idx, *ControllerSettings);
 
   const uint64_t statisticsTimerStart(getMicros64());
 
-  // https://github.com/knolleary/pubsubclient/issues/458#issuecomment-493875150
-  if (hasControllerCredentialsSet(controller_idx, *ControllerSettings)) {
-    MQTTresult =
+  MQTTresult =
       MQTTclient.connect(clientid.c_str(),
-                         getControllerUser(controller_idx, *ControllerSettings).c_str(),
-                         getControllerPass(controller_idx, *ControllerSettings).c_str(),
-                         ControllerSettings->mqtt_sendLWT() ? LWTTopic.c_str() : nullptr,
-                         willQos,
-                         willRetain,
-                         ControllerSettings->mqtt_sendLWT() ? LWTMessageDisconnect.c_str() : nullptr,
-                         cleanSession);
-  } else {
-    MQTTresult = MQTTclient.connect(clientid.c_str(),
-                                    nullptr,
-                                    nullptr,
-                                    ControllerSettings->mqtt_sendLWT() ? LWTTopic.c_str() : nullptr,
-                                    willQos,
-                                    willRetain,
-                                    ControllerSettings->mqtt_sendLWT() ? LWTMessageDisconnect.c_str() : nullptr,
-                                    cleanSession);
-  }
+                        hasCredentials ? getControllerUser(controller_idx, *ControllerSettings).c_str() : nullptr,
+                        hasCredentials ? getControllerPass(controller_idx, *ControllerSettings).c_str() : nullptr,
+                        ControllerSettings->mqtt_sendLWT() ? LWTTopic.c_str() : nullptr,
+                        willQos,
+                        willRetain,
+                        ControllerSettings->mqtt_sendLWT() ? LWTMessageDisconnect.c_str() : nullptr,
+                        cleanSession);
   delay(0);
 
   count_connection_results(
@@ -469,7 +464,27 @@ bool MQTTConnect(controllerIndex_t controller_idx)
     Settings.Protocol[controller_idx],
     statisticsTimerStart);
 
+  return MQTTresult;
+}
+
+bool MQTTConnect_wrapUpConnect(controllerIndex_t controller_idx, bool MQTTresult) {
+  MakeControllerSettings(ControllerSettings); // -V522
+
+  if (!AllocatedControllerSettings()) {
+    #ifndef BUILD_MINIMAL_OTA
+    addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot connect, out of RAM"));
+    #endif
+    return false;
+  }
+  LoadControllerSettings(controller_idx, *ControllerSettings);
+
+  const String clientid   = getMQTTclientID(*ControllerSettings);
+  const String LWTTopic   = getLWT_topic(*ControllerSettings);
+  const bool   willRetain = ControllerSettings->mqtt_willRetain() && ControllerSettings->mqtt_sendLWT();
+
   # if FEATURE_MQTT_TLS
+
+  const TLS_types TLS_type = ControllerSettings->TLStype();
 
   if (mqtt_tls != nullptr)
   {
@@ -614,6 +629,26 @@ bool MQTTConnect(controllerIndex_t controller_idx)
   return true;
 }
 
+/*********************************************************************************************\
+* Connect to MQTT message broker
+\*********************************************************************************************/
+bool MQTTConnect(controllerIndex_t controller_idx)
+{
+  if (MQTTclient_next_connect_attempt.isSet() && !MQTTclient_next_connect_attempt.timeoutReached(timermqtt_interval)) {
+    return false;
+  }
+  MQTTclient_next_connect_attempt.setNow();
+  ++mqtt_reconnect_count;
+
+  if (!MQTTConnect_prepareClient(controller_idx)) {
+    return false;
+  }
+  
+  bool MQTTresult = MQTTConnect_clientConnect(controller_idx);
+
+  return MQTTConnect_wrapUpConnect(controller_idx, MQTTresult);
+}
+
 void MQTTparseSystemVariablesAndSubscribe(String subscribeTo) {
   if (subscribeTo.isEmpty()) { return; }
   parseSystemVariables(subscribeTo, false);
@@ -623,7 +658,7 @@ void MQTTparseSystemVariablesAndSubscribe(String subscribeTo) {
     MQTTclient.subscribe(subscribeTo.c_str());
 
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      addLogMove(LOG_LEVEL_INFO, concat(F("Subscribed to: "),  subscribeTo));
+      addLogMove(LOG_LEVEL_INFO, concat(F("MQTT : Subscribed to: "),  subscribeTo));
     }
   }
 }
@@ -657,39 +692,22 @@ void MQTT_execute_connect_task(void *parameter)
 {
   MQTT_connect_request*MQTT_task_data = static_cast<MQTT_connect_request *>(parameter);
 
-  MakeControllerSettings(ControllerSettings); // -V522
-
-  if (!AllocatedControllerSettings()) {
-    #ifndef BUILD_MINIMAL_OTA
-    addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot load Controller settings, out of RAM"));
-    #endif
-    MQTT_task_data->taskHandle = NULL;
-    vTaskDelete(MQTT_task_data->taskHandle);
-    return;
-  }
-  LoadControllerSettings(MQTT_task_data->ControllerIndex, *ControllerSettings);
-
-  uint32_t timeout = ControllerSettings->MustCheckReply
-                     ? ControllerSettings->getSuggestedTimeout(Settings.Protocol[MQTT_task_data->ControllerIndex])
-                     : ControllerSettings->ClientTimeout;
-  uint8_t incr = 5; // Increment timeout between connection attempts 5 times by 100 msec
+  uint32_t timeout = MQTT_task_data->timeout;
+  uint8_t  incr    = 5; // Increment timeout between connection attempts 5 times by 100 msec
 
   while (ESPEasy::net::NetworkConnected() &&
-         !MQTTConnect(MQTT_task_data->ControllerIndex)
-          # if FEATURE_MQTT_TLS
-          && mqtt_tls_last_errorstr.isEmpty()
-          # endif // if FEATURE_MQTT_TLS
-          && !MQTTclient.connected()
-        ) {
-          delay(timeout); // Use regular controller timeout also for delay between connection attempts (range 10..4000)
-          if (incr > 0) {
-            timeout += 100; // Increment next few (5) times with 100 msec
-            incr--;
-          }
-          if (timePassedSince(MQTT_task_data->startTime) > 120000) { // Quit after 120 seconds
-            break;
-          }
-        }
+         !MQTTConnect_clientConnect(MQTT_task_data->ControllerIndex) &&
+         !MQTTclient.connected()) {
+    const TickType_t xDelay = timeout / portTICK_PERIOD_MS;
+    vTaskDelay(xDelay); // Use regular controller timeout also for delay between connection attempts (range 10..4000)
+    if (incr > 0) {
+      timeout += 100; // Increment next few (5) times with 100 msec
+      incr--;
+    }
+    if (timePassedSince(MQTT_task_data->startTime) > 120000) { // Quit after 120 seconds
+      break;
+    }
+  }
   MQTT_task_data->result     = MQTTclient.connected();
   MQTT_task_data->status     = MQTT_task_data->result
                                ? MQTT_connect_status_e::Connected
@@ -703,14 +721,18 @@ bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) 
   if (!Settings.MQTTConnectInBackground()) { return false; }
 
   if ((MQTT_task_data.status == MQTT_connect_status_e::Connected) || (MQTT_task_data.status == MQTT_connect_status_e::Failure)) {
+    MQTT_task_data.status = MQTT_connect_status_e::Ready; // Set status first to avoid re-entry
+
+    const bool result = MQTTConnect_wrapUpConnect(MQTT_task_data.ControllerIndex, MQTT_task_data.result);
+
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Background Connect request %s, took %d msec"),
                                        FsP(MQTT_task_data.result ? F("success") : F("FAILED")),
                                        MQTT_task_data.endTime - MQTT_task_data.startTime
                                       ));
     }
-    MQTT_task_data.status = MQTT_connect_status_e::Ready;
-    return MQTT_task_data.result;
+
+    return result && MQTT_task_data.result;
   }
   
   if ((MQTT_task_data.status == MQTT_connect_status_e::Ready) && MQTTclient.connected()) {
@@ -744,25 +766,51 @@ bool MQTTConnectInBackground(controllerIndex_t controller_idx, bool reportOnly) 
   }
 
   if (!reportOnly && (MQTT_task_data.status == MQTT_connect_status_e::Disconnected) && (controller_idx < CONTROLLER_MAX)) {
+    if (MQTTclient_next_connect_attempt.isSet() && !MQTTclient_next_connect_attempt.timeoutReached(timermqtt_interval)) {
+      return false;
+    }
+    MQTTclient_next_connect_attempt.setNow();
+    ++mqtt_reconnect_count;
+
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLog(LOG_LEVEL_INFO, strformat(F("MQTT : Start background connect for controller %d"), controller_idx + 1));
     }
-    MQTT_task_data.status          = MQTT_connect_status_e::Connecting;
     MQTT_task_data.result          = false;
-    MQTT_task_data.logged          = false;
-    MQTT_task_data.ControllerIndex = controller_idx;
-    MQTT_task_data.startTime       = millis();
-    MQTT_task_data.loopTime        = millis();
 
-    xTaskCreatePinnedToCore(
-      MQTT_execute_connect_task,   // Function that should be called
-      "MQTTConnect()",             // Name of the task (for debugging)
-      8192,                        // Stack size (bytes)
-      &MQTT_task_data,             // Parameter to pass
-      1,                           // Task priority
-      &MQTT_task_data.taskHandle,  // Task handle
-      xPortGetCoreID()             // Core you want to run the task on (0 or 1)
-      );
+    if (MQTTConnect_prepareClient(controller_idx)) {
+      MakeControllerSettings(ControllerSettings); // -V522
+
+      if (!AllocatedControllerSettings()) {
+        #ifndef BUILD_MINIMAL_OTA
+        addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot load Controller settings, out of RAM"));
+        #endif
+        return false;
+      }
+      LoadControllerSettings(controller_idx, *ControllerSettings);
+
+      uint32_t timeout = ControllerSettings->MustCheckReply
+                     ? ControllerSettings->getSuggestedTimeout(Settings.Protocol[MQTT_task_data.ControllerIndex])
+                     : ControllerSettings->ClientTimeout;
+
+      MQTT_task_data.status          = MQTT_connect_status_e::Connecting;
+      MQTT_task_data.logged          = false;
+      MQTT_task_data.ControllerIndex = controller_idx;
+      MQTT_task_data.startTime       = millis();
+      MQTT_task_data.loopTime        = millis();
+      MQTT_task_data.timeout         = timeout;
+
+      xTaskCreatePinnedToCore(
+        MQTT_execute_connect_task,   // Function that should be called
+        "MQTTClient.connect()",      // Name of the task (for debugging)
+        8192,                        // Stack size (bytes)
+        &MQTT_task_data,             // Parameter to pass
+        1,                           // Task priority
+        &MQTT_task_data.taskHandle,  // Task handle
+        xPortGetCoreID()             // Core you want to run the task on (0 or 1)
+        );
+    } else {
+      MQTT_task_data.status = MQTT_connect_status_e::Failure;
+    }
   }
   return false;
 }
