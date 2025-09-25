@@ -135,9 +135,9 @@ class SettingsStruct_tmpl
   bool UseMaxTXpowerForSending() const { return VariousBits_1.UseMaxTXpowerForSending; }
   void UseMaxTXpowerForSending(bool value) { VariousBits_1.UseMaxTXpowerForSending = value; }
 
-  // When set you can use the Sensor in AP-Mode without beeing forced to /setup
-  bool ApDontForceSetup() const { return VariousBits_1.ApDontForceSetup; }
-  void ApDontForceSetup(bool value) { VariousBits_1.ApDontForceSetup = value; }
+  // When set, user will be redirected to /setup or root page when connecting to this AP
+  bool ApCaptivePortal() const { return !VariousBits_1.ApCaptivePortal; }
+  void ApCaptivePortal(bool value) { VariousBits_1.ApCaptivePortal = !value; }
 
   // When outputting JSON bools use quoted values (on, backward compatible) or use official JSON true/false unquoted
   bool JSONBoolWithoutQuotes() const { return VariousBits_1.JSONBoolWithoutQuotes; }
@@ -583,7 +583,7 @@ public:
       uint32_t UseESPEasyNow                : 1;  // Bit 11
       uint32_t IncludeHiddenSSID            : 1;  // Bit 12
       uint32_t UseMaxTXpowerForSending      : 1;  // Bit 13
-      uint32_t ApDontForceSetup             : 1;  // Bit 14
+      uint32_t ApCaptivePortal              : 1;  // Bit 14  Inverted
       uint32_t unused_15                    : 1;  // Bit 15   was used by PeriodicalScanWiFi
       uint32_t JSONBoolWithoutQuotes        : 1;  // Bit 16
       uint32_t DoNotStartAP                 : 1;  // Bit 17
@@ -645,7 +645,7 @@ public:
   int8_t        SPI_SCLK_pin = -1;
   int8_t        SPI_MISO_pin = -1;
   int8_t        SPI_MOSI_pin = -1;
-  uint8_t       ForceESPEasyNOWchannel = 0;
+  uint8_t       WiFiAP_channel = 0;
 
   // Do not rename or move this checksum.
   // Checksum calculation will work "around" this

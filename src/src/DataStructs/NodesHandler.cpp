@@ -629,8 +629,8 @@ uint8_t NodesHandler::getESPEasyNOW_channel() const
   if (active_network_medium == ESPEasy::net::NetworkMedium_t::WIFI && ESPEasy::net::NetworkConnected()) {
     return WiFi.channel();
   }
-  if (Settings.ForceESPEasyNOWchannel > 0) {
-    return Settings.ForceESPEasyNOWchannel;
+  if (Settings.WiFiAP_channel > 0) {
+    return Settings.WiFiAP_channel;
   }
   if (isEndpoint()) {
     if (active_network_medium == ESPEasy::net::NetworkMedium_t::WIFI) {

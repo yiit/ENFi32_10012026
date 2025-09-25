@@ -532,6 +532,7 @@ bool ESPEasyWiFi_t::connectSTA()
       //      WiFi.disconnect(false, true);
 # ifdef ESP32
       WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+      WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
 # endif
       delay(100);
       WiFi.begin(candidate.ssid.c_str(), key.c_str(), candidate.channel, candidate.bssid.mac);
@@ -552,6 +553,7 @@ bool ESPEasyWiFi_t::connectSTA()
       } else {
 # ifdef ESP32
         WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+        WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
 # endif
         WiFi.begin(candidate.ssid.c_str(), key.c_str());
       }

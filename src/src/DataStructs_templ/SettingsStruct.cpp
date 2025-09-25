@@ -180,12 +180,12 @@ void SettingsStruct_tmpl<N_TASKS>::UseMaxTXpowerForSending(bool value) {
 }
 
 template<unsigned int N_TASKS>
-bool SettingsStruct_tmpl<N_TASKS>::ApDontForceSetup() const {
+bool SettingsStruct_tmpl<N_TASKS>::ApCaptivePortal() const {
   return bitRead(VariousBits1, 14);
 }
 
 template<unsigned int N_TASKS>
-void SettingsStruct_tmpl<N_TASKS>::ApDontForceSetup(bool value) {
+void SettingsStruct_tmpl<N_TASKS>::ApCaptivePortal(bool value) {
   bitWrite(VariousBits1, 14, value);
 }
 
@@ -744,7 +744,7 @@ void SettingsStruct_tmpl<N_TASKS>::clearMisc() {
   #else
   UseESPEasyNow(false);
   #endif
-  ApDontForceSetup(DEFAULT_AP_DONT_FORCE_SETUP);
+  ApCaptivePortal(DEFAULT_AP_FORCE_SETUP);
   DoNotStartAP(DEFAULT_DONT_ALLOW_START_AP);
 }
 

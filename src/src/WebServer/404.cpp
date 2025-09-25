@@ -30,7 +30,7 @@ void handleNotFound() {
 
   // if Wifi setup, launch setup wizard if AP_DONT_FORCE_SETUP is not set.
   if (//WiFiEventData.wifiSetup && 
-      !Settings.ApDontForceSetup())
+      Settings.ApCaptivePortal())
   {
     web_server.send_P(200, (PGM_P)F("text/html"), (PGM_P)F("<meta HTTP-EQUIV='REFRESH' content='0; url=/setup'>"));
     return;

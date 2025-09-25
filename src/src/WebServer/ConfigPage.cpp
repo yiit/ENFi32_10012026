@@ -93,8 +93,8 @@ void handle_config() {
     // Access point password.
     copyFormPassword(F("apkey"), SecuritySettings.WifiAPKey, sizeof(SecuritySettings.WifiAPKey));
 
-    // When set you can use the Sensor in AP-Mode without being forced to /setup
-    Settings.ApDontForceSetup(isFormItemChecked(F("ApDontForceSetup")));
+    // When set, user will be redirected to /setup or root page when connecting to this AP
+    Settings.ApCaptivePortal(isFormItemChecked(F("captiveportal")));
 
     // Usually the AP will be started when no WiFi is defined, or the defined one cannot be found. This flag may prevent it.
     Settings.DoNotStartAP(isFormItemChecked(F("DoNotStartAP")));
@@ -186,8 +186,8 @@ void handle_config() {
   addFormPasswordBox(F("WPA AP Mode Key"), F("apkey"), SecuritySettings.WifiAPKey, 63);
   addFormNote(F("WPA Key must be at least 8 characters long"));
 
-  addFormCheckBox(F("Don't force /setup in AP-Mode"), F("ApDontForceSetup"), Settings.ApDontForceSetup());
-  addFormNote(F("When set you can use the Sensor in AP-Mode without being forced to /setup. /setup can still be called."));
+  addFormCheckBox(F("Force /setup in AP-Mode"), F("captiveportal"), Settings.ApCaptivePortal());
+  addFormNote(F("When set, user will be redirected to /setup or root page when connecting to this AP. /setup can still be called when disabled"));
 
   addFormCheckBox(F("Do Not Start AP"), F("DoNotStartAP"), Settings.DoNotStartAP());
   #if FEATURE_ETHERNET

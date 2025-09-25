@@ -57,7 +57,7 @@ bool doSetSTA_AP(bool sta_enable, bool ap_enable)
 # else
 
   if (ap_enable) {
-    return doSetWifiMode(sta_enable ? WIFI_AP_STA : WIFI_AP);    
+    return doSetWifiMode(sta_enable ? WIFI_AP_STA : WIFI_AP);
   }
   return doSetWifiMode(sta_enable ? WIFI_STA : WIFI_OFF);
 # endif // ifndef SOC_WIFI_SUPPORTED
@@ -77,7 +77,8 @@ bool doWiFiScanAllowed() {
 void doSetAPinternal(bool enable)
 {
   if (enable) {
-    if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_AP)) return;
+    if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_AP)) { return; }
+
     // create and store unique AP SSID/PW to prevent ESP from starting AP mode with default SSID and No password!
     // setup ssid for AP Mode when needed
     String softAPSSID = NetworkCreateRFCCompliantHostname();
@@ -85,14 +86,24 @@ void doSetAPinternal(bool enable)
     IPAddress subnet(DEFAULT_AP_SUBNET);
     # ifdef ESP32
     IPAddress dhcp_lease_start = (uint32_t)0;
-//    IPAddress dns(DEFAULT_AP_DNS);
 
-    if (!WiFi.softAPConfig(apIP, apIP, subnet, dhcp_lease_start/*, dns*/)) {
+    IPAddress dns(DEFAULT_AP_DNS);
+
+    if (Settings.ApCaptivePortal()) {
+      dns = apIP;
+    } else {
+      if (WiFi.STA.dnsIP()) {
+        dns = WiFi.STA.dnsIP();
+      }
+    }
+
+    if (!WiFi.softAPConfig(apIP, apIP, subnet, dhcp_lease_start, dns)) {
       addLog(LOG_LEVEL_ERROR, strformat(
-               ("WIFI : [AP] softAPConfig failed! IP: %s, GW: %s, SN: %s"),
+               ("WIFI : [AP] softAPConfig failed! IP: %s, GW: %s, SN: %s DNS: %s"),
                apIP.toString().c_str(),
                apIP.toString().c_str(),
-               subnet.toString().c_str())
+               subnet.toString().c_str(),
+               dns.toString().c_str())
              );
     }
     WiFi.AP.bandwidth(WIFI_BW_HT20);
@@ -111,6 +122,10 @@ void doSetAPinternal(bool enable)
 
     int channel = 1;
 
+    if (Settings.WiFiAP_channel) {
+      channel = Settings.WiFiAP_channel;
+    }
+
     if (WifiIsSTA(WiFi.getMode()) && WiFiConnected()) {
       channel = WiFi.channel();
     }
@@ -119,7 +134,8 @@ void doSetAPinternal(bool enable)
 
     if (WiFi.softAP(softAPSSID.c_str(), pwd.c_str(), channel)) {
       auto data = getWiFi_AP_NWPluginData_static_runtime();
-      if (data) data->mark_start();
+
+      if (data) { data->mark_start(); }
 
       if (loglevelActiveFor(LOG_LEVEL_INFO)) {
         addLogMove(LOG_LEVEL_INFO, strformat(
@@ -136,31 +152,36 @@ void doSetAPinternal(bool enable)
                      formatIP(apIP).c_str()));
       }
     }
-    # ifdef ESP32
-    #  if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 2)
 
-    if (WiFi.AP.enableDhcpCaptivePortal()) {
-      addLog(LOG_LEVEL_INFO, F("WIFI : AP Captive Portal enabled"));
-    }
-    else {
-      addLog(LOG_LEVEL_ERROR, F("WIFI : Failed to enable AP Captive Portal"));
-    }
-    #  endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 2)
+    if (Settings.ApCaptivePortal()) {
+# ifdef ESP32
+#  if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 2)
 
-# if FEATURE_DNS_SERVER
-    if (!dnsServerActive) {
-      dnsServerActive = true;
-      dnsServer.start();
-    }
-#endif
-#else
-# if FEATURE_DNS_SERVER
-    if (!dnsServerActive) {
-      dnsServerActive = true;
-      dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
-    }
-#endif
+      if (WiFi.AP.enableDhcpCaptivePortal()) {
+        addLog(LOG_LEVEL_INFO, F("WIFI : AP Captive Portal enabled"));
+      }
+      else {
+        addLog(LOG_LEVEL_ERROR, F("WIFI : Failed to enable AP Captive Portal"));
+      }
+#  endif // if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 4, 2)
+
+#  if FEATURE_DNS_SERVER
+
+      if (!dnsServerActive) {
+        dnsServerActive = true;
+        dnsServer.start();
+      }
+#  endif // if FEATURE_DNS_SERVER
+# else // ifdef ESP32
+#  if FEATURE_DNS_SERVER
+
+      if (!dnsServerActive) {
+        dnsServerActive = true;
+        dnsServer.start(DNS_PORT, "*", WiFi.softAPIP());
+      }
+#  endif // if FEATURE_DNS_SERVER
 # endif // ifdef ESP32
+    }
   } else {
     # if FEATURE_DNS_SERVER
 
@@ -170,7 +191,8 @@ void doSetAPinternal(bool enable)
     }
     # endif // if FEATURE_DNS_SERVER
     auto data = getWiFi_AP_NWPluginData_static_runtime();
-    if (data) data->mark_stop();
+
+    if (data) { data->mark_stop(); }
 
     doSetAP(false);
   }
@@ -242,12 +264,12 @@ void doSetWiFiTXpower(float dBm, float rssi) {
 
   doSetWiFiTXpower(dBm);
 
-//  if (WiFiEventData.wifi_TX_pwr < dBm) {
-    // Will increase the TX power, give power supply of the unit some rest
-//    delay(1);
-  //}
+  //  if (WiFiEventData.wifi_TX_pwr < dBm) {
+  // Will increase the TX power, give power supply of the unit some rest
+  //    delay(1);
+  // }
 
-//  WiFiEventData.wifi_TX_pwr = dBm;
+  //  WiFiEventData.wifi_TX_pwr = dBm;
 
   delay(0);
 

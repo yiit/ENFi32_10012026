@@ -213,8 +213,10 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
       // Access point password.
       copyFormPassword(F("apkey"), SecuritySettings.WifiAPKey, sizeof(SecuritySettings.WifiAPKey));
 
-      // When set you can use the Sensor in AP-Mode without being forced to /setup
-      Settings.ApDontForceSetup(isFormItemChecked(F("ApDontForceSetup")));
+      Settings.WiFiAP_channel = getFormItemInt(F("apchannel"));
+
+      // When set, user will be redirected to /setup or root page when connecting to this AP
+      Settings.ApCaptivePortal(isFormItemChecked(F("captiveportal")));
 
       // Usually the AP will be started when no WiFi is defined, or the defined one cannot be found. This flag may prevent it.
       Settings.DoNotStartAP(isFormItemChecked(F("DoNotStartAP")));
@@ -232,8 +234,39 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
       addFormPasswordBox(F("WPA AP Mode Key"), F("apkey"), SecuritySettings.WifiAPKey, 63);
       addFormNote(F("WPA Key must be at least 8 characters long"));
 
-      addFormCheckBox(F("Don't force /setup in AP-Mode"), F("ApDontForceSetup"), Settings.ApDontForceSetup());
-      addFormNote(F("When set you can use the Sensor in AP-Mode without being forced to /setup. /setup can still be called."));
+    
+      {
+# if CONFIG_SOC_WIFI_SUPPORT_5G
+
+        // See wifi_5g_channel_bit_t for all supported channels
+        const int wifiChannels[] =
+        { 1, 2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12, 13, 14   // 2.4 GHz
+          ,  36,  40,  44,  48                                              // 5 GHz U-NII-1
+          ,  52,  56,  60,  64,  68                                         // 5 GHz U-NII-2A
+          // ,72, 76, 80, 84, 88 /* , 92 */                                 // 5 GHz U-NII-2B
+          , /* 96,*/  100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140 // 5 GHz U-NII-2C
+          ,  144                                                            // 5 GHz U-NII-2C/3
+          ,  149, 153, 157, 161, 165                                        // 5 GHz U-NII-3
+          ,  169                                                            // 5 GHz U-NII-3/4
+          ,  173, 177                                                       // 5 GHz U-NII-4
+        };
+        constexpr int nrwifiChannels = NR_ELEMENTS(wifiChannels);
+        const FormSelectorOptions selector(
+          nrwifiChannels,
+          wifiChannels);
+        selector.addFormSelector(
+          F("Wifi AP channel"), F("apchannel"),
+          Settings.WiFiAP_channel);
+# else
+        addFormNumericBox(F("Wifi AP channel"), F("apchannel"), Settings.WiFiAP_channel, 1, 14);
+# endif // if CONFIG_SOC_WIFI_SUPPORT_5G
+
+        addFormNote(F("WiFi channel to be used when only WiFi AP is active"));
+      }
+
+
+      addFormCheckBox(F("Force /setup in AP-Mode"), F("captiveportal"), Settings.ApCaptivePortal());
+      addFormNote(F("When set, user will be redirected to /setup or root page when connecting to this AP. /setup can still be called when disabled."));
 
       addFormCheckBox(F("Do Not Start AP"), F("DoNotStartAP"), Settings.DoNotStartAP());
   # if FEATURE_ETHERNET
@@ -243,6 +276,7 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
   # endif // if FEATURE_ETHERNET
   # ifdef ESP32
       addFormCheckBox(F("Enable NAPT"), F("napt"), Settings.WiFi_AP_enable_NAPT());
+      addFormNote(F("NAPT will have no effect when 'force /setup' is enabled"));
   # endif
 
       break;
