@@ -2648,11 +2648,6 @@ String getPartitionTable(uint8_t pType, const String& itemSep, const String& lin
 #if FEATURE_DOWNLOAD
 String downloadFileType(const String& url, const String& user, const String& pass, FileType::Enum filetype, unsigned int filenr)
 {
-  if (!getDownloadFiletypeChecked(filetype, filenr)) {
-    // Not selected, so not downloaded
-    return F("Not Allowed");
-  }
-
   String filename = getFileName(filetype, filenr);
   String fullUrl  = joinUrlFilename(url, filename);
   String error;
