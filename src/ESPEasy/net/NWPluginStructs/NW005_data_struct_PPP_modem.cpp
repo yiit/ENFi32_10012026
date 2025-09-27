@@ -974,7 +974,7 @@ bool NW005_data_struct_PPP_modem::initPluginStats()
 
 bool NW005_data_struct_PPP_modem::record_stats()
 {
-  if (_plugin_stats_array != nullptr) {
+  if (_plugin_stats_array != nullptr && _modem_task_data.modem_initialized) {
     EventStruct tmpEvent;
     size_t valueCount{};
     const int rssi = doGetRSSI();
