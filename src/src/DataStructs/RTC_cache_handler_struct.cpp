@@ -76,7 +76,7 @@ bool RTC_cache_handler_struct::peekDataAvailable() const {
   if (_peekfilenr == RTC_cache.writeFileNr) {
     if (fw) {
       constexpr size_t errorcode = (size_t)-1;
-      size_t pos = fp.position();
+      size_t pos = fw.position();
       if (pos == errorcode) {
         pos = 0;
       }
