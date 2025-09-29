@@ -45,12 +45,13 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_DEVICE_ADD:
     {
       auto& dev = Device[++deviceCount];
-      dev.Number         = PLUGIN_ID_146;
-      dev.Type           = DEVICE_TYPE_DUMMY;
-      dev.VType          = Sensor_VType::SENSOR_TYPE_DUAL;
-      dev.ValueCount     = 2;
-      dev.SendDataOption = true;
-      dev.OutputDataType = Output_Data_type_t::Default;
+      dev.Number            = PLUGIN_ID_146;
+      dev.Type              = DEVICE_TYPE_DUMMY;
+      dev.VType             = Sensor_VType::SENSOR_TYPE_DUAL;
+      dev.ValueCount        = 2;
+      dev.SendDataOption    = true;
+      dev.OutputDataType    = Output_Data_type_t::Default;
+      dev.HideDerivedValues = true;
       break;
     }
 
@@ -116,6 +117,12 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
       break;
     }
 
+    case PLUGIN_EXIT:
+    {
+      P146_data_struct::flush();
+      break;
+    }
+
     case PLUGIN_READ:
     {
       if (ControllerCache.peekDataAvailable()) {
@@ -132,10 +139,20 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
               P146_data->prepareCSVInBulk(event->TaskIndex, P146_GET_JOIN_TIMESTAMP, P146_GET_ONLY_SET_TASKS, separator);
             }
           }
-        } else {
+        } else if (P146_GET_SEND_VIA_ORIG_TASK || P146_GET_SEND_VIA_EVENT) {
           // Do not set the "success" or else the task values of this Cache reader task will be sent to the same controller too.
 
-          if (P146_data_struct::sendViaOriginalTask(event->TaskIndex, P146_GET_SEND_TIMESTAMP)) {
+          bool processed = false;
+
+          if (P146_GET_SEND_VIA_ORIG_TASK && P146_data_struct::sendViaOriginalTask(event->TaskIndex, P146_GET_SEND_TIMESTAMP)) {
+            processed = true;
+          }
+
+          if (P146_GET_SEND_VIA_EVENT && P146_data_struct::sendViaEvent_AllCache(event->TaskIndex, P146_GET_SEND_TIMESTAMP)) {
+            processed = true;
+          }
+
+          if (processed) {
             int readFileNr    = 0;
             const int readPos = ControllerCache.getPeekFilePos(readFileNr);
 
@@ -216,7 +233,10 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
       addFormTextBox(F("Publish Topic"),  getPluginCustomArgName(P146_PublishTopicIndex),  strings[P146_PublishTopicIndex],  P146_Nchars);
 
 
-      //      addFormSubHeader(F("Non MQTT Output Options"));
+      addFormSubHeader(F("Non MQTT Output Options"));
+      addFormCheckBox(F("Send via Original Task"), F("origTask"),  P146_GET_SEND_VIA_ORIG_TASK);
+      addFormCheckBox(F("Send as Event"),          F("sendEvent"), P146_GET_SEND_VIA_EVENT);
+
       //      addFormCheckBox(F("Send Timestamp"), F("sendtimestamp"), P146_GET_SEND_TIMESTAMP);
 
       addTableSeparator(F("Export to CSV"), 2, 3);
@@ -245,11 +265,15 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
       html_add_button_prefix();
       addHtml(F("dumpcache?separator="));
 
-      switch (static_cast<char>(P146_SEPARATOR_CHARACTER)) {
-        case '\t': addHtml(F("Tab")); break;
-        case ',':  addHtml(F("Comma")); break;
+      switch (static_cast<char>(P146_SEPARATOR_CHARACTER))
+      {
+        case '\t': addHtml(F("Tab"));
+          break;
+        case ',':  addHtml(F("Comma"));
+          break;
         case ';':
-        default:   addHtml(F("Semicolon")); break;
+        default:   addHtml(F("Semicolon"));
+          break;
       }
 
       if (P146_GET_JOIN_TIMESTAMP) {
@@ -280,6 +304,9 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
       P146_SET_JOIN_TIMESTAMP(isFormItemChecked(F("jointimestamp")));
       P146_SET_ONLY_SET_TASKS(isFormItemChecked(F("onlysettasks")));
       P146_SEPARATOR_CHARACTER = getFormItemInt(F("separator"));
+
+      P146_SET_SEND_VIA_ORIG_TASK(isFormItemChecked(F("origTask")));
+      P146_SET_SEND_VIA_EVENT(isFormItemChecked(F("sendEvent")));
 
       String strings[P146_Nlines];
 
