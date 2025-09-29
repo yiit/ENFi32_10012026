@@ -410,6 +410,55 @@ bool P146_data_struct::sendViaOriginalTask(
   return success;
 }
 
+bool P146_data_struct::sendViaEvent_AllCache(taskIndex_t P146_TaskIndex,
+                                             bool        sendTimestamp)
+{
+  if (!Settings.UseRules) { return false; }
+
+  // Keep the current peek position, so we can reset it when we fail to deliver the data to the controller.
+  int peekFileNr        = 0;
+  const int peekReadPos =  ControllerCache.getPeekFilePos(peekFileNr);
+
+
+  C016_binary_element element{};
+
+  if (!C016_getTaskSample(element)) {
+    return false;
+  }
+
+  if (!validTaskIndex(element.TaskIndex)) {
+    return false;
+  }
+
+  const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(element.TaskIndex);
+
+  if (!validDeviceIndex(DeviceIndex)) {
+    return false;
+  }
+
+  String eventvalues;
+  reserve_special(eventvalues, 64); // Enough for most use cases, prevent lots of memory allocations.
+  eventvalues = strformat(
+    F("%d,%d,%d,%d"),
+    element.unixTime,
+    element.valueCount,
+    peekFileNr,
+    peekReadPos);
+
+  for (uint8_t varNr = 0; varNr < element.valueCount; ++varNr) {
+    eventvalues += ',';
+    uint8_t nrDecimals = 0;
+
+    if (Device[DeviceIndex].configurableDecimals()) {
+      nrDecimals = Cache.getTaskDeviceValueDecimals(element.TaskIndex, varNr);
+    }
+
+    eventvalues += element.values.getAsString(varNr, element.sensorType, nrDecimals);
+  }
+  eventQueue.add(element.TaskIndex, F("AllCache"), eventvalues);
+  return true;
+}
+
 bool P146_data_struct::setPeekFilePos(int peekFileNr, int peekReadPos)
 {
   {

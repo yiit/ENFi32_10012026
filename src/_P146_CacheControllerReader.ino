@@ -110,6 +110,16 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
       ControllerCache.setPeekFilePos(
         P146_TASKVALUE_FILENR,
         P146_TASKVALUE_FILEPOS);
+
+      int peekFileNr{};
+      int peekReadPos = ControllerCache.getPeekFilePos(peekFileNr);
+
+      if (peekReadPos >= 0) {
+        P146_SET_TASKVALUE_FILENR(peekFileNr);
+        P146_SET_TASKVALUE_FILEPOS(peekReadPos);
+      }
+
+
       success = initPluginTaskData(
         event->TaskIndex,
         new (std::nothrow) P146_data_struct(event));
@@ -204,6 +214,7 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
 
       //      addFormCheckBox(F("Send ReadPos"),          F("sendreadpos"),    P146_GET_SEND_READ_POS);
       addFormNumericBox(F("Minimal Send Interval"), F("minsendinterval"), P146_MINIMAL_SEND_INTERVAL, 0, 1000);
+      addUnit(F("ms"));
       addFormNumericBox(F("Max Message Size"),
                         F("maxmsgsize"),
                         P146_MQTT_MESSAGE_LENGTH,
@@ -305,7 +316,15 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
 
       if (equals(command, F("cachereader"))) {
         if (equals(subcommand, F("setreadpos"))) {
-          P146_data_struct::setPeekFilePos(event->Par2, event->Par3);
+          if (P146_data_struct::setPeekFilePos(event->Par2, event->Par3)) {
+            int peekFileNr{};
+            int peekReadPos = ControllerCache.getPeekFilePos(peekFileNr);
+
+            if (peekReadPos >= 0) {
+              P146_SET_TASKVALUE_FILENR(peekFileNr);
+              P146_SET_TASKVALUE_FILEPOS(peekReadPos);
+            }
+          }
           success = true;
         } else if (equals(subcommand, F("sendtaskinfo"))) {
           P146_data_struct *P146_data = static_cast<P146_data_struct *>(getPluginTaskData(event->TaskIndex));

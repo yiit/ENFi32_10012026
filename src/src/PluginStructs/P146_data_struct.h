@@ -75,6 +75,11 @@ public:
   static bool sendViaOriginalTask(taskIndex_t P146_TaskIndex,
                                   bool        sendTimestamp);
 
+  // Send as event using the following format:
+  // TaskName#AllCache,<unixTime>,<valueCount>,<cacheFileNr>,<readPosCacheFile>,<taskValue1>,...,<taskValueN>
+  static bool sendViaEvent_AllCache(taskIndex_t P146_TaskIndex,
+                                    bool        sendTimestamp);
+
   static bool setPeekFilePos(int peekFileNr,
                              int peekReadPos);
 
