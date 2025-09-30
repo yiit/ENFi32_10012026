@@ -485,13 +485,13 @@ void handle_controllers_ControllerSettingsPage(controllerIndex_t controllerindex
         addHtmlError(F("Bug in CPlugin::Function::CPLUGIN_WEBFORM_LOAD, should not append to string, use addHtml() instead"));
       }
     }
-    {
+    
 # if FEATURE_MQTT
 
-      if (proto.usesMQTT) {
-        addFormSubHeader(F("Connection Status"));
-        addRowLabel(F("MQTT Client Connected"));
-        addEnabled(MQTTclient_connected);
+    if (proto.usesMQTT && Settings.ControllerEnabled[controllerindex]) {
+      addFormSubHeader(F("Connection Status"));
+      addRowLabel(F("MQTT Client Connected"));
+      addEnabled(MQTTclient_connected);
 
         if (MQTTclient_connected) {
           auto conn_duration = MQTTclient_connected_stats.getLastOnDuration_ms();
@@ -616,9 +616,9 @@ void handle_controllers_ControllerSettingsPage(controllerIndex_t controllerindex
             #   endif // ifdef ESP32
         }
 #  endif // if FEATURE_MQTT_TLS
-      }
-# endif // if FEATURE_MQTT
     }
+# endif // if FEATURE_MQTT
+    
   }
 
   addFormSeparator(2);

@@ -663,8 +663,8 @@ public:
     uint32_t ShowUnitOfMeasureOnDevicesPage   : 1; // Bit 07  // inverted
     uint32_t WiFi_band_mode                   : 2; // Bit 08 & 09
     uint32_t WiFi_AP_enable_NAPT              : 1; // Bit 10  // inverted
-    uint32_t unused_11                        : 1; // Bit 11
-    uint32_t unused_12                        : 1; // Bit 12
+    uint32_t RestoreUserVarsFromEEPROMOnColdBoot : 1; // Bit 11
+    uint32_t RestoreUserVarsFromEEPROMOnWarmBoot : 1; // Bit 12
     uint32_t MQTTConnectInBackground          : 1; // Bit 13  // inverted
     uint32_t unused_14                        : 1; // Bit 14
     uint32_t unused_15                        : 1; // Bit 15

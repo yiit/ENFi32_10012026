@@ -651,6 +651,7 @@ void SettingsStruct_tmpl<N_TASKS>::clearLogSettings() {
 template<unsigned int N_TASKS>
 void SettingsStruct_tmpl<N_TASKS>::clearUnitNameSettings() {
   Unit = 0;
+  appendUnitToHostname(false);
   ZERO_FILL(Name);
   UDPPort = 0;
 }
