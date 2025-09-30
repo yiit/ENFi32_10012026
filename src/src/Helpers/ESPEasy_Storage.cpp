@@ -269,8 +269,9 @@ bool tryDeleteFile(const String& fname, FileDestination_e destination) {
   if (fname.length() > 0)
   {
     #if FEATURE_RTC_CACHE_STORAGE
+    const bool cacheFile = isCacheFile(fname);
 
-    if (isCacheFile(fname)) {
+    if (cacheFile) {
       ControllerCache.closeOpenFiles();
     }
     #endif // if FEATURE_RTC_CACHE_STORAGE
@@ -291,6 +292,11 @@ bool tryDeleteFile(const String& fname, FileDestination_e destination) {
       res = SD.remove(patch_fname(fname));
     }
     #endif // if FEATURE_SD
+#ifndef BUILD_NO_DEBUG
+    if (!res) {
+      addLog(LOG_LEVEL_ERROR, concat(F("Del  : Could not delete "), patch_fname(fname)));
+    }
+#endif
 
     // A call to GarbageCollection() will at most erase a single block. (e.g. 8k block size)
     // A deleted file may have covered more than a single block, so try to clear multiple blocks.
@@ -299,6 +305,14 @@ bool tryDeleteFile(const String& fname, FileDestination_e destination) {
     while (retries > 0 && GarbageCollection()) {
       --retries;
     }
+#if FEATURE_RTC_CACHE_STORAGE
+/*
+    if (cacheFile) {
+      ControllerCache.updateRTC_filenameCounters();
+      // FIXME TD-er: Tell Cache Reader a file has been deleted
+    }
+*/
+#endif
     return res;
   }
   return false;
@@ -2700,6 +2714,48 @@ String downloadFileType(const String& url, const String& user, const String& pas
   }
   return error;
 }
+
+# if defined(ESP8266)
+void deleteBakFiles()
+{
+  fs::Dir dir = ESPEASY_FS.openDir("");
+
+  while (dir.next())
+  {
+    const String fname = dir.fileName();
+    if (fname.endsWith(F("_bak"))) {
+      if (tryDeleteFile(fname)) {
+        delay(1);
+      }
+    }
+  }
+}
+#endif
+#ifdef ESP32
+void deleteBakFiles()
+{
+  fs::File root = ESPEASY_FS.open("/");
+  fs::File file = root.openNextFile();
+
+  while (file)
+  {
+    if (!file.isDirectory()) {
+      const String fname = file.name();
+      // Need to open next file or else we cannot delete the file
+      file = root.openNextFile();
+
+      if (fname.endsWith(F("_bak"))) {
+        addLog(LOG_LEVEL_INFO, concat(F("Del  : Delete _bak file: "), fname));
+        if (tryDeleteFile(fname)) {
+          delay(1);
+        }
+      }
+    } else {
+      file = root.openNextFile();
+    }
+  }
+}
+#endif
 
 #endif // if FEATURE_DOWNLOAD
 

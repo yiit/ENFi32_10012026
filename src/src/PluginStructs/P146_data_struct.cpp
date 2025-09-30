@@ -434,11 +434,6 @@ bool P146_data_struct::sendViaEvent_AllCache(taskIndex_t P146_TaskIndex,
 {
   if (!Settings.UseRules) { return false; }
 
-  // Keep the current peek position, so we can reset it when we fail to deliver the data to the controller.
-  int peekFileNr        = 0;
-  const int peekReadPos =  ControllerCache.getPeekFilePos(peekFileNr);
-
-
   C016_binary_element element{};
 
   if (!C016_getTaskSample(element)) {
@@ -454,6 +449,10 @@ bool P146_data_struct::sendViaEvent_AllCache(taskIndex_t P146_TaskIndex,
   if (!validDeviceIndex(DeviceIndex)) {
     return false;
   }
+
+  // Need to send the 'next' peek file position info, since it will reflect the last completed position.
+  int peekFileNr        = 0;
+  const int peekReadPos =  ControllerCache.getPeekFilePos(peekFileNr);
 
   String eventvalues;
   reserve_special(eventvalues, 64); // Enough for most use cases, prevent lots of memory allocations.

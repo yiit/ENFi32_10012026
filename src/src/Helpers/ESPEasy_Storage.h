@@ -399,6 +399,8 @@ bool validateUploadConfigDat(const uint8_t *buf);
 #if FEATURE_DOWNLOAD
 String downloadFileType(const String& url, const String& user, const String& pass, FileType::Enum filetype, unsigned int filenr = 0);
 
+void deleteBakFiles();
+
 #endif // if FEATURE_DOWNLOAD
 #if FEATURE_CUSTOM_PROVISIONING
 // Download file type based on settings stored in provisioning.dat file.
