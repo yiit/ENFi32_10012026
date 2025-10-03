@@ -828,7 +828,9 @@ void handle_devicess_ShowAllTasksTable(uint8_t page)
       html_TD();
 
       if (validDeviceIndex(DeviceIndex)) {
+        #if FEATURE_STRING_VARIABLES
         const DeviceStruct& device = Device[DeviceIndex];
+        #endif // #if FEATURE_STRING_VARIABLES
         String customValuesString;
         const bool customValues = PluginCall(PLUGIN_WEBFORM_SHOW_VALUES, &TempEvent, customValuesString);
 
