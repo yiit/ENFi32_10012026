@@ -54,69 +54,88 @@ void handle_log_JSON() {
     KeyValueWriter_JSON top(true);
     {
       String webrequest = webArg(F("view"));
-      KeyValueWriter_JSON mainWriter(F("Log"), &top);
 
-      if (equals(webrequest, F("legend"))) {
-        KeyValueWriter_JSON legendWriter(F("Legend"), &mainWriter);
-        legendWriter.setIsArray();
+      auto mainWriter = top.createChild(F("Log"));
 
-        for (uint8_t i = 0; i < LOG_LEVEL_NRELEMENTS; ++i) {
-          KeyValueWriter_JSON loglevelWriter(&legendWriter);
-          int loglevel;
-          loglevelWriter.write({ F("label"), getLogLevelDisplayStringFromIndex(i, loglevel) });
-          loglevelWriter.write({ F("loglevel"), loglevel });
-        }
-      }
-      unsigned long firstTimeStamp = 0;
-      unsigned long lastTimeStamp  = 0;
-      int nrEntries                = 0;
+      if (mainWriter) {
 
-      {
-        KeyValueWriter_JSON entriesWriter(F("Entries"), &mainWriter);
-        entriesWriter.setIsArray();
-        bool logLinesAvailable = true;
+        if (equals(webrequest, F("legend"))) {
 
-        while (logLinesAvailable) {
-          String  message;
-          uint8_t loglevel;
+          auto legendWriter = mainWriter->createChild(F("Legend"));
 
-          if (Logging.getNext(logLinesAvailable, lastTimeStamp, message, loglevel)) {
-            KeyValueWriter_JSON logWriter(&entriesWriter);
-            logWriter.write({ F("timestamp"), lastTimeStamp });
-            logWriter.write({ F("text"),      std::move(message) });
-            logWriter.write({ F("level"), loglevel });
+          if (legendWriter) {
+            legendWriter->setIsArray();
 
-            if (nrEntries == 0) {
-              firstTimeStamp = lastTimeStamp;
+            for (uint8_t i = 0; i < LOG_LEVEL_NRELEMENTS; ++i) {
+              auto loglevelWriter = legendWriter->createChild();
+
+              if (loglevelWriter) {
+
+
+                int loglevel;
+                loglevelWriter->write({ F("label"), getLogLevelDisplayStringFromIndex(i, loglevel) });
+                loglevelWriter->write({ F("loglevel"), loglevel });
+              }
             }
-            ++nrEntries;
           }
-
-          // Do we need to do something here and maybe limit number of lines at once?
         }
-      }
-      long logTimeSpan       = timeDiff(firstTimeStamp, lastTimeStamp);
-      long refreshSuggestion = 1000;
-      long newOptimum        = 1000;
+        unsigned long firstTimeStamp = 0;
+        unsigned long lastTimeStamp  = 0;
+        int nrEntries                = 0;
 
-      if ((nrEntries > 2) && (logTimeSpan > 1)) {
-        // May need to lower the TTL for refresh when time needed
-        // to fill half the log is lower than current TTL
-        newOptimum = logTimeSpan * (LOG_STRUCT_MESSAGE_LINES / 2);
-        newOptimum = newOptimum / (nrEntries - 1);
-      }
+        {
+          auto entriesWriter = mainWriter->createChild(F("Entries"));
 
-      if (newOptimum < refreshSuggestion) { refreshSuggestion = newOptimum; }
+          if (entriesWriter) {
+            entriesWriter->setIsArray();
+            bool logLinesAvailable = true;
 
-      if (refreshSuggestion < 100) {
-        // Reload times no lower than 100 msec.
-        refreshSuggestion = 100;
+            while (logLinesAvailable) {
+              String  message;
+              uint8_t loglevel;
+
+              if (Logging.getNext(logLinesAvailable, lastTimeStamp, message, loglevel)) {
+                auto logWriter = entriesWriter->createChild();
+
+                if (logWriter) {
+                  logWriter->write({ F("timestamp"), lastTimeStamp });
+                  logWriter->write({ F("text"),      std::move(message) });
+                  logWriter->write({ F("level"), loglevel });
+
+                  if (nrEntries == 0) {
+                    firstTimeStamp = lastTimeStamp;
+                  }
+                  ++nrEntries;
+                }
+
+                // Do we need to do something here and maybe limit number of lines at once?
+              }
+            }
+          }
+        }
+        long logTimeSpan       = timeDiff(firstTimeStamp, lastTimeStamp);
+        long refreshSuggestion = 1000;
+        long newOptimum        = 1000;
+
+        if ((nrEntries > 2) && (logTimeSpan > 1)) {
+          // May need to lower the TTL for refresh when time needed
+          // to fill half the log is lower than current TTL
+          newOptimum = logTimeSpan * (LOG_STRUCT_MESSAGE_LINES / 2);
+          newOptimum = newOptimum / (nrEntries - 1);
+        }
+
+        if (newOptimum < refreshSuggestion) { refreshSuggestion = newOptimum; }
+
+        if (refreshSuggestion < 100) {
+          // Reload times no lower than 100 msec.
+          refreshSuggestion = 100;
+        }
+        mainWriter->write({ F("TTL"),                 refreshSuggestion });
+        mainWriter->write({ F("timeHalfBuffer"),      newOptimum });
+        mainWriter->write({ F("nrEntries"),           nrEntries });
+        mainWriter->write({ F("SettingsWebLogLevel"), Settings.WebLogLevel });
+        mainWriter->write({ F("logTimeSpan"), logTimeSpan });
       }
-      mainWriter.write({ F("TTL"),                 refreshSuggestion });
-      mainWriter.write({ F("timeHalfBuffer"),      newOptimum });
-      mainWriter.write({ F("nrEntries"),           nrEntries });
-      mainWriter.write({ F("SettingsWebLogLevel"), Settings.WebLogLevel });
-      mainWriter.write({ F("logTimeSpan"), logTimeSpan });
     }
   }
   TXBuffer.endStream();

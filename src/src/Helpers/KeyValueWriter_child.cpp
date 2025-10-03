@@ -38,3 +38,40 @@ Sp_KeyValueWriter KeyValueWriter::createChild(const String& header)
   }
   return nullptr;
 }
+
+
+Sp_KeyValueWriter KeyValueWriter::createNew()
+{
+  switch (_writerType)
+  {
+    case KEYVALUEWRITER_BASE:
+      break;
+    case KEYVALUEWRITER_JSON:
+    {
+      return std::make_shared<KeyValueWriter_JSON>();
+    }
+    case KEYVALUEWRITER_WEBFORM:
+    {
+      return std::make_shared<KeyValueWriter_WebForm>();
+    }
+  }
+  return nullptr;
+}
+
+Sp_KeyValueWriter KeyValueWriter::createNew(const String& header)
+{
+  switch (_writerType)
+  {
+    case KEYVALUEWRITER_BASE:
+      break;
+    case KEYVALUEWRITER_JSON:
+    {
+      return std::make_shared<KeyValueWriter_JSON>(header);
+    }
+    case KEYVALUEWRITER_WEBFORM:
+    {
+      return std::make_shared<KeyValueWriter_WebForm>(header);
+    }
+  }
+  return nullptr;
+}

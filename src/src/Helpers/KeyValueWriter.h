@@ -179,8 +179,14 @@ public:
 
   virtual void indent() const {}
 
+  // Create writer of the same derived type, with this set as parent
   Sp_KeyValueWriter createChild();
   Sp_KeyValueWriter createChild(const String& header);
+
+  // Create new writer of the same derived type, without parent
+  Sp_KeyValueWriter createNew();
+  Sp_KeyValueWriter createNew(const String& header);
+
 
 protected:
 

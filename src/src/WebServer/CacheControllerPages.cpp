@@ -94,61 +94,72 @@ void handle_cache_json() {
 
   TXBuffer.startJsonStream();
   {
-    KeyValueWriter_JSON writer(true);
+    KeyValueWriter_JSON mainLevelWriter(true);
     {
-      KeyValueWriter_JSON columnWriter(F("columns"), &writer);
-      columnWriter.setIsArray();
+      auto writer = mainLevelWriter.createChild(F("columns"));
 
-      //     addHtml(F("UNIX timestamp;contr. idx;sensortype;taskindex;value count"));
-      columnWriter.write({ EMPTY_STRING, F("UNIX timestamp") });
-      columnWriter.write({ EMPTY_STRING, F("UTC timestamp") });
-      columnWriter.write({ EMPTY_STRING, F("task index") });
+      if (writer) {
 
-      if (hasArg(F("pluginID"))) {
-        columnWriter.write({ EMPTY_STRING, F("plugin ID") });
-      }
+        writer->setIsArray();
 
-      for (taskIndex_t i = 0; i < TASKS_MAX; ++i) {
-        for (int j = 0; j < VARS_PER_TASK; ++j) {
-          columnWriter.write({ EMPTY_STRING, strformat(
-                                 F("%s#%s"),
-                                 getTaskDeviceName(i).c_str(),
-                                 getTaskValueName(i, j).c_str())});
+        //     addHtml(F("UNIX timestamp;contr. idx;sensortype;taskindex;value count"));
+        writer->write({ EMPTY_STRING, F("UNIX timestamp") });
+        writer->write({ EMPTY_STRING, F("UTC timestamp") });
+        writer->write({ EMPTY_STRING, F("task index") });
+
+        if (hasArg(F("pluginID"))) {
+          writer->write({ EMPTY_STRING, F("plugin ID") });
+        }
+
+        for (taskIndex_t i = 0; i < TASKS_MAX; ++i) {
+          for (int j = 0; j < VARS_PER_TASK; ++j) {
+            writer->write({ EMPTY_STRING, strformat(
+                              F("%s#%s"),
+                              getTaskDeviceName(i).c_str(),
+                              getTaskValueName(i, j).c_str()) });
+          }
         }
       }
     }
     int fileCount = 0;
     {
-      KeyValueWriter_JSON filesWriter(F("files"), &writer);
-      filesWriter.setIsArray();
-      bool islast = false;
-      int  filenr = 0;
+      auto writer = mainLevelWriter.createChild(F("files"));
 
-      while (!islast) {
-        const String currentFile = C016_getCacheFileName(filenr, islast);
-        ++filenr;
+      if (writer) {
+        writer->setIsArray();
+        bool islast = false;
+        int  filenr = 0;
 
-        if (currentFile.length() > 0) {
-          ++fileCount;
-          filesWriter.write({ EMPTY_STRING, currentFile });
+        while (!islast) {
+          const String currentFile = C016_getCacheFileName(filenr, islast);
+          ++filenr;
+
+          if (currentFile.length() > 0) {
+            ++fileCount;
+            writer->write({ EMPTY_STRING, currentFile });
+          }
         }
       }
     }
     {
-      KeyValueWriter_JSON pluginIDWriter(F("pluginID"), &writer);
-      pluginIDWriter.setIsArray();
+      auto writer = mainLevelWriter.createChild(F("pluginID"));
 
-      for (taskIndex_t taskIndex = 0; validTaskIndex(taskIndex); ++taskIndex) {
-        pluginIDWriter.write({ EMPTY_STRING, getPluginID_from_TaskIndex(taskIndex).value });
+      if (writer) {
+        writer->setIsArray();
+
+        for (taskIndex_t taskIndex = 0; validTaskIndex(taskIndex); ++taskIndex) {
+          writer->write({ EMPTY_STRING, getPluginID_from_TaskIndex(taskIndex).value });
+        }
       }
     }
-    writer.write({ F("separator"), F(";") });
-    writer.write({ F("nrfiles"), fileCount });
+    mainLevelWriter.write({ F("separator"), F(";") });
+    mainLevelWriter.write({ F("nrfiles"), fileCount });
   }
   TXBuffer.endStream();
 }
 
-void handle_cache_csv() { if (!isLoggedIn()) { return; }
+void handle_cache_csv() { 
+  if (!isLoggedIn()) { return; }
 }
 
 #endif // ifdef USES_C016

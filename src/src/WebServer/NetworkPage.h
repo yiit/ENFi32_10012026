@@ -40,9 +40,9 @@ void handle_networks_ShowAllNetworksTable();
 void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkindex);
 
 #ifdef ESP32
-bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter& writer);
+bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer);
 
-bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter& writer);
+bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer);
 
 #endif
 

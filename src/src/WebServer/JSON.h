@@ -18,7 +18,7 @@ void handle_csvval();
 // ********************************************************************************
 void handle_json();
 
-void handle_json_stream_task_value_data(KeyValueWriter_JSON* parent,
+void handle_json_stream_task_value_data(KeyValueWriter* parent,
                                         uint16_t       valueNumber,
                                         const String & valueName,
                                         uint8_t        nrDecimals,

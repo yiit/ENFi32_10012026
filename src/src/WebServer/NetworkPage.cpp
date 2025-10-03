@@ -400,11 +400,11 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
     {
       {
         KeyValueWriter_WebForm writer(F("Network Interface"));
-        write_NetworkAdapterFlags(networkindex, writer);
+        write_NetworkAdapterFlags(networkindex, &writer);
       }
       {
         KeyValueWriter_WebForm writer(F("IP Config"));
-        write_IP_config(networkindex, writer);
+        write_IP_config(networkindex, &writer);
       }
       {
         String str;
@@ -464,8 +464,9 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 
 # ifdef ESP32
 
-bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter& writer)
+bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer)
 {
+  if (writer == nullptr) return false;
   struct EventStruct TempEvent;
 
   TempEvent.NetworkIndex = networkindex;
@@ -491,7 +492,7 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
             ? std::move(str)
             : TempEvent.networkInterface->macAddress());
 
-    writer.write(kv);
+    writer->write(kv);
   }
 
   {
@@ -524,13 +525,14 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
         kv.appendValue(labels_str);
       }
     }
-    writer.write(kv);
+    writer->write(kv);
   }
   return true;
 }
 
-bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter& writer)
+bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer)
 {
+  if (writer == nullptr) return false;
   struct EventStruct TempEvent;
 
   TempEvent.NetworkIndex = networkindex;
@@ -565,7 +567,7 @@ bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter& 
     if (NWPlugin::print_IP_address(ip_types[i], TempEvent.networkInterface, str)) {
       KeyValueStruct kv(NWPlugin::toString(ip_types[i]), str.get());
       kv._value_pre = true;
-      writer.write(kv);
+      writer->write(kv);
     }
   }
   return true;
