@@ -606,7 +606,7 @@ void writeDefaultCSS(void)
 // FIXME TD-er: replace stream_xxx_json_object* into this code.
 // N.B. handling of numerical values differs (string vs. no string)
 // ********************************************************************************
-
+#ifdef WEBSERVER_NEW_UI
 int8_t level     = 0;
 int8_t lastLevel = -1;
 
@@ -687,7 +687,7 @@ void json_prop(const String& name, const String& value) {
 void json_prop(LabelType::Enum label) {
   json_prop(getInternalLabel(label, '-'), getValue(label));
 }
-
+#endif
 // ********************************************************************************
 // Add a task select dropdown list
 // This allows to select a task index based on the existing tasks.
