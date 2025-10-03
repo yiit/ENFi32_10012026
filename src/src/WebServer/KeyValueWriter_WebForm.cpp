@@ -5,45 +5,39 @@
 #include "../WebServer/Markup.h"
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(bool emptyHeader)
-  : KeyValueWriter(emptyHeader)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, emptyHeader)
 {}
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(KeyValueWriter_WebForm*parent)
-  : KeyValueWriter(parent)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, parent)
 {}
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(bool emptyHeader, KeyValueWriter_WebForm*parent)
-  : KeyValueWriter(emptyHeader, parent)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, emptyHeader, parent)
 {}
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(const String& header)
-  : KeyValueWriter(header, nullptr)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, header, nullptr)
 {}
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(const __FlashStringHelper *header)
-  : KeyValueWriter(String(header), nullptr)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, String(header), nullptr)
 {}
 
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(const String& header, KeyValueWriter_WebForm*parent)
-  : KeyValueWriter(header, parent)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, header, parent)
 {}
 
 KeyValueWriter_WebForm::KeyValueWriter_WebForm(const __FlashStringHelper *header, KeyValueWriter_WebForm*parent)
-  : KeyValueWriter(String(header), parent)
+  : KeyValueWriter(KEYVALUEWRITER_WEBFORM, String(header), parent)
 {}
 
 
 KeyValueWriter_WebForm::~KeyValueWriter_WebForm()
 {}
 
-void KeyValueWriter_WebForm::setHeader(const String& header)
-{
-  _header    = header;
-  _hasHeader = true;
-}
-
-void KeyValueWriter_WebForm::write()
+void                   KeyValueWriter_WebForm::write()
 {
   if (_isEmpty) {
     if (_parent != nullptr) { _parent->write(); }

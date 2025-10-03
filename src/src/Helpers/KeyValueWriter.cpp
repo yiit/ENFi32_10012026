@@ -2,10 +2,9 @@
 
 #include "../Helpers/StringConverter_Numerical.h"
 
-
-ValueStruct::ValueStruct(const uint64_t& val, ValueType vType) : str(ull2String(val)), valueType(vType) {}
-
-ValueStruct::ValueStruct(const int64_t& val, ValueType vType) : str(ll2String(val)), valueType(vType) {}
+// ********************************************************************************
+// ValueStruct
+// ********************************************************************************
 
 ValueStruct::ValueStruct(const String& val, ValueType vType) : str(val), valueType(vType) {}
 
@@ -13,6 +12,10 @@ ValueStruct::ValueStruct(const __FlashStringHelper *val, ValueType vType) : str(
 
 ValueStruct::ValueStruct(String&& val, ValueType vType) : str(std::move(val)), valueType(vType) {}
 
+
+// ********************************************************************************
+// KeyValueStruct
+// ********************************************************************************
 
 KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key) : _key(key) {}
 
@@ -130,6 +133,10 @@ void KeyValueStruct::appendValue(ValueStruct&& value)
   _values.emplace_back(std::move(value));
   _isArray = true;
 }
+
+// ********************************************************************************
+// KeyValueWriter
+// ********************************************************************************
 
 void KeyValueWriter::clear() {}
 

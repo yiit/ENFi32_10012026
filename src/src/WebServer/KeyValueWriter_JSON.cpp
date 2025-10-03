@@ -6,32 +6,32 @@
 #include "../WebServer/HTML_wrappers.h"
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(bool emptyHeader)
-  : KeyValueWriter(emptyHeader)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, emptyHeader)
 {}
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(KeyValueWriter_JSON*parent)
-  : KeyValueWriter(parent)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, parent)
 {}
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(bool emptyHeader, KeyValueWriter_JSON*parent)
-  : KeyValueWriter(emptyHeader, parent)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, emptyHeader, parent)
 {}
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(const String& header)
-  : KeyValueWriter(header, nullptr)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, header, nullptr)
 {}
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header)
-  : KeyValueWriter(String(header), nullptr)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, String(header), nullptr)
 {}
 
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(const String& header, KeyValueWriter_JSON*parent)
-  : KeyValueWriter(header, parent)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, header, parent)
 {}
 
 KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header, KeyValueWriter_JSON*parent)
-  : KeyValueWriter(String(header), parent)
+  : KeyValueWriter(KEYVALUEWRITER_JSON, String(header), parent)
 {}
 
 KeyValueWriter_JSON::~KeyValueWriter_JSON()
@@ -49,15 +49,9 @@ KeyValueWriter_JSON::~KeyValueWriter_JSON()
   }
 }
 
-void KeyValueWriter_JSON::setHeader(const String& header)
-{
-  _header    = header;
-  _hasHeader = true;
-}
+void                KeyValueWriter_JSON::clear()                           { _isEmpty = true; }
 
-void KeyValueWriter_JSON::clear() { _isEmpty = true; }
-
-void KeyValueWriter_JSON::write()
+void                KeyValueWriter_JSON::write()
 {
   if (_isEmpty) {
     if (_parent != nullptr) { _parent->write(); }
@@ -87,6 +81,7 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
   write();
 #ifdef USE_KVW_JSON_INDENT
   indent();
+  addHtml('\t');
 #endif
 
   if (kv._key.length()) {
@@ -115,7 +110,7 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
       }
 #ifdef USE_KVW_JSON_INDENT
       indent();
-      addHtml('\t');
+      addHtml('\t', '\t');
 #endif // ifdef USE_KVW_JSON_INDENT
 
       writeValue(kv._values[i]);

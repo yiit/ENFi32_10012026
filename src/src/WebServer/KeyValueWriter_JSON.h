@@ -3,7 +3,7 @@
 #include "../Helpers/KeyValueWriter.h"
 
 #ifndef BUILD_NO_DEBUG
- #define USE_KVW_JSON_INDENT
+ # define USE_KVW_JSON_INDENT
 #endif
 
 class KeyValueWriter_JSON : public KeyValueWriter
@@ -29,13 +29,11 @@ public:
 
   virtual ~KeyValueWriter_JSON();
 
-  virtual void setHeader(const String& header);
+  virtual void        clear() override;
 
-  virtual void clear() override;
+  virtual void        write();
 
-  virtual void write();
-
-  virtual void write(const KeyValueStruct& kv);
+  virtual void        write(const KeyValueStruct& kv);
 
 private:
 

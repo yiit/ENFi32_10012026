@@ -78,179 +78,191 @@ void handle_sysinfo_json() {
   {
     KeyValueWriter_JSON mainLevelWriter(true);
     {
-      KeyValueWriter_JSON writer(F("general"), &mainLevelWriter);
 
-      writer.write({ F("unit"),       Settings.Unit });
-      writer.write({ F("time"),       node_time.getDateTimeString('-', ':', ' ') });
-      writer.write({ F("uptime"),     getExtendedValue(LabelType::UPTIME) });
-      writer.write({ F("cpu_load"),   getCPUload(), 2 });
+      auto writer = mainLevelWriter.createChild(F("general"));
+
+      if (writer) {
+
+        writer->write({ F("unit"),       Settings.Unit });
+        writer->write({ F("time"),       node_time.getDateTimeString('-', ':', ' ') });
+        writer->write({ F("uptime"),     getExtendedValue(LabelType::UPTIME) });
+        writer->write({ F("cpu_load"),   getCPUload(), 2 });
 #  if FEATURE_INTERNAL_TEMPERATURE
-      writer.write({ F("cpu_temp"),   getInternalTemperature(), 2 });
+        writer->write({ F("cpu_temp"),   getInternalTemperature(), 2 });
 #  endif
-      writer.write({ F("loop_count"), getLoopCountPerSec() });
-
+        writer->write({ F("loop_count"), getLoopCountPerSec() });
+      }
     }
     int freeMem = ESP.getFreeHeap();
     {
-      KeyValueWriter_JSON writer(F("mem"), &mainLevelWriter);
-      writer.write({ F("free"),   freeMem });
-      writer.write({ F("low_ram"),
-#  ifndef BUILD_NO_RAM_TRACKER
-                     lowestRAM
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                     0
-#  endif // ifndef BUILD_NO_RAM_TRACKER
-                   });
-      writer.write({ F("low_ram_fn"),
-#  ifndef BUILD_NO_RAM_TRACKER
-                     lowestRAMfunction
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                     0
-#  endif // ifndef BUILD_NO_RAM_TRACKER
-                   });
-      writer.write({ F("stack"),    getCurrentFreeStack() });
-      writer.write({ F("low_stack"),
-#  ifndef BUILD_NO_RAM_TRACKER
-                     lowestFreeStack
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                     0
-#  endif // ifndef BUILD_NO_RAM_TRACKER
-                   });
-      writer.write({ F("low_stack_fn"),
-#  ifndef BUILD_NO_RAM_TRACKER
-                     lowestFreeStackfunction
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                     0
-#  endif // ifndef BUILD_NO_RAM_TRACKER
-                   });
+      auto writer = mainLevelWriter.createChild(F("mem"));
 
+      if (writer) {
+        writer->write({ F("free"),   freeMem });
+        writer->write({ F("low_ram"),
+#  ifndef BUILD_NO_RAM_TRACKER
+                        lowestRAM
+#  else // ifndef BUILD_NO_RAM_TRACKER
+                        0
+#  endif // ifndef BUILD_NO_RAM_TRACKER
+                      });
+        writer->write({ F("low_ram_fn"),
+#  ifndef BUILD_NO_RAM_TRACKER
+                        lowestRAMfunction
+#  else // ifndef BUILD_NO_RAM_TRACKER
+                        0
+#  endif // ifndef BUILD_NO_RAM_TRACKER
+                      });
+        writer->write({ F("stack"),    getCurrentFreeStack() });
+        writer->write({ F("low_stack"),
+#  ifndef BUILD_NO_RAM_TRACKER
+                        lowestFreeStack
+#  else // ifndef BUILD_NO_RAM_TRACKER
+                        0
+#  endif // ifndef BUILD_NO_RAM_TRACKER
+                      });
+        writer->write({ F("low_stack_fn"),
+#  ifndef BUILD_NO_RAM_TRACKER
+                        lowestFreeStackfunction
+#  else // ifndef BUILD_NO_RAM_TRACKER
+                        0
+#  endif // ifndef BUILD_NO_RAM_TRACKER
+                      });
+      }
     }
     {
+      auto writer = mainLevelWriter.createChild(F("boot"));
 
-      KeyValueWriter_JSON writer(F("boot"), &mainLevelWriter);
-      writer.write({ F("last_cause"), getLastBootCauseString() });
-      writer.write({ F("counter"), RTC.bootCounter });
-      writer.write({ F("reset_reason"), getResetReasonString() });
-
+      if (writer) {
+        writer->write({ F("last_cause"), getLastBootCauseString() });
+        writer->write({ F("counter"), RTC.bootCounter });
+        writer->write({ F("reset_reason"), getResetReasonString() });
+      }
     }
     {
+      auto writer = mainLevelWriter.createChild(F("wifi"));
 
-      KeyValueWriter_JSON writer(F("wifi"), &mainLevelWriter);
-      writer.write({ F("type"), toString(ESPEasy::net::wifi::getConnectionProtocol()) });
-      writer.write({ F("rssi"), WiFi.RSSI() });
-      writer.write({ F("dhcp"), useStaticIP() ? LabelType::IP_CONFIG_STATIC : LabelType::IP_CONFIG_DYNAMIC });
-      writer.write({ F("ip"),   LabelType::IP_ADDRESS });
+      if (writer) {
+        writer->write({ F("type"), toString(ESPEasy::net::wifi::getConnectionProtocol()) });
+        writer->write({ F("rssi"), WiFi.RSSI() });
+        writer->write({ F("dhcp"), useStaticIP() ? LabelType::IP_CONFIG_STATIC : LabelType::IP_CONFIG_DYNAMIC });
+        writer->write({ F("ip"),   LabelType::IP_ADDRESS });
 #  if FEATURE_USE_IPV6
 
-      if (Settings.EnableIPv6()) {
-        writer.write({ F("ip6_local"),  LabelType::IP6_LOCAL });
-        writer.write({ F("ip6_global"), LabelType::IP6_GLOBAL });
-      }
+        if (Settings.EnableIPv6()) {
+          writer->write({ F("ip6_local"),  LabelType::IP6_LOCAL });
+          writer->write({ F("ip6_global"), LabelType::IP6_GLOBAL });
+        }
 #  endif // if FEATURE_USE_IPV6
 
-      writer.write({ F("subnet"),        LabelType::IP_SUBNET });
-      writer.write({ F("gw"),            LabelType::GATEWAY });
-      writer.write({ F("dns1"),          LabelType::DNS_1 });
-      writer.write({ F("dns2"),          LabelType::DNS_2 });
-      writer.write({ F("allowed_range"), ESPEasy::net::describeAllowedIPrange() });
-      writer.write({ F("sta_mac"),       LabelType::STA_MAC });
-      writer.write({ F("ap_mac"),        LabelType::AP_MAC });
-      writer.write({ F("ssid"),          LabelType::SSID });
-      writer.write({ F("bssid"),         LabelType::BSSID });
-      writer.write({ F("channel"),       LabelType::CHANNEL });
-      writer.write({ F("encryption"),    LabelType::ENCRYPTION_TYPE_STA });
-      writer.write({ F("connected"),     LabelType::CONNECTED });
-      writer.write({ F("ldr"),           LabelType::LAST_DISC_REASON_STR });
-      writer.write({ F("reconnects"),    LabelType::NUMBER_RECONNECTS });
-      writer.write({ F("ssid1"),         LabelType::WIFI_STORED_SSID1 });
-      writer.write({ F("ssid2"),         LabelType::WIFI_STORED_SSID2 });
-
+        writer->write({ F("subnet"),        LabelType::IP_SUBNET });
+        writer->write({ F("gw"),            LabelType::GATEWAY });
+        writer->write({ F("dns1"),          LabelType::DNS_1 });
+        writer->write({ F("dns2"),          LabelType::DNS_2 });
+        writer->write({ F("allowed_range"), ESPEasy::net::describeAllowedIPrange() });
+        writer->write({ F("sta_mac"),       LabelType::STA_MAC });
+        writer->write({ F("ap_mac"),        LabelType::AP_MAC });
+        writer->write({ F("ssid"),          LabelType::SSID });
+        writer->write({ F("bssid"),         LabelType::BSSID });
+        writer->write({ F("channel"),       LabelType::CHANNEL });
+        writer->write({ F("encryption"),    LabelType::ENCRYPTION_TYPE_STA });
+        writer->write({ F("connected"),     LabelType::CONNECTED });
+        writer->write({ F("ldr"),           LabelType::LAST_DISC_REASON_STR });
+        writer->write({ F("reconnects"),    LabelType::NUMBER_RECONNECTS });
+        writer->write({ F("ssid1"),         LabelType::WIFI_STORED_SSID1 });
+        writer->write({ F("ssid2"),         LabelType::WIFI_STORED_SSID2 });
+      }
     }
     {
 
 #  if FEATURE_ETHERNET
-      KeyValueWriter_JSON writer(F("ethernet"), &mainLevelWriter);
-      writer.write({ F("ethwifimode"),   LabelType::ETH_WIFI_MODE });
-      writer.write({ F("ethconnected"),  LabelType::ETH_CONNECTED });
-      writer.write({ F("ethchip"),       LabelType::ETH_CHIP });
-      writer.write({ F("ethduplex"),     LabelType::ETH_DUPLEX });
-      writer.write({ F("ethspeed"),      LabelType::ETH_SPEED });
-      writer.write({ F("ethstate"),      LabelType::ETH_STATE });
-      writer.write({ F("ethspeedstate"), LabelType::ETH_SPEED_STATE });
+      auto writer = mainLevelWriter.createChild(F("ethernet"));
+
+      if (writer) {
+        writer->write({ F("ethwifimode"),   LabelType::ETH_WIFI_MODE });
+        writer->write({ F("ethconnected"),  LabelType::ETH_CONNECTED });
+        writer->write({ F("ethchip"),       LabelType::ETH_CHIP });
+        writer->write({ F("ethduplex"),     LabelType::ETH_DUPLEX });
+        writer->write({ F("ethspeed"),      LabelType::ETH_SPEED });
+        writer->write({ F("ethstate"),      LabelType::ETH_STATE });
+        writer->write({ F("ethspeedstate"), LabelType::ETH_SPEED_STATE });
 #   if FEATURE_USE_IPV6
 
-      if (Settings.EnableIPv6()) {
-        writer.write({ F("ethipv6local"), LabelType::ETH_IP6_LOCAL });
-      }
+        if (Settings.EnableIPv6()) {
+          writer->write({ F("ethipv6local"), LabelType::ETH_IP6_LOCAL });
+        }
 #   endif // if FEATURE_USE_IPV6
-
+      }
 #  endif // if FEATURE_ETHERNET
     }
     {
+      auto writer = mainLevelWriter.createChild(F("firmware"));
 
-      KeyValueWriter_JSON writer(F("firmware"), &mainLevelWriter);
-      writer.write({ F("build"),         getSystemBuildString() });
-      writer.write({ F("notes"),         F(BUILD_NOTES) });
-      writer.write({ F("libraries"),     getSystemLibraryString() });
-      writer.write({ F("git_version"),   LabelType::GIT_BUILD });
-      writer.write({ F("plugins"),       getPluginDescriptionString() });
-      writer.write({ F("md5"),           formatToHex_array((const uint8_t *)CRCValues.compileTimeMD5, sizeof(CRCValues.compileTimeMD5)) });
-      writer.write({ F("md5_check"),     CRCValues.checkPassed() });
-      writer.write({ F("build_time"),    get_build_time() });
-      writer.write({ F("filename"),      LabelType::BINARY_FILENAME });
-      writer.write({ F("build_platform"),LabelType::BUILD_PLATFORM });
-      writer.write({ F("git_head"),      LabelType::GIT_HEAD });
+      if (writer) {
+        writer->write({ F("build"),         getSystemBuildString() });
+        writer->write({ F("notes"),         F(BUILD_NOTES) });
+        writer->write({ F("libraries"),     getSystemLibraryString() });
+        writer->write({ F("git_version"),   LabelType::GIT_BUILD });
+        writer->write({ F("plugins"),       getPluginDescriptionString() });
+        writer->write({ F("md5"),           formatToHex_array((const uint8_t *)CRCValues.compileTimeMD5, sizeof(CRCValues.compileTimeMD5)) });
+        writer->write({ F("md5_check"),     CRCValues.checkPassed() });
+        writer->write({ F("build_time"),    get_build_time() });
+        writer->write({ F("filename"),      LabelType::BINARY_FILENAME });
+        writer->write({ F("build_platform"), LabelType::BUILD_PLATFORM });
+        writer->write({ F("git_head"),      LabelType::GIT_HEAD });
 #  ifdef CONFIGURATION_CODE
-      writer.write({ F("configuration_code"), LabelType::CONFIGURATION_CODE_LBL });
+        writer->write({ F("configuration_code"), LabelType::CONFIGURATION_CODE_LBL });
 #  endif // ifdef CONFIGURATION_CODE
-
-    }
-    {
-
-      KeyValueWriter_JSON writer(F("esp"), &mainLevelWriter);
-      writer.write({ F("chip_id"),   LabelType::ESP_CHIP_ID });
-      writer.write({ F("cpu"),       LabelType::ESP_CHIP_FREQ });
-#  ifdef ESP32
-      writer.write({ F("xtal_freq"), LabelType::ESP_CHIP_XTAL_FREQ });
-      writer.write({ F("abp_freq"),  LabelType::ESP_CHIP_APB_FREQ });
-#  endif // ifdef ESP32
-      writer.write({ F("board"),     LabelType::BOARD_NAME });
-
-    }
-    {
-
-      KeyValueWriter_JSON writer(F("storage"), &mainLevelWriter);
-
-      // Set to HEX may be something like 0x1640E0.
-      // Where manufacturer is 0xE0 and device is 0x4016.
-      writer.write({ F("chip_id"), LabelType::FLASH_CHIP_ID });
-
-      if (flashChipVendorPuya()) {
-        if (puyaSupport()) {
-          writer.write({ F("vendor"), F("puya, supported") });
-        } else {
-          writer.write({ F("vendor"), F("puya, error") });
-        }
-      } else {
-        writer.write({ F("vendor"), LabelType::FLASH_CHIP_VENDOR });
       }
-      writer.write({ F("device"),      LabelType::FLASH_CHIP_MODEL });
-      writer.write({ F("real_size"),  getFlashRealSizeInBytes() / 1024 });
-      writer.write({ F("ide_size"),   ESP.getFlashChipSize() / 1024 });
 
-      // Please check what is supported for the ESP32
-      writer.write({ F("flash_speed"), LabelType::FLASH_CHIP_SPEED });
+    }
+    {
+      auto writer = mainLevelWriter.createChild(F("esp"));
 
-      writer.write({ F("mode"), getFlashChipMode() });
+      if (writer) {
+        writer->write({ F("chip_id"),   LabelType::ESP_CHIP_ID });
+        writer->write({ F("cpu"),       LabelType::ESP_CHIP_FREQ });
+#  ifdef ESP32
+        writer->write({ F("xtal_freq"), LabelType::ESP_CHIP_XTAL_FREQ });
+        writer->write({ F("abp_freq"),  LabelType::ESP_CHIP_APB_FREQ });
+#  endif // ifdef ESP32
+        writer->write({ F("board"),     LabelType::BOARD_NAME });
+      }
+    }
+    {
+      auto writer = mainLevelWriter.createChild(F("storage"));
 
-      writer.write({ F("writes"),        RTC.flashDayCounter });
-      writer.write({ F("flash_counter"), RTC.flashCounter });
-      writer.write({ F("sketch_size"),   getSketchSize() / 1024 });
-      writer.write({ F("sketch_free"),   getFreeSketchSpace() / 1024 });
+      if (writer) {
+        // Set to HEX may be something like 0x1640E0.
+        // Where manufacturer is 0xE0 and device is 0x4016.
+        writer->write({ F("chip_id"), LabelType::FLASH_CHIP_ID });
 
-      writer.write({ F("spiffs_size"),   SpiffsTotalBytes() / 1024 });
-      writer.write({ F("spiffs_free"),   SpiffsFreeSpace() / 1024 });
+        if (flashChipVendorPuya()) {
+          if (puyaSupport()) {
+            writer->write({ F("vendor"), F("puya, supported") });
+          } else {
+            writer->write({ F("vendor"), F("puya, error") });
+          }
+        } else {
+          writer->write({ F("vendor"), LabelType::FLASH_CHIP_VENDOR });
+        }
+        writer->write({ F("device"),      LabelType::FLASH_CHIP_MODEL });
+        writer->write({ F("real_size"),  getFlashRealSizeInBytes() / 1024 });
+        writer->write({ F("ide_size"),   ESP.getFlashChipSize() / 1024 });
 
+        // Please check what is supported for the ESP32
+        writer->write({ F("flash_speed"), LabelType::FLASH_CHIP_SPEED });
+
+        writer->write({ F("mode"), getFlashChipMode() });
+
+        writer->write({ F("writes"),        RTC.flashDayCounter });
+        writer->write({ F("flash_counter"), RTC.flashCounter });
+        writer->write({ F("sketch_size"),   getSketchSize() / 1024 });
+        writer->write({ F("sketch_free"),   getFreeSketchSpace() / 1024 });
+
+        writer->write({ F("spiffs_size"),   SpiffsTotalBytes() / 1024 });
+        writer->write({ F("spiffs_free"),   SpiffsFreeSpace() / 1024 });
+      }
     }
 
   }

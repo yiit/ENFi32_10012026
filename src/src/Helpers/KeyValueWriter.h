@@ -5,7 +5,11 @@
 #include "../Helpers/StringProvider.h"
 
 #include <vector>
+#include <memory>
 
+// ********************************************************************************
+// ValueStruct
+// ********************************************************************************
 struct ValueStruct
 {
   enum class ValueType {
@@ -21,10 +25,6 @@ struct ValueStruct
 
   ValueStruct() {}
 
-  explicit ValueStruct(const uint64_t& val,
-                       ValueType       vType = ValueType::Int);
-  explicit ValueStruct(const int64_t& val,
-                       ValueType      vType = ValueType::Int);
   ValueStruct(const String& val,
               ValueType     vType = ValueType::Auto);
   ValueStruct(const __FlashStringHelper *val,
@@ -38,6 +38,9 @@ struct ValueStruct
 
 };
 
+// ********************************************************************************
+// KeyValueStruct
+// ********************************************************************************
 struct KeyValueStruct
 {
 
@@ -125,19 +128,30 @@ struct KeyValueStruct
 
 };
 
+#define KEYVALUEWRITER_BASE     0
+#define KEYVALUEWRITER_JSON     1
+#define KEYVALUEWRITER_WEBFORM  2
+
+class KeyValueWriter;
+typedef std::shared_ptr<KeyValueWriter> Sp_KeyValueWriter;
+
+// ********************************************************************************
+// KeyValueWriter
+// ********************************************************************************
 class KeyValueWriter
 {
 public:
 
-  KeyValueWriter(bool emptyHeader = false) : _hasHeader(emptyHeader) {}
+  KeyValueWriter(int writerType, bool emptyHeader = false) : _writerType(writerType), _hasHeader(emptyHeader) {}
 
 protected:
 
-  KeyValueWriter(KeyValueWriter*parent) : _parent(parent) {}
+  KeyValueWriter(int writerType, KeyValueWriter*parent) : _writerType(writerType), _parent(parent) {}
 
-  KeyValueWriter(bool emptyHeader, KeyValueWriter*parent) : _parent(parent), _hasHeader(emptyHeader) {}
+  KeyValueWriter(int writerType, bool emptyHeader, KeyValueWriter*parent) : _writerType(writerType), _parent(parent),
+    _hasHeader(emptyHeader) {}
 
-  KeyValueWriter(const String& header, KeyValueWriter*parent) : _header(header), _parent(parent) {}
+  KeyValueWriter(int writerType, const String& header, KeyValueWriter*parent) : _writerType(writerType), _header(header), _parent(parent) {}
 
 public:
 
@@ -165,7 +179,12 @@ public:
 
   virtual void indent() const {}
 
+  Sp_KeyValueWriter createChild();
+  Sp_KeyValueWriter createChild(const String& header);
+
 protected:
+
+  const int _writerType = KEYVALUEWRITER_BASE;
 
   String _header;
 
@@ -179,3 +198,6 @@ protected:
 
 
 }; // class KeyValueWriter
+
+
+

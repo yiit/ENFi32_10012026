@@ -26,10 +26,8 @@ public:
 
   virtual ~KeyValueWriter_WebForm();
 
-  virtual void setHeader(const String& header);
+  virtual void           write();
 
-  virtual void write();
-
-  virtual void write(const KeyValueStruct& kv);
+  virtual void           write(const KeyValueStruct& kv);
 
 }; // class KeyValueWriter_WebForm
