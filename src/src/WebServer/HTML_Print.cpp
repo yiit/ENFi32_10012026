@@ -11,3 +11,10 @@ size_t HTML_Print::write(uint8_t c)
   }
   return 1;
 }
+
+
+size_t PrintToWebServer::write(uint8_t c)
+{
+  TXBuffer += (char)c;
+  return 1;
+}

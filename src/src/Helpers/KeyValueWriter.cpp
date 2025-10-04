@@ -138,7 +138,13 @@ void KeyValueStruct::appendValue(ValueStruct&& value)
 // KeyValueWriter
 // ********************************************************************************
 
-void KeyValueWriter::clear() {}
+void KeyValueWriter::clear() {
+  _isEmpty = true;
+
+  if (_toString) {
+    _toString->clear();
+  }
+}
 
 void KeyValueWriter::writeLabels(const LabelType::Enum labels[])
 {

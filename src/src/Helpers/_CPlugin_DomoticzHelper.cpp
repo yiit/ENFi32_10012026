@@ -12,6 +12,7 @@
 
 # include "../Helpers/Convert.h"
 # include "../Helpers/StringConverter.h"
+# include "../WebServer/KeyValueWriter_JSON.h"
 
 # include "../../ESPEasy-Globals.h"
 
@@ -214,42 +215,35 @@ bool deserializeDomoticzJson(const String& json,
 
 String serializeDomoticzJson(struct EventStruct *event)
 {
-  String json;
+  PrintToString json;
   {
-    json += '{';
-    json += to_json_object_value(F("idx"), static_cast<int>(event->idx));
-    json += ',';
-    json += to_json_object_value(F("RSSI"), mapRSSItoDomoticz());
+    KeyValueWriter_JSON writer(true, &json);
+    writer.write({ F("idx"), static_cast<int>(event->idx) });
+    writer.write({ F("RSSI"), mapRSSItoDomoticz() });
     #  if FEATURE_ADC_VCC
-    json += ',';
-    json += to_json_object_value(F("Battery"), mapVccToDomoticz());
+    writer.write({ F("Battery"), mapVccToDomoticz() });
     #  endif // if FEATURE_ADC_VCC
 
     const Sensor_VType sensorType = event->getSensorType();
 
     if (sensorType == Sensor_VType::SENSOR_TYPE_SWITCH ||
         sensorType == Sensor_VType::SENSOR_TYPE_DIMMER) {
-      json += ',';
-      json += to_json_object_value(F("command"), F("switchlight"));
-      json += ',';
-
+      writer.write({ F("command"), F("switchlight") });
+      
       const bool value_zero = essentiallyZero(UserVar[event->BaseVarIndex]);
       if (sensorType == Sensor_VType::SENSOR_TYPE_DIMMER && !value_zero)
       {
-        json += to_json_object_value(F("Set%20Level"), toString(UserVar[event->BaseVarIndex], 2));
+        writer.write({ F("Set%20Level"), UserVar[event->BaseVarIndex], 2 });
       } else {
-        json += to_json_object_value(F("switchcmd"), value_zero ? F("Off") : F("On"));
+        writer.write({ F("switchcmd"), value_zero ? F("Off") : F("On") });
       }
     } else {
-      json += ',';
-      json += to_json_object_value(F("nvalue"), 0);
-      json += ',';
-      json += to_json_object_value(F("svalue"), formatDomoticzSensorType(event), true);
+      writer.write({ F("nvalue"), F("0") });
+      writer.write({ F("svalue"), formatDomoticzSensorType(event) });
     }
-    json += '}';
   }
 
-  return json;
+  return json.getMove();
 }
 
 # endif // ifdef USES_C002

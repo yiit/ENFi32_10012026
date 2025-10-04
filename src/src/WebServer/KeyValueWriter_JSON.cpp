@@ -5,53 +5,51 @@
 
 #include "../WebServer/HTML_wrappers.h"
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(bool emptyHeader)
-  : KeyValueWriter(emptyHeader)
+KeyValueWriter_JSON::KeyValueWriter_JSON(bool emptyHeader, PrintToString *toStr)
+  : KeyValueWriter(emptyHeader, toStr)
 {}
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(KeyValueWriter_JSON*parent)
-  : KeyValueWriter(parent)
+KeyValueWriter_JSON::KeyValueWriter_JSON(KeyValueWriter_JSON*parent, PrintToString *toStr)
+  : KeyValueWriter(parent, toStr)
 {}
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(bool emptyHeader, KeyValueWriter_JSON*parent)
-  : KeyValueWriter(emptyHeader, parent)
+KeyValueWriter_JSON::KeyValueWriter_JSON(bool emptyHeader, KeyValueWriter_JSON*parent, PrintToString *toStr)
+  : KeyValueWriter(emptyHeader, parent, toStr)
 {}
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(const String& header)
-  : KeyValueWriter(header, nullptr)
+KeyValueWriter_JSON::KeyValueWriter_JSON(const String& header, PrintToString *toStr)
+  : KeyValueWriter(header, nullptr, toStr)
 {}
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header)
-  : KeyValueWriter(String(header), nullptr)
+KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header, PrintToString *toStr)
+  : KeyValueWriter(String(header), nullptr, toStr)
 {}
 
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(const String& header, KeyValueWriter_JSON*parent)
-  : KeyValueWriter(header, parent)
+KeyValueWriter_JSON::KeyValueWriter_JSON(const String& header, KeyValueWriter_JSON*parent, PrintToString *toStr)
+  : KeyValueWriter(header, parent, toStr)
 {}
 
-KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header, KeyValueWriter_JSON*parent)
-  : KeyValueWriter(String(header), parent)
+KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header, KeyValueWriter_JSON*parent, PrintToString *toStr)
+  : KeyValueWriter(String(header), parent, toStr)
 {}
 
 KeyValueWriter_JSON::~KeyValueWriter_JSON()
 {
   if (!_isEmpty) {
-    addHtml('\n');
+    getPrint().write('\n');
 
     if (_hasHeader) {
 #ifdef USE_KVW_JSON_INDENT
       indent();
 #endif
 
-      addHtml(_isArray ? ']' : '}');
+      getPrint().write(_isArray ? ']' : '}');
     }
   }
 }
 
-void                KeyValueWriter_JSON::clear()                           { _isEmpty = true; }
-
-void                KeyValueWriter_JSON::write()
+void KeyValueWriter_JSON::write()
 {
   if (_isEmpty) {
     if (_parent != nullptr) { _parent->write(); }
@@ -62,17 +60,19 @@ void                KeyValueWriter_JSON::write()
 #endif
 
       if (_header.isEmpty()) {
-        addHtml('{', '\n');
+        getPrint().write('{');
+        getPrint().write('\n');
       } else {
-        addHtml(strformat(
-                  F("\"%s\":%c\n"),
-                  _header.c_str(),
-                  _isArray ? '[' : '{'));
+        getPrint().print(strformat(
+                           F("\"%s\":%c\n"),
+                           _header.c_str(),
+                           _isArray ? '[' : '{'));
       }
     }
     _isEmpty = false;
   } else {
-    addHtml(',', '\n');
+    getPrint().write(',');
+    getPrint().write('\n');
   }
 }
 
@@ -81,13 +81,15 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
   write();
 #ifdef USE_KVW_JSON_INDENT
   indent();
-  addHtml('\t');
-#endif
+  getPrint().write('\t');
+#endif // ifdef USE_KVW_JSON_INDENT
 
   if (kv._key.length()) {
-    addHtml('"');
-    addHtml(kv._key);
-    addHtml('"', ':');
+    auto& pr = getPrint();
+    pr.write('"');
+    pr.print(kv._key);
+    pr.write('"');
+    pr.write(':');
   }
 
   const size_t nrValues = kv._values.size();
@@ -95,81 +97,82 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
   if (!kv._isArray) {
     // Either 1 value or empty value
     if (nrValues == 0) {
-      addHtml('"', '"');
+      auto& pr = getPrint();
+      pr.write('"');
+      pr.write('"');
     }
     else {
       writeValue(kv._values[0]);
     }
   } else {
     // Multiple values, so we must wrap it in []
-    addHtml('[', '\n');
+    auto& pr = getPrint();
+    pr.write('[');
+    pr.write('\n');
 
     for (size_t i = 0; i < nrValues; ++i) {
       if (i != 0) {
-        addHtml(',', '\n');
+        auto& pr = getPrint();
+        pr.write(',');
+        pr.write('\n');
       }
 #ifdef USE_KVW_JSON_INDENT
       indent();
-      addHtml('\t', '\t');
+      auto& pr = getPrint();
+      pr.write('\t');
+      pr.write('\t');
 #endif // ifdef USE_KVW_JSON_INDENT
 
       writeValue(kv._values[i]);
     }
-    addHtml(']');
+    getPrint().write(']');
   }
 }
 
 void KeyValueWriter_JSON::writeValue(const ValueStruct& val)
 {
+  auto& pr = getPrint();
+
   switch (val.valueType)
   {
     case ValueStruct::ValueType::Float:
     case ValueStruct::ValueType::Double:
     case ValueStruct::ValueType::Int:
-      addHtml(val.str);
+      pr.print(val.str);
       return;
     case ValueStruct::ValueType::Bool:
 
-      if (!Settings.JSONBoolWithoutQuotes()) { addHtml('"'); }
-      addHtml(val.str.equals("0") ? F("false") : F("true"));
+      if (!Settings.JSONBoolWithoutQuotes()) { pr.write('"'); }
+      pr.print(val.str.equals("0") ? F("false") : F("true"));
 
-      if (!Settings.JSONBoolWithoutQuotes()) { addHtml('"'); }
+      if (!Settings.JSONBoolWithoutQuotes()) { pr.write('"'); }
       return;
 
     case ValueStruct::ValueType::Auto:
     case ValueStruct::ValueType::String:
       break;
   }
-  addHtml(to_json_value(val.str));
+  pr.print(to_json_value(val.str));
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createChild()
-{
-   return std::make_shared<KeyValueWriter_JSON>(this);
-}
+Sp_KeyValueWriter KeyValueWriter_JSON::createChild() { return std::make_shared<KeyValueWriter_JSON>(this, _toString); }
 
 Sp_KeyValueWriter KeyValueWriter_JSON::createChild(const String& header)
 {
-      return std::make_shared<KeyValueWriter_JSON>(header, this);
+  return std::make_shared<KeyValueWriter_JSON>(header, this, _toString);
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createNew()
-{
-      return std::make_shared<KeyValueWriter_JSON>();
-}
+Sp_KeyValueWriter KeyValueWriter_JSON::createNew()                     { return std::make_shared<KeyValueWriter_JSON>(false, _toString); }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header)
-{
-      return std::make_shared<KeyValueWriter_JSON>(header);
-}
+Sp_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header) { return std::make_shared<KeyValueWriter_JSON>(header, _toString); }
 
 
 #ifdef USE_KVW_JSON_INDENT
 
-void KeyValueWriter_JSON::indent() const
+void KeyValueWriter_JSON::indent()
 {
   if (_parent != nullptr) {
-    addHtml('\t');
+    getPrint().write('\t');
     _parent->indent();
   }
 }

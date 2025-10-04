@@ -2,7 +2,10 @@
 
 #include "../../ESPEasy_common.h"
 
+#include "../Helpers/PrintToString.h"
 #include "../Helpers/StringProvider.h"
+
+#include "../WebServer/HTML_Print.h"
 
 #include <vector>
 #include <memory>
@@ -139,16 +142,17 @@ class KeyValueWriter
 {
 public:
 
-  KeyValueWriter(bool emptyHeader = false) :  _hasHeader(emptyHeader) {}
+  KeyValueWriter(bool emptyHeader = false, PrintToString *toStr = nullptr) : _toString(toStr),  _hasHeader(emptyHeader) {}
 
 protected:
 
-  KeyValueWriter(KeyValueWriter*parent) :  _parent(parent) {}
+  KeyValueWriter(KeyValueWriter*parent, PrintToString *toStr = nullptr) :  _toString(toStr), _parent(parent) {}
 
-  KeyValueWriter(bool emptyHeader, KeyValueWriter*parent) :  _parent(parent),
+  KeyValueWriter(bool emptyHeader, KeyValueWriter*parent, PrintToString *toStr = nullptr) :  _toString(toStr), _parent(parent),
     _hasHeader(emptyHeader) {}
 
-  KeyValueWriter(const String& header, KeyValueWriter*parent) :  _header(header), _parent(parent) {}
+  KeyValueWriter(const String& header, KeyValueWriter*parent, PrintToString *toStr = nullptr) :  _toString(toStr),  _header(header), _parent(parent)
+    {}
 
 public:
 
@@ -172,24 +176,57 @@ public:
 
   virtual int  getLevel() const;
 
-  virtual void setIsArray()   { _isArray = true; }
+  virtual void setIsArray() { _isArray = true; }
 
-  virtual void indent() const {}
+  // Only supported for JSON writer right now
+  // TODO TD-er: Change this to std::shared_ptr<PrintToString>
+  virtual void              setOutputToString(PrintToString*printToStr) { _toString = printToStr; }
+
+  virtual void              indent()                                    {}
 
   // Create writer of the same derived type, with this set as parent
-  virtual Sp_KeyValueWriter createChild() = 0;
+  virtual Sp_KeyValueWriter createChild()                     = 0;
   virtual Sp_KeyValueWriter createChild(const String& header) = 0;
 
   // Create new writer of the same derived type, without parent
-  virtual Sp_KeyValueWriter createNew() = 0;
+  virtual Sp_KeyValueWriter createNew()                     = 0;
   virtual Sp_KeyValueWriter createNew(const String& header) = 0;
 
+  const String&             get() const {
+    if (_toString == nullptr) { return EMPTY_STRING; }
+    return _toString->get();
+  }
+
+  String && getMove()
+  {
+    if (_toString == nullptr) { 
+        static String tmp;
+        return std::move(tmp); 
+    }
+    return std::move(_toString->getMove());
+  }
+
+  bool reserve(unsigned int size) { return _toString && _toString->reserve(size); }
+
+protected:
+
+  Print& getPrint() {
+    if (_toString == nullptr) { return _toWeb; }
+    return *_toString;
+  }
+
+  // TODO TD-er: Change this to std::shared_ptr<PrintToString>
+  PrintToString *_toString = nullptr;
+
+private:
+
+  PrintToWebServer _toWeb;
 
 protected:
 
   String _header;
 
-  KeyValueWriter *_parent{};
+  KeyValueWriter *_parent = nullptr;
 
   bool _hasHeader = true;
 
@@ -199,6 +236,3 @@ protected:
 
 
 }; // class KeyValueWriter
-
-
-

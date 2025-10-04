@@ -12,28 +12,33 @@ public:
 
   using KeyValueWriter::writeLabels;
 
-  KeyValueWriter_JSON(bool emptyHeader = false);
+  KeyValueWriter_JSON(bool           emptyHeader = false,
+                      PrintToString *toStr       = nullptr);
 
-  KeyValueWriter_JSON(KeyValueWriter_JSON*parent);
+  KeyValueWriter_JSON(KeyValueWriter_JSON*parent,
+                      PrintToString      *toStr = nullptr);
 
   KeyValueWriter_JSON(bool                emptyHeader,
-                      KeyValueWriter_JSON*parent);
+                      KeyValueWriter_JSON*parent,
+                      PrintToString      *toStr = nullptr);
 
-  KeyValueWriter_JSON(const String& header);
-  KeyValueWriter_JSON(const __FlashStringHelper *header);
+  KeyValueWriter_JSON(const String & header,
+                      PrintToString *toStr = nullptr);
+  KeyValueWriter_JSON(const __FlashStringHelper *header,
+                      PrintToString             *toStr = nullptr);
 
   KeyValueWriter_JSON(const String      & header,
-                      KeyValueWriter_JSON*parent);
+                      KeyValueWriter_JSON*parent,
+                      PrintToString      *toStr = nullptr);
   KeyValueWriter_JSON(const __FlashStringHelper *header,
-                      KeyValueWriter_JSON       *parent);
+                      KeyValueWriter_JSON       *parent,
+                      PrintToString             *toStr = nullptr);
 
   virtual ~KeyValueWriter_JSON();
 
-  virtual void        clear() override;
+  virtual void              write();
 
-  virtual void        write();
-
-  virtual void        write(const KeyValueStruct& kv);
+  virtual void              write(const KeyValueStruct& kv);
 
   // Create writer of the same derived type, with this set as parent
   virtual Sp_KeyValueWriter createChild();
@@ -43,7 +48,6 @@ public:
   virtual Sp_KeyValueWriter createNew();
   virtual Sp_KeyValueWriter createNew(const String& header);
 
-
 private:
 
   void writeValue(const ValueStruct& value);
@@ -52,7 +56,7 @@ private:
 
 public:
 
-  virtual void indent() const override;
+  virtual void indent() override;
 #endif // ifdef USE_KVW_JSON_INDENT
 
 
