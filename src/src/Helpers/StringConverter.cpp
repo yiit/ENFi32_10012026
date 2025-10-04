@@ -534,59 +534,6 @@ String wrapWithQuotesIfContainsParameterSeparatorChar(const String& text) {
 /*********************************************************************************************\
    Format an object value pair for use in JSON.
 \*********************************************************************************************/
-String to_json_object_value(const __FlashStringHelper * object,
-                            const __FlashStringHelper * value,
-                            bool wrapInQuotes) 
-{
-  return to_json_object_value(String(object), String(value), wrapInQuotes);
-}
-
-
-String to_json_object_value(const __FlashStringHelper * object,
-                            const String& value,
-                            bool wrapInQuotes) 
-{
-  return to_json_object_value(String(object), value, wrapInQuotes);
-}
-
-String to_json_object_value(const __FlashStringHelper * object,
-                            String&& value,
-                            bool wrapInQuotes) 
-{
-  return to_json_object_value(String(object), value, wrapInQuotes);
-}
-
-String to_json_object_value(const __FlashStringHelper * object,
-                            int value,
-                            bool wrapInQuotes)
-{
-  return to_json_object_value(String(object), value, wrapInQuotes);
-}
-
-String to_json_object_value(const String& object,
-                            int value,
-                            bool wrapInQuotes)
-{
-  if (wrapInQuotes) {
-    return strformat(
-      F("\"%s\":\"%d\""),
-      object.c_str(),
-      value);
-  }
-    
-  return strformat(
-    F("\"%s\":%d"), 
-    object.c_str(),
-    value);
-}
-
-String to_json_object_value(const String& object, const String& value, bool wrapInQuotes) {
-  return strformat(
-    F("\"%s\":%s"), 
-    object.c_str(),
-    to_json_value(value, wrapInQuotes).c_str());
-}
-
 String to_json_value(const String& value, bool wrapInQuotes) {
   if (value.isEmpty()) {
     // Empty string

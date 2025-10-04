@@ -171,30 +171,6 @@ String wrapWithQuotesIfContainsParameterSeparatorChar(const String& text);
 /*********************************************************************************************\
    Format an object value pair for use in JSON.
 \*********************************************************************************************/
-String to_json_object_value(const __FlashStringHelper * object,
-                            const __FlashStringHelper * value,
-                            bool wrapInQuotes = false);
-
-String to_json_object_value(const __FlashStringHelper * object,
-                            const String& value,
-                            bool wrapInQuotes = false);
-
-String to_json_object_value(const __FlashStringHelper * object,
-                            String&& value,
-                            bool wrapInQuotes = false);
-
-String to_json_object_value(const String& object,
-                            const String& value,
-                            bool wrapInQuotes = false);
-
-String to_json_object_value(const __FlashStringHelper * object,
-                            int value,
-                            bool wrapInQuotes = false);
-
-String to_json_object_value(const String& object,
-                            int value,
-                            bool wrapInQuotes = false);
-
 String to_json_value(const String& value,
                      bool wrapInQuotes = false);
 
