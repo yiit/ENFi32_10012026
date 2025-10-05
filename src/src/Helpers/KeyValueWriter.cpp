@@ -23,7 +23,7 @@ KeyValueStruct::KeyValueStruct(const String& key) : _key(key) {}
 
 
 KeyValueStruct::KeyValueStruct(const String         & key,
-                               const bool&            val,
+                               const bool           & val,
                                ValueStruct::ValueType vType)
   : _key(key) {
   _values.emplace_back(String(val), vType);

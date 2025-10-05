@@ -27,11 +27,11 @@ public:
 
   virtual ~KeyValueWriter_WebForm();
 
-  virtual void           write();
+  virtual void              write();
 
-  virtual void           write(const KeyValueStruct& kv);
+  virtual void              write(const KeyValueStruct& kv);
 
-    // Create writer of the same derived type, with this set as parent
+  // Create writer of the same derived type, with this set as parent
   virtual Sp_KeyValueWriter createChild();
   virtual Sp_KeyValueWriter createChild(const String& header);
 

@@ -53,7 +53,7 @@ struct KeyValueStruct
   KeyValueStruct(const String& key);
 
   KeyValueStruct(const String         & key,
-                 const bool&            val,
+                 const bool           & val,
                  ValueStruct::ValueType vType = ValueStruct::ValueType::Bool);
 
   KeyValueStruct(const String         & key,
@@ -120,18 +120,19 @@ struct KeyValueStruct
   KeyValueStruct(const String         & key,
                  String              && val,
                  ValueStruct::ValueType vType = ValueStruct::ValueType::Auto);
-/*
-// TD-er: Do not use template types as it may 'explode' in binary size.
-// For example "foo" and "test" will result in 2 compiled instances 
-// as they are  const char[3] and const char[4] respectively.
-  template<typename T>
-  KeyValueStruct(const String         & key,
-                 const T              & val,
-                 ValueStruct::ValueType vType = ValueStruct::ValueType::Auto)
-    : _key(key) {
-    _values.emplace_back(String(val), vType);
-  }
-*/
+
+  /*
+     // TD-er: Do not use template types as it may 'explode' in binary size.
+     // For example "foo" and "test" will result in 2 compiled instances
+     // as they are  const char[3] and const char[4] respectively.
+     template<typename T>
+     KeyValueStruct(const String         & key,
+                   const T              & val,
+                   ValueStruct::ValueType vType = ValueStruct::ValueType::Auto)
+      : _key(key) {
+      _values.emplace_back(String(val), vType);
+     }
+   */
   KeyValueStruct(LabelType::Enum label);
 
   void setUnit(const String& unit);
@@ -174,8 +175,9 @@ protected:
   KeyValueWriter(bool emptyHeader, KeyValueWriter*parent, PrintToString *toStr = nullptr) :  _toString(toStr), _parent(parent),
     _hasHeader(emptyHeader) {}
 
-  KeyValueWriter(const String& header, KeyValueWriter*parent, PrintToString *toStr = nullptr) :  _toString(toStr),  _header(header), _parent(parent)
-    {}
+  KeyValueWriter(const String& header, KeyValueWriter*parent, PrintToString *toStr = nullptr) :  _toString(toStr),  _header(header),
+    _parent(parent)
+  {}
 
 public:
 
@@ -220,11 +222,11 @@ public:
     return _toString->get();
   }
 
-  String && getMove()
+  String&& getMove()
   {
-    if (_toString == nullptr) { 
-        static String tmp;
-        return std::move(tmp); 
+    if (_toString == nullptr) {
+      static String tmp;
+      return std::move(tmp);
     }
     return std::move(_toString->getMove());
   }

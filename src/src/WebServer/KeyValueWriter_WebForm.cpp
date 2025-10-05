@@ -36,7 +36,7 @@ KeyValueWriter_WebForm::KeyValueWriter_WebForm(const __FlashStringHelper *header
 KeyValueWriter_WebForm::~KeyValueWriter_WebForm()
 {}
 
-void                   KeyValueWriter_WebForm::write()
+void KeyValueWriter_WebForm::write()
 {
   if (_isEmpty) {
     if (_parent != nullptr) { _parent->write(); }
@@ -70,22 +70,10 @@ void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
   }
 }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createChild()
-{
-   return std::make_shared<KeyValueWriter_WebForm>(this);
-}
+Sp_KeyValueWriter KeyValueWriter_WebForm::createChild()                     { return std::make_shared<KeyValueWriter_WebForm>(this); }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createChild(const String& header)
-{
-      return std::make_shared<KeyValueWriter_WebForm>(header, this);
-}
+Sp_KeyValueWriter KeyValueWriter_WebForm::createChild(const String& header) { return std::make_shared<KeyValueWriter_WebForm>(header, this); }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createNew()
-{
-      return std::make_shared<KeyValueWriter_WebForm>();
-}
+Sp_KeyValueWriter KeyValueWriter_WebForm::createNew()                       { return std::make_shared<KeyValueWriter_WebForm>(); }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createNew(const String& header)
-{
-      return std::make_shared<KeyValueWriter_WebForm>(header);
-}
+Sp_KeyValueWriter KeyValueWriter_WebForm::createNew(const String& header)   { return std::make_shared<KeyValueWriter_WebForm>(header); }

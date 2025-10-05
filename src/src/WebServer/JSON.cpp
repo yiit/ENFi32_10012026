@@ -8,8 +8,6 @@
 // Move to other file
 #include "../WebServer/NetworkPage.h"
 
-#include "../WebServer/KeyValueWriter_JSON.h"
-
 #include "../CustomBuild/CompiletimeDefines.h"
 
 #include "../DataStructs/TimingStats.h"
@@ -23,6 +21,7 @@
 #include "../Helpers/_Plugin_init.h"
 #include "../Helpers/ESPEasyStatistics.h"
 #include "../Helpers/ESPEasy_Storage.h"
+#include "../Helpers/KeyValueWriter_JSON.h"
 #include "../Helpers/Numerical.h"
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringProvider.h"
