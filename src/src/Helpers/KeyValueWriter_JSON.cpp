@@ -78,6 +78,7 @@ void KeyValueWriter_JSON::write()
 
 void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
 {
+  if (kv._format == KeyValueStruct::Format::Note) { return; }
   write();
 #ifdef USE_KVW_JSON_INDENT
   indent();

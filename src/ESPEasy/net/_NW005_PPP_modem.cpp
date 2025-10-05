@@ -94,7 +94,7 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
           success = NW_data->attached();
 
           if (success) {
-            if (event->kvWriter->ignoreKey()) {
+            if (event->kvWriter->summaryValueOnly()) {
               event->kvWriter->write({
                     EMPTY_STRING,
                     strformat(
@@ -103,14 +103,8 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
                       NW_data->getRSSI().c_str())
                   });
             } else {
-              event->kvWriter->write({
-                    F("Operator Name"),
-                    NW_data->operatorName()
-                  });
-              event->kvWriter->write({
-                    F("RSSI"),
-                    NW_data->getRSSI()
-                  });
+              NW_data->webform_load_UE_system_information(event->kvWriter);
+              event->kvWriter->write({ F("BER"), NW_data->getBER() });
             }
           }
         }
@@ -126,11 +120,14 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
           static_cast<ESPEasy::net::ppp::NW005_data_struct_PPP_modem *>(getNWPluginData(event->NetworkIndex));
 
         if (NW_data) {
-          if (event->kvWriter->ignoreKey()) {
-            event->kvWriter->write({ EMPTY_STRING, concat(F("IMEI: "), NW_data->IMEI()) });
-          }
-          else {
-            event->kvWriter->write({ F("IMEI"), NW_data->IMEI(), KeyValueStruct::Format::PreFormatted  });
+          const String imei(NW_data->IMEI());
+
+          if (imei.length()) {
+            if (event->kvWriter->summaryValueOnly()) {
+              event->kvWriter->write({ EMPTY_STRING, concat(F("IMEI: "), imei) });
+            } else {
+              NW_data->write_ModemState(event->kvWriter);
+            }
           }
         }
       }

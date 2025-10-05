@@ -109,6 +109,7 @@ NW005_data_struct_PPP_modem::~NW005_data_struct_PPP_modem() {
   NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_COMMAND);
 
   const int dtrPin = _kvs->getValueAsInt_or_default(NW005_KEY_PIN_DTR, -1);
+
   if (dtrPin != -1) {
     digitalWrite(dtrPin, LOW);
   }
@@ -240,7 +241,7 @@ String NW005_data_struct_PPP_modem::operatorName() const
   return NW_PLUGIN_INTERFACE.operatorName();
 }
 
-const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str)
+const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str, String& unit)
 {
   const __FlashStringHelper*res = F("");
 
@@ -301,16 +302,21 @@ const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, Stri
             float val = value_str.toInt();
             val      -= 40;
             val      /= 2.0f;
-            value_str = String(val, 1) + F(" [dBm]");
+            value_str = String(val, 1);
+            unit      = F("dBm");
             break;
           }
           case 11:
             // RSRP
-            value_str = strformat(F("%d [dBm]"), value_str.toInt() - 140);
+            value_str = value_str.toInt() - 140;
+            unit      = F("dBm");
+
             break;
           case 12:
             // RSSI
-            value_str = strformat(F("%d [dBm]"), value_str.toInt() - 110);
+            value_str =  value_str.toInt() - 110;
+            unit      = F("dBm");
+
             break;
         }
 
@@ -321,13 +327,18 @@ const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, Stri
   return res;
 }
 
-void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
+void NW005_data_struct_PPP_modem::webform_load_UE_system_information(KeyValueWriter*writer)
 {
   if (!NW_PLUGIN_INTERFACE.attached()) {
     // clear cached string
     _modem_task_data.AT_CPSI.clear();
     return;
   }
+
+  if (NW_PLUGIN_INTERFACE.mode() != ESP_MODEM_MODE_CMUX) {
+    NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
+  }
+
 
   String res = write_AT_cmd(F("AT+CPSI?"), 1000);
 
@@ -354,23 +365,32 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
     // Update cached string
     _modem_task_data.AT_CPSI = res;
 
-    addFormSubHeader(F("UE System Information"));
+    //    addFormSubHeader(F("UE System Information"));
 
     res += ','; // Add trailing comma so we're not missing the last element
 
     for (int i = 0; start_index < res.length() && end_index != -1 && i < 15; ++i)
     {
-      String value_str   = res.substring(start_index, end_index);
-      const String label = NW005_decode_label(sysmode_index, i, value_str);
+      String value_str = res.substring(start_index, end_index);
+      String unit;
+      const String label = NW005_decode_label(sysmode_index, i, value_str, unit);
 
       if (!label.isEmpty()) {
-        addRowLabel(label);
-
         if (i == 0) {
           // We have some leading characters left here, so use the 'clean' strings
-          addHtml(sysmode_str[sysmode_index]);
+          KeyValueStruct kv(label, sysmode_str[sysmode_index]);
+
+          if (unit.length()) {
+            kv.setUnit(unit);
+          }
+          writer->write(kv);
         } else {
-          addHtml_pre(value_str);
+          KeyValueStruct kv(label, value_str, KeyValueStruct::Format::PreFormatted);
+
+          if (unit.length()) {
+            kv.setUnit(unit);
+          }
+          writer->write(kv);
         }
       }
       start_index = end_index + 1;
@@ -379,6 +399,9 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information()
 
   }
 
+  if (NW_PLUGIN_INTERFACE.attached()) {
+    NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_DATA);
+  }
 }
 
 void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
@@ -526,180 +549,17 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
 
   if (!Settings.getNetworkEnabled(event->NetworkIndex)) { return; }
 
-  addFormSubHeader(F("Modem State"));
-  addRowLabel(F("Modem Model"));
 
   if (!_modem_task_data.modem_initialized) {
+    addFormSubHeader(F("Modem State"));
+    addRowLabel(F("Modem Model"));
+
     if (_modem_task_data.initializing) {
       addHtml(F("Initializing ..."));
     } else {
       addHtml(F("Not found"));
     }
     return;
-  }
-
-  addHtml_pre(NW_PLUGIN_INTERFACE.moduleName());
-  addRowLabel(F("IMEI"));
-  addHtml_pre(NW_PLUGIN_INTERFACE.IMEI());
-
-  addRowLabel(F("IMSI"));
-  addHtml_pre(NW_PLUGIN_INTERFACE.IMSI());
-
-  if (NW_PLUGIN_INTERFACE.attached()) {
-    const String operatorName = NW_PLUGIN_INTERFACE.operatorName();
-    addRowLabel(F("Mobile Country Code (MCC)"));
-    addHtml_pre(operatorName.substring(0, 3));
-    addRowLabel(F("Mobile Network Code (MNC)"));
-    addHtml_pre(operatorName.substring(3));
-    addFormNote(F("See <a href=\"https://en.wikipedia.org/wiki/Mobile_country_code\">Wikipedia - Mobile Country Code</a>"));
-
-    if (NW_PLUGIN_INTERFACE.mode() != ESP_MODEM_MODE_CMUX) {
-      NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
-    }
-
-    /*
-       {
-       String res = NW_PLUGIN_INTERFACE.cmd("AT+CPSI?", 1000);
-
-       if (!res.isEmpty()) {
-        addRowLabel(F("AT+CPSI?"));
-        addHtml_pre(res);
-       }
-       }*/
-    /*
-       {
-       String res = NW_PLUGIN_INTERFACE.cmd("AT+CPSITD?", 1000);
-
-       if (!res.isEmpty()) {
-         addRowLabel(F("AT+CPSITD?"));
-         addHtml_pre(res);
-       }
-       }
-     */
-
-  }
-
-  addRowLabel(F("RSSI"));
-  addHtml(getRSSI());
-  addUnit(F("dBm"));
-
-  addRowLabel(F("BER"));
-  addHtml(getBER());
-
-  addRowLabel(F("Radio State"));
-  addHtml((NW_PLUGIN_INTERFACE.radioState() == 0) ? F("Minimal") : F("Full"));
-
-  int networkMode = NW_PLUGIN_INTERFACE.networkMode();
-
-  if (networkMode >= 0) {
-    addRowLabel(F("Network Mode"));
-
-    // Result from AT+CNSMOD Show network system mode
-    switch (networkMode)
-    {
-      case 0: addHtml(F("no service"));
-        break;
-      case 1: addHtml(F("GSM"));
-        break;
-      case 2: addHtml(F("GPRS"));
-        break;
-      case 3: addHtml(F("EGPRS (EDGE)"));
-        break;
-      case 4: addHtml(F("WCDMA"));
-        break;
-      case 5: addHtml(F("HSDPA only(WCDMA)"));
-        break;
-      case 6: addHtml(F("HSUPA only(WCDMA)"));
-        break;
-      case 7: addHtml(F("HSPA (HSDPA and HSUPA, WCDMA)"));
-        break;
-      case 8: addHtml(F("LTE"));
-        break;
-      default: addHtmlInt(networkMode);
-        break;
-    }
-  }
-
-  {
-    int batStatus = NW_PLUGIN_INTERFACE.batteryStatus();
-    addRowLabel(F("Battery Status"));
-    const __FlashStringHelper*str = F("Not Available");
-
-    switch (batStatus)
-    {
-      case 0: str = F("Not Charging");
-        break;
-      case 1: str = F("Charging");
-        break;
-      case 2: str = F("Charging Done");
-        break;
-    }
-    addHtml(str);
-
-    if (batStatus >= 0) {
-      int batVolt = NW_PLUGIN_INTERFACE.batteryVoltage();
-
-      if (batVolt >= 0) {
-        addRowLabel(F("Battery Voltage"));
-        addHtmlInt(batVolt);
-        addUnit(F("mV"));
-      }
-
-      int batLevel = NW_PLUGIN_INTERFACE.batteryLevel();
-
-      if (batLevel >= 0) {
-        addRowLabel(F("Battery Level"));
-        addHtmlInt(batLevel);
-      }
-    }
-  }
-
-  // TODO TD-er: Disabled for now, missing PdpContext
-
-  /*
-     esp_modem_dce_t *handle = NW_PLUGIN_INTERFACE.handle();
-
-     if (handle) {
-     int state{};
-
-     if (esp_modem_get_network_registration_state(handle, state) == ESP_OK) {
-      addRowLabel(F("Network Registration State"));
-      const __FlashStringHelper*str = F("Unknown");
-
-      switch (state)
-      {
-        case 0: str = F("Not registered, MT is not currently searching an operator to register to");
-          break;
-        case 1: str = F("Registered, home network");
-          break;
-        case 2: str = F("Not registered, but MT is currently trying to attach or searching an operator to register to");
-          break;
-        case 3: str = F("Registration denied");
-          break;
-        case 4: str = F("Unknown");
-          break;
-        case 5: str = F("Registered, Roaming");
-          break;
-        case 6: str = F("Registered, for SMS only, home network (NB-IoT only)");
-          break;
-        case 7: str = F("Registered, for SMS only, roaming (NB-IoT only)");
-          break;
-        case 8: str = F("Attached for emergency bearer services only");
-          break;
-        case 9: str = F("Registered for CSFB not preferred, home network");
-          break;
-        case 10: str = F("Registered for CSFB not preferred, roaming");
-          break;
-      }
-      addHtml(str);
-     }
-     }
-   */
-
-  webform_load_UE_system_information();
-
-  if (NW_PLUGIN_INTERFACE.attached()) {
-    NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_DATA);
   }
 }
 
@@ -767,12 +627,179 @@ bool NW005_data_struct_PPP_modem::webform_getPort(String& str)
   return !str.isEmpty();
 }
 
+bool NW005_data_struct_PPP_modem::write_ModemState(KeyValueWriter*modemState)
+{
+  //  if (!writer) { return false; }
+  //  auto modemState = writer->createChild(F("Modem State"));
+
+  if (!modemState) { return false; }
+
+  if (!_modem_task_data.modem_initialized) {
+    modemState->write({
+            F("Modem Model"),
+            _modem_task_data.initializing
+        ? F("Initializing ...")
+        : F("Not found")
+          });
+
+    return false;
+  }
+    # define STATE_WRITE(X, Y) modemState->write({ X, Y \
+                                                 })
+    # define STATE_WRITE_PRE(X, Y) modemState->write({ X, Y, KeyValueStruct::Format::PreFormatted \
+                                                     })
+  STATE_WRITE_PRE(F("Modem Model"), NW_PLUGIN_INTERFACE.moduleName());
+  STATE_WRITE_PRE(F("IMEI"),        NW_PLUGIN_INTERFACE.IMEI());
+  STATE_WRITE_PRE(F("IMSI"),        NW_PLUGIN_INTERFACE.IMSI());
+
+  if (NW_PLUGIN_INTERFACE.attached()) {
+    const String operatorName = NW_PLUGIN_INTERFACE.operatorName();
+    STATE_WRITE_PRE(F("Mobile Country Code (MCC)"), operatorName.substring(0, 3));
+    STATE_WRITE_PRE(F("Mobile Network Code (MNC)"), operatorName.substring(3));
+    modemState->writeNote(
+      F("See <a href=\"https://en.wikipedia.org/wiki/Mobile_country_code\">Wikipedia - Mobile Country Code</a>")
+      );
+
+    if (NW_PLUGIN_INTERFACE.mode() != ESP_MODEM_MODE_CMUX) {
+      NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
+    }
+  }
+  {
+    KeyValueStruct kv(F("RSSI"), getRSSI());
+    kv.setUnit(F("dBm"));
+    modemState->write(kv);
+  }
+  STATE_WRITE(F("BER"), getBER());
+
+  STATE_WRITE(
+    F("Radio State"),
+    (NW_PLUGIN_INTERFACE.radioState() == 0) ? F("Minimal") : F("Full"));
+
+  {
+    int networkMode = NW_PLUGIN_INTERFACE.networkMode();
+
+    if (networkMode >= 0) {
+      const __FlashStringHelper*mode;
+
+      // Result from AT+CNSMOD Show network system mode
+      if (networkMode <= 8) {
+        switch (networkMode)
+        {
+          case 0: mode = F("no service");
+            break;
+          case 1: mode = F("GSM");
+            break;
+          case 2: mode = F("GPRS");
+            break;
+          case 3: mode = F("EGPRS (EDGE)");
+            break;
+          case 4: mode = F("WCDMA");
+            break;
+          case 5: mode = F("HSDPA only(WCDMA)");
+            break;
+          case 6: mode = F("HSUPA only(WCDMA)");
+            break;
+          case 7: mode = F("HSPA (HSDPA and HSUPA, WCDMA)");
+            break;
+          case 8: mode = F("LTE");
+            break;
+        }
+        STATE_WRITE(F("Network Mode"), mode);
+      } else {
+        STATE_WRITE(F("Network Mode"), networkMode);
+      }
+    }
+  }
+  {
+    int batStatus                 = NW_PLUGIN_INTERFACE.batteryStatus();
+    const __FlashStringHelper*str = F("Not Available");
+
+    switch (batStatus)
+    {
+      case 0: str = F("Not Charging");
+        break;
+      case 1: str = F("Charging");
+        break;
+      case 2: str = F("Charging Done");
+        break;
+    }
+    STATE_WRITE(F("Battery Status"), str);
+
+    if (batStatus >= 0) {
+      int batVolt = NW_PLUGIN_INTERFACE.batteryVoltage();
+
+      if (batVolt >= 0) {
+        KeyValueStruct kv(F("Battery Voltage"), batVolt);
+        kv.setUnit(F("mV"));
+        modemState->write(kv);
+      }
+
+      int batLevel = NW_PLUGIN_INTERFACE.batteryLevel();
+
+      if (batLevel >= 0) {
+        STATE_WRITE(F("Battery Level"), batLevel);
+      }
+    }
+  }
+    # undef STATE_WRITE
+    # undef STATE_WRITE_PRE
+
+
+  // TODO TD-er: Disabled for now, missing PdpContext
+
+  /*
+     esp_modem_dce_t *handle = NW_PLUGIN_INTERFACE.handle();
+
+     if (handle) {
+     int state{};
+
+     if (esp_modem_get_network_registration_state(handle, state) == ESP_OK) {
+      addRowLabel(F("Network Registration State"));
+      const __FlashStringHelper*str = F("Unknown");
+
+      switch (state)
+      {
+        case 0: str = F("Not registered, MT is not currently searching an operator to register to");
+          break;
+        case 1: str = F("Registered, home network");
+          break;
+        case 2: str = F("Not registered, but MT is currently trying to attach or searching an operator to register to");
+          break;
+        case 3: str = F("Registration denied");
+          break;
+        case 4: str = F("Unknown");
+          break;
+        case 5: str = F("Registered, Roaming");
+          break;
+        case 6: str = F("Registered, for SMS only, home network (NB-IoT only)");
+          break;
+        case 7: str = F("Registered, for SMS only, roaming (NB-IoT only)");
+          break;
+        case 8: str = F("Attached for emergency bearer services only");
+          break;
+        case 9: str = F("Registered for CSFB not preferred, home network");
+          break;
+        case 10: str = F("Registered for CSFB not preferred, roaming");
+          break;
+      }
+      addHtml(str);
+     }
+     }
+   */
+  if (NW_PLUGIN_INTERFACE.attached()) {
+    NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_DATA);
+  }
+
+  return true;
+}
+
 void NW005_begin_modem_task(void *parameter)
 {
   NW005_modem_task_data*modem_task_data = static_cast<NW005_modem_task_data *>(parameter);
 
   if (!modem_task_data->modem_initialized) {
     modem_task_data->initializing = true;
+
     if (modem_task_data->dtrPin != -1) {
       digitalWrite(modem_task_data->dtrPin, LOW);
     }
@@ -800,6 +827,7 @@ void NW005_begin_modem_task(void *parameter)
 
       NW_PLUGIN_INTERFACE.mode(ESP_MODEM_MODE_CMUX);
       modem_task_data->AT_CPSI = NW_PLUGIN_INTERFACE.cmd(F("AT+CPSI?"), 3000);
+
       if (modem_task_data->dtrPin != -1) {
         NW_PLUGIN_INTERFACE.cmd(F("AT&D1"), 9000);
         digitalWrite(modem_task_data->dtrPin, HIGH);
@@ -832,6 +860,7 @@ bool NW005_data_struct_PPP_modem::init(EventStruct *event)
   const int ctsPin               = _kvs->getValueAsInt_or_default(NW005_KEY_PIN_CTS, -1);
   esp_modem_flow_ctrl_t flow_ctl = static_cast<esp_modem_flow_ctrl_t>(_kvs->getValueAsInt_or_default(NW005_KEY_FLOWCTRL,
                                                                                                      ESP_MODEM_FLOW_CONTROL_NONE));
+
   if ((rtsPin < 0) || (ctsPin < 0)) {
     if (flow_ctl != ESP_MODEM_FLOW_CONTROL_NONE) {
       addLog(LOG_LEVEL_INFO, F("PPP: Disable flow control as RTS/CTS are not set"));
@@ -1002,7 +1031,7 @@ bool NW005_data_struct_PPP_modem::initPluginStats()
 
 bool NW005_data_struct_PPP_modem::record_stats()
 {
-  if (_plugin_stats_array != nullptr && _modem_task_data.modem_initialized) {
+  if ((_plugin_stats_array != nullptr) && _modem_task_data.modem_initialized) {
     EventStruct tmpEvent;
     size_t valueCount{};
     const int rssi = doGetRSSI();
@@ -1063,8 +1092,8 @@ String NW005_data_struct_PPP_modem::NW005_formatGpioLabel(uint32_t key, PinSelec
 {
   String label;
 
-  if (key == NW005_KEY_PIN_DTR ||
-     ((key >= NW005_KEY_PIN_RX) && (key <= NW005_KEY_PIN_RESET)))
+  if ((key == NW005_KEY_PIN_DTR) ||
+      ((key >= NW005_KEY_PIN_RX) && (key <= NW005_KEY_PIN_RESET)))
   {
     ESPEasy_key_value_store::StorageType storageType;
     purpose = PinSelectPurpose::Generic;
@@ -1105,6 +1134,7 @@ String NW005_data_struct_PPP_modem::NW005_formatGpioLabel(uint32_t key, PinSelec
 }
 
 } // namespace ppp
+
 } // namespace net
 } // namespace ESPEasy
 

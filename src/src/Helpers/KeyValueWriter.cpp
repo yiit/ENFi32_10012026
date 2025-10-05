@@ -209,6 +209,26 @@ void KeyValueWriter::writeLabels(const LabelType::Enum labels[])
   }
 }
 
+void KeyValueWriter::writeNote(const String& note)
+{
+  if (!dataOnlyOutput()) {
+    write({
+      EMPTY_STRING,
+      note,
+      KeyValueStruct::Format::Note });
+  }
+}
+
+void KeyValueWriter::writeNote(const __FlashStringHelper *note)
+{
+  if (!dataOnlyOutput()) {
+    write({
+      EMPTY_STRING,
+      note,
+      KeyValueStruct::Format::Note });
+  }
+}
+
 int KeyValueWriter::getLevel() const
 {
   if (_parent == nullptr) { return 0; }
@@ -222,6 +242,8 @@ bool KeyValueWriter::plainText() const {
   return _plainText;
 }
 
-bool KeyValueWriter::ignoreKey() const {
-  return plainText() || _ignoreKey;
+bool KeyValueWriter::summaryValueOnly() const {
+  if (_parent && _parent->summaryValueOnly()) { return true; }
+
+  return _summaryValueOnly;
 }

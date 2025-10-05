@@ -37,9 +37,9 @@ KeyValueWriter_WebForm::KeyValueWriter_WebForm(const __FlashStringHelper *header
 
 KeyValueWriter_WebForm::~KeyValueWriter_WebForm()
 {
-      if (!ignoreKey() && !_isEmpty && _hasHeader && _header.isEmpty()) {
-        // TODO TD-er: Should we add a separator line here?
-      }
+  if (!summaryValueOnly() && !_isEmpty && _hasHeader && _header.isEmpty()) {
+    // TODO TD-er: Should we add a separator line here?
+  }
 
 }
 
@@ -48,7 +48,7 @@ void KeyValueWriter_WebForm::write()
   if (_isEmpty) {
     if (_parent != nullptr) { _parent->write(); }
 
-    if (!ignoreKey() && _hasHeader && !_header.isEmpty()) {
+    if (!summaryValueOnly() && _hasHeader && !_header.isEmpty()) {
       if (plainText()) {
         getPrint().print(concat(_header, F(": ")));
       } else {
@@ -62,21 +62,42 @@ void KeyValueWriter_WebForm::write()
 void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
 {
   write();
+  const bool plain_text         = plainText();
+  const bool summary_value_only = summaryValueOnly();
 
-  if (!ignoreKey()) {
-    addRowLabel(kv._key, kv._id);
-  }
   const size_t nrValues   = kv._values.size();
-  const bool   format_pre = !plainText() && (nrValues > 1 || kv._format == KeyValueStruct::Format::PreFormatted);
+  const bool   format_pre =
+    !plain_text &&
+    !summary_value_only &&
+    (nrValues > 1 || kv._format == KeyValueStruct::Format::PreFormatted);
+
+  const bool format_note =
+    !plain_text &&
+    !summary_value_only &&
+    (nrValues == 1 && kv._format == KeyValueStruct::Format::Note);
+
+  if (!summary_value_only) {
+    if (format_note) { addRowLabel_tr_id(EMPTY_STRING, EMPTY_STRING); }
+    else {
+      addRowLabel(kv._key, kv._id);
+    }
+  }
+
+  if (format_note) { getPrint().print(F(" <div class='note'>Note: ")); }
 
   if (format_pre) { getPrint().print(F("<pre>")); }
 
   for (size_t i = 0; i < nrValues; ++i) {
     if (i != 0) {
-      getPrint().print(F("<br>"));
+      if (plain_text) {
+        getPrint().write('\n');
+      }
+      else {
+        getPrint().print(F("<br>"));
+      }
     }
 
-    if (kv._values[i].str.indexOf('\n') != -1)
+    if (!plain_text && (kv._values[i].str.indexOf('\n') != -1))
     {
       String str = kv._values[i].str;
       str.replace(F("\n"), F("<br>"));
@@ -86,14 +107,24 @@ void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
     }
   }
 
-  if (format_pre) { getPrint().print(F("</pre>")); }
-
-  if (!plainText() && (nrValues == 1)) {
+  // May need to include the unit before ending </pre>
+  // or else it will be shown on the next line
+  if (!plain_text && (nrValues == 1) && !summary_value_only) {
     addUnit(kv._unit);
   }
 
-  if (plainText()) {
-    getPrint().print(F("<br>"));
+  if (format_pre) { getPrint().print(F("</pre>")); }
+
+  if (format_note) { getPrint().print(F("</div>")); }
+
+  if (summary_value_only) {
+    // Must add a newline
+    if (plain_text) {
+      getPrint().write('\n');
+    }
+    else {
+      getPrint().print(F("<br>"));
+    }
   }
 }
 

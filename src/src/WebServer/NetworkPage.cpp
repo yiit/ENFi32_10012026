@@ -218,7 +218,7 @@ void handle_networks_ShowAllNetworksTable()
       for (uint8_t i = 0; i < NR_ELEMENTS(functions); ++i) {
         html_TD();
         KeyValueWriter_WebForm webFormWriter;
-        webFormWriter.setPlainText();
+        webFormWriter.setSummaryValueOnly();
         struct EventStruct TempEvent;
         TempEvent.kvWriter = &webFormWriter;
 
@@ -242,7 +242,8 @@ void handle_networks_ShowAllNetworksTable()
 
         if (functions[i] == NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED) {
           NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent);
-          addEnabled(res);
+          if (!res)
+            addEnabled(res);
         }
       }
 
@@ -392,38 +393,7 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
       }
       {
         KeyValueWriter_WebForm writer(F("Connection Information"));
-        struct EventStruct TempEvent2;
-        TempEvent2.NetworkIndex = networkindex;
-        auto child = writer.createChild();
-        TempEvent2.kvWriter = child.get();
-
-
-        String str;
-        const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED, &TempEvent2, str);
-
-        if (res) {
-          String conn_duration;
-
-          NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent2, conn_duration);
-
-#  if FEATURE_NETWORK_TRAFFIC_COUNT
-
-          if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT, &TempEvent2, str)) {
-            writer.write({ F("TX / RX Frames"), strformat(
-                      F("%d / %d"),
-                      TempEvent.Par5,
-                      TempEvent.Par6)});
-
-            writer.write({ F("TX / RX Frame Bytes"), strformat(
-                      F("%s%cB / %s%cB"),
-                      formatHumanReadable(TempEvent.Par64_1, 1024).c_str(),
-                      TempEvent.Par64_1 < 1024 ? ' ' : 'i',
-                      formatHumanReadable(TempEvent.Par64_2, 1024).c_str(),
-                      TempEvent.Par64_2 < 1024 ? ' ' : 'i'
-                      ) });
-          }
-#  endif // if FEATURE_NETWORK_TRAFFIC_COUNT
-        }
+        write_NetworkConnectionInfo(networkindex, writer.createChild().get());
       }
     }
 # endif // ifdef ESP32
@@ -442,14 +412,14 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 
 # ifdef ESP32
 
-bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer)
+bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter*writer)
 {
-  if (writer == nullptr) return false;
+  if (writer == nullptr) { return false; }
   struct EventStruct TempEvent;
   TempEvent.kvWriter = writer;
 
   TempEvent.NetworkIndex = networkindex;
-  
+
   String str;
 
   if (!NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_INTERFACE, &TempEvent, str)) {
@@ -495,9 +465,9 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
   return true;
 }
 
-bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer)
+bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter*writer)
 {
-  if (writer == nullptr) return false;
+  if (writer == nullptr) { return false; }
   struct EventStruct TempEvent;
 
   TempEvent.NetworkIndex = networkindex;
@@ -539,5 +509,23 @@ bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* 
 
 # endif // ifdef ESP32
 
+bool write_NetworkConnectionInfo(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter*writer)
+{
+  if (!writer) { return false; }
+  struct EventStruct TempEvent;
+  TempEvent.NetworkIndex = networkindex;
+  TempEvent.kvWriter     = writer;
+
+  const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_CONNECTED, &TempEvent);
+
+  if (res) {
+    NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_CONNECTED_DURATION, &TempEvent);
+
+# if FEATURE_NETWORK_TRAFFIC_COUNT
+    NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_TRAFFIC_COUNT,      &TempEvent);
+# endif // if FEATURE_NETWORK_TRAFFIC_COUNT
+  }
+  return res;
+}
 
 #endif // ifdef WEBSERVER_NETWORK

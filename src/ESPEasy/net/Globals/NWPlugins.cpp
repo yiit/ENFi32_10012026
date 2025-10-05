@@ -138,6 +138,44 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
               event->Par5    = traffic._tx_packets;
               event->Par6    = traffic._rx_packets;
               success        = true;
+
+              if (event->kvWriter) {
+                if (event->kvWriter->dataOnlyOutput()) {
+                  {
+                    auto frames = event->kvWriter->createChild(F("Frames"));
+
+                    if (frames) {
+                      frames->write({ F("TX"), traffic._tx_packets });
+                      frames->write({ F("RX"), traffic._rx_packets });
+                    }
+                  }
+                  {
+                    auto bytes = event->kvWriter->createChild(F("Bytes"));
+
+                    if (bytes) {
+                      bytes->write({ F("TX"), traffic._tx_count });
+                      bytes->write({ F("RX"), traffic._rx_count });
+                    }
+                  }
+                } else {
+                  event->kvWriter->write({
+                        F("TX / RX Frames"),
+                        strformat(
+                          F("%d / %d"),
+                          event->Par5,
+                          event->Par6) });
+
+                  event->kvWriter->write({
+                        F("TX / RX Frame Bytes"),
+                        strformat(
+                          F("%s%cB / %s%cB"),
+                          formatHumanReadable(event->Par64_1, 1024).c_str(),
+                          event->Par64_1 < 1024 ? ' ' : 'i',
+                          formatHumanReadable(event->Par64_2, 1024).c_str(),
+                          event->Par64_2 < 1024 ? ' ' : 'i'
+                          ) });
+                }
+              }
             }
             break;
           }
@@ -181,7 +219,7 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
                 if (event->kvWriter) {
                   event->kvWriter->write({ F("Connection Duration"), format_msec_duration_HMS(duration) });
 
-                  if (!event->kvWriter->ignoreKey()) {
+                  if (!event->kvWriter->summaryValueOnly()) {
                     event->kvWriter->write({ F("Number of Reconnects"), event->Par64_2 });
                   }
                 }
@@ -279,7 +317,7 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
                   case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
 
                     if (event->kvWriter) {
-                      if (event->kvWriter->ignoreKey()) {
+                      if (event->kvWriter->summaryValueOnly()) {
                         event->kvWriter->write({
                             EMPTY_STRING,
                             concat(F("MAC: "), event->networkInterface->macAddress()) });

@@ -54,13 +54,28 @@ public:
   virtual Sp_KeyValueWriter createNew();
   virtual Sp_KeyValueWriter createNew(const String& header);
 
+  virtual bool              dataOnlyOutput() const override {
+    // JSON is not intended to be human readable
+    return true;
+  }
+
+  virtual bool plainText() const override {
+    // No 'plain text' in JSON
+    return false;
+  }
+
+  virtual bool summaryValueOnly() const override {
+    // No 'summary mode' in JSON
+    return false;
+  }
+
 private:
 
   void writeValue(const ValueStruct& value);
 
 #ifdef USE_KVW_JSON_INDENT
 
-public:
+protected:
 
   virtual void indent() override;
 #endif // ifdef USE_KVW_JSON_INDENT

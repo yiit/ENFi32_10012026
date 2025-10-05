@@ -115,7 +115,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
 # endif // ifdef ESP32
 
 
-        if (event->kvWriter->ignoreKey()) {
+        if (event->kvWriter->summaryValueOnly()) {
           event->kvWriter->write({
                 EMPTY_STRING,
                 strformat(F("%s (ch: %d)"),
@@ -134,7 +134,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
           KeyValueStruct kv(
             F("RSSI"),
             strformat(
-              event->kvWriter->ignoreKey() ? F("RSSI: %d dBm") : F("%d"),
+              event->kvWriter->summaryValueOnly() ? F("RSSI: %d dBm") : F("%d"),
               WiFi.RSSI()));
 
           kv.setUnit(F("dBm"));

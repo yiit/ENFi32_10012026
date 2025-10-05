@@ -43,8 +43,9 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer);
 
 bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer);
-
 #endif
+
+bool write_NetworkConnectionInfo(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter* writer);
 
 
 #endif // ifdef WEBSERVER_NETWORK

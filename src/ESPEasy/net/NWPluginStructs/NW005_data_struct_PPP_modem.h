@@ -40,12 +40,14 @@ struct NW005_data_struct_PPP_modem : public NWPluginData_base {
   String IMEI() const;
   String operatorName() const;
 
-  void   webform_load_UE_system_information();
+  void   webform_load_UE_system_information(KeyValueWriter* writer);
 
   void   webform_load(EventStruct *event);
   void   webform_save(EventStruct *event);
 
   bool   webform_getPort(String& str);
+
+  bool   write_ModemState(KeyValueWriter*writer);
 
   bool   init(EventStruct *event);
 

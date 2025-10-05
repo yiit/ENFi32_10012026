@@ -48,7 +48,8 @@ struct KeyValueStruct
 {
   enum class Format {
     Default,
-    PreFormatted
+    PreFormatted,
+    Note
 
   };
 
@@ -224,25 +225,34 @@ public:
 
   void         writeLabels(const LabelType::Enum labels[]);
 
+  virtual void writeNote(const String& note);
+  virtual void writeNote(const __FlashStringHelper * note);
+
   //  virtual void setParent(KeyValueWriter*parent) { _parent = parent; }
 
   virtual int  getLevel() const;
 
-  virtual void setIsArray()   { _isArray = true; }
+  virtual void setIsArray() { _isArray = true; }
 
+  // When set to 'plainText', the writer will not try to insert writer specific
+  // markings, like <pre> or <br> for example for HTML output
+  // When set to true, any child writer will also have this set to true
   virtual void setPlainText() { _plainText = true; }
 
   virtual bool plainText() const;
 
-  virtual void setIgnoreKey() { _ignoreKey = true; }
+  // 'summaryValueOnly' means the key will not be output and this is also a hint to generate a summary of data.
+  // Typically this is intended for human readable texts.
+  // When set to true, any child writer will also have this set to true
+  virtual void              setSummaryValueOnly() { _summaryValueOnly = true; }
 
-  virtual bool ignoreKey() const;
+  virtual bool              summaryValueOnly() const;
 
-  // Only supported for JSON writer right now
+  // This should be override by any writer outputting data which is not intended to be human readable.
+  virtual bool              dataOnlyOutput() const                      { return false; }
+
   // TODO TD-er: Change this to std::shared_ptr<PrintToString>
   virtual void              setOutputToString(PrintToString*printToStr) { _toString = printToStr; }
-
-  virtual void              indent()                                    {}
 
   // Create writer of the same derived type, with this set as parent
   virtual Sp_KeyValueWriter createChild()                     = 0;
@@ -266,7 +276,9 @@ public:
     return std::move(_toString->getMove());
   }
 
-  bool reserve(unsigned int size) { return _toString && _toString->reserve(size); }
+  bool         reserve(unsigned int size) { return _toString && _toString->reserve(size); }
+
+  virtual void indent()                   {}
 
 protected:
 
@@ -294,11 +306,11 @@ protected:
 
   bool _isArray{};
 
-private:
+  // private:
 
   bool _plainText = false;
 
-  bool _ignoreKey = false;
+  bool _summaryValueOnly = false;
 
 
 }; // class KeyValueWriter

@@ -98,7 +98,7 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
         success = ETH.connected();
 
         if (ETH.linkUp()) {
-          if (event->kvWriter->ignoreKey()) {
+          if (event->kvWriter->summaryValueOnly()) {
             String s = concat(
               String(ETH.linkSpeed()),
               ETH.fullDuplex() ? F("Mbps FD") : F("Mbps HD"));
