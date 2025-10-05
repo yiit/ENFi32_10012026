@@ -1554,7 +1554,7 @@ void P128_data_struct::NeoPixelSendStatus(struct EventStruct *eventSource) {
   {
     KeyValueWriter_JSON writer(true, &status);
 
-    writer.write({F("plugin"),     128});
+    writer.write({F("plugin"),     128});    
     writer.write({F("mode"),       P128_modeType_toString(mode)});
     writer.write({F("lastmode"),   P128_modeType_toString(savemode)});
     writer.write({F("fadetime"),   static_cast<int>(fadetime)});

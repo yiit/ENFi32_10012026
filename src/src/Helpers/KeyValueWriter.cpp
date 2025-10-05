@@ -23,7 +23,7 @@ KeyValueStruct::KeyValueStruct(const String& key) : _key(key) {}
 
 
 KeyValueStruct::KeyValueStruct(const String         & key,
-                               bool                   val,
+                               const bool&            val,
                                ValueStruct::ValueType vType)
   : _key(key) {
   _values.emplace_back(String(val), vType);
@@ -31,6 +31,27 @@ KeyValueStruct::KeyValueStruct(const String         & key,
 
 KeyValueStruct::KeyValueStruct(const String         & key,
                                int                    val,
+                               ValueStruct::ValueType vType)
+  : _key(key) {
+  _values.emplace_back(String(val), vType);
+}
+
+KeyValueStruct::KeyValueStruct(const String         & key,
+                               int32_t                val,
+                               ValueStruct::ValueType vType)
+  : _key(key) {
+  _values.emplace_back(String(val), vType);
+}
+
+KeyValueStruct::KeyValueStruct(const String         & key,
+                               uint32_t               val,
+                               ValueStruct::ValueType vType)
+  : _key(key) {
+  _values.emplace_back(String(val), vType);
+}
+
+KeyValueStruct::KeyValueStruct(const String         & key,
+                               size_t                 val,
                                ValueStruct::ValueType vType)
   : _key(key) {
   _values.emplace_back(String(val), vType);
@@ -85,11 +106,25 @@ KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
   _values.emplace_back(val, vType);
 }
 
+KeyValueStruct::KeyValueStruct(const String             & key,
+                               const __FlashStringHelper *val,
+                               ValueStruct::ValueType     vType)
+  : _key(key) {
+  _values.emplace_back(val, vType);
+}
+
 KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
                                const __FlashStringHelper *val,
                                ValueStruct::ValueType     vType)
   : _key(key) {
   _values.emplace_back(val, vType);
+}
+
+KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
+                               const char                *val,
+                               ValueStruct::ValueType     vType)
+  : _key(key) {
+  _values.emplace_back(String(val), vType);
 }
 
 KeyValueStruct::KeyValueStruct(const String         & key,

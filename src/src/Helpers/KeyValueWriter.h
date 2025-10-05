@@ -53,11 +53,23 @@ struct KeyValueStruct
   KeyValueStruct(const String& key);
 
   KeyValueStruct(const String         & key,
-                 bool                   val,
+                 const bool&            val,
                  ValueStruct::ValueType vType = ValueStruct::ValueType::Bool);
 
   KeyValueStruct(const String         & key,
                  int                    val,
+                 ValueStruct::ValueType vType = ValueStruct::ValueType::Int);
+
+  KeyValueStruct(const String         & key,
+                 int32_t                val,
+                 ValueStruct::ValueType vType = ValueStruct::ValueType::Int);
+
+  KeyValueStruct(const String         & key,
+                 uint32_t               val,
+                 ValueStruct::ValueType vType = ValueStruct::ValueType::Int);
+
+  KeyValueStruct(const String         & key,
+                 size_t                 val,
                  ValueStruct::ValueType vType = ValueStruct::ValueType::Int);
 
   KeyValueStruct(const String         & key,
@@ -84,8 +96,16 @@ struct KeyValueStruct
                  const String             & val,
                  ValueStruct::ValueType     vType = ValueStruct::ValueType::Auto);
 
+  KeyValueStruct(const String             & key,
+                 const __FlashStringHelper *val,
+                 ValueStruct::ValueType     vType = ValueStruct::ValueType::Auto);
+
   KeyValueStruct(const __FlashStringHelper *key,
                  const __FlashStringHelper *val,
+                 ValueStruct::ValueType     vType = ValueStruct::ValueType::Auto);
+
+  KeyValueStruct(const __FlashStringHelper *key,
+                 const char                *val,
                  ValueStruct::ValueType     vType = ValueStruct::ValueType::Auto);
 
   KeyValueStruct(const String         & key,
@@ -100,7 +120,10 @@ struct KeyValueStruct
   KeyValueStruct(const String         & key,
                  String              && val,
                  ValueStruct::ValueType vType = ValueStruct::ValueType::Auto);
-
+/*
+// TD-er: Do not use template types as it may 'explode' in binary size.
+// For example "foo" and "test" will result in 2 compiled instances 
+// as they are  const char[3] and const char[4] respectively.
   template<typename T>
   KeyValueStruct(const String         & key,
                  const T              & val,
@@ -108,7 +131,7 @@ struct KeyValueStruct
     : _key(key) {
     _values.emplace_back(String(val), vType);
   }
-
+*/
   KeyValueStruct(LabelType::Enum label);
 
   void setUnit(const String& unit);

@@ -24,6 +24,10 @@ unsigned int count_newlines(const String& str);
 
 String concat(const __FlashStringHelper * str, const String &val);
 String concat(const __FlashStringHelper * str, const __FlashStringHelper *val);
+
+String concat(const __FlashStringHelper * str, const char* val);
+String concat(const String & str, const char* val);
+
 String concat(const char& str, const String &val);
 
 template <typename T>

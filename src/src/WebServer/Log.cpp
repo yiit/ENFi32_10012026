@@ -79,8 +79,8 @@ void handle_log_JSON() {
             }
           }
         }
-        unsigned long firstTimeStamp = 0;
-        unsigned long lastTimeStamp  = 0;
+        uint32_t firstTimeStamp = 0;
+        uint32_t lastTimeStamp  = 0;
         int nrEntries                = 0;
 
         {
@@ -113,9 +113,9 @@ void handle_log_JSON() {
             }
           }
         }
-        long logTimeSpan       = timeDiff(firstTimeStamp, lastTimeStamp);
-        long refreshSuggestion = 1000;
-        long newOptimum        = 1000;
+        int32_t logTimeSpan       = timeDiff(firstTimeStamp, lastTimeStamp);
+        int32_t refreshSuggestion = 1000;
+        int32_t newOptimum        = 1000;
 
         if ((nrEntries > 2) && (logTimeSpan > 1)) {
           // May need to lower the TTL for refresh when time needed
@@ -134,7 +134,7 @@ void handle_log_JSON() {
         mainWriter->write({ F("timeHalfBuffer"),      newOptimum });
         mainWriter->write({ F("nrEntries"),           nrEntries });
         mainWriter->write({ F("SettingsWebLogLevel"), Settings.WebLogLevel });
-        mainWriter->write({ F("logTimeSpan"), logTimeSpan });
+        mainWriter->write({ F("logTimeSpan"),         logTimeSpan });
       }
     }
   }

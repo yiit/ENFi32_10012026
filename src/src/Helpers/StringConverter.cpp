@@ -59,6 +59,15 @@ String concat(const __FlashStringHelper * str, const __FlashStringHelper *val) {
   return concat(str, String(val));
 }
 
+String concat(const __FlashStringHelper * str, const char* val) {
+  return concat(String(str), String(val));
+}
+
+String concat(const String & str, const char* val)
+{
+  return concat(str, String(val));
+}
+
 String concat(const char& str, const String &val)
 {
   String res(str);

@@ -65,7 +65,7 @@ enum class PinBootState {
 /*********************************************************************************************\
  * SettingsStruct
 \*********************************************************************************************/
-template<unsigned int N_TASKS>
+template<uint32_t N_TASKS>
 class SettingsStruct_tmpl
 {
   public:
@@ -456,7 +456,7 @@ public:
 
   void setNetworkInterfaceStartupDelayAtBoot(ESPEasy::net::networkIndex_t index, uint32_t delay_ms);
 
-  unsigned long PID = 0;
+  uint32_t PID = 0;
   int           Version = 0;
   int16_t       Build = 0;
   uint8_t       IP[4] = {0};
@@ -468,20 +468,20 @@ public:
   char          Name[26] = {0};
   char          NTPHost[64] = {0};
   // FIXME TD-er: Issue #2690
-  unsigned long Delay = 0;              // Sleep time in seconds
+  uint32_t Delay = 0;              // Sleep time in seconds
   int8_t        Pin_i2c_sda = DEFAULT_PIN_I2C_SDA;
   int8_t        Pin_i2c_scl = DEFAULT_PIN_I2C_SCL;
   int8_t        Pin_status_led = DEFAULT_PIN_STATUS_LED;
   int8_t        Pin_sd_cs = -1;
   int8_t        PinBootStates[17] = {0};  // Only use getPinBootState and setPinBootState as multiple pins are packed for ESP32
   uint8_t       Syslog_IP[4] = {0};
-  unsigned int  UDPPort = 8266;
+  uint32_t  UDPPort = 8266;
   uint8_t       SyslogLevel = 0;
   uint8_t       SerialLogLevel = 0;
   uint8_t       WebLogLevel = 0;
   uint8_t       SDLogLevel = 0;
-  unsigned long BaudRate = 115200;
-  unsigned long MessageDelay_unused = 0;  // MQTT settings now moved to the controller settings.
+  uint32_t BaudRate = 115200;
+  uint32_t MessageDelay_unused = 0;  // MQTT settings now moved to the controller settings.
   uint8_t       deepSleep_wakeTime = 0;   // 0 = Sleep Disabled, else time awake from sleep in seconds
   boolean       CustomCSS = false;
   boolean       DST = false;
@@ -490,9 +490,9 @@ public:
   boolean       UseSerial = false;
   boolean       UseSSDP = false;
   uint8_t       ExternalTimeSource = 0;
-  unsigned long WireClockStretchLimit = 0;
+  uint32_t WireClockStretchLimit = 0;
   boolean       GlobalSync = false;
-  unsigned long ConnectionFailuresThreshold = 0;
+  uint32_t ConnectionFailuresThreshold = 0;
   int16_t       TimeZone = 0;
   boolean       MQTTRetainFlag_unused = false;
   uint8_t       InitSPI = 0; //0 = disabled, 1= enabled but for ESP32 there is option 2= SPI2 9 = User defined, see src/src/WebServer/HardwarePage.h enum SPI_Options_e
@@ -516,7 +516,7 @@ public:
   int8_t        I2C3_Multiplexer_Type = I2C_MULTIPLEXER_NONE;
   int8_t        I2C3_Multiplexer_Addr = -1;
   int8_t        I2C3_Multiplexer_ResetPin = -1;
-  unsigned int  OLD_TaskDeviceID[N_TASKS - 7] = {0};  //UNUSED: this can be reused
+  uint32_t  OLD_TaskDeviceID[N_TASKS - 7] = {0};  //UNUSED: this can be reused
 
   // FIXME TD-er: When used on ESP8266, this conversion union may not work
   // It might work as it is 32-bit in size.
@@ -543,11 +543,11 @@ public:
   uint8_t       TaskDeviceSendDataFlags[N_TASKS] = {0};
   uint8_t       VariousTaskBits[N_TASKS] = {0};
   uint8_t       TaskDeviceDataFeed[N_TASKS] = {0};    // When set to 0, only read local connected sensorsfeeds
-  unsigned long TaskDeviceTimer[N_TASKS] = {0};
+  uint32_t TaskDeviceTimer[N_TASKS] = {0};
   boolean       TaskDeviceEnabled[N_TASKS] = {0};
   boolean       ControllerEnabled[CONTROLLER_MAX] = {0};
   boolean       NotificationEnabled[NOTIFICATION_MAX] = {0};
-  unsigned int  TaskDeviceID[CONTROLLER_MAX][N_TASKS]{};        // IDX number (mainly used by Domoticz)
+  uint32_t  TaskDeviceID[CONTROLLER_MAX][N_TASKS]{};        // IDX number (mainly used by Domoticz)
   boolean       TaskDeviceSendData[CONTROLLER_MAX][N_TASKS]{};
   boolean       Pin_status_led_Inversed = false;
   boolean       deepSleepOnFail = false;
