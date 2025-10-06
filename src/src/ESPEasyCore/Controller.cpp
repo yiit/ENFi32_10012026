@@ -656,10 +656,11 @@ void MQTTparseSystemVariablesAndSubscribe(String subscribeTo) {
 
   if (!subscribeTo.isEmpty()) {
     MQTTclient.subscribe(subscribeTo.c_str());
-
+# ifndef BUILD_NO_DEBUG
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLogMove(LOG_LEVEL_INFO, concat(F("MQTT : Subscribed to: "),  subscribeTo));
     }
+#endif
   }
 }
 

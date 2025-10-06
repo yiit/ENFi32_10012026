@@ -46,7 +46,9 @@ const char Internal_commands_c[] PROGMEM =
 #define Int_cmd_d_offset ESPEasy_cmd_e::datetime
 const char Internal_commands_d[] PROGMEM =
   "datetime|"
+#ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
   "debug|"
+#endif
   "dec|"
   "deepsleep|"
   "delay|"

@@ -296,7 +296,7 @@ void ESPEasyWiFi_t::disconnect() { doWiFiDisconnect(); }
 
 void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
   if (newState == _state) { return; }
-
+#ifndef BUILD_NO_DEBUG
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLog(
       LOG_LEVEL_INFO,
@@ -304,7 +304,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       concat(F(" to: "),                   toString(newState)) +
       concat(F(" timeout: "),              timeout));
   }
-
+#endif
   if (_state == WiFiState_e::AP_only) {
     setAPinternal(false);
     setAP(false);
@@ -482,14 +482,14 @@ bool ESPEasyWiFi_t::connectSTA()
   }
 
   const WiFi_AP_Candidate candidate = WiFi_AP_Candidates.getCurrent();
-
+#ifndef BUILD_NO_DEBUG
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLogMove(LOG_LEVEL_INFO, strformat(
                  F("WIFI : Connecting %s attempt #%u"),
                  candidate.toString().c_str(),
                  wifi_STA_data->_establishConnectStats.getCycleCount() + 1));
   }
-
+#endif
   // WiFiEventData.markWiFiBegin();
 
   if (prepareWiFi()) {

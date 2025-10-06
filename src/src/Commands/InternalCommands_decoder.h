@@ -31,7 +31,9 @@ enum class ESPEasy_cmd_e : uint8_t {
   controllerenable,
 
   datetime,
+#ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
   debug,
+#endif
   dec,
   deepsleep,
   delay,

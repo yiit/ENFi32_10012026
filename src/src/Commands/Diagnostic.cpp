@@ -139,7 +139,6 @@ const __FlashStringHelper * Command_Background(struct EventStruct *event, const 
   serialPrintln(F("end"));
   return return_see_serial(event);
 }
-#endif // BUILD_NO_DIAGNOSTIC_COMMANDS
 
 const __FlashStringHelper * Command_Debug(struct EventStruct *event, const char *Line)
 {
@@ -152,6 +151,8 @@ const __FlashStringHelper * Command_Debug(struct EventStruct *event, const char 
   }
   return return_see_serial(event);
 }
+#endif
+
 
 String Command_logentry(struct EventStruct *event, const char *Line)
 {

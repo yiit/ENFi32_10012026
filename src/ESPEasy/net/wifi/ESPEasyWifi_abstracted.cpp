@@ -136,7 +136,7 @@ void doSetAPinternal(bool enable)
       auto data = getWiFi_AP_NWPluginData_static_runtime();
 
       if (data) { data->mark_start(); }
-
+#ifndef BUILD_NO_DEBUG
       if (loglevelActiveFor(LOG_LEVEL_INFO)) {
         addLogMove(LOG_LEVEL_INFO, strformat(
                      F("WIFI : AP Mode enabled. SSID: %s IP: %s ch: %d"),
@@ -151,6 +151,7 @@ void doSetAPinternal(bool enable)
                      softAPSSID.c_str(),
                      formatIP(apIP).c_str()));
       }
+#endif
     }
 
     if (Settings.ApCaptivePortal()) {

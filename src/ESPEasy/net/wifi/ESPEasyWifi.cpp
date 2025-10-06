@@ -293,7 +293,7 @@ void setupStaticIPconfig() {
 //  WiFiEventData.dns0_cache = dns;
 
   WiFi.config(ip, gw, subnet, dns);
-
+#ifndef BUILD_NO_DEBUG
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLogMove(LOG_LEVEL_INFO, strformat(
                  F("IP   : Static IP : %s GW: %s SN: %s DNS: %s"),
@@ -302,6 +302,7 @@ void setupStaticIPconfig() {
                  formatIP(subnet).c_str(),
                  getValue(LabelType::DNS).c_str()));
   }
+#endif
 }
 
 // ********************************************************************************

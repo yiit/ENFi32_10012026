@@ -208,9 +208,9 @@ void EspEasy_Console_t::begin(uint32_t baudrate)
 #else // if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
 # ifdef ESP8266
     _mainSerial._serial->begin(baudrate);
-    #ifdef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_INFO, F("ESPEasy console using HW Serial"));
-    #endif
+#endif
 # endif // ifdef ESP8266
 # ifdef ESP32
 

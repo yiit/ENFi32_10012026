@@ -369,9 +369,9 @@ void ESPEasy_setup()
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("LoadSettings()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
-
+#ifndef BUILD_NO_DEBUG
   addLog(LOG_LEVEL_INFO, concat(F("CPU Frequency: "), ESP.getCpuFreqMHz()));
-  
+#endif
 
 #ifdef ESP32
 #if !defined(CORE32SOLO1) && !defined(ESP32P4)
@@ -488,11 +488,11 @@ void ESPEasy_setup()
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("initSerial()"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
-
+#ifndef BUILD_NO_DEBUG
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLogMove(LOG_LEVEL_INFO, concat(F("INIT : Free RAM:"), FreeMem()));
   }
-
+#endif
 #ifndef BUILD_NO_DEBUG
 
   if (Settings.UseSerial && (Settings.SerialLogLevel >= LOG_LEVEL_DEBUG_MORE)) {
@@ -524,7 +524,7 @@ void ESPEasy_setup()
   #ifndef BUILD_NO_RAM_TRACKER
   logMemUsageAfter(F("PluginInit()"));
   #endif
-
+#ifndef BUILD_NO_DEBUG
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log;
     if (reserve_special(log, 80)) {
@@ -537,7 +537,7 @@ void ESPEasy_setup()
       addLogMove(LOG_LEVEL_INFO, log);
     }
   }
-
+#endif
   /*
      if ((getDeviceCount() + 1) >= PLUGIN_MAX) {
       addLog(LOG_LEVEL_ERROR, concat(F("Programming error! - Increase PLUGIN_MAX ("), getDeviceCount()) + ')');

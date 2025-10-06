@@ -10,7 +10,7 @@
  */
 
 #include "../../_Plugin_Helper.h"
-
+#if FEATURE_BUS_COMMAND
 #include "../Helpers/IBusCmd_Handler.h"
 
 #define BUSCMD_EVENT_SEPARATOR     '|'
@@ -230,4 +230,5 @@ private:
   std::vector<BusCmd_Command_struct>::iterator         _it;
   std::vector<BusCmd_Buffer>                           _buffer;
 };
+#endif
 #endif // ifndef _HELPERS_BUSCMD_HELPER_H

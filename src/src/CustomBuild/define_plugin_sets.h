@@ -2248,11 +2248,17 @@ To create/register a plugin, you have to :
   #ifdef USES_P040
     #undef USES_P040  // RFID - ID12LA/RDM6300
   #endif
+  #ifdef USES_P042
+    #undef USES_P042   // Candle
+  #endif
   #ifdef USES_P043
     #undef USES_P043   // ClkOutput
   #endif
   #ifdef USES_P079
     #undef USES_P079   // Wemos Motoshield
+  #endif
+  #ifdef USES_P073
+    #undef USES_P073   // 7DGT
   #endif
 #endif // ifdef PLUGIN_BUILD_IR_EXTENDED_NO_RX
 
@@ -4031,6 +4037,15 @@ To create/register a plugin, you have to :
 #  undef FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 # endif
 # define FEATURE_STORE_NETWORK_INTERFACE_SETTINGS  0
+#endif
+
+#ifdef USES_P180
+#ifdef FEATURE_BUS_COMMAND
+#undef FEATURE_BUS_COMMAND
+#endif
+#ifndef FEATURE_BUS_COMMAND
+#define FEATURE_BUS_COMMAND 1
+#endif
 #endif
 
 #endif // CUSTOMBUILD_DEFINE_PLUGIN_SETS_H

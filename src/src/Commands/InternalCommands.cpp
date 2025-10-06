@@ -281,7 +281,9 @@ bool InternalCommands::executeInternalCommand()
     case ESPEasy_cmd_e::controllerdisable:          COMMAND_CASE_R(Command_Controller_Disable, 1);           // Controller.h
     case ESPEasy_cmd_e::controllerenable:           COMMAND_CASE_R(Command_Controller_Enable,  1);           // Controller.h
     case ESPEasy_cmd_e::datetime:                   COMMAND_CASE_R(Command_DateTime,             2);         // Time.h
+#ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
     case ESPEasy_cmd_e::debug:                      COMMAND_CASE_R(Command_Debug,                1);         // Diagnostic.h
+#endif
     case ESPEasy_cmd_e::dec:                        COMMAND_CASE_A(Command_Rules_Dec,           -1);         // Rules.h
     case ESPEasy_cmd_e::deepsleep:                  COMMAND_CASE_R(Command_System_deepSleep,     1);         // System.h
     case ESPEasy_cmd_e::delay:                      COMMAND_CASE_R(Command_Delay,                1);         // Timers.h
