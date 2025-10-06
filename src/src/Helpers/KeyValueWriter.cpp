@@ -37,7 +37,7 @@ KeyValueStruct::KeyValueStruct(const String         & key,
   : _key(key), _format(format) {
   _values.emplace_back(String(val), vType);
 }
-#ifdef ESP32
+#if defined(ESP32) && !defined(__riscv)
 KeyValueStruct::KeyValueStruct(const String         & key,
                                int32_t                val,
                                Format                 format,
@@ -53,7 +53,7 @@ KeyValueStruct::KeyValueStruct(const String         & key,
   : _key(key), _format(format) {
   _values.emplace_back(String(val), vType);
 }
-#ifdef ESP32
+#if defined(ESP32) && !defined(__riscv)
 KeyValueStruct::KeyValueStruct(const String         & key,
                                size_t                 val,
                                Format                 format,
