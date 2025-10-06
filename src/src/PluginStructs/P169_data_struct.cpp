@@ -248,7 +248,7 @@ bool P169_data_struct::plugin_init(struct EventStruct *event)
   calibrate(event);
 
 # ifdef ESP32
-
+#ifndef BUILD_NO_DEBUG
   if (loglevelActiveFor(LOG_LEVEL_DEBUG))
   {
     // Short test checking effect of nr samples during calibration
@@ -284,6 +284,7 @@ bool P169_data_struct::plugin_init(struct EventStruct *event)
       addLogMove(LOG_LEVEL_DEBUG, log);
     }
   }
+#endif
 # endif // ifdef ESP32
 
 

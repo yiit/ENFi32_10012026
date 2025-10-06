@@ -91,35 +91,15 @@ void handle_sysinfo_json() {
 
       if (writer) {
         writer->write({ F("free"),   freeMem });
-        writer->write({ F("low_ram"),
 #  ifndef BUILD_NO_RAM_TRACKER
-                        lowestRAM
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                        0
+        writer->write({ F("low_ram"), lowestRAM });
+        writer->write({ F("low_ram_fn"), lowestRAMfunction });
 #  endif // ifndef BUILD_NO_RAM_TRACKER
-                      });
-        writer->write({ F("low_ram_fn"),
-#  ifndef BUILD_NO_RAM_TRACKER
-                        lowestRAMfunction
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                        0
-#  endif // ifndef BUILD_NO_RAM_TRACKER
-                      });
         writer->write({ F("stack"),    getCurrentFreeStack() });
-        writer->write({ F("low_stack"),
 #  ifndef BUILD_NO_RAM_TRACKER
-                        lowestFreeStack
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                        0
+        writer->write({ F("low_stack"), lowestFreeStack });
+        writer->write({ F("low_stack_fn"), lowestFreeStackfunction });
 #  endif // ifndef BUILD_NO_RAM_TRACKER
-                      });
-        writer->write({ F("low_stack_fn"),
-#  ifndef BUILD_NO_RAM_TRACKER
-                        lowestFreeStackfunction
-#  else // ifndef BUILD_NO_RAM_TRACKER
-                        0
-#  endif // ifndef BUILD_NO_RAM_TRACKER
-                      });
       }
     }
     {
