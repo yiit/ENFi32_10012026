@@ -2328,13 +2328,17 @@ To create/register a plugin, you have to :
     #define USES_C012   // Blynk HTTP
   #endif
   #ifndef USES_C014
+  #ifdef ESP32
     #define USES_C014   // homie 3 & 4dev MQTT
+  #endif
   #endif
   #ifndef USES_C015
     //#define USES_C015   // Blynk
   #endif
   #ifndef USES_C017
+  #ifdef ESP32
     #define USES_C017   // Zabbix
+  #endif
   #endif
   #ifdef ESP32
     #ifndef USES_C018
