@@ -632,7 +632,7 @@ void handle_json()
 
                     for (uint8_t c = 0; c < I2CMultiplexerMaxChannels(i2cBus); ++c) {
                       if (bitRead(channel, c)) {
-                        kv.appendValue(strformat(F("Multiplexer channel %d"), c));
+                        kv.appendValue(concat(F("Multiplexer channel "), c));
                       }
                     }
                     taskWriter->write(kv);

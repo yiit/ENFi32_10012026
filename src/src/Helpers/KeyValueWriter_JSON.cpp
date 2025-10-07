@@ -103,7 +103,7 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
       pr.write('"');
     }
     else {
-      writeValue(kv._values[0]);
+      writeValue(kv._values[0].get());
     }
   } else {
     // Multiple values, so we must wrap it in []
@@ -124,27 +124,31 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
       pr.write('\t');
 #endif // ifdef USE_KVW_JSON_INDENT
 
-      writeValue(kv._values[i]);
+      writeValue(kv._values[i].get());
     }
     getPrint().write(']');
   }
 }
 
-void KeyValueWriter_JSON::writeValue(const ValueStruct& val)
+void KeyValueWriter_JSON::writeValue(const ValueStruct* val)
 {
+  if (val == nullptr) return;
   auto& pr = getPrint();
 
-  switch (val.valueType)
+  ValueStruct::ValueType valueType(ValueStruct::ValueType::Auto);
+  String str = val->toString(valueType);
+
+  switch (valueType)
   {
     case ValueStruct::ValueType::Float:
     case ValueStruct::ValueType::Double:
     case ValueStruct::ValueType::Int:
-      pr.print(val.str);
+      pr.print(str);
       return;
     case ValueStruct::ValueType::Bool:
 
       if (!Settings.JSONBoolWithoutQuotes()) { pr.write('"'); }
-      pr.print(val.str.equals("0") ? F("false") : F("true"));
+      pr.print(str.equals("0") ? F("false") : F("true"));
 
       if (!Settings.JSONBoolWithoutQuotes()) { pr.write('"'); }
       return;
@@ -153,7 +157,7 @@ void KeyValueWriter_JSON::writeValue(const ValueStruct& val)
     case ValueStruct::ValueType::String:
       break;
   }
-  pr.print(to_json_value(val.str));
+  pr.print(to_json_value(str));
 }
 
 Sp_KeyValueWriter KeyValueWriter_JSON::createChild() { return std::make_shared<KeyValueWriter_JSON>(this, _toString); }

@@ -71,7 +71,7 @@ public:
 
 private:
 
-  void writeValue(const ValueStruct& value);
+  void writeValue(const ValueStruct* value);
 
 #ifdef USE_KVW_JSON_INDENT
 

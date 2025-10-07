@@ -1015,7 +1015,7 @@ void   addRTDNetworkDriverButton(ESPEasy::net::nwpluginID_t nwpluginID)
 {
   addRTDHelpButton(
     strformat(
-      F("NetworkDriver/%s.html"),
+      F("Network/%s.html"),
       nwpluginID.toDisplayString().c_str()));
 }
 # endif // ifndef LIMIT_BUILD_SIZE

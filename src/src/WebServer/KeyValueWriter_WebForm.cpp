@@ -97,14 +97,16 @@ void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
       }
     }
 
-    if (!plain_text && (kv._values[i].str.indexOf('\n') != -1))
+    if (kv._values[i]) {
+
+    String str(kv._values[i]->toString());
+
+    if (!plain_text && (str.indexOf('\n') != -1))
     {
-      String str = kv._values[i].str;
       str.replace(F("\n"), F("<br>"));
-      getPrint().print(str);
-    } else {
-      getPrint().print(kv._values[i].str);
     }
+    getPrint().print(str);
+  }
   }
 
   // May need to include the unit before ending </pre>

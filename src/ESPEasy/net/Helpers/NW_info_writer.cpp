@@ -56,7 +56,7 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
             labels_str += F(" (static IP)");
           }
         }
-        kv.appendValue(labels_str);
+        kv.appendValue(std::move(labels_str));
       }
     }
     writer->write(kv);
