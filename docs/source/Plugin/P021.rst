@@ -162,6 +162,8 @@ Sensor
 
 :sup:`1)` Configuration may not be available due to build size limitations.
 
+.. include:: DeviceClass_binary.repl
+
 .. include:: DataAcquisition.repl
 
 Values
