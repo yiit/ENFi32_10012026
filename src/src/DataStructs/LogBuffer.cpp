@@ -13,17 +13,22 @@ void LogBuffer::add(LogEntry_t&& logEntry) {
 
 bool LogBuffer::getNext(uint8_t logDestination, uint32_t& timestamp, String& message, uint8_t& loglevel)
 {
+  if (logDestination >= NR_LOG_TO_DESTINATIONS) { return false; }
+
   if (logDestination == LOG_TO_WEBLOG) {
     lastReadTimeStamp = millis();
   }
 
-  for (LogEntry_queue::iterator it = LogEntries.begin(); it != LogEntries.end(); ++it)
+  while (cache_iterator_pos[logDestination] < LogEntries.size())
   {
-    if (it->validForSubscriber(logDestination)) {
-      timestamp = it->getTimestamp();
-      message   = it->getMessage();
-      loglevel  = it->getLogLevel();
-      it->markReadBySubscriber(logDestination);
+    const auto pos = cache_iterator_pos[logDestination];
+    ++cache_iterator_pos[logDestination];
+
+    if (LogEntries[pos].validForSubscriber(logDestination)) {
+      timestamp = LogEntries[pos].getTimestamp();
+      message   = LogEntries[pos].getMessage();
+      loglevel  = LogEntries[pos].getLogLevel();
+      LogEntries[pos].markReadBySubscriber(logDestination);
       clearExpiredEntries();
       return true;
     }
@@ -40,6 +45,12 @@ void LogBuffer::clearExpiredEntries() {
   for (auto it = LogEntries.begin(); it != LogEntries.end();)
   {
     if (it->isExpired()) {
+      for (size_t i = 0; i < NR_LOG_TO_DESTINATIONS; ++i) {
+        if (cache_iterator_pos[i]) {
+          --cache_iterator_pos[i];
+        }
+      }
+
       it = LogEntries.erase(it);
     } else {
       return;

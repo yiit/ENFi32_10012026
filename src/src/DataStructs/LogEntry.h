@@ -33,17 +33,19 @@ struct LogEntry_t {
 
   LogEntry_t& operator=(const LogEntry_t& rhs) = delete;
 
-  operator bool() const { return isValid(); }
+  operator bool() const {
+    return isValid();
+  }
 
-  void        setSubscribers();
+  void   setSubscribers();
 
-  void        markReadBySubscriber(uint8_t subscriber);
+  void   markReadBySubscriber(uint8_t subscriber);
 
-  bool        validForSubscriber(uint8_t subscriber) const;
+  bool   validForSubscriber(uint8_t subscriber) const;
 
-  size_t      print(Print& out,
-                    size_t offset = 0,
-                    size_t length = std::numeric_limits<size_t>::max()) const;
+  size_t print(Print& out,
+               size_t offset = 0,
+               size_t length = std::numeric_limits<size_t>::max()) const;
 
   String   getMessage() const;
 

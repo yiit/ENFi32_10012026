@@ -35,6 +35,7 @@
 
 typedef std::deque<LogEntry_t> LogEntry_queue;
 
+
 struct LogBuffer {
 
   LogBuffer() = default;
@@ -58,7 +59,9 @@ struct LogBuffer {
 private:
 
   LogEntry_queue LogEntries;
-  uint32_t       lastReadTimeStamp = 0;
+  uint32_t       lastReadTimeStamp{};
+
+  uint32_t cache_iterator_pos[NR_LOG_TO_DESTINATIONS]{};
 
 };
 

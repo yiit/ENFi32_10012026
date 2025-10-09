@@ -89,7 +89,8 @@ bool LogHelper::getNext(uint8_t logDestination, uint32_t& timestamp, String& mes
   return _logBuffer.getNext(logDestination, timestamp, message, loglevel);
 }
 
-void LogHelper::loop()             {
+void LogHelper::loop()
+{
   const uint8_t destinations[] = {
     // TODO TD-er: Add log buffer for 2nd serial console
     LOG_TO_SERIAL,
