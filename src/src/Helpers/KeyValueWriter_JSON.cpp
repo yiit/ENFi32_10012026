@@ -160,16 +160,16 @@ void KeyValueWriter_JSON::writeValue(const ValueStruct* val)
   pr.print(to_json_value(str));
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createChild() { return std::make_shared<KeyValueWriter_JSON>(this, _toString); }
+Sp_KeyValueWriter KeyValueWriter_JSON::createChild() { return std::make_unique<KeyValueWriter_JSON>(this, _toString); }
 
 Sp_KeyValueWriter KeyValueWriter_JSON::createChild(const String& header)
 {
-  return std::make_shared<KeyValueWriter_JSON>(header, this, _toString);
+  return std::make_unique<KeyValueWriter_JSON>(header, this, _toString);
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createNew()                     { return std::make_shared<KeyValueWriter_JSON>(false, _toString); }
+Sp_KeyValueWriter KeyValueWriter_JSON::createNew()                     { return std::make_unique<KeyValueWriter_JSON>(false, _toString); }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header) { return std::make_shared<KeyValueWriter_JSON>(header, _toString); }
+Sp_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header) { return std::make_unique<KeyValueWriter_JSON>(header, _toString); }
 
 
 #ifdef USE_KVW_JSON_INDENT

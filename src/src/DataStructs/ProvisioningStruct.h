@@ -8,7 +8,7 @@
 # include "../DataStructs/FactoryDefaultPref.h"
 # include "../DataTypes/ESPEasyFileType.h"
 
-# include <memory> // for std::shared_ptr
+# include <memory> // for std::unique_ptr
 
 /*********************************************************************************************\
 * ProvisioningStruct
@@ -54,7 +54,7 @@ struct ProvisioningStruct
   };
 };
 
-typedef std::shared_ptr<ProvisioningStruct> ProvisioningStruct_ptr_type;
+typedef std::unique_ptr<ProvisioningStruct> ProvisioningStruct_ptr_type;
 
 #define MakeProvisioningSettings(T) void * calloc_ptr = special_calloc(1,sizeof(ProvisioningStruct)); ProvisioningStruct_ptr_type T(new (calloc_ptr)  ProvisioningStruct());
 

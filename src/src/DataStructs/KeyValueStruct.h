@@ -69,39 +69,32 @@ struct KeyValueStruct
 
   KeyValueStruct(const __FlashStringHelper *key,
                  const String             & val,
-                 Format                     format = Format::Default,
-                 ValueStruct::ValueType     vType  = ValueStruct::ValueType::Auto);
+                 Format                     format = Format::Default);
 
   KeyValueStruct(const String             & key,
                  const __FlashStringHelper *val,
-                 Format                     format = Format::Default,
-                 ValueStruct::ValueType     vType  = ValueStruct::ValueType::Auto);
+                 Format                     format = Format::Default);
 
   KeyValueStruct(const __FlashStringHelper *key,
                  const __FlashStringHelper *val,
-                 Format                     format = Format::Default,
-                 ValueStruct::ValueType     vType  = ValueStruct::ValueType::Auto);
+                 Format                     format = Format::Default);
 
   KeyValueStruct(const __FlashStringHelper *key,
                  const char                *val,
-                 Format                     format = Format::Default,
-                 ValueStruct::ValueType     vType  = ValueStruct::ValueType::Auto);
+                 Format                     format = Format::Default);
 
   KeyValueStruct(const String         & key,
                  const String         & val,
-                 Format                 format = Format::Default,
-                 ValueStruct::ValueType vType  = ValueStruct::ValueType::Auto);
+                 Format                 format = Format::Default);
 
   KeyValueStruct(const __FlashStringHelper *key,
                  String                  && val,
-                 Format                     format = Format::Default,
-                 ValueStruct::ValueType     vType  = ValueStruct::ValueType::Auto);
+                 Format                     format = Format::Default);
 
 
   KeyValueStruct(const String         & key,
                  String              && val,
-                 Format                 format = Format::Default,
-                 ValueStruct::ValueType vType  = ValueStruct::ValueType::Auto);
+                 Format                 format = Format::Default);
 
   /*
      // TD-er: Do not use template types as it may 'explode' in binary size.
@@ -122,7 +115,7 @@ struct KeyValueStruct
   void setUnit(const String& unit);
   void setUnit(const __FlashStringHelper *unit);
 
-  void appendValue(Sp_ValueStruct value);
+  void appendValue(Up_ValueStruct value);
   void appendValue(const String& value);
   void appendValue(String&& value);
 
@@ -131,7 +124,7 @@ struct KeyValueStruct
   String _id;
   String _unit;
 
-  std::vector<Sp_ValueStruct>_values;
+  std::vector<Up_ValueStruct>_values;
 
   Format _format = Format::Default;
 

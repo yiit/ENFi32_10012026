@@ -13,7 +13,7 @@
 
 
 class KeyValueWriter;
-typedef std::shared_ptr<KeyValueWriter> Sp_KeyValueWriter;
+typedef std::unique_ptr<KeyValueWriter> Sp_KeyValueWriter;
 
 // ********************************************************************************
 // KeyValueWriter
@@ -80,7 +80,7 @@ public:
   // This should be override by any writer outputting data which is not intended to be human readable.
   virtual bool              dataOnlyOutput() const                      { return false; }
 
-  // TODO TD-er: Change this to std::shared_ptr<PrintToString>
+  // TODO TD-er: Change this to std::unique_ptr<PrintToString>
   virtual void              setOutputToString(PrintToString*printToStr) { _toString = printToStr; }
 
   // Create writer of the same derived type, with this set as parent
@@ -116,7 +116,7 @@ protected:
     return *_toString;
   }
 
-  // TODO TD-er: Change this to std::shared_ptr<PrintToString>
+  // TODO TD-er: Change this to std::unique_ptr<PrintToString>
   PrintToString *_toString = nullptr;
 
 private:

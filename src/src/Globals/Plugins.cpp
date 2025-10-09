@@ -762,7 +762,7 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
     case PLUGIN_PRIORITY_INIT_ALL:
     {
       if (Function == PLUGIN_PRIORITY_INIT_ALL) {
-        addLogMove(LOG_LEVEL_INFO, F("INIT : Check for Priority tasks"));
+        addLog(LOG_LEVEL_INFO, F("INIT : Check for Priority tasks"));
         PluginInit(true); // Priority only, load plugins but don't initialize them yet
         Function = PLUGIN_PRIORITY_INIT;
       }

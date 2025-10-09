@@ -404,6 +404,10 @@ bool MQTTConnect_prepareClient(controllerIndex_t controller_idx) {
     }
     #endif // if !defined(BUILD_NO_DEBUG) && FEATURE_MQTT_CONNECT_BACKGROUND
     MQTTclient.setServer(ControllerSettings->getHost().c_str(), ControllerSettings->Port);
+# if FEATURE_MQTT_TLS
+    if (mqtt_tls)
+    mqtt_tls->setDomainName(ControllerSettings->getHost().c_str());
+#endif
   } else {
     #if !defined(BUILD_NO_DEBUG) && FEATURE_MQTT_CONNECT_BACKGROUND
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {

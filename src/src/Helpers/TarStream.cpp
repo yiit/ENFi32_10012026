@@ -44,7 +44,7 @@ TarStream::~TarStream() {
 
 size_t TarStream::write(uint8_t ch) {
   // TODO implement
-  addLogMove(LOG_LEVEL_ERROR, F("TarStream: write(ch) NOT IMPLEMENTED YET."));
+  addLog(LOG_LEVEL_ERROR, F("TarStream: write(ch) NOT IMPLEMENTED YET."));
   return 1u;
 }
 

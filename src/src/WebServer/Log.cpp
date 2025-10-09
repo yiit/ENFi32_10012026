@@ -7,7 +7,7 @@
 #include "../WebServer/Markup.h"
 #include "../WebServer/Markup_Buttons.h"
 
-#include "../DataStructs/LogStruct.h"
+#include "../DataStructs/LogBuffer.h"
 
 #include "../Globals/Logging.h"
 #include "../Globals/Settings.h"
@@ -81,7 +81,7 @@ void handle_log_JSON() {
         }
         uint32_t firstTimeStamp = 0;
         uint32_t lastTimeStamp  = 0;
-        int nrEntries                = 0;
+        int nrEntries           = 0;
 
         {
           auto entriesWriter = mainWriter->createChild(F("Entries"));
@@ -94,11 +94,11 @@ void handle_log_JSON() {
               String  message;
               uint8_t loglevel;
 
-              if (Logging.getNext(logLinesAvailable, lastTimeStamp, message, loglevel)) {
+              if (Logging.getNext(LOG_TO_WEBLOG, lastTimeStamp, message, loglevel)) {
                 auto logWriter = entriesWriter->createChild();
 
                 if (logWriter) {
-                  logWriter->write({ F("timestamp"), lastTimeStamp });
+                  logWriter->write({ F("timestamp"), format_msec_duration(lastTimeStamp) });
                   logWriter->write({ F("text"),      std::move(message) });
                   logWriter->write({ F("level"), loglevel });
 
@@ -109,7 +109,7 @@ void handle_log_JSON() {
                 }
 
                 // Do we need to do something here and maybe limit number of lines at once?
-              }
+              } else { logLinesAvailable = false; }
             }
           }
         }

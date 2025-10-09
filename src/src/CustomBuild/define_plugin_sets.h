@@ -1117,6 +1117,9 @@ To create/register a plugin, you have to :
   #ifndef PLUGIN_DESCR // COLLECTION_G_ESP32_IRExt also passes here
     #define PLUGIN_DESCR  "Collection_G ESP32"
   #endif
+  #ifndef BUILD_NO_DEBUG
+    #define BUILD_NO_DEBUG
+  #endif
   #ifndef ESP32
     #define ESP32
   #endif
@@ -4167,7 +4170,7 @@ To create/register a plugin, you have to :
 #endif
 
 
-#if defined(USES_NW003) || defined(USES_NW004) || defined(USES_NW005)
+#if /*defined(USES_NW003) || defined(USES_NW004) ||*/ defined(USES_NW005)
 # ifndef FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 #  define FEATURE_STORE_NETWORK_INTERFACE_SETTINGS  1
 # endif

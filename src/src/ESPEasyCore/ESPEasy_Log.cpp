@@ -1,6 +1,6 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 
-#include "../DataStructs/LogStruct.h"
+#include "../DataStructs/LogBuffer.h"
 #include "../ESPEasyCore/Serial.h"
 #include "../Globals/Cache.h"
 #include "../Globals/ESPEasy_Console.h"
@@ -11,61 +11,62 @@
 #include "../Helpers/Networking.h"
 #include "../Helpers/StringConverter.h"
 
-#include <FS.h>
-
-#if FEATURE_SD
-#include <SD.h>
-#include "../Helpers/ESPEasy_Storage.h"
-#endif
 
 #define UPDATE_LOGLEVEL_ACTIVE_CACHE_INTERVAL 5000
 
 /********************************************************************************************\
-  Init critical variables for logging (important during initial factory reset stuff )
-  \*********************************************************************************************/
+   Init critical variables for logging (important during initial factory reset stuff )
+ \*********************************************************************************************/
 void initLog()
 {
-  //make sure addLog doesnt do any stuff before initalisation of Settings is complete.
-  Settings.UseSerial=true;
-  Settings.SyslogFacility=0;
+  // make sure addLog doesnt do any stuff before initalisation of Settings is complete.
+  Settings.UseSerial      = true;
+  Settings.SyslogFacility = 0;
   setLogLevelFor(LOG_TO_SYSLOG, 0);
-  setLogLevelFor(LOG_TO_SERIAL, 2); //logging during initialisation
+  setLogLevelFor(LOG_TO_SERIAL, 2); // logging during initialisation
   setLogLevelFor(LOG_TO_WEBLOG, 2);
   setLogLevelFor(LOG_TO_SDCARD, 0);
 }
 
-
 /********************************************************************************************\
-  Logging
-  \*********************************************************************************************/
-const __FlashStringHelper * getLogLevelDisplayString(int logLevel) {
-  switch (logLevel) {
+   Logging
+ \*********************************************************************************************/
+const __FlashStringHelper* getLogLevelDisplayString(int logLevel) {
+  switch (logLevel)
+  {
     case LOG_LEVEL_NONE:       return F("None");
     case LOG_LEVEL_ERROR:      return F("Error");
     case LOG_LEVEL_INFO:       return F("Info");
-# ifndef BUILD_NO_DEBUG
+#ifndef BUILD_NO_DEBUG
     case LOG_LEVEL_DEBUG:      return F("Debug");
     case LOG_LEVEL_DEBUG_MORE: return F("Debug More");
     case LOG_LEVEL_DEBUG_DEV:  return F("Debug dev");
-#endif
+#endif // ifndef BUILD_NO_DEBUG
 
     default:
-    break;
+      break;
   }
   return F("");
 }
 
-const __FlashStringHelper * getLogLevelDisplayStringFromIndex(uint8_t index, int& logLevel) {
-  switch (index) {
-    case 0: logLevel = LOG_LEVEL_ERROR;      break;
-    case 1: logLevel = LOG_LEVEL_INFO;       break;
-# ifndef BUILD_NO_DEBUG
-    case 2: logLevel = LOG_LEVEL_DEBUG;      break;
-    case 3: logLevel = LOG_LEVEL_DEBUG_MORE; break;
-    case 4: logLevel = LOG_LEVEL_DEBUG_DEV;  break;
-#endif
+const __FlashStringHelper* getLogLevelDisplayStringFromIndex(uint8_t index, int& logLevel) {
+  switch (index)
+  {
+    case 0: logLevel = LOG_LEVEL_ERROR;
+      break;
+    case 1: logLevel = LOG_LEVEL_INFO;
+      break;
+#ifndef BUILD_NO_DEBUG
+    case 2: logLevel = LOG_LEVEL_DEBUG;
+      break;
+    case 3: logLevel = LOG_LEVEL_DEBUG_MORE;
+      break;
+    case 4: logLevel = LOG_LEVEL_DEBUG_DEV;
+      break;
+#endif // ifndef BUILD_NO_DEBUG
 
-    default: logLevel = -1; return F("");
+    default: logLevel = -1;
+      return F("");
   }
   return getLogLevelDisplayString(logLevel);
 }
@@ -76,15 +77,20 @@ void disableSerialLog() {
 }
 
 void setLogLevelFor(uint8_t destination, uint8_t logLevel) {
-  switch (destination) {
+  switch (destination)
+  {
     case LOG_TO_SERIAL:
-      if (!log_to_serial_disabled || logLevel == 0) {
-        Settings.SerialLogLevel = logLevel; 
+
+      if (!log_to_serial_disabled || (logLevel == 0)) {
+        Settings.SerialLogLevel = logLevel;
       }
       break;
-    case LOG_TO_SYSLOG: Settings.SyslogLevel = logLevel;    break;
-    case LOG_TO_WEBLOG: Settings.WebLogLevel = logLevel;    break;
-    case LOG_TO_SDCARD: Settings.SDLogLevel = logLevel;     break;
+    case LOG_TO_SYSLOG: Settings.SyslogLevel = logLevel;
+      break;
+    case LOG_TO_WEBLOG: Settings.WebLogLevel = logLevel;
+      break;
+    case LOG_TO_SDCARD: Settings.SDLogLevel = logLevel;
+      break;
     default:
       break;
   }
@@ -93,8 +99,10 @@ void setLogLevelFor(uint8_t destination, uint8_t logLevel) {
 
 void updateLogLevelCache() {
   uint8_t max_lvl = 0;
+
   // FIXME TD-er: Must add check whether SW serial may be using the same pins as Serial0
   const bool useSerial = Settings.UseSerial && !activeTaskUseSerial0();
+
   if (log_to_serial_disabled) {
     if (useSerial) {
       ESPEasy_Console.setDebugOutput(false);
@@ -102,13 +110,15 @@ void updateLogLevelCache() {
   } else {
     max_lvl = _max(max_lvl, Settings.SerialLogLevel);
 #ifndef BUILD_NO_DEBUG
-    if (useSerial && Settings.SerialLogLevel >= LOG_LEVEL_DEBUG_MORE) {
+
+    if (useSerial && (Settings.SerialLogLevel >= LOG_LEVEL_DEBUG_MORE)) {
       ESPEasy_Console.setDebugOutput(true);
     }
-#endif
+#endif // ifndef BUILD_NO_DEBUG
   }
   max_lvl = _max(max_lvl, Settings.SyslogLevel);
-  if (Logging.logActiveRead()) {
+
+  if (Logging.webLogActiveRead()) {
     max_lvl = _max(max_lvl, Settings.WebLogLevel);
   }
 #if FEATURE_SD
@@ -119,17 +129,19 @@ void updateLogLevelCache() {
 
 bool loglevelActiveFor(uint8_t logLevel) {
   #ifdef ESP32
+
   if (xPortInIsrContext()) {
     // When called from an ISR, you should not send out logs.
     // Allocating memory from within an ISR is a big no-no.
-    // Also long-time blocking like sending logs (especially to a syslog server) 
+    // Also long-time blocking like sending logs (especially to a syslog server)
     // is also really not a good idea from an ISR call.
     return false;
   }
-  #endif
+  #endif // ifdef ESP32
   static uint32_t lastUpdateLogLevelCache = 0;
-  if (lastUpdateLogLevelCache == 0 || 
-      timePassedSince(lastUpdateLogLevelCache) > UPDATE_LOGLEVEL_ACTIVE_CACHE_INTERVAL)
+
+  if ((lastUpdateLogLevelCache == 0) ||
+      (timePassedSince(lastUpdateLogLevelCache) > UPDATE_LOGLEVEL_ACTIVE_CACHE_INTERVAL))
   {
     lastUpdateLogLevelCache = millis();
     updateLogLevelCache();
@@ -139,11 +151,14 @@ bool loglevelActiveFor(uint8_t logLevel) {
 
 uint8_t getSerialLogLevel() {
 #if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
+
   // FIXME TD-er: Must add check whether SW serial may be using the same pins as Serial0
-  if (log_to_serial_disabled || !Settings.UseSerial) return 0;
-#else
-  if (log_to_serial_disabled || !Settings.UseSerial || activeTaskUseSerial0()) return 0;
-#endif
+  if (log_to_serial_disabled || !Settings.UseSerial) { return 0; }
+#else // if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
+
+  if (log_to_serial_disabled || !Settings.UseSerial || activeTaskUseSerial0()) { return 0; }
+#endif // if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
+
   if (!ESPEasy::net::NetworkConnected()) {
     if (Settings.SerialLogLevel < LOG_LEVEL_INFO) {
       return LOG_LEVEL_INFO;
@@ -153,9 +168,10 @@ uint8_t getSerialLogLevel() {
 }
 
 uint8_t getWebLogLevel() {
-  if (Logging.logActiveRead()) {
+  if (Logging.webLogActiveRead()) {
     return Settings.WebLogLevel;
-  } 
+  }
+
   if (Settings.WebLogLevel != LOG_LEVEL_NONE) {
     updateLogLevelCache();
   }
@@ -164,30 +180,37 @@ uint8_t getWebLogLevel() {
 
 bool loglevelActiveFor(uint8_t destination, uint8_t logLevel) {
   #ifdef ESP32
+
   if (xPortInIsrContext()) {
     // When called from an ISR, you should not send out logs.
     // Allocating memory from within an ISR is a big no-no.
-    // Also long-time blocking like sending logs (especially to a syslog server) 
+    // Also long-time blocking like sending logs (especially to a syslog server)
     // is also really not a good idea from an ISR call.
     return false;
   }
-  #endif
+  #endif // ifdef ESP32
 
   uint8_t logLevelSettings = 0;
-  switch (destination) {
-    case LOG_TO_SERIAL: {
+
+  switch (destination)
+  {
+    case LOG_TO_SERIAL:
+    {
       logLevelSettings = getSerialLogLevel();
       break;
     }
-    case LOG_TO_SYSLOG: {
+    case LOG_TO_SYSLOG:
+    {
       logLevelSettings = Settings.SyslogLevel;
       break;
     }
-    case LOG_TO_WEBLOG: {
+    case LOG_TO_WEBLOG:
+    {
       logLevelSettings = getWebLogLevel();
       break;
     }
-    case LOG_TO_SDCARD: {
+    case LOG_TO_SDCARD:
+    {
       #if FEATURE_SD
       logLevelSettings = Settings.SDLogLevel;
       #endif
@@ -201,14 +224,19 @@ bool loglevelActiveFor(uint8_t destination, uint8_t logLevel) {
 
 void addLog(uint8_t logLevel, const __FlashStringHelper *str)
 {
-  if (loglevelActiveFor(logLevel)) {
-    String copy;
-    if (!reserve_special(copy, strlen_P((PGM_P)str))) {
-      return;
-    }
-    copy = str;
-    addToLogMove(logLevel, std::move(copy));
+  #ifdef ESP32
+
+  if (xPortInIsrContext()) {
+    // When called from an ISR, you should not send out logs.
+    // Allocating memory from within an ISR is a big no-no.
+    // Also long-time blocking like sending logs (especially to a syslog server)
+    // is also really not a good idea from an ISR call.
+    return;
   }
+  #endif // ifdef ESP32
+  //  Up_LogEntry entry(new (std::nothrow) LogEntry_t(logLevel, str));
+  //  Logging.addLogEntry(std::move(entry));
+  Logging.addLogEntry(LogEntry_t(logLevel, str));
 }
 
 void addLog(uint8_t logLevel, const char *line)
@@ -221,12 +249,14 @@ void addLog(uint8_t logLevel, const char *line)
     {
       // Allow to store the logs in 2nd heap if present.
       if (mmu_is_iram(line)) {
-        size_t length = 0;
-        const char* cur_char = line;
-        bool copying = false;
-        bool done = false;
+        size_t length       = 0;
+        const char*cur_char = line;
+        bool copying        = false;
+        bool done           = false;
+
         while (!done) {
           const uint8_t ch = mmu_get_uint8(cur_char++);
+
           if (ch == 0) {
             if (copying) {
               done = true;
@@ -234,7 +264,7 @@ void addLog(uint8_t logLevel, const char *line)
               if (!reserve_special(copy, length)) {
                 return;
               }
-              copying = true;
+              copying  = true;
               cur_char = line;
             }
           } else {
@@ -252,114 +282,55 @@ void addLog(uint8_t logLevel, const char *line)
         copy = line;
       }
     }
-    #else 
+    #else // ifdef USE_SECOND_HEAP
+
     if (!reserve_special(copy, strlen_P((PGM_P)line))) {
       return;
     }
     copy = line;
-    #endif
+    #endif // ifdef USE_SECOND_HEAP
     addToLogMove(logLevel, std::move(copy));
   }
 }
 
-void addLog(uint8_t logLevel, String&& string)
-{
-  addToLogMove(logLevel, std::move(string));
-}
+void addLog(uint8_t logLevel, String&& str) { addToLogMove(logLevel, std::move(str)); }
 
 
 #ifndef LIMIT_BUILD_SIZE
-#include "../Helpers/Memory.h"
+# include "../Helpers/Memory.h"
 #endif
 
-void addToSerialLog(uint8_t logLevel, const String& string)
-{
-  if (loglevelActiveFor(LOG_TO_SERIAL, logLevel)) {
-    ESPEasy_Console.addToSerialBuffer(format_msec_duration(millis()));
-    #ifndef LIMIT_BUILD_SIZE
-    ESPEasy_Console.addToSerialBuffer(strformat(F(" : (%d) "), FreeMem()));
-    #endif
-    {
-      String loglevelDisplayString = getLogLevelDisplayString(logLevel);
-      while (loglevelDisplayString.length() < 6) {
-        loglevelDisplayString += ' ';
-      }
-      ESPEasy_Console.addToSerialBuffer(loglevelDisplayString);
-    }
-    ESPEasy_Console.addToSerialBuffer(F(" : "));
-    ESPEasy_Console.addToSerialBuffer(string);
-    ESPEasy_Console.addNewlineToSerialBuffer();
-  }
-}
 
-void addToSysLog(uint8_t logLevel, const String& string)
-{
-  if (loglevelActiveFor(LOG_TO_SYSLOG, logLevel)) {
-    sendSyslog(logLevel, string);
-  }
-}
-
-void addToSDLog(uint8_t logLevel, const String& string)
-{
-#if FEATURE_SD
-  if (!string.isEmpty() && loglevelActiveFor(LOG_TO_SDCARD, logLevel)) {
-    String   logName = patch_fname(F("log.txt"));
-    fs::File logFile = SD.open(logName, "a+");
-    if (logFile) {
-      const size_t stringLength = string.length();
-      for (size_t i = 0; i < stringLength; ++i) {
-        logFile.print(string[i]);
-      }
-      logFile.println();
-    }
-    logFile.close();
-  }
-#endif
-}
-
-
-void addLog(uint8_t logLevel, const String& string)
+void addLog(uint8_t logLevel, const String& str)
 {
   #ifdef ESP32
+
   if (xPortInIsrContext()) {
     // When called from an ISR, you should not send out logs.
     // Allocating memory from within an ISR is a big no-no.
-    // Also long-time blocking like sending logs (especially to a syslog server) 
+    // Also long-time blocking like sending logs (especially to a syslog server)
     // is also really not a good idea from an ISR call.
     return;
   }
-  #endif
-
-  if (string.isEmpty()) return;
-  addToSerialLog(logLevel, string);
-  addToSysLog(logLevel, string);
-  addToSDLog(logLevel, string);
-  if (loglevelActiveFor(LOG_TO_WEBLOG, logLevel)) {
-    Logging.add(logLevel, string);
-  }
+  #endif // ifdef ESP32
+  //  Up_LogEntry entry(new (std::nothrow) LogEntry_t(logLevel, str));
+  //  Logging.addLogEntry(std::move(entry));
+  Logging.addLogEntry(LogEntry_t(logLevel, str));
 }
 
-void addToLogMove(uint8_t logLevel, String&& string)
+void addToLogMove(uint8_t logLevel, String&& str)
 {
   #ifdef ESP32
+
   if (xPortInIsrContext()) {
     // When called from an ISR, you should not send out logs.
     // Allocating memory from within an ISR is a big no-no.
-    // Also long-time blocking like sending logs (especially to a syslog server) 
+    // Also long-time blocking like sending logs (especially to a syslog server)
     // is also really not a good idea from an ISR call.
     return;
   }
-  #endif
-
-  if (string.isEmpty()) return;
-  String tmp;
-  move_special(tmp, std::move(string));
-  addToSerialLog(logLevel, tmp);
-  addToSysLog(logLevel, tmp);
-  addToSDLog(logLevel, tmp);
-
-  // May clear the string, so call as last one.
-  if (loglevelActiveFor(LOG_TO_WEBLOG, logLevel)) {
-    Logging.add(logLevel, std::move(tmp));
-  }
+  #endif // ifdef ESP32
+  //  Up_LogEntry entry(new (std::nothrow) LogEntry_t(logLevel, str));
+  //  Logging.addLogEntry(std::move(entry));
+  Logging.addLogEntry(LogEntry_t(logLevel, str));
 }

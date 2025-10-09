@@ -157,6 +157,8 @@ boolean Plugin_002(uint8_t function, struct EventStruct *event, String& string)
             log += strformat(F(" (%u samples)"), P002_data->getOversamplingCount());
           }
           addLogMove(LOG_LEVEL_INFO, log);
+          addLog(LOG_LEVEL_INFO, F("ADC  : This is a long text to test if the flash string will be kept as flash string. This is now a 128 bytes long message....."));
+          addLog(LOG_LEVEL_INFO, F("ADC  : This is a long text to test if the flash string will be kept as flash string. This is now a 128 bytes long message....."));
         }
         P002_data->reset();
         success = true;

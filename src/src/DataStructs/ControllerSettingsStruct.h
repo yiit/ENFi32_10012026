@@ -6,7 +6,7 @@
 \*********************************************************************************************/
 #include "../../ESPEasy_common.h"
 
-#include <memory> // For std::shared_ptr
+#include <memory> // For std::unique_ptr
 #include <new>    // for std::nothrow
 
 #include <IPAddress.h>
@@ -270,7 +270,7 @@ private:
 
 #include "../Helpers/Memory.h"
 
-typedef std::shared_ptr<ControllerSettingsStruct> ControllerSettingsStruct_ptr_type;
+typedef std::unique_ptr<ControllerSettingsStruct> ControllerSettingsStruct_ptr_type;
 /*
 # ifdef USE_SECOND_HEAP
 #define MakeControllerSettings(T) HeapSelectIram ephemeral; ControllerSettingsStruct_ptr_type T(new (std::nothrow)  ControllerSettingsStruct());

@@ -11,7 +11,7 @@
 #include "../DataStructs/ExtraTaskSettingsStruct.h"
 #include "../DataStructs/FactoryDefaultPref.h"
 #include "../DataStructs/GpioFactorySettingsStruct.h"
-#include "../DataStructs/LogStruct.h"
+#include "../DataStructs/LogBuffer.h"
 #if FEATURE_ESPEASY_P2P
 #include "../DataStructs/NodeStruct.h"
 #endif
@@ -108,16 +108,6 @@ void run_compiletime_checks() {
   check_size<EventStruct,                           128u>(); // Is not stored
   #endif
 
-
-  // LogStruct is mainly dependent on the number of lines.
-  // Has to be round up to multiple of 4.
-  #ifdef ESP32  // ESP_IDF_VERSION_MAJOR > 3
-  // String class has increased with 4 bytes
-  const unsigned int LogStructSize = ((13u + 24 * LOG_STRUCT_MESSAGE_LINES) + 3) & ~3;
-  #else
-  const unsigned int LogStructSize = ((13u + 20 * LOG_STRUCT_MESSAGE_LINES) + 3) & ~3;
-  #endif
-  check_size<LogStruct,                             LogStructSize>(); // Is not stored
   check_size<DeviceStruct,                          12u>(); // Is not stored
   check_size<ProtocolStruct,                        8u>();
   #if FEATURE_NOTIFIER

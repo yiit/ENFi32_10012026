@@ -83,58 +83,51 @@ KeyValueStruct::KeyValueStruct(const String& key,
 
 KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
                                const String             & val,
-                               Format                     format,
-                               ValueStruct::ValueType     vType)
+                               Format                     format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(val, vType));
+  _values.emplace_back(ValueStruct_Factory::create(val));
 }
 
 KeyValueStruct::KeyValueStruct(const String             & key,
                                const __FlashStringHelper *val,
-                               Format                     format,
-                               ValueStruct::ValueType     vType)
+                               Format                     format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(val, vType));
+  _values.emplace_back(ValueStruct_Factory::create(val));
 }
 
 KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
                                const __FlashStringHelper *val,
-                               Format                     format,
-                               ValueStruct::ValueType     vType)
+                               Format                     format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(val, vType));
+  _values.emplace_back(ValueStruct_Factory::create(val));
 }
 
 KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
                                const char                *val,
-                               Format                     format,
-                               ValueStruct::ValueType     vType)
+                               Format                     format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(String(val), vType));
+  _values.emplace_back(ValueStruct_Factory::create(String(val)));
 }
 
 KeyValueStruct::KeyValueStruct(const String         & key,
                                const String         & val,
-                               Format                 format,
-                               ValueStruct::ValueType vType)
+                               Format                 format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(val, vType));
+  _values.emplace_back(ValueStruct_Factory::create(val));
 }
 
 KeyValueStruct::KeyValueStruct(const __FlashStringHelper *key,
                                String                  && val,
-                               Format                     format,
-                               ValueStruct::ValueType     vType)
+                               Format                     format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(std::move(val), vType));
+  _values.emplace_back(ValueStruct_Factory::create(std::move(val)));
 }
 
 KeyValueStruct::KeyValueStruct(const String         & key,
                                String              && val,
-                               Format                 format,
-                               ValueStruct::ValueType vType)
+                               Format                 format)
   : _key(key), _format(format) {
-  _values.emplace_back(ValueStruct_Factory::create(std::move(val), vType));
+  _values.emplace_back(ValueStruct_Factory::create(std::move(val)));
 }
 
 KeyValueStruct::KeyValueStruct(LabelType::Enum label, Format format)
@@ -146,9 +139,9 @@ void KeyValueStruct::setUnit(const String& unit)              { _unit = unit; }
 
 void KeyValueStruct::setUnit(const __FlashStringHelper *unit) { _unit = unit; }
 
-void KeyValueStruct::appendValue(Sp_ValueStruct value)
+void KeyValueStruct::appendValue(Up_ValueStruct value)
 {
-  _values.emplace_back(value);
+  _values.emplace_back(std::move(value));
   _isArray = true;
 }
 
@@ -160,6 +153,6 @@ void KeyValueStruct::appendValue(const String& value)
 
 void KeyValueStruct::appendValue(String&& value)
 {
-  _values.emplace_back(ValueStruct_Factory::create(value));
+  _values.emplace_back(ValueStruct_Factory::create(std::move(value)));
   _isArray = true;
 }

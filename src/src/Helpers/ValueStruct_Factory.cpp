@@ -1,63 +1,60 @@
 #include "../Helpers/ValueStruct_Factory.h"
 
-Sp_ValueStruct ValueStruct_Factory::create(const bool& val)
+Up_ValueStruct ValueStruct_Factory::create(const bool& val)
 {
-  return std::make_shared<ValueStruct_T<bool> >(val, ValueStruct::ValueType::Bool);
+  return std::make_unique<ValueStruct_T<bool> >(val, ValueStruct::ValueType::Bool);
 }
 
-Sp_ValueStruct ValueStruct_Factory::create(int val) { return std::make_shared<ValueStruct_T<int32_t> >(val, ValueStruct::ValueType::Int); }
+Up_ValueStruct ValueStruct_Factory::create(int val) { return std::make_unique<ValueStruct_T<int32_t> >(val, ValueStruct::ValueType::Int); }
 
 #if defined(ESP32) && !defined(__riscv)
 
-Sp_ValueStruct ValueStruct_Factory::create(int32_t val)
+Up_ValueStruct ValueStruct_Factory::create(int32_t val)
 {
-  return std::make_shared<ValueStruct_T<int32_t> >(val, ValueStruct::ValueType::Int);
+  return std::make_unique<ValueStruct_T<int32_t> >(val, ValueStruct::ValueType::Int);
 }
 
 #endif // if defined(ESP32) && !defined(__riscv)
 
-Sp_ValueStruct ValueStruct_Factory::create(uint32_t val)
+Up_ValueStruct ValueStruct_Factory::create(uint32_t val)
 {
-  return std::make_shared<ValueStruct_T<uint32_t> >(val, ValueStruct::ValueType::Int);
+  return std::make_unique<ValueStruct_T<uint32_t> >(val, ValueStruct::ValueType::Int);
 }
 
 #if defined(ESP32) && !defined(__riscv)
 
-Sp_ValueStruct ValueStruct_Factory::create(size_t val) { return std::make_shared<ValueStruct_T<size_t> >(val, ValueStruct::ValueType::Int); }
+Up_ValueStruct ValueStruct_Factory::create(size_t val) { return std::make_unique<ValueStruct_T<size_t> >(val, ValueStruct::ValueType::Int); }
 
 #endif // if defined(ESP32) && !defined(__riscv)
 
-Sp_ValueStruct ValueStruct_Factory::create(const uint64_t& val)
+Up_ValueStruct ValueStruct_Factory::create(const uint64_t& val)
 {
-  return std::make_shared<ValueStruct_T<uint64_t> >(val, ValueStruct::ValueType::Int);
+  return std::make_unique<ValueStruct_T<uint64_t> >(val, ValueStruct::ValueType::Int);
 }
 
-Sp_ValueStruct ValueStruct_Factory::create(const int64_t& val)
+Up_ValueStruct ValueStruct_Factory::create(const int64_t& val)
 {
-  return std::make_shared<ValueStruct_T<int64_t> >(val, ValueStruct::ValueType::Int);
+  return std::make_unique<ValueStruct_T<int64_t> >(val, ValueStruct::ValueType::Int);
 }
 
-Sp_ValueStruct ValueStruct_Factory::create(
+Up_ValueStruct ValueStruct_Factory::create(
   const float& val,
   int          nrDecimals,
-  bool         trimTrailingZeros) { return std::make_shared<ValueStruct_Float>(val, nrDecimals, trimTrailingZeros); }
+  bool         trimTrailingZeros) { return std::make_unique<ValueStruct_Float>(val, nrDecimals, trimTrailingZeros); }
 
-Sp_ValueStruct ValueStruct_Factory::create(
+Up_ValueStruct ValueStruct_Factory::create(
   const double& val,
   int           nrDecimals,
-  bool          trimTrailingZeros) { return std::make_shared<ValueStruct_Double>(val, nrDecimals, trimTrailingZeros); }
+  bool          trimTrailingZeros) { return std::make_unique<ValueStruct_Double>(val, nrDecimals, trimTrailingZeros); }
 
-Sp_ValueStruct ValueStruct_Factory::create(
-  LabelType::Enum label) { return std::make_shared<ValueStruct_String>(getValue(label), ValueStruct::ValueType::Auto); }
+Up_ValueStruct ValueStruct_Factory::create(
+  LabelType::Enum label) { return std::make_unique<ValueStruct_String>(getValue(label)); }
 
-Sp_ValueStruct ValueStruct_Factory::create(
-  const String         & val,
-  ValueStruct::ValueType vType) { return std::make_shared<ValueStruct_String>(val, vType); }
+Up_ValueStruct ValueStruct_Factory::create(
+  const String         & val) { return std::make_unique<ValueStruct_String>(val); }
 
-Sp_ValueStruct ValueStruct_Factory::create(
-  String              && val,
-  ValueStruct::ValueType vType) { return std::make_shared<ValueStruct_String>(std::move(val), vType); }
+Up_ValueStruct ValueStruct_Factory::create(
+  String              && val) { return std::make_unique<ValueStruct_String>(std::move(val)); }
 
-Sp_ValueStruct ValueStruct_Factory::create(
-  const __FlashStringHelper *val,
-  ValueStruct::ValueType     vType) { return std::make_shared<ValueStruct_FlashString>(val, vType); }
+Up_ValueStruct ValueStruct_Factory::create(
+  const __FlashStringHelper *val) { return std::make_unique<ValueStruct_FlashString>(val); }

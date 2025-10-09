@@ -153,7 +153,7 @@ bool CPlugin_011(CPlugin::Function function, struct EventStruct *event, String& 
       void *ptr               = special_calloc(1, size);
 
       if (ptr != nullptr) {
-        std::shared_ptr<C011_ConfigStruct> customConfig(new (ptr) C011_ConfigStruct);
+        std::unique_ptr<C011_ConfigStruct> customConfig(new (ptr) C011_ConfigStruct);
 
         if (customConfig) {
           uint8_t choice    = 0;
@@ -245,7 +245,7 @@ bool load_C011_ConfigStruct(controllerIndex_t ControllerIndex, String& HttpMetho
     return false;
   }
 
-  std::shared_ptr<C011_ConfigStruct>customConfig(new (ptr) C011_ConfigStruct);
+  std::unique_ptr<C011_ConfigStruct>customConfig(new (ptr) C011_ConfigStruct);
 
   if (!customConfig) {
     return false;

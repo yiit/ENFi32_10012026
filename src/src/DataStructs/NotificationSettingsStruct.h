@@ -5,7 +5,7 @@
 
 #if FEATURE_NOTIFIER
 
-#include <memory> // For std::shared_ptr
+#include <memory> // For std::unique_ptr
 
 # define NPLUGIN_001_DEF_TM     8000  // Email Server Default Response Time, in mS.
 # define NPLUGIN_001_MIN_TM     5000
@@ -35,7 +35,7 @@ struct NotificationSettingsStruct
   //its safe to extend this struct, up to 4096 bytes, default values in config are 0
 };
 
-typedef std::shared_ptr<NotificationSettingsStruct> NotificationSettingsStruct_ptr_type;
+typedef std::unique_ptr<NotificationSettingsStruct> NotificationSettingsStruct_ptr_type;
 
 #define MakeNotificationSettings(T) void * calloc_ptr = special_calloc(1,sizeof(NotificationSettingsStruct)); NotificationSettingsStruct_ptr_type T(new (calloc_ptr)  NotificationSettingsStruct());
 

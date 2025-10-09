@@ -134,7 +134,7 @@ bool CPlugin_018(CPlugin::Function function, struct EventStruct *event, String& 
         if (ptr == nullptr) {
           break;
         }
-        std::shared_ptr<C018_ConfigStruct> customConfig(new (ptr) C018_ConfigStruct);
+        std::unique_ptr<C018_ConfigStruct> customConfig(new (ptr) C018_ConfigStruct);
 
         if (!customConfig) {
           break;
@@ -153,7 +153,7 @@ bool CPlugin_018(CPlugin::Function function, struct EventStruct *event, String& 
       if (ptr == nullptr) {
         break;
       }
-      std::shared_ptr<C018_ConfigStruct> customConfig(new (ptr) C018_ConfigStruct);
+      std::unique_ptr<C018_ConfigStruct> customConfig(new (ptr) C018_ConfigStruct);
 
       if (customConfig) {
         customConfig->webform_save();
@@ -329,7 +329,7 @@ bool C018_init(struct EventStruct *event) {
   if (ptr == nullptr) {
     return false;
   }
-  std::shared_ptr<C018_ConfigStruct> customConfig(new (ptr) C018_ConfigStruct);
+  std::unique_ptr<C018_ConfigStruct> customConfig(new (ptr) C018_ConfigStruct);
 
   if (!customConfig) {
     return false;

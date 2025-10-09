@@ -21,7 +21,7 @@
 
 
 #include <list>
-#include <memory> // For std::shared_ptr
+#include <memory> // For std::unique_ptr
 #include <new>    // std::nothrow
 
 #ifndef CONTROLLER_QUEUE_MINIMAL_EXPIRE_TIME

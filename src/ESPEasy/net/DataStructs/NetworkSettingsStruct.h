@@ -5,7 +5,7 @@
 \*********************************************************************************************/
 #include "../../../ESPEasy_common.h"
 
-#include <memory> // For std::shared_ptr
+#include <memory> // For std::unique_ptr
 #include <new>    // for std::nothrow
 
 #include "../../../src/Globals/Plugins.h"
@@ -50,7 +50,7 @@ private:
 };
 
 
-typedef std::shared_ptr<NetworkSettingsStruct> NetworkSettingsStruct_ptr_type;
+typedef std::unique_ptr<NetworkSettingsStruct> NetworkSettingsStruct_ptr_type;
 
 /*
  # ifdef USE_SECOND_HEAP
