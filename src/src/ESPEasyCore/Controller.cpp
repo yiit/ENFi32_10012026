@@ -331,6 +331,7 @@ bool MQTTConnect_prepareClient(controllerIndex_t controller_idx) {
       mqtt_rootCA.clear();
 
       if (mqtt_tls != nullptr) {
+        mqtt_tls->setTrustAnchor(Tasmota_TA, Tasmota_TA_size);
         mqtt_tls->setInsecure();
       }
       break;
@@ -500,7 +501,8 @@ bool MQTTConnect_wrapUpConnect(controllerIndex_t controller_idx, bool MQTTresult
     if (mqtt_tls_last_error == ERR_OOM) mqtt_tls_last_errorstr = F("OutOfMemory");
     if (mqtt_tls_last_error == ERR_CANT_RESOLVE_IP) mqtt_tls_last_errorstr = F("Can't resolve IP");
     if (mqtt_tls_last_error == ERR_TCP_CONNECT) mqtt_tls_last_errorstr = F("TCP Connect error");
-    if (mqtt_tls_last_error == ERR_MISSING_CA) mqtt_tls_last_errorstr = F("Missing CA");
+//    if (mqtt_tls_last_error == ERR_MISSING_CA) mqtt_tls_last_errorstr = F("Missing CA");
+    if (mqtt_tls_last_error == ERR_TLS_TIMEOUT) mqtt_tls_last_errorstr = F("TLS Timeout");
 
   }
   #  ifdef ESP32
