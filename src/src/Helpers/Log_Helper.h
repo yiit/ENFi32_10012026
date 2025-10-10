@@ -19,6 +19,8 @@ public:
                String  & message,
                uint8_t & loglevel);
 
+  uint32_t getNrMessages(uint8_t   logDestination) const;
+
   void loop();
 
   bool webLogActiveRead();

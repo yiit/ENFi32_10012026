@@ -8,6 +8,7 @@
 #include "../WebServer/Markup_Buttons.h"
 
 #include "../DataStructs/LogBuffer.h"
+#include "../DataStructs/TimingStats.h"
 
 #include "../Globals/Logging.h"
 #include "../Globals/Settings.h"
@@ -49,6 +50,7 @@ void handle_log() {
 void handle_log_JSON() {
   if (!isLoggedIn()) { return; }
   #ifdef WEBSERVER_LOG
+  START_TIMER;
   TXBuffer.startJsonStream();
   {
     KeyValueWriter_JSON top(true);
@@ -83,14 +85,16 @@ void handle_log_JSON() {
         uint32_t lastTimeStamp  = 0;
         int nrEntries           = 0;
 
+        bool logLinesAvailable = true;
         {
           auto entriesWriter = mainWriter->createChild(F("Entries"));
 
           if (entriesWriter) {
             entriesWriter->setIsArray();
-            bool logLinesAvailable = true;
 
-            while (logLinesAvailable) {
+            uint32_t startTime = millis();
+
+            while (logLinesAvailable && timePassedSince(startTime) < 200) {
               String  message;
               uint8_t loglevel;
 
@@ -113,9 +117,11 @@ void handle_log_JSON() {
             }
           }
         }
+        const uint32_t nrEntriesLeft = Logging.getNrMessages(LOG_TO_WEBLOG);
         int32_t logTimeSpan       = timeDiff(firstTimeStamp, lastTimeStamp);
-        int32_t refreshSuggestion = 1000;
+        int32_t refreshSuggestion = (nrEntriesLeft > 0) ? 200 : 1000;
         int32_t newOptimum        = 1000;
+
 
         if ((nrEntries > 2) && (logTimeSpan > 1)) {
           // May need to lower the TTL for refresh when time needed
@@ -139,6 +145,7 @@ void handle_log_JSON() {
     }
   }
   TXBuffer.endStream();
+  STOP_TIMER(HANDLE_SERVING_WEBPAGE_JSON);
   updateLogLevelCache();
 
   #else // ifdef WEBSERVER_LOG

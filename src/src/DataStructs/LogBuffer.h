@@ -52,6 +52,9 @@ struct LogBuffer {
                String  & message,
                uint8_t & loglevel);
 
+  // Return the number of messages left for given log destination.
+  uint32_t getNrMessages(uint8_t logDestination) const;
+
   bool logActiveRead();
 
   void clearExpiredEntries();

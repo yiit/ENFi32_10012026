@@ -36,6 +36,22 @@ bool LogBuffer::getNext(uint8_t logDestination, uint32_t& timestamp, String& mes
   return false;
 }
 
+uint32_t LogBuffer::getNrMessages(uint8_t logDestination) const
+{
+  uint32_t res{};
+  if (logDestination >= NR_LOG_TO_DESTINATIONS) { return res; }
+
+  uint32_t pos = cache_iterator_pos[logDestination];
+  for (;pos < LogEntries.size(); ++pos) {
+    if (LogEntries[pos].validForSubscriber(logDestination)) {
+      ++res;
+    }    
+  }
+  return res;
+
+
+}
+
 bool LogBuffer::logActiveRead() {
   clearExpiredEntries();
   return timePassedSince(lastReadTimeStamp) < LOG_BUFFER_ACTIVE_READ_TIMEOUT;

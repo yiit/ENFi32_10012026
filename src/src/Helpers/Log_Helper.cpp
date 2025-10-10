@@ -89,6 +89,11 @@ bool LogHelper::getNext(uint8_t logDestination, uint32_t& timestamp, String& mes
   return _logBuffer.getNext(logDestination, timestamp, message, loglevel);
 }
 
+uint32_t LogHelper::getNrMessages(uint8_t logDestination) const
+{
+  return _logBuffer.getNrMessages(logDestination);
+}
+
 void LogHelper::loop()
 {
   const uint8_t destinations[] = {
