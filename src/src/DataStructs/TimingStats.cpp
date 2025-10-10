@@ -275,6 +275,9 @@ const __FlashStringHelper* getMiscStatsName_F(TimingStatsElements stat) {
     case TimingStatsElements::IS_NUMERICAL:               return F("isNumerical()");
     case TimingStatsElements::HANDLE_SCHEDULER_IDLE:      return F("handle_schedule() idle");
     case TimingStatsElements::HANDLE_SCHEDULER_TASK:      return F("handle_schedule() task");
+#if FEATURE_MQTT
+    case TimingStatsElements::PERIODICAL_MQTT:            return F("Periodical MQTT");
+#endif
     case TimingStatsElements::PARSE_TEMPLATE_PADDED:      return F("parseTemplate_padded()");
     case TimingStatsElements::PARSE_SYSVAR:               return F("parseSystemVariables()");
     case TimingStatsElements::PARSE_SYSVAR_NOCHANGE:      return F("parseSystemVariables() No change");

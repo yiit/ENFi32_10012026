@@ -448,6 +448,7 @@ void updateMQTTclient_connected() {
 }
 
 void runPeriodicalMQTT() {
+  START_TIMER
   // MQTT_KEEPALIVE = 15 seconds.
   if (!NetworkConnected(10)) {
     updateMQTTclient_connected();
@@ -475,6 +476,7 @@ void runPeriodicalMQTT() {
       updateMQTTclient_connected();
     }
   }
+  STOP_TIMER(PERIODICAL_MQTT);
 }
 
 
