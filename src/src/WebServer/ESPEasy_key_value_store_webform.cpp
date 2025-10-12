@@ -1,6 +1,6 @@
 #include "../WebServer/ESPEasy_key_value_store_webform.h"
 
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#if FEATURE_ESPEASY_KEY_VALUE_STORE
 # include "../Helpers/StringConverter.h"
 
 # include "../WebServer/Markup_Forms.h"
@@ -29,15 +29,15 @@ void WebFormItemParams::checkRanges()
 {
   switch (_storageType)
   {
-  CORRECT_RANGE(int8_type,   int8_t)
-  CORRECT_RANGE(uint8_type,  uint8_t)
-  CORRECT_RANGE(int16_type,  int16_t)
-  CORRECT_RANGE(uint16_type, uint16_t)
-  CORRECT_RANGE(int32_type,  int32_t)
-  CORRECT_RANGE(uint32_type, uint32_t)
-  CORRECT_RANGE(float_type,  float)
-  CORRECT_RANGE(uint64_type, uint64_t)
-  CORRECT_RANGE(int64_type,  int64_t)
+    CORRECT_RANGE(int8_type,   int8_t)
+    CORRECT_RANGE(uint8_type,  uint8_t)
+    CORRECT_RANGE(int16_type,  int16_t)
+    CORRECT_RANGE(uint16_type, uint16_t)
+    CORRECT_RANGE(int32_type,  int32_t)
+    CORRECT_RANGE(uint32_type, uint32_t)
+    CORRECT_RANGE(float_type,  float)
+    CORRECT_RANGE(uint64_type, uint64_t)
+    CORRECT_RANGE(int64_type,  int64_t)
 
     //  CORRECT_RANGE(double_type, double)
     default: break;
@@ -56,19 +56,35 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
     {
       String value;
 
-      if (!store.getValueAsString(params._key, value)) { value = params._defaultStringValue; }
-      addFormTextBox(
-        params._label,
-        id,
-        value,
-        params._maxLength,
-        params._readOnly,
-        params._required,
-        params._pattern
+      if (!store.getValueAsString(params._key, value))
+      {
+        value = params._defaultStringValue;
+      }
+
+      if (params._password) {
+        addFormPasswordBox(
+          params._label,
+          id,
+          value,
+          params._maxLength
 # if FEATURE_TOOLTIPS
-        , params._tooltip
+          , params._tooltip
 # endif // if FEATURE_TOOLTIPS
-        );
+          );
+      } else {
+        addFormTextBox(
+          params._label,
+          id,
+          value,
+          params._maxLength,
+          params._readOnly,
+          params._required,
+          params._pattern
+# if FEATURE_TOOLTIPS
+          , params._tooltip
+# endif // if FEATURE_TOOLTIPS
+          );
+      }
       return true;
     }
     case ESPEasy_key_value_store::StorageType::int8_type:
@@ -122,7 +138,7 @@ bool showWebformItem(const ESPEasy_key_value_store& store,
         params._stepsize
 
 # if FEATURE_TOOLTIPS
-        ,params._tooltip
+        , params._tooltip
 # endif // if FEATURE_TOOLTIPS
         );
 
@@ -175,7 +191,10 @@ void storeWebformItem(ESPEasy_key_value_store            & store,
     store.setValue(key, isFormItemChecked(_id));
     return;
   }
-  store.setValue(storageType, key, webArg(_id));
+
+  if (hasArg(_id)) {
+    store.setValue(storageType, key, webArg(_id));
+  }
 }
 
-#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#endif // if FEATURE_ESPEASY_KEY_VALUE_STORE

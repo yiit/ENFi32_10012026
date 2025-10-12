@@ -897,9 +897,15 @@ String SaveSecuritySettings(bool forFactoryReset) {
   // FIXME TD-er: How to check if these have changed?
   if (forFactoryReset) {
     ExtendedControllerCredentials.clear();
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+    SecuritySettings_deviceSpecific.clear();
+#endif
   }
 
   ExtendedControllerCredentials.save();
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+  SecuritySettings_deviceSpecific.save();
+#endif
 
   if (!forFactoryReset) {
     afterloadSettings();
@@ -1037,6 +1043,10 @@ String LoadSettings()
 #endif // ifndef BUILD_NO_DEBUG
 
   ExtendedControllerCredentials.load();
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+  SecuritySettings_deviceSpecific.load();
+#endif
+
 
   //  setupStaticIPconfig();
   // FIXME TD-er: Must check if static/dynamic IP was changed and trigger a reconnect? Or is a reboot better when changing those settings?

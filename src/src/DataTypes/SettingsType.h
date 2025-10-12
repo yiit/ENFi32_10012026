@@ -22,7 +22,9 @@ public:
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
     NetworkInterfaceSettings_Type,
 #endif
-
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+    DeviceSpecificCredentials_type,
+#endif   
 
     SettingsType_MAX
   };
@@ -31,6 +33,9 @@ public:
     FILE_CONFIG_type,
     FILE_NOTIFICATION_type,
     FILE_SECURITY_type,
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+    FILE_DEVICE_SECURITY_type,
+#endif
     FILE_UNKNOWN_type
   };
 

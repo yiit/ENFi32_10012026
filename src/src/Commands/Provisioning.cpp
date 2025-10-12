@@ -60,6 +60,14 @@ String Command_Provisioning_Provision()
   return downloadFileType(FileType::PROVISIONING_DAT);
 }
 
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+String Command_Provisioning_DeviceSecurity()
+{
+  return downloadFileType(FileType::DEV_SECURITY_DAT);
+}
+#endif
+
+
 String Command_Provisioning_Rules(struct EventStruct *event)
 {
   if ((event->Par2 <= 0) || (event->Par2 > 4)) {

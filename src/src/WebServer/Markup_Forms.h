@@ -357,6 +357,9 @@ bool  isFormItem(const String& id);
 void  copyFormPassword(const __FlashStringHelper * id,
                        char         *pPassword,
                        int           maxlength);
+void  copyFormPassword(const String& id,
+                       char         *pPassword,
+                       int           maxlength);
 
 # if FEATURE_MQTT_DISCOVER && FEATURE_MQTT_DEVICECLASS
 void addFormSelector_binarySensorDeviceClass(const __FlashStringHelper*label, 

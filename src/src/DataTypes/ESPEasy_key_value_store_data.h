@@ -3,7 +3,7 @@
 
 #include "../../ESPEasy_common.h"
 
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#if FEATURE_ESPEASY_KEY_VALUE_STORE
 
 // Store various types of 32 bit
 class alignas(uint32_t) ESPEasy_key_value_store_4byte_data_t
@@ -92,5 +92,5 @@ private:
   uint8_t binary[sizeof(double)]{};
 }; // class alignas
 
-#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#endif // if FEATURE_ESPEASY_KEY_VALUE_STORE
 #endif // ifndef DATATYPES_ESPEASY_KEY_VALUE_STORE_DATA_H

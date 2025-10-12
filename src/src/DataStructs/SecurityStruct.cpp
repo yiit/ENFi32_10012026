@@ -78,6 +78,8 @@ void SecurityStruct::clearWiFiCredentials(SecurityStruct::WiFiCredentialsSlot sl
   }
 }
 
+//TODO TD-er: Let SecurityStruct load/save/handle the device specific security settings
+
 bool SecurityStruct::hasWiFiCredentials() const {
   return hasWiFiCredentials(SecurityStruct::WiFiCredentialsSlot::first) ||
          hasWiFiCredentials(SecurityStruct::WiFiCredentialsSlot::second);

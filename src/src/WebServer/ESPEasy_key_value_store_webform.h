@@ -3,7 +3,7 @@
 
 #include "../WebServer/common.h"
 
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#if FEATURE_ESPEASY_KEY_VALUE_STORE
 
 # include "../DataTypes/FormSelectorOptions.h"
 # include "../Helpers/_ESPEasy_key_value_store.h"
@@ -37,6 +37,7 @@ struct WebFormItemParams {
   bool                                 _disabled{};
   bool                                 _readOnly{};
   bool                                 _required{};
+  bool                                 _password{};
   String                               _pattern;
 
   int64_t _defaultIntValue{};
@@ -63,5 +64,5 @@ void storeWebformItem(ESPEasy_key_value_store            & store,
                       ESPEasy_key_value_store::StorageType storageType,
                       const String                       & id = EMPTY_STRING);
 
-#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#endif // if FEATURE_ESPEASY_KEY_VALUE_STORE
 #endif // ifndef WEBSERVER_ESPEASY_KEY_VALUE_STORE_WEBFORM_H

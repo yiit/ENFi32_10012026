@@ -78,6 +78,9 @@ struct WiFi_AP_CandidatesList {
   static bool SettingsIndexMatchCustomCredentials(uint8_t index);
 
   static bool SettingsIndexMatchEmergencyFallback(uint8_t index);
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+  static bool SettingsIndexMatchCredentialsSeparateFile(uint8_t index);
+#endif
 
 private:
 

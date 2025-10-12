@@ -233,7 +233,12 @@
   # ifndef DAT_NETWORK_INTERFACES_OFFSET
   #  define DAT_NETWORK_INTERFACES_OFFSET    16384
   # endif // ifndef DAT_OFFSET_CUSTOM_CONTROLLER
-
+  # ifndef DAT_OFFSET_DEV_CREDENTIALS
+  #  define DAT_OFFSET_DEV_CREDENTIALS       0
+  # endif
+  # ifndef DAT_DEV_CREDENTIALS_SIZE
+  #  define DAT_DEV_CREDENTIALS_SIZE         4096
+  # endif
 #endif    // if defined(ESP32)
 
 

@@ -1,6 +1,6 @@
 #include "../Helpers/_ESPEasy_key_value_store.h"
 
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#if FEATURE_ESPEASY_KEY_VALUE_STORE
 
 # include "../Helpers/StringConverter_Numerical.h"
 # include "../Helpers/ESPEasy_Storage.h"
@@ -351,7 +351,7 @@ bool ESPEasy_key_value_store::store(
     _state = State::ErrorOnSave;
     # ifndef BUILD_NO_DEBUG
     _lastError = F("KVS: Invalid index");
-    addLog(LOG_LEVEL_ERROR, _lastError); // addLog(LOG_LEVEL_DEBUG, _lastError);
+    addLog(LOG_LEVEL_ERROR, F("KVS: Invalid index")); // addLog(LOG_LEVEL_DEBUG, _lastError);
     # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
@@ -631,6 +631,30 @@ ESPEasy_key_value_store::StorageType ESPEasy_key_value_store::getStorageType(uin
   }
   return ESPEasy_key_value_store::StorageType::not_set;
 }
+#define KVS_STRINGPAIR_SEPARATOR ((char)1)
+bool ESPEasy_key_value_store::getValue(uint32_t key, StringPair& stringPair) const
+{
+  String str;
+  if (!getValue(key, str)) { 
+    return false;
+  }
+  const int separatorPos = str.indexOf(KVS_STRINGPAIR_SEPARATOR);
+  if (separatorPos < 0) return false;
+  stringPair.first = str.substring(0, separatorPos);
+  stringPair.second = str.substring(separatorPos + 1);
+  return true;
+}
+
+void ESPEasy_key_value_store::setValue(uint32_t key, const StringPair& stringPair)
+{
+  String str;
+  str.reserve(stringPair.first.length() + 1 + stringPair.second.length());
+  str += stringPair.first;
+  str += KVS_STRINGPAIR_SEPARATOR;
+  str += stringPair.second;
+  setValue(key, str);
+}
+#undef KVS_STRINGPAIR_SEPARATOR
 
 bool ESPEasy_key_value_store::getValue(uint32_t key, String& value) const
 {
@@ -1162,4 +1186,4 @@ void ESPEasy_key_value_store::dump() const
 
 }
 
-#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#endif // if FEATURE_ESPEASY_KEY_VALUE_STORE

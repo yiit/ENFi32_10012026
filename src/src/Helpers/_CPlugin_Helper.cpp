@@ -275,6 +275,7 @@ String getControllerUser(controllerIndex_t controller_idx, const ControllerSetti
   String res;
 
   if (ControllerSettings.useExtendedCredentials()) {
+    // FIXME TD-er: Must add checkbox to save credentials in separate file
     res = ExtendedControllerCredentials.getControllerUser(controller_idx);
   } else {
     res = String(SecuritySettings.ControllerUser[controller_idx]);
@@ -292,6 +293,7 @@ String getControllerPass(controllerIndex_t controller_idx, const ControllerSetti
   if (!validControllerIndex(controller_idx)) { return EMPTY_STRING; }
 
   if (ControllerSettings.useExtendedCredentials()) {
+    // FIXME TD-er: Must add checkbox to save credentials in separate file
     return ExtendedControllerCredentials.getControllerPass(controller_idx);
   }
   String res(SecuritySettings.ControllerPassword[controller_idx]);
@@ -305,6 +307,7 @@ void setControllerUser(controllerIndex_t controller_idx, const ControllerSetting
   if (!validControllerIndex(controller_idx)) { return; }
 
   if (ControllerSettings.useExtendedCredentials()) {
+    // FIXME TD-er: Must add checkbox to save credentials in separate file
     ExtendedControllerCredentials.setControllerUser(controller_idx, value);
   } else {
     safe_strncpy(SecuritySettings.ControllerUser[controller_idx], value, sizeof(SecuritySettings.ControllerUser[0]));
@@ -316,6 +319,7 @@ void setControllerPass(controllerIndex_t controller_idx, const ControllerSetting
   if (!validControllerIndex(controller_idx)) { return; }
 
   if (ControllerSettings.useExtendedCredentials()) {
+    // FIXME TD-er: Must add checkbox to save credentials in separate file
     ExtendedControllerCredentials.setControllerPass(controller_idx, value);
   } else {
     safe_strncpy(SecuritySettings.ControllerPassword[controller_idx], value, sizeof(SecuritySettings.ControllerPassword[0]));

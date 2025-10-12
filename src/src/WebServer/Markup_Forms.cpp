@@ -12,6 +12,9 @@
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringGenerator_GPIO.h"
 
+
+#define MARKUP_FORMS_PASSWORD_MASK_ASTERISKS "****"
+
 # if FEATURE_MQTT_DISCOVER && FEATURE_MQTT_DEVICECLASS
 #include "../Helpers/_CPlugin_Helper_mqtt.h"
 # endif // if FEATURE_MQTT_DISCOVER && FEATURE_MQTT_DEVICECLASS
@@ -346,7 +349,7 @@ void addFormPasswordBox(const String& label, const String& id, const String& pas
   #if FEATURE_TOOLTIPS
   addTooltip(tooltip);
   #endif // if FEATURE_TOOLTIPS
-  addHtmlAttribute(F("value"), (password.length() == 0) ? F("") : F("*****"));
+  addHtmlAttribute(F("value"), (password.length() == 0) ? F("") : F(MARKUP_FORMS_PASSWORD_MASK_ASTERISKS));
   addHtml('>');
 }
 
@@ -358,7 +361,7 @@ bool getFormPassword(const String& id, String& password)
     addLog(LOG_LEVEL_DEBUG, concat(F("getFormPassword: "), password));
   } 
   */ 
-  return !equals(password, F("*****"));
+  return !equals(password, F(MARKUP_FORMS_PASSWORD_MASK_ASTERISKS));
 }
 
 // ********************************************************************************
@@ -741,6 +744,13 @@ bool isFormItem(const String& id)
 }
 
 void copyFormPassword(const __FlashStringHelper * id, char *pPassword, int maxlength)
+{
+  copyFormPassword(String(id), pPassword, maxlength);
+}
+
+void  copyFormPassword(const String& id,
+                       char         *pPassword,
+                       int           maxlength)
 {
   String password;
 

@@ -33,6 +33,11 @@
 # include "../net/NWPluginStructs/NW001_data_struct_WiFi_STA.h"
 # include "../net/wifi/ESPEasyWifi.h"
 
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+# include "../../src/WebServer/SecurityStruct_deviceSpecific_webform.h"
+#endif
+
+
 # ifdef ESP8266
 #  include "../net/Helpers/NWAccessControl.h"
 # endif
@@ -278,6 +283,15 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       strncpy_webserver_arg(SecuritySettings.WifiSSID2, F("ssid2"));
       copyFormPassword(F("key2"), SecuritySettings.WifiKey2, sizeof(SecuritySettings.WifiKey2));
 
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+      for (uint16_t i = 0; i < MAX_EXTRA_WIFI_CREDENTIALS_SEPARATE_FILE; ++i) {
+        store_SecurityStruct_deviceSpecific_WebFormItem(
+          SecurityStruct_deviceSpecific::KeyType::WiFi_SSID, i);
+        store_SecurityStruct_deviceSpecific_WebFormItem(
+          SecurityStruct_deviceSpecific::KeyType::WiFi_Password, i);        
+      }
+#endif
+
       // Hidden SSID
       Settings.IncludeHiddenSSID(isFormItemChecked(LabelType::CONNECT_HIDDEN_SSID));
       Settings.HiddenSSID_SlowConnectPerBSSID(isFormItemChecked(LabelType::HIDDEN_SSID_SLOW_CONNECT));
@@ -326,7 +340,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
-      addFormSubHeader(F("Wifi Settings"));
+      addFormSubHeader(F("Wifi Credentials"));
 
       // TODO Add pin configuration for ESP32P4.
       // ESP32-C5 may use different SDIO pins.
@@ -352,6 +366,18 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       addFormTextBox(F("Fallback SSID"), F("ssid2"), SecuritySettings.WifiSSID2, 31);
       addFormPasswordBox(F("Fallback WPA Key"), F("key2"), SecuritySettings.WifiKey2, 63);
       addFormNote(F("WPA Key must be at least 8 characters long"));
+
+#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+      addFormSubHeader(F("Wifi Credentials Extra"));
+      for (uint16_t i = 0; i < MAX_EXTRA_WIFI_CREDENTIALS_SEPARATE_FILE; ++i) {
+        show_SecurityStruct_deviceSpecific_WebFormItem(
+          SecurityStruct_deviceSpecific::KeyType::WiFi_SSID, i);
+        show_SecurityStruct_deviceSpecific_WebFormItem(
+          SecurityStruct_deviceSpecific::KeyType::WiFi_Password, i);        
+      }
+      addFormNote(F("These credentials will be stored in a separate file: <tt>devsecurity.dat</tt>"));
+#endif
+      addFormSubHeader(F("Wifi Settings"));
 
       addFormCheckBox(LabelType::CONNECT_HIDDEN_SSID,      Settings.IncludeHiddenSSID());
       addFormCheckBox(LabelType::HIDDEN_SSID_SLOW_CONNECT, Settings.HiddenSSID_SlowConnectPerBSSID());

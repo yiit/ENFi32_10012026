@@ -3,7 +3,7 @@
 
 #include "../../ESPEasy_common.h"
 
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#if FEATURE_ESPEASY_KEY_VALUE_STORE
 
 # include "../DataTypes/ESPEasy_key_value_store_data.h"
 # include "../DataTypes/SettingsType.h"
@@ -27,6 +27,8 @@
 class ESPEasy_key_value_store
 {
 public:
+  typedef std::pair<String, String> StringPair;
+
 
   // Type is stored, so do not change the order/values
   enum class StorageType {
@@ -102,6 +104,9 @@ public:
    ## get/set functions for all supported types ##
    ###############################################
    */
+
+  bool getValue(uint32_t key, StringPair& stringPair) const;
+  void setValue(uint32_t key, const StringPair& stringPair);
 
   bool getValue(uint32_t key,
                 String & value) const;
@@ -243,6 +248,6 @@ private:
 
 }; // class ESPEasy_key_value_store
 
-#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
+#endif // if FEATURE_ESPEASY_KEY_VALUE_STORE
 
 #endif // ifndef HELPERS_ESPEASY_KEY_VALUE_STORE_H

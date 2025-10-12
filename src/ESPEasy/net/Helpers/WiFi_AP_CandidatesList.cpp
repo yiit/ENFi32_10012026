@@ -30,6 +30,12 @@ namespace wifi {
 # define WIFI_CUSTOM_DEPLOYMENT_KEY_INDEX     3
 # define WIFI_CUSTOM_SUPPORT_KEY_INDEX        4
 # define WIFI_CREDENTIALS_FALLBACK_SSID_INDEX 5
+# if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+#  define WIFI_CREDENTIALs_SEPARATE_FILE_FIRST_INDEX 6
+#  define WIFI_CREDENTIALS_MAX_INDEX (WIFI_CREDENTIALs_SEPARATE_FILE_FIRST_INDEX + MAX_EXTRA_WIFI_CREDENTIALS_SEPARATE_FILE)
+# else // if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+#  define WIFI_CREDENTIALS_MAX_INDEX 6
+# endif // if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
 
 static LongTermOnOffTimer _last_scan;
 
@@ -62,12 +68,11 @@ void WiFi_AP_CandidatesList::load_knownCredentials() {
 
   {
     // Add the known SSIDs
-    String  ssid;
     uint8_t index = 1; // Index 0 is the "unset" value
 
-    bool done = false;
+    for (; index < WIFI_CREDENTIALS_MAX_INDEX; ++index) {
+      String ssid;
 
-    while (!done) {
       if (get_SSID(index, ssid)) {
         // Make sure emplace_back is not done on the 2nd heap
         # ifdef USE_SECOND_HEAP
@@ -84,12 +89,6 @@ void WiFi_AP_CandidatesList::load_knownCredentials() {
           }
         }
         ++index;
-      } else {
-        if (SettingsIndexMatchCustomCredentials(index)) {
-          ++index;
-        } else {
-          done = true;
-        }
       }
     }
   }
@@ -128,21 +127,21 @@ void WiFi_AP_CandidatesList::purge_expired() {
 }
 
 void WiFi_AP_CandidatesList::process_WiFiscan() {
-//  if (_last_scan.isOn()) {
-    // Append or update found APs from scan.
-    int scancount = WiFi.scanComplete();
-    if (scancount < 0) {
+  //  if (_last_scan.isOn()) {
+  // Append or update found APs from scan.
+  int scancount = WiFi.scanComplete();
 
-    } else {
-      for (int i = 0; i < scancount; ++i) {
-        const WiFi_AP_Candidate tmp(i);
+  if (scancount < 0) {} else {
+    for (int i = 0; i < scancount; ++i) {
+      const WiFi_AP_Candidate tmp(i);
 
-        scanned_new.push_back(tmp);
-      }
-
-      after_process_WiFiscan();
+      scanned_new.push_back(tmp);
     }
-//  }
+
+    after_process_WiFiscan();
+  }
+
+  //  }
 }
 
 void WiFi_AP_CandidatesList::after_process_WiFiscan() {
@@ -262,10 +261,11 @@ void WiFi_AP_CandidatesList::markCurrentConnectionStable() {
 }
 
 int8_t WiFi_AP_CandidatesList::scanComplete() const {
-//  if (!_last_scan.isOn() || 
-//      (_last_scan.getLastOnDuration_ms() > WIFI_AP_CANDIDATE_MAX_AGE))  return -3;
+  //  if (!_last_scan.isOn() ||
+  //      (_last_scan.getLastOnDuration_ms() > WIFI_AP_CANDIDATE_MAX_AGE))  return -3;
 
   const int8_t scanCompleteStatus = WiFi.scanComplete();
+
   if (scanCompleteStatus == -1) {
     // Still scanning
     return scanCompleteStatus;
@@ -302,6 +302,16 @@ bool WiFi_AP_CandidatesList::SettingsIndexMatchCustomCredentials(uint8_t index)
 }
 
 bool WiFi_AP_CandidatesList::SettingsIndexMatchEmergencyFallback(uint8_t index) { return WIFI_CREDENTIALS_FALLBACK_SSID_INDEX == index; }
+
+# if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+
+bool WiFi_AP_CandidatesList::SettingsIndexMatchCredentialsSeparateFile(uint8_t index)
+{
+  return index >= WIFI_CREDENTIALs_SEPARATE_FILE_FIRST_INDEX &&
+         index < WIFI_CREDENTIALS_MAX_INDEX;
+}
+
+# endif // if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
 
 void WiFi_AP_CandidatesList::loadCandidatesFromScanned() {
   // Make sure list operations are not done on the 2nd heap
@@ -517,6 +527,9 @@ void WiFi_AP_CandidatesList::purge_unusable() {
 }
 
 bool WiFi_AP_CandidatesList::get_SSID_key(uint8_t index, String& ssid, String& key)  {
+  ssid.clear();
+  key.clear();
+
   switch (index)
   {
     case 1:
@@ -562,15 +575,22 @@ bool WiFi_AP_CandidatesList::get_SSID_key(uint8_t index, String& ssid, String& k
       # endif // if !defined(CUSTOM_EMERGENCY_FALLBACK_SSID) || !defined(CUSTOM_EMERGENCY_FALLBACK_KEY)
       break;
     }
-    default:
-      return false;
+    default: break;
   }
 
-  // TODO TD-er: Read other credentials from extra file.
+# if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
 
+  if (SettingsIndexMatchCredentialsSeparateFile(index))
+  {
+    return SecuritySettings_deviceSpecific.getWiFiCredentials(
+      index - WIFI_CREDENTIALs_SEPARATE_FILE_FIRST_INDEX,
+      ssid,
+      key);
+  }
+# endif // if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
 
   // Spaces are allowed in both SSID and pass phrase, so make sure to not trim the ssid and key.
-  return true;
+  return !ssid.isEmpty() && key.length() >= 8;
 }
 
 bool WiFi_AP_CandidatesList::get_SSID(uint8_t index, String& ssid)

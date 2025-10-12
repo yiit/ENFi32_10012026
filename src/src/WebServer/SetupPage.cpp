@@ -109,6 +109,9 @@ void handle_setup() {
             } else if (!passwordGiven && !emptyPassAllowed) {
               addHtmlError(F("No password entered"));
             } else {
+// TODO TD-er: Must store in separate file when system password is set
+
+
               safe_strncpy(SecuritySettings.WifiKey,  password.c_str(), sizeof(SecuritySettings.WifiKey));
               safe_strncpy(SecuritySettings.WifiSSID, ssid.c_str(),     sizeof(SecuritySettings.WifiSSID));
               // Hidden SSID

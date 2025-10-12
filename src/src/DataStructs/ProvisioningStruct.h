@@ -47,8 +47,9 @@ struct ProvisioningStruct
       uint16_t allowFetchNotificationDat :1;
       uint16_t allowFetchProvisioningDat :1;
       uint16_t allowFetchRules :4;
+      uint16_t allowFetchDeviceSecurityDat :1;
 
-      uint16_t unused :7;  // Add to use full 16 bit.
+      uint16_t unused :6;  // Add to use full 16 bit.
     } allowedFlags;
     uint16_t _allBits;
   };
