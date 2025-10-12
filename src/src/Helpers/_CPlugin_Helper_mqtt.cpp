@@ -420,7 +420,7 @@ const char mqtt_binary_deviceclass_names[] PROGMEM =
 String MQTT_binary_deviceClassName(int devClassIndex) {
   char tmp[17]{};                                                   // length: battery_charging + \0
 
-  String result(GetTextIndexed(tmp, sizeof(tmp), devClassIndex, mqtt_binary_deviceclass_names));
+  const String result(GetTextIndexed(tmp, sizeof(tmp), devClassIndex, mqtt_binary_deviceclass_names));
 
   return result;
 }
@@ -429,7 +429,7 @@ int MQTT_binary_deviceClassIndex(const String& deviceClassName) {
   return GetCommandCode(deviceClassName.c_str(), mqtt_binary_deviceclass_names);
 }
 
-// TwoWay devices are marked with ² in the selector, and disvocered as 'light' instead of 'binary_sensor'
+// TwoWay devices are marked with ² in the selector, and discovered as 'light' instead of 'binary_sensor'
 bool MQTT_binary_deviceClassTwoWay(int devClassIndex) {
   switch (devClassIndex) { // Index into mqtt_binary_deviceclass_names
     case 1:                // power

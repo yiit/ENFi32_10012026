@@ -122,7 +122,7 @@
 .. |P108_type| replace:: :cyan:`Energy (AC)`
 .. |P108_typename| replace:: :cyan:`Energy (AC) - DDS238-x`
 .. |P108_porttype| replace:: `.`
-.. |P108_status| replace:: :yellow:`ENERGY` :yellow:`COLLECTION B`
+.. |P108_status| replace:: :yellow:`COLLECTION B` :yellow:`ENERGY`
 .. |P108_github| replace:: P108_DDS238.ino
 .. _P108_github: https://github.com/letscontrolit/ESPEasy/blob/mega/src/_P108_DDS238.ino
 .. |P108_usedby| replace:: `.`
