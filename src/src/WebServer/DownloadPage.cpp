@@ -121,7 +121,7 @@ void handle_config_download(bool fullBackup,
               && (0 != strncasecmp(file.name(), device_security_dat.c_str(), device_security_dat.length()))
 #endif
             )) {
-          tarStream->addFile(file.name(), file.size());
+          tarStream->addFileIfExists(file.name());
         }
       }
       file = root.openNextFile();

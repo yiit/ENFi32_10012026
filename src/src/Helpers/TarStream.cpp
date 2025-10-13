@@ -305,7 +305,7 @@ size_t TarStream::write(const uint8_t *buf,
         break;
     }
 
-    if (bufOffset < size) { // We got leftover bytes
+    if (bufOffset < size && _streamState != TarStreamState_e::Error) { // We got leftover bytes
       stayInLoop = true;
     }
   }
