@@ -179,9 +179,9 @@ bool MQTTConnect(controllerIndex_t controller_idx)
   MakeControllerSettings(ControllerSettings); // -V522
 
   if (!AllocatedControllerSettings()) {
-    #ifndef BUILD_MINIMAL_OTA
+    # ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot connect, out of RAM"));
-    #endif
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
   LoadControllerSettings(controller_idx, *ControllerSettings);
@@ -210,8 +210,6 @@ bool MQTTConnect(controllerIndex_t controller_idx)
 
   uint16_t mqttPort = ControllerSettings->Port;
 
-  mqtt_tls_last_errorstr.clear();
-  mqtt_tls_last_error = 0;
   const TLS_types TLS_type = ControllerSettings->TLStype();
 
   if ((TLS_type != TLS_types::NoTLS) && (nullptr == mqtt_tls)) {
@@ -234,6 +232,8 @@ bool MQTTConnect(controllerIndex_t controller_idx)
       mqtt_tls->setUtcTime_fcn(getUnixTime);
       mqtt_tls->setCfgTime_fcn(get_build_unixtime);
     }
+    mqtt_tls_last_errorstr.clear();
+    mqtt_tls_last_error = 0;
   }
 
   switch (TLS_type) {
@@ -281,10 +281,10 @@ bool MQTTConnect(controllerIndex_t controller_idx)
          LoadCertificate(ControllerSettings->getCertificateFilename(), mqtt_rootCA);
 
          if (mqtt_rootCA.isEmpty()) {
-          // Fingerprint must be of some minimal length to continue.
-          mqtt_tls_last_errorstr = F("MQTT : No TLS root CA");
-          addLog(LOG_LEVEL_ERROR, mqtt_tls_last_errorstr);
-          return false;
+         // Fingerprint must be of some minimal length to continue.
+         mqtt_tls_last_errorstr = F("MQTT : No TLS root CA");
+         addLog(LOG_LEVEL_ERROR, mqtt_tls_last_errorstr);
+         return false;
          }
 
 
@@ -349,6 +349,15 @@ bool MQTTConnect(controllerIndex_t controller_idx)
       ? WiFiEventData.getSuggestedTimeout(Settings.Protocol[controller_idx], ControllerSettings->ClientTimeout)
       : ControllerSettings->ClientTimeout;
 
+    if (mqtt_tls_last_error == 296) {
+      // in this special case of cipher mismatch, we force enable ECDSA
+      // this would be the case for newer letsencrypt certificates now defaulting
+      // to EC certificates requiring ECDSA instead of RSA
+      mqtt_tls->setECDSA(true);
+      addLog(LOG_LEVEL_INFO, F("MQTT : TLS now enabling ECDSA"));
+    }
+
+
 #  ifdef MUSTFIX_CLIENT_TIMEOUT_IN_SECONDS
 
     // See: https://github.com/espressif/arduino-esp32/pull/6676
@@ -361,7 +370,7 @@ bool MQTTConnect(controllerIndex_t controller_idx)
 
 #  ifdef ESP8266
     mqtt_tls->setBufferSizes(1024, 1024);
-    #  endif // ifdef ESP8266
+#  endif // ifdef ESP8266
     MQTTclient.setClient(*mqtt_tls);
     MQTTclient.setKeepAlive(ControllerSettings->KeepAliveTime ? ControllerSettings->KeepAliveTime : CONTROLLER_KEEP_ALIVE_TIME_DFLT);
     MQTTclient.setSocketTimeout(timeout);
@@ -460,14 +469,29 @@ bool MQTTConnect(controllerIndex_t controller_idx)
     #  ifdef ESP32
     mqtt_tls_last_error = mqtt_tls->getLastError();
     mqtt_tls->clearLastError();
+    mqtt_tls_last_cipher_suite = mqtt_tls->getLastCipherSuite();
     #  endif // ifdef ESP32
-    // mqtt_tls_last_errorstr = buf;
-    if (mqtt_tls_last_error == ERR_OOM) mqtt_tls_last_errorstr = F("OutOfMemory");
-    if (mqtt_tls_last_error == ERR_CANT_RESOLVE_IP) mqtt_tls_last_errorstr = F("Can't resolve IP");
-    if (mqtt_tls_last_error == ERR_TCP_CONNECT) mqtt_tls_last_errorstr = F("TCP Connect error");
-//    if (mqtt_tls_last_error == ERR_MISSING_CA) mqtt_tls_last_errorstr = F("Missing CA");
-    if (mqtt_tls_last_error == ERR_TLS_TIMEOUT) mqtt_tls_last_errorstr = F("TLS Timeout");
 
+    // mqtt_tls_last_errorstr = buf;
+    if (mqtt_tls_last_error == ERR_OOM) { mqtt_tls_last_errorstr = F("OutOfMemory"); }
+
+    if (mqtt_tls_last_error == ERR_CANT_RESOLVE_IP) { mqtt_tls_last_errorstr = F("Can't resolve IP"); }
+
+    if (mqtt_tls_last_error == ERR_TCP_CONNECT) { mqtt_tls_last_errorstr = F("TCP Connect error"); }
+
+    //    if (mqtt_tls_last_error == ERR_MISSING_CA) mqtt_tls_last_errorstr = F("Missing CA");
+    if (mqtt_tls_last_error == ERR_TLS_TIMEOUT) { mqtt_tls_last_errorstr = F("TLS Timeout"); }
+
+#  ifndef BUILD_NO_DEBUG
+
+    if (BR_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 == mqtt_tls_last_cipher_suite) {
+      addLog(LOG_LEVEL_DEBUG, F("TLS cipher suite: ECDHE_RSA_AES_128_GCM_SHA256"));
+    } else if (BR_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 == mqtt_tls_last_cipher_suite) {
+      addLog(LOG_LEVEL_DEBUG, F("TLS cipher suite: ECDHE_ECDSA_AES_128_GCM_SHA256"));
+    } else if (0 != mqtt_tls_last_cipher_suite) {
+      addLog(LOG_LEVEL_DEBUG, strformat(F("TLS cipher suite: 0x%04X"), mqtt_tls_last_cipher_suite));
+    }
+#  endif // ifndef BUILD_NO_DEBUG
   }
   #  ifdef ESP32
 
@@ -502,12 +526,12 @@ bool MQTTConnect(controllerIndex_t controller_idx)
       /*
          if (mqtt_tls != nullptr) {
          if (!mqtt_tls->verify(
-              fp.c_str(),
-              dn.isEmpty() ? nullptr : dn.c_str()))
+         fp.c_str(),
+         dn.isEmpty() ? nullptr : dn.c_str()))
          {
-          mqtt_tls_last_errorstr += F("TLS Fingerprint does not match");
-          addLog(LOG_LEVEL_INFO, mqtt_fingerprint);
-          MQTTresult = false;
+         mqtt_tls_last_errorstr += F("TLS Fingerprint does not match");
+         addLog(LOG_LEVEL_INFO, mqtt_fingerprint);
+         MQTTresult = false;
          }
          }
        */
@@ -601,10 +625,12 @@ void MQTTparseSystemVariablesAndSubscribe(String subscribeTo) {
 
   if (!subscribeTo.isEmpty()) {
     MQTTclient.subscribe(subscribeTo.c_str());
+# ifndef BUILD_NO_DEBUG
 
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
       addLogMove(LOG_LEVEL_INFO, concat(F("Subscribed to: "),  subscribeTo));
     }
+# endif // ifndef BUILD_NO_DEBUG
   }
 }
 
@@ -665,7 +691,7 @@ bool MQTTCheck(controllerIndex_t controller_idx)
        #ifdef USES_ESPEASY_NOW
          if (!MQTTclient.connected()) {
          if (ControllerSettings->enableESPEasyNowFallback()) {
-          return true;
+         return true;
          }
          }
        #endif
@@ -808,6 +834,7 @@ void SendStatus(struct EventStruct *event, const String& status)
 }
 
 #if FEATURE_MQTT
+
 controllerIndex_t firstEnabledMQTT_ControllerIndex() {
   for (controllerIndex_t i = 0; i < CONTROLLER_MAX; ++i) {
     protocolIndex_t ProtocolIndex = getProtocolIndex_from_ControllerIndex(i);
@@ -850,11 +877,12 @@ bool MQTTpublish(controllerIndex_t controller_idx,
   }
   String topic_str;
   String payload_str;
+
   if (!reserve_special(topic_str, strlen_P(topic)) ||
       !reserve_special(payload_str, strlen_P(payload))) {
     return false;
   }
-  topic_str = topic;
+  topic_str   = topic;
   payload_str = payload;
 
   bool success = false;
@@ -867,7 +895,7 @@ bool MQTTpublish(controllerIndex_t controller_idx,
       MQTTDelayHandler->addToQueue(
         std::unique_ptr<MQTT_queue_element>(
           new (ptr) MQTT_queue_element(
-            controller_idx, taskIndex, 
+            controller_idx, taskIndex,
             std::move(topic_str),
             std::move(payload_str), retained,
             callbackTask)));
@@ -897,7 +925,7 @@ bool MQTTpublish(controllerIndex_t controller_idx,
   void *ptr               = special_calloc(1, size);
 
   if (ptr != nullptr) {
-    success = 
+    success =
       MQTTDelayHandler->addToQueue(
         std::unique_ptr<MQTT_queue_element>(
           new (ptr) MQTT_queue_element(
@@ -957,6 +985,7 @@ void MQTTStatus(struct EventStruct *event, const String& status)
 }
 
 # if FEATURE_MQTT_TLS
+
 bool GetTLSfingerprint(String& fp)
 {
   #  ifdef ESP32
@@ -1001,7 +1030,7 @@ bool GetTLS_Certificate(String& cert, bool caRoot)
      String subject;
 
      if (mqtt_tls->getPeerCertificate(cert, subject, caRoot) == 0) {
-      return true;
+     return true;
      }
      }
    */
@@ -1013,19 +1042,17 @@ bool GetTLS_Certificate(String& cert, bool caRoot)
 
 #endif  // if FEATURE_MQTT
 
-
 /*********************************************************************************************\
 * send specific sensor task data, effectively calling PluginCall(PLUGIN_READ...)
 \*********************************************************************************************/
-void SensorSendTask(struct EventStruct *event, unsigned long timestampUnixTime)
-{
+void SensorSendTask(struct EventStruct *event, unsigned long timestampUnixTime) {
   SensorSendTask(event, timestampUnixTime, millis());
 }
 
 void SensorSendTask(struct EventStruct *event, unsigned long timestampUnixTime, unsigned long lasttimer)
 {
-  if (!validTaskIndex(event->TaskIndex)) { 
-    return; 
+  if (!validTaskIndex(event->TaskIndex)) {
+    return;
   }
 
   // FIXME TD-er: Should a 'disabled' task be rescheduled?
