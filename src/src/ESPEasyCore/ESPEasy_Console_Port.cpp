@@ -23,6 +23,9 @@
  #endif // if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
  */
 
+EspEasy_Console_Port::EspEasy_Console_Port(uint8_t log_destination)
+: _serialWriteBuffer(log_destination) {}
+
 EspEasy_Console_Port::~EspEasy_Console_Port()
 {
 #if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
@@ -97,36 +100,6 @@ void EspEasy_Console_Port::endPort()
   }
 }
 
-void EspEasy_Console_Port::addToSerialBuffer(char c)
-{
-#ifdef ESP32
-    if (!xPortCanYield()) return;
-#endif
-  if (_serial != nullptr) {
-    _serialWriteBuffer.add(c);
-  }
-}
-
-void EspEasy_Console_Port::addToSerialBuffer(const String& line)
-{
-#ifdef ESP32
-    if (!xPortCanYield()) return;
-#endif
-  if (_serial != nullptr) {
-    _serialWriteBuffer.add(line);
-  }
-}
-
-void EspEasy_Console_Port::addNewlineToSerialBuffer()
-{
-#ifdef ESP32
-    if (!xPortCanYield()) return;
-#endif
-
-  if (_serial != nullptr) {
-    _serialWriteBuffer.addNewline();
-  }
-}
 
 bool EspEasy_Console_Port::process_serialWriteBuffer()
 {

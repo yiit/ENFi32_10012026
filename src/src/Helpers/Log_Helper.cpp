@@ -13,31 +13,6 @@
 # include "../Helpers/ESPEasy_Storage.h"
 #endif // if FEATURE_SD
 
-void addToSerialLog(uint32_t timestamp, const String& message, uint8_t loglevel)
-{
-  if (loglevelActiveFor(LOG_TO_SERIAL, loglevel)) {
-    ESPEasy_Console.addToSerialBuffer(format_msec_duration(timestamp));
-
-    if (loglevel == LOG_LEVEL_NONE) {
-      ESPEasy_Console.addToSerialBuffer(F(" :>  "));
-    } else {
-      #ifndef LIMIT_BUILD_SIZE
-      ESPEasy_Console.addToSerialBuffer(strformat(F(" : (%d) "), FreeMem()));
-      #endif
-      {
-        String loglevelDisplayString = getLogLevelDisplayString(loglevel);
-
-        while (loglevelDisplayString.length() < 6) {
-          loglevelDisplayString += ' ';
-        }
-        ESPEasy_Console.addToSerialBuffer(loglevelDisplayString);
-      }
-      ESPEasy_Console.addToSerialBuffer(F(" : "));
-    }
-    ESPEasy_Console.addToSerialBuffer(message);
-    ESPEasy_Console.addNewlineToSerialBuffer();
-  }
-}
 
 void addToSysLog(uint8_t logLevel, const String& str)
 {
@@ -102,8 +77,6 @@ uint32_t LogHelper::getNrMessages(uint8_t logDestination) const
 void LogHelper::loop()
 {
   const uint8_t destinations[] = {
-    // TODO TD-er: Add log buffer for 2nd serial console
-    LOG_TO_SERIAL,
     LOG_TO_SYSLOG,
     LOG_TO_SDCARD
   };
@@ -117,9 +90,6 @@ void LogHelper::loop()
     {
       switch (destinations[i])
       {
-        case LOG_TO_SERIAL:
-          addToSerialLog(timestamp, message, loglevel);
-          break;
         case LOG_TO_SYSLOG:
           addToSysLog(loglevel, message);
           break;

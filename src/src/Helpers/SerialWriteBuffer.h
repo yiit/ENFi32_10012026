@@ -17,14 +17,7 @@
 class SerialWriteBuffer_t {
 public:
 
-  SerialWriteBuffer_t(size_t maxSize = MAX_SERIALWRITEBUFFER_SIZE)
-    : _maxSize(maxSize) {}
-
-  void   add(const String& line);
-  void   add(const __FlashStringHelper *line);
-  void   add(char c);
-
-  void   addNewline();
+  SerialWriteBuffer_t(uint8_t log_destination) : _log_destination(log_destination) {}
 
   void   clear();
 
@@ -33,10 +26,13 @@ public:
 
 private:
 
-  int getRoomLeft() const;
+  String _prefix;
+  String _message;
+  uint32_t _timestamp{};
+  uint32_t _readpos{};
+  uint8_t _loglevel{};
 
-  std::deque<char>_buffer;
-  size_t _maxSize = MAX_SERIALWRITEBUFFER_SIZE;
+  const uint8_t _log_destination;
 };
 
 #endif // ifndef HELPERS_SERIALWRITEBUFFER_H

@@ -1,134 +1,118 @@
 #include "../Helpers/SerialWriteBuffer.h"
 
+#include "../Globals/Logging.h"
+
+#include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/Memory.h"
-
-void SerialWriteBuffer_t::add(const String& line)
-{
-  // When the buffer is too full, try to dump at least the size of what we try to add.
-  const bool mustPop = _buffer.size() > _maxSize;
-  {
-    #ifdef USE_SECOND_HEAP
-
-    // Do not store in 2nd heap, std::dequeue cannot handle 2nd heap well
-    HeapSelectIram ephemeral;
-    #endif // ifdef USE_SECOND_HEAP
-    int roomLeft = getRoomLeft();
-
-    auto it = line.begin();
-
-    while (roomLeft > 0 && it != line.end()) {
-      if (mustPop) {
-        _buffer.pop_front();
-      }
-      _buffer.push_back(*it);
-      --roomLeft;
-      ++it;
-    }
-  }
-}
-
-void SerialWriteBuffer_t::add(const __FlashStringHelper *line)
-{
-  add(String(line));
-}
-
-void SerialWriteBuffer_t::add(char c)
-{
-  #ifdef USE_SECOND_HEAP
-
-  // Do not store in 2nd heap, std::dequeue cannot handle 2nd heap well
-  HeapSelectIram ephemeral;
-  #endif // ifdef USE_SECOND_HEAP
-
-  if (_buffer.size() > _maxSize) {
-    _buffer.pop_front();
-  }
-  _buffer.push_back(c);
-}
-
-void SerialWriteBuffer_t::addNewline()
-{
-  add('\r');
-  add('\n');
-}
+#include "../Helpers/StringConverter.h"
 
 void SerialWriteBuffer_t::clear()
 {
-  _buffer.clear();
+  _prefix.clear();
+  free_string(_message);
+  _timestamp = 0;
+  _readpos   = 0;
+}
+
+String colorize(const String& str, uint8_t loglevel) {
+  const __FlashStringHelper *format = F("%s");
+
+  switch (loglevel)
+  {
+    case LOG_LEVEL_NONE: format = F("\033[1m%s\033[0m");        // Bold or increased intensity
+      break;
+    case LOG_LEVEL_INFO: format = F("\033[34m%s\033[0m");       // blue
+      break;
+    case LOG_LEVEL_ERROR: format = F("\033[91;1m%s\033[0m");    // Red + Bold or increased intensity
+      break;
+#ifndef BUILD_NO_DEBUG
+    case LOG_LEVEL_DEBUG: format = F("\033[32m%s\033[0m");      // Green
+      break;
+    case LOG_LEVEL_DEBUG_MORE: format = F("\033[35m%s\033[0m"); // Purple
+      break;
+    case LOG_LEVEL_DEBUG_DEV: format = F("\033[33m%s\033[0m");  // Yellow
+      break;
+#endif
+
+  }
+  return strformat(format, str.c_str());
 }
 
 size_t SerialWriteBuffer_t::write(Stream& stream, size_t nrBytesToWrite)
 {
-  size_t bytesWritten     = 0;
-  const size_t bufferSize = _buffer.size();
+  size_t bytesWritten = 0;
 
-  if (bufferSize == 0) {
-    return bytesWritten;
+  if ((_timestamp != 0) && (timePassedSince(_timestamp) > LOG_BUFFER_EXPIRE)) {
+    clear();
+
+    // Mark with empty line we skipped the rest of the message.
+    bytesWritten += stream.println(F(" ..."));
+    bytesWritten += stream.println();
   }
 
-  if (nrBytesToWrite > 0) {
-    if (nrBytesToWrite > bufferSize) {
-      nrBytesToWrite = bufferSize;
+  if (_timestamp == 0) {
+    _readpos = 0;
+
+    // Need to fetch a line
+    if (!Logging.getNext(_log_destination, _timestamp, _message, _loglevel) ||
+        !loglevelActiveFor(_log_destination, _loglevel)) {
+      free_string(_message);
+      _timestamp = 0;
+      return bytesWritten;
     }
 
-    while (nrBytesToWrite > 0 && !_buffer.empty()) {
-      uint8_t tmpBuffer[32]{};
+    // Prepare prefix
+    _prefix = format_msec_duration(_timestamp);
 
-      size_t tmpBufferUsed = 0;
+    if (_loglevel == LOG_LEVEL_NONE) {
+      _prefix += F("\033[31;1m :>  \033[0m"); // F(" :>  ");
+    } else {
+      #ifndef LIMIT_BUILD_SIZE
+      _prefix += strformat(F(" : (%d) "), FreeMem());
+      #endif
+      {
+        String loglevelDisplayString = getLogLevelDisplayString(_loglevel);
 
-      auto it = _buffer.begin();
-
-      bool done = false;
-
-      for (; tmpBufferUsed < sizeof(tmpBuffer) &&
-           !done &&
-           it != _buffer.end();) {
-        tmpBuffer[tmpBufferUsed] = (uint8_t)(*it);
-
-        if ((*it == '\n') ||
-            (tmpBufferUsed >= nrBytesToWrite)) {
-          done = true;
+        while (loglevelDisplayString.length() < LOG_LEVEL_MAX_STRING_LENGTH) {
+          loglevelDisplayString += ' ';
         }
-        ++tmpBufferUsed;
-        ++it;
+        _prefix += colorize(loglevelDisplayString, _loglevel);
       }
+      _prefix += F(" | ");
+    }
+  }
 
-      //      done = false;
-      const size_t written = (tmpBufferUsed == 0) ? 0 : stream.write(tmpBuffer, tmpBufferUsed);
+  const size_t maxToWrite = _prefix.length() + _message.length();
 
-      if (written < tmpBufferUsed) {
-        done = true;
-      }
+  if (nrBytesToWrite > maxToWrite) {
+    nrBytesToWrite = maxToWrite;
+  }
 
-      for (size_t i = 0; i < written; ++i) {
-        _buffer.pop_front();
-        --nrBytesToWrite;
-        ++bytesWritten;
-      }
+  bool done = false;
 
-      if (done) {
-        return bytesWritten;
-      }
+  while (!done && bytesWritten < nrBytesToWrite) {
+    if (_readpos < _prefix.length()) {
+      // Write prefix
+      if (1 != stream.write(_prefix[_readpos])) { return bytesWritten; }
+      ++bytesWritten;
+      ++_readpos;
+    } else if (!_prefix.isEmpty()) {
+      // Clear prefix
+      _prefix.clear();
+      _readpos = 0;
+    } else if (_readpos < _message.length()) {
+      // Write message
+      if (1 != stream.write(_message[_readpos])) { return bytesWritten; }
+      ++bytesWritten;
+      ++_readpos;
+    } else {
+      if (1 != stream.write('\n')) { return bytesWritten; }
+
+      // Done with entry, cleanup and leave
+      ++bytesWritten;
+      clear();
+      done = true;
     }
   }
   return bytesWritten;
-}
-
-int SerialWriteBuffer_t::getRoomLeft() const {
-  #ifdef USE_SECOND_HEAP
-
-  // Do not store in 2nd heap, std::dequeue cannot handle 2nd heap well
-  HeapSelectIram ephemeral;
-  #endif // ifdef USE_SECOND_HEAP
-
-  int roomLeft = getMaxFreeBlock();
-
-  if (roomLeft < 1000) {
-    roomLeft = 0;                    // Do not append to buffer.
-  } else if (roomLeft < 4000) {
-    roomLeft = 128 - _buffer.size(); // 1 buffer.
-  } else {
-    roomLeft -= 4000;                // leave some free for normal use.
-  }
-  return roomLeft;
 }

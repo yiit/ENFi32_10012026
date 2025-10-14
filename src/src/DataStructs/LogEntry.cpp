@@ -4,12 +4,6 @@
 #include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/StringConverter.h"
 
-#ifdef ESP32
-  # define LOG_BUFFER_EXPIRE         30000 // Time after which a buffered log item is considered expired.
-#else
-  # define LOG_BUFFER_EXPIRE         5000  // Time after which a buffered log item is considered expired.
-#endif // ifdef ESP32
-
 
 LogEntry_t::LogEntry_t(const uint8_t              logLevel,
                        const __FlashStringHelper *message) :

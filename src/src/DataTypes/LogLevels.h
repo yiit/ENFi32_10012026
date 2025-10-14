@@ -22,3 +22,9 @@
 
 #define NR_LOG_TO_DESTINATIONS  5   // Update this when adding extra log output streams
 
+
+#ifdef BUILD_NO_DEBUG
+#define LOG_LEVEL_MAX_STRING_LENGTH  6
+#else
+#define LOG_LEVEL_MAX_STRING_LENGTH  10
+#endif
