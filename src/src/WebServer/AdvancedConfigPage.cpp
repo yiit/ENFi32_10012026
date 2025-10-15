@@ -555,17 +555,7 @@ void addFormLogLevelSelect(LabelType::Enum label, int choice)
   #endif
 
   addRowLabel(getLabel(label));
-  const __FlashStringHelper * options[LOG_LEVEL_NRELEMENTS + 1];
-  int    optionValues[LOG_LEVEL_NRELEMENTS + 1] = { 0 };
-
-  options[0]      = getLogLevelDisplayString(0);
-
-  for (int i = 0; i < LOG_LEVEL_NRELEMENTS; ++i) {
-    options[i + 1] = getLogLevelDisplayStringFromIndex(i, optionValues[i + 1]);
-  }
-  const FormSelectorOptions selector(LOG_LEVEL_NRELEMENTS + 1, options, optionValues);
-  selector.addSelector(getInternalLabel(label), choice);
-
+  addLogLevelFormSelectorOptions(getInternalLabel(label), choice);
 }
 
 void addFormLogFacilitySelect(const __FlashStringHelper * label, const __FlashStringHelper * id, int choice)

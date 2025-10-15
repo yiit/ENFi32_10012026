@@ -31,46 +31,6 @@ void initLog()
 /********************************************************************************************\
    Logging
  \*********************************************************************************************/
-const __FlashStringHelper* getLogLevelDisplayString(int logLevel) {
-  switch (logLevel)
-  {
-    case LOG_LEVEL_NONE:       return F("None");
-    case LOG_LEVEL_ERROR:      return F("Error");
-    case LOG_LEVEL_INFO:       return F("Info");
-#ifndef BUILD_NO_DEBUG
-    case LOG_LEVEL_DEBUG:      return F("Debug");
-    case LOG_LEVEL_DEBUG_MORE: return F("Debug More");
-    case LOG_LEVEL_DEBUG_DEV:  return F("Debug dev");
-#endif // ifndef BUILD_NO_DEBUG
-
-    default:
-      break;
-  }
-  return F("");
-}
-
-const __FlashStringHelper* getLogLevelDisplayStringFromIndex(uint8_t index, int& logLevel) {
-  switch (index)
-  {
-    case 0: logLevel = LOG_LEVEL_ERROR;
-      break;
-    case 1: logLevel = LOG_LEVEL_INFO;
-      break;
-#ifndef BUILD_NO_DEBUG
-    case 2: logLevel = LOG_LEVEL_DEBUG;
-      break;
-    case 3: logLevel = LOG_LEVEL_DEBUG_MORE;
-      break;
-    case 4: logLevel = LOG_LEVEL_DEBUG_DEV;
-      break;
-#endif // ifndef BUILD_NO_DEBUG
-
-    default: logLevel = -1;
-      return F("");
-  }
-  return getLogLevelDisplayString(logLevel);
-}
-
 void disableSerialLog() {
   log_to_serial_disabled = true;
   setLogLevelFor(LOG_TO_SERIAL, 0);

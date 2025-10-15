@@ -68,12 +68,10 @@ void handle_log_JSON() {
           if (legendWriter) {
             legendWriter->setIsArray();
 
-            for (uint8_t i = 0; i < LOG_LEVEL_NRELEMENTS; ++i) {
+            for (uint8_t i = LOG_LEVEL_ERROR; i < LOG_LEVEL_NRELEMENTS(); ++i) {
               auto loglevelWriter = legendWriter->createChild();
 
               if (loglevelWriter) {
-
-
                 int loglevel;
                 loglevelWriter->write({ F("label"), getLogLevelDisplayStringFromIndex(i, loglevel) });
                 loglevelWriter->write({ F("loglevel"), loglevel });

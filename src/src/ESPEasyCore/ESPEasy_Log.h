@@ -8,45 +8,40 @@
 #include "../DataTypes/LogLevels.h"
 
 
-
 // Move the log String so it does not have to be copied in the web log
 #define addLogMove(L, S) addToLogMove(L, std::move(S))
 
 /********************************************************************************************\
    Logging
  \*********************************************************************************************/
-void                       initLog();
+void    initLog();
 
-const __FlashStringHelper* getLogLevelDisplayString(int logLevel);
 
-const __FlashStringHelper* getLogLevelDisplayStringFromIndex(uint8_t index,
-                                                             int   & logLevel);
+void    disableSerialLog();
 
-void                       disableSerialLog();
+void    setLogLevelFor(uint8_t destination,
+                       uint8_t logLevel);
 
-void                       setLogLevelFor(uint8_t destination,
-                                          uint8_t logLevel);
+void    updateLogLevelCache();
 
-void                       updateLogLevelCache();
+bool    loglevelActiveFor(uint8_t logLevel);
 
-bool                       loglevelActiveFor(uint8_t logLevel);
+uint8_t getSerialLogLevel();
 
-uint8_t                    getSerialLogLevel();
+uint8_t getWebLogLevel();
 
-uint8_t                    getWebLogLevel();
+bool    loglevelActiveFor(uint8_t destination,
+                          uint8_t logLevel);
 
-bool                       loglevelActiveFor(uint8_t destination,
-                                             uint8_t logLevel);
+void    addLog(uint8_t                    logLevel,
+               const __FlashStringHelper *str);
+void    addLog(uint8_t     logLevel,
+               const char *line);
+void    addLog(uint8_t  logLevel,
+               String&& str);
 
-void                       addLog(uint8_t                    logLevel,
-                                  const __FlashStringHelper *str);
-void                       addLog(uint8_t     logLevel,
-                                  const char *line);
-void                       addLog(uint8_t  logLevel,
-                                  String&& str);
+void    addLog(uint8_t       logLevel,
+               const String& str);
 
-void                       addLog(uint8_t       logLevel,
-                                  const String& str);
-
-void                       addToLogMove(uint8_t  logLevel,
-                                        String&& str);
+void    addToLogMove(uint8_t  logLevel,
+                     String&& str);

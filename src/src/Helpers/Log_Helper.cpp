@@ -13,7 +13,6 @@
 # include "../Helpers/ESPEasy_Storage.h"
 #endif // if FEATURE_SD
 
-
 void addToSysLog(uint8_t logLevel, const String& str)
 {
   if (loglevelActiveFor(LOG_TO_SYSLOG, logLevel)) {
