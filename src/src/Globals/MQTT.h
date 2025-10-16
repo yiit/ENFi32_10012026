@@ -48,6 +48,7 @@ extern WiFiClient mqtt;
 extern String  mqtt_tls_last_errorstr;
 extern int32_t mqtt_tls_last_error;
 extern BearSSL::WiFiClientSecure_light*mqtt_tls;
+extern int32_t mqtt_tls_last_cipher_suite;
 
 // extern BearSSL::X509List mqtt_X509List;
 
