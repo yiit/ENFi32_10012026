@@ -3,37 +3,25 @@
 
 #include "../../ESPEasy_common.h"
 
-#include <deque>
+#include "../Helpers/LogStreamWriter.h"
 
-#ifndef MAX_SERIALWRITEBUFFER_SIZE
-# ifdef ESP8266
-#  define MAX_SERIALWRITEBUFFER_SIZE 1024
-# endif // ifdef ESP8266
-# ifdef ESP32
-#  define MAX_SERIALWRITEBUFFER_SIZE 10240
-# endif // ifdef ESP32
-#endif // ifndef MAX_SERIALWRITEBUFFER_SIZE
-
-class SerialWriteBuffer_t {
+class SerialWriteBuffer_t : public LogStreamWriter {
 public:
 
-  SerialWriteBuffer_t(uint8_t log_destination) : _log_destination(log_destination) {}
+  SerialWriteBuffer_t(uint8_t log_destination) : LogStreamWriter(log_destination) {}
 
-  void   clear();
-
-  size_t write(Stream& stream,
-               size_t  nrBytesToWrite);
+  
 
 private:
+
+  size_t write_skipping(Stream& stream) override;
+
+  void prepare_prefix() override;
+
+
+
   String colorize(const String& str) const;
 
-  String _prefix;
-  String _message;
-  uint32_t _timestamp{};
-  uint32_t _readpos{};
-  uint8_t _loglevel{};
-
-  const uint8_t _log_destination;
 };
 
 #endif // ifndef HELPERS_SERIALWRITEBUFFER_H

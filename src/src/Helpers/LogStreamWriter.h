@@ -1,0 +1,51 @@
+#pragma once
+
+#include "../../ESPEasy_common.h"
+
+class LogStreamWriter
+{
+
+public:
+
+  LogStreamWriter(uint8_t log_destination) : _log_destination(log_destination) {}
+
+  virtual ~LogStreamWriter() {}
+
+  virtual bool     process(Stream*stream);
+
+  virtual uint32_t getNrMessages() const;
+
+  virtual void     clear();
+
+protected:
+
+  // Write continuously until either nrBytesToWrite was reached or no new messages were available to process.
+  // @retval Number of bytes written. Zero when no new message was available to process.
+  virtual size_t write(Stream& stream,
+                       size_t  nrBytesToWrite);
+
+  // Write single item and clear() on return.
+  // This way each call starts with a new item and long messages may get truncated based on nrBytesToWrite
+  // @retval Number of bytes written. Zero when no new message was available to process.
+  virtual size_t write_single_item(Stream& stream,
+                                   size_t  nrBytesToWrite);
+
+  virtual size_t write_item(Stream& stream,
+                            size_t  nrBytesToWrite);
+
+
+  virtual size_t write_skipping(Stream& stream);
+
+  virtual void   prepare_prefix();
+
+
+  String _prefix;
+  String _message;
+  uint32_t _timestamp{};
+  uint32_t _readpos{};
+  uint8_t _loglevel{};
+
+  const uint8_t _log_destination;
+
+
+}; // class LogStreamWriter

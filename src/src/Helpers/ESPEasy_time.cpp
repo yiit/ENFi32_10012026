@@ -206,6 +206,21 @@ uint32_t ESPEasy_time::systemMicros_to_Localtime(const int64_t& systemMicros, ui
   return time_zone.toLocal(systemMicros_to_Unixtime(systemMicros, unix_time_frac));
 }
 
+int64_t ESPEasy_time::internalTimestamp_to_systemMicros(const uint32_t& internalTimestamp, uint32_t internal_to_micros_ratio) const
+{
+  const uint64_t cur_micros    = getMicros64();
+  const uint64_t overflow_step = 4294967296ull * internal_to_micros_ratio;
+
+  uint64_t sysMicros = static_cast<uint64_t>(internalTimestamp) * internal_to_micros_ratio;
+
+  // Try to get in the range of the current system micros
+  while ((sysMicros + overflow_step) < cur_micros) {
+    sysMicros += overflow_step;
+  }
+  return sysMicros;
+
+}
+
 void ESPEasy_time::initTime()
 {
   nextSyncTime = 0;

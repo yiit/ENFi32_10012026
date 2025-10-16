@@ -13,13 +13,6 @@
 # include "../Helpers/ESPEasy_Storage.h"
 #endif // if FEATURE_SD
 
-void addToSysLog(uint8_t logLevel, const String& str)
-{
-  if (loglevelActiveFor(LOG_TO_SYSLOG, logLevel)) {
-    sendSyslog(logLevel, str);
-  }
-}
-
 void addToSDLog(uint8_t logLevel, const String& str)
 {
 #if FEATURE_SD
@@ -76,7 +69,6 @@ uint32_t LogHelper::getNrMessages(uint8_t logDestination) const
 void LogHelper::loop()
 {
   const uint8_t destinations[] = {
-    LOG_TO_SYSLOG,
     LOG_TO_SDCARD
   };
 
@@ -89,9 +81,6 @@ void LogHelper::loop()
     {
       switch (destinations[i])
       {
-        case LOG_TO_SYSLOG:
-          addToSysLog(loglevel, message);
-          break;
         case LOG_TO_SDCARD:
           addToSDLog(loglevel, message);
           break;

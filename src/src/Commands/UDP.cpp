@@ -82,20 +82,26 @@ const __FlashStringHelper* Command_UDP_SendToUPD(struct EventStruct *event, cons
     IPAddress UDP_IP;
 
     if (UDP_IP.fromString(ip)) {
+      WiFiUDP udp;
+
+      if (!beginWiFiUDP_randomPort(udp)) {
+        return return_command_failed_flashstr();
+      }
+
       FeedSW_watchdog();
-      portUDP.beginPacket(UDP_IP, port);
+      udp.beginPacket(UDP_IP, port);
 
       if (handleMix) {
-        portUDP.write(&argument[0], argument.size());
+        udp.write(&argument[0], argument.size());
       } else {
         #if defined(ESP8266)
-        portUDP.write(message.c_str(),                                    message.length());
+        udp.write(message.c_str(),                                    message.length());
         #endif // if defined(ESP8266)
         #if defined(ESP32)
-        portUDP.write(reinterpret_cast<const uint8_t *>(message.c_str()), message.length());
+        udp.write(reinterpret_cast<const uint8_t *>(message.c_str()), message.length());
         #endif // if defined(ESP32)
       }
-      portUDP.endPacket();
+      udp.endPacket();
       FeedSW_watchdog();
       delay(0);
     }

@@ -7,6 +7,7 @@
 #include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../ESPEasyCore/Serial.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
+#include "../Globals/Logging.h"
 #include "../Globals/Services.h"
 #include "../Globals/Settings.h"
 #if FEATURE_RTTTL && FEATURE_ANYRTTTL_LIB && FEATURE_ANYRTTTL_ASYNC
@@ -74,6 +75,7 @@ void backgroundtasks()
    */
 
   process_serialWriteBuffer();
+  syslogWriter.process(nullptr);
 
   if (!UseRTOSMultitasking) {
     serial();

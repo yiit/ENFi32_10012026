@@ -94,66 +94,6 @@ void etharp_gratuitous_r(struct netif *netif)     { tcpip_callback_with_block((t
 
 #include <vector>
 
-/*********************************************************************************************\
-   Syslog client
-\*********************************************************************************************/
-void sendSyslog(uint8_t logLevel, const String& message)
-{
-  if ((Settings.Syslog_IP[0] != 0) && ESPEasy::net::NetworkConnected())
-  {
-    IPAddress broadcastIP(Settings.Syslog_IP[0], Settings.Syslog_IP[1], Settings.Syslog_IP[2], Settings.Syslog_IP[3]);
-
-    FeedSW_watchdog();
-
-    if (portUDP.beginPacket(broadcastIP, Settings.SyslogPort) == 0) {
-      // problem resolving the hostname or port
-      return;
-    }
-    unsigned int prio = Settings.SyslogFacility * 8;
-
-    if (logLevel == LOG_LEVEL_ERROR) {
-      prio += 3; // syslog error
-    }
-    else if (logLevel == LOG_LEVEL_INFO) {
-      prio += 5; // syslog notice
-    }
-    else {
-      prio += 7;
-    }
-
-    // An RFC3164 compliant message must be formated like :  "<PRIO>[TimeStamp ]Hostname TaskName: Message"
-
-    // Using Settings.Name as the Hostname (Hostname must NOT content space)
-    {
-      String header;
-      header += '<';
-      header += prio;
-      header += '>';
-      header += ESPEasy::net::NetworkCreateRFCCompliantHostname(true);
-      header += F(" EspEasy: ");
-      header.trim();
-      header.replace(' ', '_');
-
-      #ifdef ESP8266
-      portUDP.write(header.c_str(),                                    header.length());
-      #endif // ifdef ESP8266
-      #ifdef ESP32
-      portUDP.write(reinterpret_cast<const uint8_t *>(header.c_str()), header.length());
-      #endif // ifdef ESP32
-    }
-
-    #ifdef ESP8266
-    portUDP.write(message.c_str(),                                    message.length());
-    #endif // ifdef ESP8266
-    #ifdef ESP32
-    portUDP.write(reinterpret_cast<const uint8_t *>(message.c_str()), message.length());
-    #endif // ifdef ESP32
-
-    portUDP.endPacket();
-    FeedSW_watchdog();
-    delay(0);
-  }
-}
 
 #if FEATURE_ESPEASY_P2P
 
