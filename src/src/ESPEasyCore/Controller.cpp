@@ -176,9 +176,9 @@ bool MQTTConnect_prepareClient(controllerIndex_t controller_idx) {
   MakeControllerSettings(ControllerSettings); // -V522
 
   if (!AllocatedControllerSettings()) {
-# ifndef BUILD_NO_DEBUG
+    # ifndef BUILD_NO_DEBUG
     addLog(LOG_LEVEL_ERROR, F("MQTT : Cannot connect, out of RAM"));
-# endif
+    # endif // ifndef BUILD_NO_DEBUG
     return false;
   }
   LoadControllerSettings(controller_idx, *ControllerSettings);
@@ -1254,7 +1254,9 @@ bool GetTLS_Certificate(String& cert, bool caRoot)
 /*********************************************************************************************\
 * send specific sensor task data, effectively calling PluginCall(PLUGIN_READ...)
 \*********************************************************************************************/
-void SensorSendTask(struct EventStruct *event, unsigned long timestampUnixTime) { SensorSendTask(event, timestampUnixTime, millis()); }
+void SensorSendTask(struct EventStruct *event, unsigned long timestampUnixTime) {
+  SensorSendTask(event, timestampUnixTime, millis());
+}
 
 void SensorSendTask(struct EventStruct *event, unsigned long timestampUnixTime, unsigned long lasttimer)
 {
