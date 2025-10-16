@@ -774,6 +774,9 @@ void addFormSelector_binarySensorDeviceClass(const __FlashStringHelper*label,
   if (MQTT_binary_deviceClassTwoWay(devClassIndex)) {
     devClassName += F("²");
   }
+  if (MQTT_binary_deviceClassSwitch(devClassIndex)) {
+    devClassName += F("÷"); // These are multi-byte chars, so we have to use the F() macro
+  }
 
   while (!devClassName.isEmpty() || (0 == devClassIndex)) {
     binaryDeviceClasses.push_back(devClassName);
@@ -781,6 +784,9 @@ void addFormSelector_binarySensorDeviceClass(const __FlashStringHelper*label,
     devClassName = MQTT_binary_deviceClassName(devClassIndex);
     if (MQTT_binary_deviceClassTwoWay(devClassIndex)) {
       devClassName += F("²");
+    }
+    if (MQTT_binary_deviceClassSwitch(devClassIndex)) {
+      devClassName += F("÷");
     }
   }
   const FormSelectorOptions deviceClass(
