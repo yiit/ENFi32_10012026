@@ -22,7 +22,7 @@ void initLog()
   // make sure addLog doesnt do any stuff before initalisation of Settings is complete.
   Settings.UseSerial      = true;
   Settings.SyslogFacility = 0;
-  setLogLevelFor(LOG_TO_SYSLOG, 0);
+  setLogLevelFor(LOG_TO_SYSLOG, 2);
   setLogLevelFor(LOG_TO_SERIAL, 2); // logging during initialisation
   setLogLevelFor(LOG_TO_WEBLOG, 2);
   setLogLevelFor(LOG_TO_SDCARD, 0);

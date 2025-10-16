@@ -14,10 +14,15 @@ void LogStreamWriter::clear()
   _readpos   = 0;
 }
 
-bool LogStreamWriter::process(Stream*stream)
+bool LogStreamWriter::process(Stream*stream, size_t availableForWrite)
 {
   if (stream == nullptr) { return false; }
-  return write(*stream, stream->availableForWrite()) != 0;
+  return write(*stream, availableForWrite) != 0;
+}
+
+bool LogStreamWriter::process()
+{
+  return false;
 }
 
 uint32_t LogStreamWriter::getNrMessages() const

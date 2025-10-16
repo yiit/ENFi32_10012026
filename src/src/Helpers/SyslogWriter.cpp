@@ -10,7 +10,7 @@
 
 #define MAX_LENGTH_SYSLOG_MESSAGE  1000
 
-bool SyslogWriter::process(Stream*stream)
+bool SyslogWriter::process()
 {
   if ((Settings.SyslogLevel == 0) || (getNrMessages() == 0)) {
     return false;
@@ -123,11 +123,13 @@ void SyslogWriter::prepare_prefix()
       ts.tm_hour, ts.tm_min, ts.tm_sec);
   }
 
+  String hostname(ESPEasy::net::NetworkCreateRFCCompliantHostname(true));
+  hostname.replace(' ', '_');
+  hostname.trim();
+
   _prefix = strformat(
     F("<%d>%s%s EspEasy: "),
     prio,
     formattedTimestamp.c_str(),
-    ESPEasy::net::NetworkCreateRFCCompliantHostname(true).c_str());
-  _prefix.trim();
-  _prefix.replace(' ', '_');
+    hostname.c_str());
 }

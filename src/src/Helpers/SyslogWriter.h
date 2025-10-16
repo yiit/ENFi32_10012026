@@ -14,7 +14,7 @@ public:
 
   SyslogWriter(uint8_t log_destination) : LogStreamWriter(log_destination) {}
 
-  virtual bool process(Stream* stream) override;
+  virtual bool process() override;
 
 private:
 

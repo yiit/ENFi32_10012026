@@ -107,7 +107,7 @@ bool EspEasy_Console_Port::process_serialWriteBuffer()
 #ifdef ESP32
     if (!xPortCanYield()) return false;
 #endif
-    return _serialWriteBuffer.process(_serial);
+    return _serialWriteBuffer.process(_serial, _serial->availableForWrite());
   }
   return false;
 }

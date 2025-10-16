@@ -11,7 +11,10 @@ public:
 
   virtual ~LogStreamWriter() {}
 
-  virtual bool     process(Stream*stream);
+  virtual bool     process(Stream* stream, size_t availableForWrite);
+  
+  // Only use this from derived classes, as we need a Stream to further process
+  virtual bool     process();
 
   virtual uint32_t getNrMessages() const;
 
