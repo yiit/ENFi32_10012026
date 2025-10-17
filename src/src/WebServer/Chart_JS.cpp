@@ -37,7 +37,7 @@ void add_ChartJS_array(KeyValueWriter& parent,
   }
 }
 
-Sp_KeyValueWriter add_ChartJS_chart_header(
+Up_KeyValueWriter add_ChartJS_chart_header(
   const __FlashStringHelper *chartType,
   const __FlashStringHelper *id,
   const ChartJS_title      & chartTitle,
@@ -60,7 +60,7 @@ Sp_KeyValueWriter add_ChartJS_chart_header(
     onlyJSON);
 }
 
-Sp_KeyValueWriter add_ChartJS_chart_header(
+Up_KeyValueWriter add_ChartJS_chart_header(
   const __FlashStringHelper *chartType,
   const String             & id,
   const ChartJS_title      & chartTitle,
@@ -221,7 +221,7 @@ void add_ChartJS_dataset(
   }
 }
 
-Sp_KeyValueWriter add_ChartJS_dataset_header(KeyValueWriter& dataset, const ChartJS_dataset_config& config)
+Up_KeyValueWriter add_ChartJS_dataset_header(KeyValueWriter& dataset, const ChartJS_dataset_config& config)
 {
   if (!config.label.isEmpty()) {
     dataset.write({ F("label"), config.label });

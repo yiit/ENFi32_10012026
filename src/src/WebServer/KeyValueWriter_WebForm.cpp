@@ -130,7 +130,7 @@ void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
   }
 }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createChild()
+Up_KeyValueWriter KeyValueWriter_WebForm::createChild()
 {
   std::unique_ptr<KeyValueWriter_WebForm> child(new (std::nothrow) KeyValueWriter_WebForm(this));
 
@@ -139,7 +139,7 @@ Sp_KeyValueWriter KeyValueWriter_WebForm::createChild()
   // return std::make_unique<KeyValueWriter_WebForm>(this);
 }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createChild(const String& header)
+Up_KeyValueWriter KeyValueWriter_WebForm::createChild(const String& header)
 {
   std::unique_ptr<KeyValueWriter_WebForm> child(new (std::nothrow) KeyValueWriter_WebForm(header, this));
 
@@ -148,7 +148,7 @@ Sp_KeyValueWriter KeyValueWriter_WebForm::createChild(const String& header)
   // return std::make_unique<KeyValueWriter_WebForm>(header, this);
 }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createChildArray(const String& header)
+Up_KeyValueWriter KeyValueWriter_WebForm::createChildArray(const String& header)
 {
   auto child = createChild(header);
 
@@ -158,7 +158,7 @@ Sp_KeyValueWriter KeyValueWriter_WebForm::createChildArray(const String& header)
   return std::move(child);
 }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createNew()
+Up_KeyValueWriter KeyValueWriter_WebForm::createNew()
 {
   std::unique_ptr<KeyValueWriter_WebForm> child(new (std::nothrow) KeyValueWriter_WebForm());
 
@@ -167,7 +167,7 @@ Sp_KeyValueWriter KeyValueWriter_WebForm::createNew()
   // return std::make_unique<KeyValueWriter_WebForm>();
 }
 
-Sp_KeyValueWriter KeyValueWriter_WebForm::createNew(const String& header)
+Up_KeyValueWriter KeyValueWriter_WebForm::createNew(const String& header)
 {
   std::unique_ptr<KeyValueWriter_WebForm> child(new (std::nothrow) KeyValueWriter_WebForm(header));
 

@@ -10,7 +10,7 @@
 
 
 class KeyValueWriter;
-typedef std::unique_ptr<KeyValueWriter> Sp_KeyValueWriter;
+typedef std::unique_ptr<KeyValueWriter> Up_KeyValueWriter;
 
 // ********************************************************************************
 // KeyValueWriter
@@ -83,13 +83,13 @@ public:
   virtual void              setOutputToString(PrintToString*printToStr) { _toString = printToStr; }
 
   // Create writer of the same derived type, with this set as parent
-  virtual Sp_KeyValueWriter createChild()                     = 0;
-  virtual Sp_KeyValueWriter createChild(const String& header) = 0;
-  virtual Sp_KeyValueWriter createChildArray(const String& header) = 0;
+  virtual Up_KeyValueWriter createChild()                     = 0;
+  virtual Up_KeyValueWriter createChild(const String& header) = 0;
+  virtual Up_KeyValueWriter createChildArray(const String& header) = 0;
 
   // Create new writer of the same derived type, without parent
-  virtual Sp_KeyValueWriter createNew()                     = 0;
-  virtual Sp_KeyValueWriter createNew(const String& header) = 0;
+  virtual Up_KeyValueWriter createNew()                     = 0;
+  virtual Up_KeyValueWriter createNew(const String& header) = 0;
 
   const String&             get() const {
     if (_toString == nullptr) { return EMPTY_STRING; }

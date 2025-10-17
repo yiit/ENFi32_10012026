@@ -49,7 +49,7 @@
 # include "../WebServer/Chart_JS_scale.h"
 # include "../DataStructs/ChartJS_dataset_config.h"
 
-Sp_KeyValueWriter add_ChartJS_chart_header(
+Up_KeyValueWriter add_ChartJS_chart_header(
   const __FlashStringHelper *chartType,
   const __FlashStringHelper *id,
   const ChartJS_title      & chartTitle,
@@ -60,7 +60,7 @@ Sp_KeyValueWriter add_ChartJS_chart_header(
   size_t                     nrSamples  = 0,
   bool                       onlyJSON   = false);
 
-Sp_KeyValueWriter add_ChartJS_chart_header(
+Up_KeyValueWriter add_ChartJS_chart_header(
   const __FlashStringHelper *chartType,
   const String             & id,
   const ChartJS_title      & chartTitle,
@@ -106,7 +106,7 @@ void add_ChartJS_dataset(
   const String                & options    = EMPTY_STRING);
 
 
-Sp_KeyValueWriter add_ChartJS_dataset_header(
+Up_KeyValueWriter add_ChartJS_dataset_header(
   KeyValueWriter              & dataset,
                                 const ChartJS_dataset_config& config);
 

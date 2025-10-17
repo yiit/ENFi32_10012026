@@ -176,7 +176,7 @@ void KeyValueWriter_JSON::writeValue(const ValueStruct*val)
   pr.print(to_json_value(str));
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createChild()
+Up_KeyValueWriter KeyValueWriter_JSON::createChild()
 {
   std::unique_ptr<KeyValueWriter_JSON> child(new (std::nothrow) KeyValueWriter_JSON(this, _toString));
 
@@ -187,7 +187,7 @@ Sp_KeyValueWriter KeyValueWriter_JSON::createChild()
   // return std::make_unique<KeyValueWriter_JSON>(this, _toString);
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createChild(const String& header)
+Up_KeyValueWriter KeyValueWriter_JSON::createChild(const String& header)
 {
   std::unique_ptr<KeyValueWriter_JSON> child(new (std::nothrow) KeyValueWriter_JSON(header, this, _toString));
 
@@ -198,7 +198,7 @@ Sp_KeyValueWriter KeyValueWriter_JSON::createChild(const String& header)
   // return std::make_unique<KeyValueWriter_JSON>(header, this, _toString);
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createChildArray(const String& header)
+Up_KeyValueWriter KeyValueWriter_JSON::createChildArray(const String& header)
 {
   auto child = createChild(header);
 
@@ -208,7 +208,7 @@ Sp_KeyValueWriter KeyValueWriter_JSON::createChildArray(const String& header)
   return std::move(child);
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createNew()
+Up_KeyValueWriter KeyValueWriter_JSON::createNew()
 {
   std::unique_ptr<KeyValueWriter_JSON> child(new (std::nothrow) KeyValueWriter_JSON(false, _toString));
 
@@ -219,7 +219,7 @@ Sp_KeyValueWriter KeyValueWriter_JSON::createNew()
   // return std::make_unique<KeyValueWriter_JSON>(false, _toString);
 }
 
-Sp_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header)
+Up_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header)
 {
   std::unique_ptr<KeyValueWriter_JSON> child(new (std::nothrow) KeyValueWriter_JSON(header, _toString));
 
