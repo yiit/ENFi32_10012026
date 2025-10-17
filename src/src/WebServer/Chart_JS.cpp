@@ -23,8 +23,6 @@ void add_ChartJS_array(KeyValueWriter& parent,
 {
   for (int i = 0; i < valueCount; ++i) {
     parent.write({ EMPTY_STRING, array[i], nrDecimals });
-
-    //    addHtmlFloat_NaN_toNull(array[i], nrDecimals);
   }
 }
 

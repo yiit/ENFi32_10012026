@@ -447,6 +447,7 @@ void addHtmlFloat(const float& value, unsigned int nrDecimals) {
   addHtml(toString(value, nrDecimals));
 }
 
+/*
 void addHtmlFloat_NaN_toNull(const float& value, unsigned int nrDecimals) {
   String res;
   if (toValidString(res, value, nrDecimals)) {
@@ -455,13 +456,14 @@ void addHtmlFloat_NaN_toNull(const float& value, unsigned int nrDecimals) {
     addHtml(F("null"));
   }
 }
-
+*/
 
 #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
 void addHtmlFloat(const double& value, unsigned int nrDecimals) {
   addHtml(doubleToString(value, nrDecimals));
 }
 
+/*
 void addHtmlFloat_NaN_toNull(const double& value, unsigned int nrDecimals) {
   String res;
   if (doubleToValidString(res, value, nrDecimals)) {
@@ -470,6 +472,7 @@ void addHtmlFloat_NaN_toNull(const double& value, unsigned int nrDecimals) {
     addHtml(F("null"));
   }
 }
+*/
 
 #endif
 

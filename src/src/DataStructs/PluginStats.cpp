@@ -598,13 +598,7 @@ void PluginStats::plot_ChartJS_dataset(KeyValueWriter& dataset) const
     for (; i < nrSamples; ++i) {
       const float value = (*_samples)[i];
 
-      if (isnanf(value)) { 
-        data->write({ EMPTY_STRING, F("null") }); 
-      } else {
-        data->write({ EMPTY_STRING, value, _nrDecimals });
-      }
-
-      //     addHtmlFloat_NaN_toNull((*_samples)[i], _nrDecimals);
+      data->write({ EMPTY_STRING, value, _nrDecimals });
     }
   }
 }

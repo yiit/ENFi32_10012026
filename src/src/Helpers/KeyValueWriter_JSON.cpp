@@ -144,17 +144,17 @@ void KeyValueWriter_JSON::writeValue(const ValueStruct*val)
   auto& pr = getPrint();
 
   ValueStruct::ValueType valueType = val->getValueType();
-  String str                       = val->toString();
+  ValueStruct::ValueType valueType_afterPrint;
+  String str                       = val->toString(valueType_afterPrint);
 
   switch (valueType)
   {
     case ValueStruct::ValueType::Float:
     case ValueStruct::ValueType::Double:
 
-      // TODO TD-er: Should we use addHtmlFloat_NaN_toNull here?
-      if (!_allowFormatOverrides && str.equalsIgnoreCase(F("nan"))) {
+      if (!_allowFormatOverrides && valueType_afterPrint != valueType) {
         pr.print(F("null"));
-        break;
+        return;
       }
 
     case ValueStruct::ValueType::Int:

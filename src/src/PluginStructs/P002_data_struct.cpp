@@ -718,11 +718,7 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
                   for (size_t i = 0; i < _multipoint.size(); ++i) {
                     const float value = _multipoint[i]._value;
 
-                    if (isnanf(value)) {
-                      data->write({ EMPTY_STRING, F("null") });
-                    } else {
-                      data->write({ EMPTY_STRING, value, _nrDecimals });
-                    }
+                    data->write({ EMPTY_STRING, value, _nrDecimals });
                   }
                 }
               }
