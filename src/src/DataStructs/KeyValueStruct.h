@@ -58,12 +58,12 @@ struct KeyValueStruct
 
   KeyValueStruct(const String         & key,
                  const float          & val,
-                 int                    nrDecimals = 4,
+                 uint8_t                    nrDecimals = 4,
                  Format                 format     = Format::Default);
 
   KeyValueStruct(const String         & key,
                  const double         & val,
-                 int                    nrDecimals = 4,
+                 uint8_t                    nrDecimals = 4,
                  Format                 format     = Format::Default);
 
 

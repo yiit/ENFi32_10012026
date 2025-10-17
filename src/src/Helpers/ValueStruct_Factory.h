@@ -23,18 +23,18 @@ public:
 
 
   static Up_ValueStruct create(const float& val,
-                               int          nrDecimals        = 4,
+                               uint8_t      nrDecimals        = 4,
                                bool         trimTrailingZeros = false);
 
   static Up_ValueStruct create(const double& val,
-                               int           nrDecimals        = 4,
+                               uint8_t       nrDecimals        = 4,
                                bool          trimTrailingZeros = false);
 
   static Up_ValueStruct create(
-    const String         & val);
+    const String& val);
 
   static Up_ValueStruct create(
-    String              && val);
+    String&& val);
 
   static Up_ValueStruct create(
     const __FlashStringHelper *val);

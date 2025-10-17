@@ -16,6 +16,7 @@
 #  include "../WebServer/Chart_JS_title.h"
 # endif // if FEATURE_CHART_JS
 
+struct PluginStats_Config_t;
 
 class PluginStats_array
 {

@@ -34,7 +34,7 @@
 //   }
 // }
 //
-// Make sure the KeyValueWriter objects are in their own scope, 
+// Make sure the KeyValueWriter objects are in their own scope,
 // since the closing braces are written from their destructor.
 //
 // Split into several parts so a long array of
@@ -102,14 +102,13 @@ void add_ChartJS_dataset(
   const ChartJS_dataset_config& config,
   const float                   values[],
   int                           valueCount,
-  unsigned int                  nrDecimals = 3,
+  uint8_t                       nrDecimals = 3,
   const String                & options    = EMPTY_STRING);
 
 
 Up_KeyValueWriter add_ChartJS_dataset_header(
   KeyValueWriter              & dataset,
-                                const ChartJS_dataset_config& config);
-
+  const ChartJS_dataset_config& config);
 
 
 #endif // if FEATURE_CHART_JS

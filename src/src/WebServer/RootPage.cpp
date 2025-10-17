@@ -98,8 +98,6 @@ void handle_root() {
   rebootCmd = strcasecmp_P(sCommand.c_str(), PSTR("reboot")) == 0;
   sendHeadandTail_stdtemplate(_HEAD, rebootCmd);
 
-  int freeMem = ESP.getFreeHeap();
-
   // TODO: move this to handle_tools, from where it is actually called?
 
   // have to disconnect or reboot from within the main loop

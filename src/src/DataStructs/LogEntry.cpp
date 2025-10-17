@@ -172,6 +172,9 @@ String LogEntry_t::getMessage() const
 {
   if (_message == nullptr) { return EMPTY_STRING; }
 
+  if (_isFlashString) {
+    return String((const __FlashStringHelper *)_message);
+  }
   return String((const char *)_message);
 }
 

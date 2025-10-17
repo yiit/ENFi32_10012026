@@ -19,7 +19,7 @@ void add_ChartJS_array(KeyValueWriter& parent,
 void add_ChartJS_array(KeyValueWriter& parent,
                        int             valueCount,
                        const float     array[],
-                       unsigned int    nrDecimals)
+                       uint8_t         nrDecimals)
 {
   for (int i = 0; i < valueCount; ++i) {
     parent.write({ EMPTY_STRING, array[i], nrDecimals });
@@ -118,7 +118,9 @@ void add_ChartJS_chart_JSON_header(
   auto optionsArr = parent.createChild(F("options"));
 
   if (optionsArr) {
-    optionsArr->write({ F("responsive"), false });
+    const bool f(false);
+    KeyValueStruct kv(F("responsive"), f);
+    optionsArr->write(kv);
     {
       auto plugins = optionsArr->createChild(F("plugins"));
 

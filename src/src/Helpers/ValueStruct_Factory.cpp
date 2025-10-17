@@ -74,7 +74,7 @@ Up_ValueStruct ValueStruct_Factory::create(const int64_t& val)
 
 Up_ValueStruct ValueStruct_Factory::create(
   const float& val,
-  int          nrDecimals,
+  uint8_t                    nrDecimals,
   bool         trimTrailingZeros)
 {
   std::unique_ptr<ValueStruct_Float> child(new (std::nothrow) ValueStruct_Float(val, nrDecimals, trimTrailingZeros));
@@ -86,7 +86,7 @@ Up_ValueStruct ValueStruct_Factory::create(
 
 Up_ValueStruct ValueStruct_Factory::create(
   const double& val,
-  int           nrDecimals,
+  uint8_t                    nrDecimals,
   bool          trimTrailingZeros)
 {
   std::unique_ptr<ValueStruct_Double> child(new (std::nothrow) ValueStruct_Double(val, nrDecimals, trimTrailingZeros));
