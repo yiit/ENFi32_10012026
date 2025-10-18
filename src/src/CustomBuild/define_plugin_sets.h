@@ -2237,7 +2237,7 @@ To create/register a plugin, you have to :
     #define USES_P168   // Light - VEML6030/VEML7700
   #endif
 
-  #ifndef USES_P169
+  #if !defined(USES_P169) && defined(ESP32)
     #define USES_P169   // Environment - AS3935 Lightning Detector
   #endif
   #if !defined(USES_P173) // && defined(ESP32)
