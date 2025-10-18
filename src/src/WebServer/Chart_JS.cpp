@@ -79,7 +79,7 @@ Up_KeyValueWriter add_ChartJS_chart_header(
     addHtml(strformat(
               F("<script>"
                 "const %sc=document.getElementById('%s');"
-                "const my_%s_C=new Chart(%sc,"),
+                "const my_%s_C=new Chart(%sc,\n"),
               id_c_str,
               id_c_str,
               id_c_str,
@@ -91,7 +91,7 @@ Up_KeyValueWriter add_ChartJS_chart_header(
     chartJSON->allowFormatOverrides(false);
 
     if (!onlyJSON) {
-      chartJSON->setFooter(F(");</script>"));
+      chartJSON->setFooter(F("\n);</script>"));
     }
 
     add_ChartJS_chart_JSON_header(
@@ -192,13 +192,13 @@ void add_ChartJS_chart_labels(
 
 void add_ChartJS_scatter_data_point(
   KeyValueWriter& parent,
-  float x, float y, uint8_t nrDecimals)
+  float x, float y, uint8_t nrDecimalsX, uint8_t nrDecimalsY)
 {
   auto element = parent.createChild();
 
   if (element) {
-    element->write({ F("x"), x, nrDecimals });
-    element->write({ F("y"), y, nrDecimals });
+    element->write({ F("x"), x, nrDecimalsX });
+    element->write({ F("y"), y, nrDecimalsY });
   }
 }
 

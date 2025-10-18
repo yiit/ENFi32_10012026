@@ -521,11 +521,14 @@ void PluginStats_array::plot_ChartJS_scatter(
                   auto data = add_ChartJS_dataset_header(*dataset, datasetConfig);
 
                   if (data) {
+
+                    const uint8_t nrDecimalsX = stats_X->getNrDecimals();
+                    const uint8_t nrDecimalsY = stats_Y->getNrDecimals();
                     // Add scatter data
                     for (size_t i = 0; i < nrSamples; ++i) {
                       const float valX = (*stats_X)[i];
                       const float valY = (*stats_Y)[i];
-                      add_ChartJS_scatter_data_point(*data, valX, valY, 6);
+                      add_ChartJS_scatter_data_point(*data, valX, valY, nrDecimalsX, nrDecimalsY);
                     }
                   }
                 }
@@ -550,7 +553,12 @@ void PluginStats_array::plot_ChartJS_scatter(
                   if (data) {
                     const float valX = stats_X->getSampleAvg();
                     const float valY = stats_Y->getSampleAvg();
-                    add_ChartJS_scatter_data_point(*data, valX, valY, 6);
+                    add_ChartJS_scatter_data_point(
+                      *data, 
+                      valX, 
+                      valY, 
+                      stats_X->getNrDecimals(), 
+                      stats_Y->getNrDecimals());
                   }
                 }
               }

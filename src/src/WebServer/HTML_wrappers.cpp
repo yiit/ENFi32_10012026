@@ -13,18 +13,11 @@
 // Flash strings are not checked for duplication.
 // ********************************************************************************
 void wrap_html_tag(const __FlashStringHelper * tag, const String& text) {
-  addHtml('<');
-  addHtml(tag);
-  addHtml('>');
-  addHtml(text);
-  addHtml('<', '/');
-  addHtml(tag);
-  addHtml('>');
+  wrap_html_tag(String(tag), text);
 }
 
 void wrap_html_tag(const String& tag, const String& text) {
-  addHtml(strformat(
-    F("<%s>%s</%s>"),
+  addHtml(strformat(F("<%s>%s</%s>"),
     tag.c_str(),
     text.c_str(),
     tag.c_str()));
@@ -55,13 +48,11 @@ void html_U(const String& text) {
 }
 
 void html_TR_TD_highlight() {
-  addHtml(F("<TR class=\"highlight\">"));
-  html_TD();
+  addHtml(F("<TR class=\"highlight\"><TD>"));
 }
 
 void html_TR_TD() {
-  html_TR();
-  html_TD();
+  addHtml(F("\n<TR><TD>"));
 }
 
 void html_BR() {
@@ -69,7 +60,7 @@ void html_BR() {
 }
 
 void html_TR() {
-  addHtml(F("<TR>"));
+  addHtml(F("\n<TR>"));
 }
 
 void html_TR_TD_height(int height) {
@@ -267,11 +258,18 @@ void html_add_form() {
   addHtml(F("<form name='frmselect' method='post'>"));
 }
 
+void html_add_JQuery_script(const __FlashStringHelper * url)
+{
+  addHtml(F("<script src=\""));
+  addHtml(url);
+  addHtml(F("\"></script>"));
+}
+
 void html_add_JQuery_script() {
   #ifndef CDN_URL_JQUERY
     #define CDN_URL_JQUERY "https://code.jquery.com/jquery-3.6.4.min.js"
   #endif // ifndef CDN_URL_JQUERY
-  addHtml(F("<script src=\"" CDN_URL_JQUERY "\"></script>"));
+  html_add_JQuery_script(F(CDN_URL_JQUERY));
 }
 
 #if FEATURE_CHART_JS
@@ -296,11 +294,10 @@ void html_add_ChartJS_script() {
     #define CDN_URL_CHART_JS_PLUGIN_ZOOM "https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"
   #endif
 
-
-  addHtml(F("<script src=\"" CDN_URL_CHART_JS "\"></script>"));
-  addHtml(F("<script src=\"" CDN_URL_CHART_JS_ADAPTER_DATE "\"></script>"));
-  addHtml(F("<script src=\"" CDN_URL_CHART_JS_HAMMERJS "\"></script>"));
-  addHtml(F("<script src=\"" CDN_URL_CHART_JS_PLUGIN_ZOOM "\"></script>"));
+  html_add_JQuery_script(F(CDN_URL_CHART_JS));
+  html_add_JQuery_script(F(CDN_URL_CHART_JS_ADAPTER_DATE));
+  html_add_JQuery_script(F(CDN_URL_CHART_JS_HAMMERJS));
+  html_add_JQuery_script(F(CDN_URL_CHART_JS_PLUGIN_ZOOM));
 }
 #endif // if FEATURE_CHART_JS
 
@@ -511,11 +508,7 @@ void addHtmlAttribute(const __FlashStringHelper * label, float value) {
 }
 
 void addHtmlAttribute(const String& label, int value) {
-  addHtml(' ');
-  addHtml(label);
-  addHtml('=');
-  addHtmlInt(value);
-  addHtml(' ');
+  addHtml(strformat(F(" %s=%d "), label.c_str(), value));
 }
 
 void addHtmlAttribute(const __FlashStringHelper * label, const __FlashStringHelper * value) {
@@ -523,19 +516,11 @@ void addHtmlAttribute(const __FlashStringHelper * label, const __FlashStringHelp
 }
 
 void addHtmlAttribute(const __FlashStringHelper * label, const String& value) {
-  addHtml(' ');
-  addHtml(label);
-  addHtml('=', '\'');
-  addEncodedHtml(value);
-  addHtml('\'', ' ');
+  addHtmlAttribute(String(label), value);
 }
 
 void addHtmlAttribute(const String& label, const String& value) {
-  addHtml(' ');
-  addHtml(label);
-  addHtml('=', '\'');
-  addEncodedHtml(value);
-  addHtml('\'', ' ');
+  addHtml(strformat(F(" %s=\'%s\' "), label.c_str(), value.c_str()));
 }
 
 void addDisabled() {

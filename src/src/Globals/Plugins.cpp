@@ -218,11 +218,11 @@ bool prepare_I2C_by_taskIndex(taskIndex_t taskIndex, deviceIndex_t DeviceIndex) 
   if (!Settings.isI2CEnabled(Settings.getI2CInterface(taskIndex))) {
     return false; // Plugin-selected I2C bus is not configured, fail
   }
-
+#if FEATURE_CLEAR_I2C_STUCK
   if (I2C_state != I2C_bus_state::OK) {
     return false; // Bus state is not OK, so do not consider task runnable
   }
-
+#endif
   #if FEATURE_I2C_MULTIPLE
   const uint8_t i2cBus = Settings.getI2CInterface(taskIndex);
   #else // if FEATURE_I2C_MULTIPLE

@@ -3878,7 +3878,12 @@ To create/register a plugin, you have to :
 
 #ifndef FEATURE_CLEAR_I2C_STUCK
   #ifdef ESP8266
+  #ifdef ESP8266_1M
+    // Typically 1M builds do not use any I2C
+    #define FEATURE_CLEAR_I2C_STUCK 0
+  #else
     #define FEATURE_CLEAR_I2C_STUCK 1
+  #endif
   #endif
   #ifdef ESP32
     #if ESP_IDF_VERSION_MAJOR >= 5

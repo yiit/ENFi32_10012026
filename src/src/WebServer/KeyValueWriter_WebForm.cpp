@@ -155,7 +155,8 @@ Up_KeyValueWriter KeyValueWriter_WebForm::createChildArray(const String& header)
   if (child) {
     child->setIsArray();
   }
-  return std::move(child);
+  // return std::move(child);
+  return child;
 }
 
 Up_KeyValueWriter KeyValueWriter_WebForm::createNew()

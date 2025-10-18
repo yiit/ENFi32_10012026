@@ -3,7 +3,7 @@
 #include "../Helpers/KeyValueWriter.h"
 
 #ifndef BUILD_NO_DEBUG
- # define USE_KVW_JSON_INDENT
+// # define USE_KWH_JSON_PRETTY_PRINT
 #endif
 
 class KeyValueWriter_JSON : public KeyValueWriter
@@ -74,12 +74,12 @@ private:
 
   void writeValue(const ValueStruct* value);
 
-#ifdef USE_KVW_JSON_INDENT
+#ifdef USE_KWH_JSON_PRETTY_PRINT
 
 protected:
 
   virtual void indent() override;
-#endif // ifdef USE_KVW_JSON_INDENT
+#endif // ifdef USE_KWH_JSON_PRETTY_PRINT
 
 
 }; // class KeyValueWriter_JSON

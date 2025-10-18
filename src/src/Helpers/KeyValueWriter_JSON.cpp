@@ -40,14 +40,20 @@ KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header, KeyV
 KeyValueWriter_JSON::~KeyValueWriter_JSON()
 {
   if (!_isEmpty) {
+#ifdef USE_KWH_JSON_PRETTY_PRINT
     getPrint().write('\n');
+#endif
 
     if (_hasHeader) {
-#ifdef USE_KVW_JSON_INDENT
+#ifdef USE_KWH_JSON_PRETTY_PRINT
       indent();
 #endif
 
       getPrint().write(_isArray ? ']' : '}');
+#ifndef USE_KWH_JSON_PRETTY_PRINT
+      if (_isArray) getPrint().write('\n');
+#endif
+
     }
   }
 
@@ -63,16 +69,22 @@ void KeyValueWriter_JSON::write()
     if (_parent != nullptr) { _parent->write(); }
 
     if (_hasHeader) {
-#ifdef USE_KVW_JSON_INDENT
+#ifdef USE_KWH_JSON_PRETTY_PRINT
       indent();
 #endif
 
       if (_header.isEmpty()) {
         getPrint().write('{');
+#ifdef USE_KWH_JSON_PRETTY_PRINT
         getPrint().write('\n');
+#endif
       } else {
         getPrint().print(strformat(
+#ifdef USE_KWH_JSON_PRETTY_PRINT
                            F("\"%s\":%c\n"),
+#else
+                           F("\"%s\":%c"),
+#endif
                            _header.c_str(),
                            _isArray ? '[' : '{'));
       }
@@ -80,7 +92,9 @@ void KeyValueWriter_JSON::write()
     _isEmpty = false;
   } else {
     getPrint().write(',');
+#ifdef USE_KWH_JSON_PRETTY_PRINT
     getPrint().write('\n');
+#endif
   }
 }
 
@@ -88,10 +102,10 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
 {
   if (kv._format == KeyValueStruct::Format::Note) { return; }
   write();
-#ifdef USE_KVW_JSON_INDENT
+#ifdef USE_KWH_JSON_PRETTY_PRINT
   indent();
   getPrint().write('\t');
-#endif // ifdef USE_KVW_JSON_INDENT
+#endif // ifdef USE_KWH_JSON_PRETTY_PRINT
 
   if (kv._key.length()) {
     auto& pr = getPrint();
@@ -117,24 +131,30 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
     // Multiple values, so we must wrap it in []
     auto& pr = getPrint();
     pr.write('[');
+#ifdef USE_KWH_JSON_PRETTY_PRINT
     pr.write('\n');
-
+#endif
     for (size_t i = 0; i < nrValues; ++i) {
       if (i != 0) {
         auto& pr = getPrint();
         pr.write(',');
+#ifdef USE_KWH_JSON_PRETTY_PRINT
         pr.write('\n');
+#endif
       }
-#ifdef USE_KVW_JSON_INDENT
+#ifdef USE_KWH_JSON_PRETTY_PRINT
       indent();
       auto& pr = getPrint();
       pr.write('\t');
       pr.write('\t');
-#endif // ifdef USE_KVW_JSON_INDENT
+#endif // ifdef USE_KWH_JSON_PRETTY_PRINT
 
       writeValue(kv._values[i].get());
     }
     getPrint().write(']');
+#ifndef USE_KWH_JSON_PRETTY_PRINT
+    getPrint().write('\n');
+#endif
   }
 }
 
@@ -205,7 +225,8 @@ Up_KeyValueWriter KeyValueWriter_JSON::createChildArray(const String& header)
   if (child) {
     child->setIsArray();
   }
-  return std::move(child);
+  //return std::move(child);
+  return child;
 }
 
 Up_KeyValueWriter KeyValueWriter_JSON::createNew()
@@ -230,7 +251,7 @@ Up_KeyValueWriter KeyValueWriter_JSON::createNew(const String& header)
   // return std::make_unique<KeyValueWriter_JSON>(header, _toString);
 }
 
-#ifdef USE_KVW_JSON_INDENT
+#ifdef USE_KWH_JSON_PRETTY_PRINT
 
 void KeyValueWriter_JSON::indent()
 {
@@ -240,4 +261,4 @@ void KeyValueWriter_JSON::indent()
   }
 }
 
-#endif // ifdef USE_KVW_JSON_INDENT
+#endif // ifdef USE_KWH_JSON_PRETTY_PRINT

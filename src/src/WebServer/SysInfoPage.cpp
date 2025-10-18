@@ -437,7 +437,7 @@ void handle_sysinfo_Network() {
 
     addRowLabelValues(labels);
   }
-
+#ifndef LIMIT_BUILD_SIZE
   for (ESPEasy::net::networkIndex_t x = 0; x < NETWORK_MAX; ++x)
   {
     if (Settings.getNetworkEnabled(x)) {
@@ -458,6 +458,7 @@ void handle_sysinfo_Network() {
       }
     }
   }
+#endif
 
   html_TR();
 }

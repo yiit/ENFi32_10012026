@@ -35,9 +35,7 @@ void addFormSeparator(int clspan)
 void addFormNote(const __FlashStringHelper * text)
 {
   addRowLabel_tr_id(EMPTY_STRING, EMPTY_STRING);
-  addHtml(F(" <div class='note'>Note: "));
-  addHtml(text);
-  addHtml(F("</div>"));
+  addHtmlDiv(F("note"), concat(F("Note: "), text));
 }
 
 void addFormNote(const String& text, const String& id)

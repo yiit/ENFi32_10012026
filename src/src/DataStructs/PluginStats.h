@@ -68,6 +68,8 @@ public:
     return _maxValue >= _minValue;
   }
 
+  uint8_t getNrDecimals() const { return _nrDecimals; }
+
   // Set the peaks to unset values
   void   resetPeaks();
 

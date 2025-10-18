@@ -92,6 +92,7 @@ void html_add_wide_button_prefix(const String& classes, bool enabled);
 
 void html_add_form();
 
+void html_add_JQuery_script(const __FlashStringHelper * url);
 void html_add_JQuery_script();
 #if FEATURE_CHART_JS
 void html_add_ChartJS_script();

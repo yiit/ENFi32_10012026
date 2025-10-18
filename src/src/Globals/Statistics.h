@@ -44,9 +44,9 @@ extern float loop_usec_duration_total;
 extern uint32_t dailyResetCounter;
 extern ESPEASY_VOLATILE(uint32_t) sw_watchdog_callback_count;
 
-
+#if FEATURE_CLEAR_I2C_STUCK
 extern I2C_bus_state I2C_state;
 extern uint32_t I2C_bus_cleared_count;
-
+#endif
 
 #endif // GLOBALS_STATISTICS_H

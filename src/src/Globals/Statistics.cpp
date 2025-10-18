@@ -29,6 +29,7 @@ uint32_t dailyResetCounter                   = 0;
 
 ESPEASY_VOLATILE(uint32_t) sw_watchdog_callback_count{};
 
-
+#if FEATURE_CLEAR_I2C_STUCK
 I2C_bus_state I2C_state = I2C_bus_state::OK;
 uint32_t I2C_bus_cleared_count = 0;
+#endif
