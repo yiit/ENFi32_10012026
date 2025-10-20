@@ -353,6 +353,18 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information(KeyValueWri
     const __FlashStringHelper*sysmode_str[] = {
       F("NO SERVICE"), F("GSM"), F("WCDMA"), F("LTE")
     };
+    {
+      String provider_name = write_AT_cmd(F("AT+CSPN?"), 1000);
+
+      if (!provider_name.isEmpty()) {
+        int pos1 = provider_name.indexOf('"');
+        int pos2 = provider_name.lastIndexOf('"');
+
+        if ((pos1 != -1) && (pos2 != pos1)) {
+          writer->write({ F("Provider"), provider_name.substring(pos1 + 1, pos2) });
+        }
+      }
+    }
     int sysmode_index = -1;
 
     for (int i = 0; i < NR_ELEMENTS(sysmode_str) && sysmode_index == -1; ++i) {
@@ -985,7 +997,7 @@ bool NW005_data_struct_PPP_modem::handle_nwplugin_write(EventStruct *event, Stri
       const String writeCommand = parseStringToEnd(str, 3);
       const String res          = write_AT_cmd(writeCommand);
       addLog(LOG_LEVEL_INFO, strformat(
-               F("PPP cmd: %s -> %s"),
+               F("PPP cmd: %s -> %s\n"),
                writeCommand.c_str(),
                res.c_str()));
       success = true;
