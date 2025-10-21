@@ -123,7 +123,7 @@ ValueStruct::ValueStruct(const char*val) :
     // Make sure it is zero-terminated when nullptr is given
     VALUE_STRUCT_SSO_FIRST_CHAR = 0;
 
-    if (val) {
+    if (_size > 0) {
       memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)val, _size + 1);
     }
   } else {
@@ -143,12 +143,19 @@ ValueStruct::ValueStruct(const String& val) :
 {
   if (_size <= VALUE_STRUCT_SSO_MAX_SIZE) {
     _isSSO = true;
-    memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)val.c_str(), _size + 1);
+
+    if (_size == 0) {
+      // Make sure it is zero-terminated
+      VALUE_STRUCT_SSO_FIRST_CHAR = 0;
+    }
+    else {
+      memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)val.c_str(), val.length() + 1);
+    }
   } else {
     str_val = special_calloc(1, _size + 1);
 
     if (str_val) {
-      memcpy_P(str_val, val.begin(), _size);
+      memcpy_P(str_val, (uint8_t *)val.c_str(), val.length() + 1);
     }
   }
 }
@@ -159,20 +166,27 @@ ValueStruct::ValueStruct(String&& val) :
   _size(val.length()),
   str_val(nullptr)
 {
-  // We can't move the allocated memory from 'message'.
-  // Just use move so we make sure the memory is de-allocated after this call.
-  const String str = std::move(val);
-
   if (_size <= VALUE_STRUCT_SSO_MAX_SIZE) {
     _isSSO = true;
-    memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)str.c_str(), _size + 1);
+
+    if (_size == 0) {
+      // Make sure it is zero-terminated
+      VALUE_STRUCT_SSO_FIRST_CHAR = 0;
+    }
+    else {
+      memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)val.c_str(), val.length() + 1);
+    }
   } else {
     str_val = special_calloc(1, _size + 1);
 
     if (str_val) {
-      memcpy_P(str_val, str.begin(), _size);
+      memcpy_P(str_val, (uint8_t *)val.c_str(), val.length() + 1);
     }
   }
+
+  // We can't move the allocated memory from 'message'.
+  // Just use move so we make sure the memory is de-allocated after this call.
+  const String str = std::move(val);
 }
 
 ValueStruct::ValueStruct(const __FlashStringHelper *val) :
@@ -185,6 +199,7 @@ ValueStruct::ValueStruct(const __FlashStringHelper *val) :
 String ValueStruct::toString() const
 {
   ValueType valueType;
+
   return toString(valueType);
 }
 
