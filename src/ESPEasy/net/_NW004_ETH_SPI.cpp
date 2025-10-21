@@ -107,9 +107,10 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
             event->kvWriter->write({ EMPTY_STRING, s });
           } else {
             KeyValueStruct kv(F("Link Speed"), ETH.linkSpeed());
-            kv.setUnit(F("Mbps"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+            kv.setUnit(UOM_Mbps);
+#endif
             event->kvWriter->write(kv);
-            event->kvWriter->write({ F("Link Speed"), ETH.linkSpeed() });
             event->kvWriter->write({ F("Duplex Mode"), ETH.fullDuplex() ? F("Full Duplex") : F("Half Duplex") });
             event->kvWriter->write({ F("Negotiation Mode"), ETH.autoNegotiation() ? F("Auto") : F("Manual") });
           }

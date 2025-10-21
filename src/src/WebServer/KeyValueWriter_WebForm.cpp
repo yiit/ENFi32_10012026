@@ -113,7 +113,7 @@ void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
   // May need to include the unit before ending </pre>
   // or else it will be shown on the next line
   if (!plain_text && (nrValues == 1) && !summary_value_only) {
-    addUnit(kv._unit.toString());
+    addUnit(kv.getUnit());
   }
 
   if (format_pre) { getPrint().print(F("</pre>")); }

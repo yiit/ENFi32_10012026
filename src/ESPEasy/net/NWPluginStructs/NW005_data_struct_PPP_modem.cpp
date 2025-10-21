@@ -241,7 +241,7 @@ String NW005_data_struct_PPP_modem::operatorName() const
   return NW_PLUGIN_INTERFACE.operatorName();
 }
 
-const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str, String& unit)
+const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, String& value_str, bool& has_dBm_unit)
 {
   const __FlashStringHelper*res = F("");
 
@@ -300,23 +300,21 @@ const __FlashStringHelper* NW005_decode_label(int sysmode_index, uint8_t i, Stri
             // RSRQ
           {
             float val = value_str.toInt();
-            val      -= 40;
-            val      /= 2.0f;
-            value_str = String(val, 1);
-            unit      = F("dBm");
+            val         -= 40;
+            val         /= 2.0f;
+            value_str    = String(val, 1);
+            has_dBm_unit = true;
             break;
           }
           case 11:
             // RSRP
-            value_str = value_str.toInt() - 140;
-            unit      = F("dBm");
-
+            value_str    = value_str.toInt() - 140;
+            has_dBm_unit = true;
             break;
           case 12:
             // RSSI
-            value_str =  value_str.toInt() - 110;
-            unit      = F("dBm");
-
+            value_str    =  value_str.toInt() - 110;
+            has_dBm_unit = true;
             break;
         }
 
@@ -383,25 +381,31 @@ void NW005_data_struct_PPP_modem::webform_load_UE_system_information(KeyValueWri
 
     for (int i = 0; start_index < res.length() && end_index != -1 && i < 15; ++i)
     {
-      String value_str = res.substring(start_index, end_index);
-      String unit;
-      const String label = NW005_decode_label(sysmode_index, i, value_str, unit);
+      String value_str    = res.substring(start_index, end_index);
+      bool   has_dBm_unit = false;
+      const String label  = NW005_decode_label(sysmode_index, i, value_str, has_dBm_unit);
 
       if (!label.isEmpty()) {
         if (i == 0) {
           // We have some leading characters left here, so use the 'clean' strings
           KeyValueStruct kv(label, sysmode_str[sysmode_index]);
 
-          if (unit.length()) {
-            kv.setUnit(unit);
+          if (has_dBm_unit) { 
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+            kv.setUnit(UOM_dBm);
+#endif
           }
+
           writer->write(kv);
         } else {
           KeyValueStruct kv(label, value_str, KeyValueStruct::Format::PreFormatted);
 
-          if (unit.length()) {
-            kv.setUnit(unit);
+          if (has_dBm_unit) { 
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+            kv.setUnit(UOM_dBm);
+#endif
           }
+
           writer->write(kv);
         }
       }
@@ -678,7 +682,9 @@ bool NW005_data_struct_PPP_modem::write_ModemState(KeyValueWriter*modemState)
   }
   {
     KeyValueStruct kv(F("RSSI"), getRSSI());
-    kv.setUnit(F("dBm"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    kv.setUnit(UOM_dBm);
+#endif
     modemState->write(kv);
   }
   STATE_WRITE(F("BER"), getBER());
@@ -742,7 +748,9 @@ bool NW005_data_struct_PPP_modem::write_ModemState(KeyValueWriter*modemState)
 
       if (batVolt >= 0) {
         KeyValueStruct kv(F("Battery Voltage"), batVolt);
-        kv.setUnit(F("mV"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+        kv.setUnit(UOM_milliVolt);
+#endif
         modemState->write(kv);
       }
 

@@ -3,6 +3,8 @@
 #include "../../../src/DataStructs/ESPEasy_EventStruct.h"
 #include "../../../src/DataTypes/ESPEasy_plugin_functions.h"
 #include "../../../src/Globals/Settings.h"
+#include "../../../src/Helpers/StringConverter.h"
+
 
 #include "../Globals/NWPlugins.h"
 
@@ -51,12 +53,12 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
       if (NWPlugin::isFlagSet(flags[i], TempEvent.networkInterface)) {
         String labels_str = NWPlugin::toString(flags[i]);
 
-        if (flags[i] == NWPlugin::NetforkFlags::DHCP_client) {
-          if (TempEvent.networkInterface->getStatusBits() & ESP_NETIF_HAS_STATIC_IP_BIT) {
-            labels_str += F(" (static IP)");
-          }
+        if ((flags[i] == NWPlugin::NetforkFlags::DHCP_client) &&
+            (TempEvent.networkInterface->getStatusBits() & ESP_NETIF_HAS_STATIC_IP_BIT)) {
+          kv.appendValue(concat(NWPlugin::toString(flags[i]), F(" (static IP)")));
+        } else {
+          kv.appendValue(NWPlugin::toString(flags[i]));
         }
-        kv.appendValue(std::move(labels_str));
       }
     }
     writer->write(kv);

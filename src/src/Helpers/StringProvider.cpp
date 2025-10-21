@@ -43,6 +43,7 @@
 
 #include "../WebServer/JSON.h"
 #include "../WebServer/AccessControl.h"
+#include "../WebServer/Markup.h"
 
 #ifdef ESP32
 # include <soc/rtc.h>
@@ -111,7 +112,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       if (node_time.systemTimePresent())
       {
         KeyValueStruct kv(F("Time Wander"), node_time.timeWander, 3);
-        KV_SETUNIT(F("ppm"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+        KV_SETUNIT(UOM_ppm);
+#endif
         return kv;
       }
       break;
@@ -153,7 +156,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
                                   getLoopCountPerSec()));
         }
         KeyValueStruct kv(F("Load"), getCPUload(), 2);
-        KV_SETUNIT(F("%"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+        KV_SETUNIT(UOM_percent);
+#endif
         return kv;
       }
       break;
@@ -170,19 +175,25 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::WIFI_TX_MAX_PWR:
     {
       KeyValueStruct kv(F("Max WiFi TX Power"), Settings.getWiFi_TX_power(), 2);
-      KV_SETUNIT(F("dBm"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_dBm);
+# endif
       return kv;
     }
     case LabelType::WIFI_CUR_TX_PWR:
     {
       KeyValueStruct kv(F("Current WiFi TX Power"), ESPEasy::net::wifi::GetWiFiTXpower(), 2);
-      KV_SETUNIT(F("dBm"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_dBm);
+# endif
       return kv;
     }
     case LabelType::WIFI_SENS_MARGIN:
     {
       KeyValueStruct kv(F("WiFi Sensitivity Margin"), Settings.WiFi_sensitivity_margin);
-      KV_SETUNIT(F("dB"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_dB);
+# endif
       return kv;
     }
     case LabelType::WIFI_SEND_AT_MAX_TX_PWR:
@@ -206,7 +217,7 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       if (extendedValue) {
         return KeyValueStruct(F("Free RAM"),
                               strformat(
-                                F("%d [byte] (%d - %s)"),
+                                F("%d [B] (%d - %s)"),
                                 FreeMem(),
                                 lowestRAM,
                                 lowestRAMfunction.c_str()));
@@ -214,7 +225,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
 #endif // ifndef BUILD_NO_RAM_TRACKER
 
       KeyValueStruct kv(F("Free RAM"), FreeMem());
-      KV_SETUNIT(F("byte"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#endif
       return kv;
     }
     case LabelType::FREE_STACK:
@@ -224,14 +237,16 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       if (extendedValue) {
         return KeyValueStruct(F("Free Stack"),
                               strformat(
-                                F("%d [byte] (%d - %s)"),
+                                F("%d [B] (%d - %s)"),
                                 getCurrentFreeStack(),
                                 lowestFreeStack,
                                 lowestFreeStackfunction.c_str()));
       }
 #endif // ifndef BUILD_NO_RAM_TRACKER
       KeyValueStruct kv(F("Free Stack"), getCurrentFreeStack());
-      KV_SETUNIT(F("byte"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#endif
 
       return kv;
     }
@@ -239,7 +254,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::FREE_HEAP_IRAM:
     {
       KeyValueStruct kv(F("Free 2nd Heap"), FreeMem2ndHeap());
-      KV_SETUNIT(F("byte"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+# endif
       return kv;
     }
 #endif // ifdef USE_SECOND_HEAP
@@ -255,7 +272,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
                         ESP.getMaxFreeBlockSize()
 #  endif // ifdef ESP32
                         );
-      KV_SETUNIT(F("byte"));
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#  endif
       return kv;
     }
   # endif // ifndef LIMIT_BUILD_SIZE
@@ -265,7 +284,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::HEAP_FRAGMENTATION:
     {
       KeyValueStruct kv(F("Heap Fragmentation"), ESP.getHeapFragmentation());
-      KV_SETUNIT(F("%"));
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_percent);
+#  endif
       return kv;
     }
   # endif // ifndef LIMIT_BUILD_SIZE
@@ -275,13 +296,17 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::HEAP_SIZE:
     {
       KeyValueStruct kv(F("Heap Size"), ESP.getHeapSize());
-      KV_SETUNIT(F("byte"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+# endif
       return kv;
     }
     case LabelType::HEAP_MIN_FREE:
     {
       KeyValueStruct kv(F("Heap Min Free"), ESP.getMinFreeHeap());
-      KV_SETUNIT(F("byte"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+# endif
       return kv;
     }
     # ifdef BOARD_HAS_PSRAM
@@ -289,28 +314,36 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     {
       if (!UsePSRAM()) { break; }
       KeyValueStruct kv(F("PSRAM Size"), ESP.getPsramSize());
-      KV_SETUNIT(F("byte"));
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#  endif
       return kv;
     }
     case LabelType::PSRAM_FREE:
     {
       if (!UsePSRAM()) { break; }
       KeyValueStruct kv(F("PSRAM Free"), ESP.getFreePsram());
-      KV_SETUNIT(F("byte"));
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#  endif
       return kv;
     }
     case LabelType::PSRAM_MIN_FREE:
     {
       if (!UsePSRAM()) { break; }
       KeyValueStruct kv(F("PSRAM Min Free"), ESP.getMinFreePsram());
-      KV_SETUNIT(F("byte"));
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#  endif
       return kv;
     }
     case LabelType::PSRAM_MAX_FREE_BLOCK:
     {
       if (!UsePSRAM()) { break; }
       KeyValueStruct kv(F("PSRAM Max Free Block"), ESP.getMaxAllocPsram());
-      KV_SETUNIT(F("byte"));
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Byte);
+#  endif
       return kv;
     }
     # endif // BOARD_HAS_PSRAM
@@ -462,7 +495,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
                                 WiFi.SSID().c_str()));
       }
       KeyValueStruct kv(F("RSSI"), WiFi.RSSI());
-      KV_SETUNIT(F("dBm"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_dBm);
+#endif
       return kv;
     }
     case LabelType::IP_CONFIG:
@@ -748,7 +783,7 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     {
       return KeyValueStruct(F("I2C bus cleared count"), I2C_bus_cleared_count);
     }
-#endif
+#endif // if FEATURE_CLEAR_I2C_STUCK
 
     case LabelType::SYSLOG_LOG_LEVEL:
     {
@@ -776,20 +811,26 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::ESP_CHIP_FREQ:
     {
       KeyValueStruct kv(F("ESP Chip Frequency"), ESP.getCpuFreqMHz());
-      KV_SETUNIT(F("MHz"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_MHz);
+#endif
       return kv;
     }
 #ifdef ESP32
     case LabelType::ESP_CHIP_XTAL_FREQ:
     {
       KeyValueStruct kv(F("ESP Crystal Frequency"), getXtalFrequencyMHz());
-      KV_SETUNIT(F("MHz"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_MHz);
+# endif
       return kv;
     }
     case LabelType::ESP_CHIP_APB_FREQ:
     {
       KeyValueStruct kv(F("ESP APB Frequency"), rtc_clk_apb_freq_get() / 1000000);
-      KV_SETUNIT(F("MHz"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_MHz);
+# endif
       return kv;
     }
 #endif // ifdef ESP32
@@ -838,39 +879,47 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       const uint32_t flashDevice = (flashChipId & 0xFF00) | ((flashChipId >> 16) & 0xFF);
 
       String model(formatToHex(flashDevice, 4));
-    #ifdef ESP32
+    # ifdef ESP32
 
       if (extendedValue && getChipFeatures().embeddedFlash) {
         model += F(" (Embedded)");
       }
-    #endif // ifdef ESP32
+    # endif // ifdef ESP32
       return KeyValueStruct(F("Flash Chip Model"), model);
-      #else
+      #else // ifndef LIMIT_BUILD_SIZE
       return KeyValueStruct(F("Flash Chip Model"), getFlashChipId());
-      #endif
+      #endif // ifndef LIMIT_BUILD_SIZE
     }
     case LabelType::FLASH_CHIP_REAL_SIZE:
     {
       KeyValueStruct kv(F("Flash Chip Real Size"), getFlashRealSizeInBytes() >> 10);
-      KV_SETUNIT(F("kB"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_kB);
+#endif
       return kv;
     }
     case LabelType::FLASH_CHIP_SPEED:
     {
       KeyValueStruct kv(F("Flash Chip Speed"), getFlashChipSpeed() / 1000000);
-      KV_SETUNIT(F("MHz"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_MHz);
+#endif
       return kv;
     }
     case LabelType::FLASH_IDE_SIZE:
     {
       KeyValueStruct kv(F("Flash IDE Size"), ESP.getFlashChipSize() >> 10);
-      KV_SETUNIT(F("kB"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_kB);
+#endif
       return kv;
     }
     case LabelType::FLASH_IDE_SPEED:
     {
       KeyValueStruct kv(F("Flash IDE Speed"), getFlashChipSpeed() / 1000000);
-      KV_SETUNIT(F("MHz"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_MHz);
+#endif
       return kv;
     }
     case LabelType::FLASH_IDE_MODE:
@@ -912,7 +961,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       KV_SETID(F("sketch_size"));
 
       if (!extendedValue) {
-        KV_SETUNIT(F("kB"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+        KV_SETUNIT(UOM_kB);
+#endif
       }
       return kv;
     }
@@ -920,7 +971,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     {
       KeyValueStruct kv(F("Sketch Free"), getFreeSketchSpace() >> 10);
       KV_SETID(F("sketch_free"));
-      KV_SETUNIT(F("kB"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_kB);
+#endif
       return kv;
     }
     case LabelType::FS_SIZE:
@@ -947,7 +1000,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       KV_SETID(F("fs_size"));
 
       if (!extendedValue) {
-        KV_SETUNIT(F("kB"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+        KV_SETUNIT(UOM_kB);
+#endif
       }
       return kv;
     }
@@ -961,7 +1016,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
         #endif // ifdef USE_LITTLEFS
         SpiffsFreeSpace() >> 10);
       KV_SETID(F("fs_free"));
-      KV_SETUNIT(F("kB"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_kB);
+#endif
       return kv;
     }
     case LabelType::MAX_OTA_SKETCH_SIZE:
@@ -999,7 +1056,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::INTERNAL_TEMPERATURE:
     {
       KeyValueStruct kv(F("Internal Temperature"), getInternalTemperature(), 1);
-      KV_SETUNIT(F("&deg;C"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_degC);
+# endif
       return kv;
     }
     #endif // if FEATURE_INTERNAL_TEMPERATURE
@@ -1019,7 +1078,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     {
       KeyValueStruct kv(F("Eth Speed"), getEthSpeed());
       KV_SETID(F("ethspeed"));
-      KV_SETUNIT(F("Mbps"));
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_Mbps);
+# endif
       return kv;
     }
     case LabelType::ETH_STATE:
@@ -1248,5 +1309,5 @@ String getFormUnit(LabelType::Enum label)
 {
   auto kv = getKeyValue(label);
 
-  return kv._unit.toString();
+  return kv.getUnit();
 }

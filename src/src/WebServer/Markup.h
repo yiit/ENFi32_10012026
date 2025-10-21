@@ -113,6 +113,19 @@ void addUnit(const String& unit);
 void addUnit(char unit);
 
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
+#define UOM_dB          72
+#define UOM_dBm         73
+#define UOM_milliVolt   119
+#define UOM_Mbps        97      // Mbit/s
+#define UOM_usec        39
+#define UOM_GHz         53
+#define UOM_MHz         132
+#define UOM_ppm         33
+#define UOM_degC        1
+#define UOM_kB          79
+#define UOM_Byte        78
+#define UOM_percent     4
 String toUnitOfMeasureName(const uint32_t unitOfMeasureIndex,
                            const String & defUoM = EMPTY_STRING);
 int    getUnitOfMeasureIndex(const String& uomName);

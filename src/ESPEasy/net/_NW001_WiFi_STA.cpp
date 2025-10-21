@@ -140,7 +140,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
             KeyValueStruct kv(
               F("Band"),
               (WiFi.channel() < 36) ? F("2.4") : F("5"));
-            kv.setUnit(F("GHz"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+            kv.setUnit(UOM_GHz);
+#endif
             event->kvWriter->write(kv);
           }
 # endif // if CONFIG_SOC_WIFI_SUPPORT_5G
@@ -152,9 +154,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
             strformat(
               event->kvWriter->summaryValueOnly() ? F("RSSI: %d dBm") : F("%d"),
               WiFi.RSSI()));
-
-          kv.setUnit(F("dBm"));
-
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+            kv.setUnit(UOM_dBm);
+#endif
           event->kvWriter->write(kv);
         }
 
@@ -164,7 +166,10 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
             KeyValueStruct kv(
               F("WiFi TX Power"),
               ESPEasy::net::wifi::GetWiFiTXpower(), 2);
-            kv.setUnit(F("dBm"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+            kv.setUnit(UOM_dBm);
+#endif
+
             event->kvWriter->write(kv);
           }
 #endif
@@ -188,7 +193,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
                   secondsToDayHourMinuteSecond(micros_to_sec_usec(tsf_time, tsf_usec)),
                   strformat(F(".%06u"), tsf_usec))
                 );
-              kv.setUnit(F("usec"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+              kv.setUnit(UOM_usec);
+#endif
               event->kvWriter->write(kv);
             }
           }

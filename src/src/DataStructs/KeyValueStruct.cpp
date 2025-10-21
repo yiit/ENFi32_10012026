@@ -3,6 +3,8 @@
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringConverter_Numerical.h"
 
+#include "../WebServer/Markup.h"
+
 
 // ********************************************************************************
 // KeyValueStruct
@@ -131,9 +133,12 @@ KeyValueStruct::KeyValueStruct(const String& key,
   _values.emplace_back(ValueStruct(std::move(val)));
 }
 
-void KeyValueStruct::setUnit(const String& unit)              { _unit = unit; }
-
-void KeyValueStruct::setUnit(const __FlashStringHelper *unit) { _unit = unit; }
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+  String KeyValueStruct::getUnit() const
+  {
+    return toUnitOfMeasureName(_uomIndex);
+  }
+#endif
 
 void KeyValueStruct::setID(const String& id)                  { __id = id; }
 
@@ -146,6 +151,12 @@ void KeyValueStruct::appendValue(ValueStruct&& value)
 }
 
 void KeyValueStruct::appendValue(const String& value)
+{
+  _values.emplace_back(ValueStruct(value));
+  _isArray = true;
+}
+
+void KeyValueStruct::appendValue(const __FlashStringHelper * value)
 {
   _values.emplace_back(ValueStruct(value));
   _isArray = true;

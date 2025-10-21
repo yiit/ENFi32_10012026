@@ -4,8 +4,9 @@
 #include "../Helpers/PrintToString.h"
 #include "../Helpers/StringConverter_Numerical.h"
 
-#define VALUE_STRUCT_SSO_FIRST_CHAR_INDEX  2
-#define VALUE_STRUCT_SSO_MAX_SIZE          13
+#define VALUE_STRUCT_SSO_FIRST_CHAR_INDEX  1
+#define VALUE_STRUCT_SSO_FIRST_CHAR   bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX]
+#define VALUE_STRUCT_SSO_MAX_SIZE          14
 
 // ********************************************************************************
 // ValueStruct
@@ -120,10 +121,10 @@ ValueStruct::ValueStruct(const char*val) :
     _isSSO = true;
 
     // Make sure it is zero-terminated when nullptr is given
-    bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX] = 0;
+    VALUE_STRUCT_SSO_FIRST_CHAR = 0;
 
     if (val) {
-      memcpy(&bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX], (uint8_t *)val, _size + 1);
+      memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)val, _size + 1);
     }
   } else {
     str_val = special_calloc(1, _size + 1);
@@ -142,7 +143,7 @@ ValueStruct::ValueStruct(const String& val) :
 {
   if (_size <= VALUE_STRUCT_SSO_MAX_SIZE) {
     _isSSO = true;
-    memcpy(&bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX], (uint8_t *)val.c_str(), _size + 1);
+    memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)val.c_str(), _size + 1);
   } else {
     str_val = special_calloc(1, _size + 1);
 
@@ -164,7 +165,7 @@ ValueStruct::ValueStruct(String&& val) :
 
   if (_size <= VALUE_STRUCT_SSO_MAX_SIZE) {
     _isSSO = true;
-    memcpy(&bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX], (uint8_t *)str.c_str(), _size + 1);
+    memcpy(&VALUE_STRUCT_SSO_FIRST_CHAR, (uint8_t *)str.c_str(), _size + 1);
   } else {
     str_val = special_calloc(1, _size + 1);
 
@@ -183,17 +184,17 @@ ValueStruct::ValueStruct(const __FlashStringHelper *val) :
 
 String ValueStruct::toString() const
 {
-  PrintToString p;
-
-  print(p);
-  String res(p.getMove());
-  return res;
+  ValueType valueType;
+  return toString(valueType);
 }
 
-String ValueStruct::toString(ValueType& _valueType) const
+String ValueStruct::toString(ValueType& valueType) const
 {
-  _valueType = getValueType();
-  return toString();
+  PrintToString p;
+
+  print(p, valueType);
+  String res(p.getMove());
+  return res;
 }
 
 size_t ValueStruct::print(Print& out) const
@@ -203,15 +204,15 @@ size_t ValueStruct::print(Print& out) const
   return print(out, v);
 }
 
-size_t ValueStruct::print(Print& out, ValueType& _valueType) const
+size_t ValueStruct::print(Print& out, ValueType& valueType) const
 {
-  _valueType = getValueType();
+  valueType = getValueType();
 
   if (_isSSO) {
-    return out.write((const char *)&bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX]);
+    return out.write((const char *)&VALUE_STRUCT_SSO_FIRST_CHAR);
   }
 
-  switch (_valueType)
+  switch (valueType)
   {
     case ValueStruct::ValueType::Bool:
     {
@@ -233,7 +234,7 @@ size_t ValueStruct::print(Print& out, ValueType& _valueType) const
 
       if (!toValidString(res, f_val, _nrDecimals, _trimTrailingZeros))
       {
-        _valueType = ValueStruct::ValueType::String;
+        valueType = ValueStruct::ValueType::String;
       }
       return out.print(res);
     }
@@ -243,7 +244,7 @@ size_t ValueStruct::print(Print& out, ValueType& _valueType) const
 
       if (!doubleToValidString(res, d_val, _nrDecimals, _trimTrailingZeros))
       {
-        _valueType = ValueStruct::ValueType::String;
+        valueType = ValueStruct::ValueType::String;
       }
       return out.print(res);
     }
@@ -271,7 +272,7 @@ size_t ValueStruct::print(Print& out, ValueType& _valueType) const
 
 bool ValueStruct::isEmpty() const
 {
-  if (_isSSO) { return bytes_all[2] == 0; }
+  if (_isSSO) { return VALUE_STRUCT_SSO_FIRST_CHAR == 0; }
 
   switch (getValueType())
   {

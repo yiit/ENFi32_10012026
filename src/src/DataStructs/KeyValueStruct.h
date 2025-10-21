@@ -109,14 +109,17 @@ struct KeyValueStruct
      }
    */
 
-  void setUnit(const String& unit);
-  void setUnit(const __FlashStringHelper *unit);
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+  void setUnit(uint8_t uomIndex) { _uomIndex = uomIndex; }
+  String getUnit() const;
+#endif
 
   void setID(const String& id);
   void setID(const __FlashStringHelper *id);
 
   void appendValue(ValueStruct&& value);
   void appendValue(const String& value);
+  void appendValue(const __FlashStringHelper * value);
   void appendValue(String&& value);
 
   String getID() const;
@@ -124,11 +127,12 @@ struct KeyValueStruct
 
   ValueStruct _key;
   ValueStruct __id;
-  ValueStruct _unit;
-
   std::vector<ValueStruct>_values;
 
   Format _format = Format::Default;
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+  uint8_t _uomIndex{};
+#endif
 
   bool _isArray{};
 

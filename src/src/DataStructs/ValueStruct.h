@@ -95,14 +95,13 @@ private:
 
   union {
     struct {
-      uint64_t _unitOfMeasure     : 8;
       uint64_t _isSSO             : 1;
       uint64_t _trimTrailingZeros : 1;
       uint64_t _valueType         : 6;
       uint64_t _nrDecimals        : 8;
       uint64_t _size              : 16;
 
-      uint64_t unused : 24;
+      uint64_t unused : 32;
 
       union {
         void    *str_val;
@@ -115,7 +114,7 @@ private:
 
     };
 
-    // When _isSSO, the short string will be stored in bytes 2 ... 15
+    // When _isSSO, the short string will be stored in bytes 1 ... 15
     // The short string will be zero-terminated.
     uint8_t bytes_all[16] = {};
 

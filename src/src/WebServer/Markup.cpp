@@ -380,7 +380,7 @@ const char unit_of_measure_list[] PROGMEM = // *** DO NOT CHANGE ORDER, SAVED IN
  "W/m²|" // 64
  "mm/h|" // 65
  "mm/s|in/s|m/s|in/h|km/h|mph|" // 66..71
- "db|dBm|" // 72..73
+ "dB|dBm|" // 72..73
  "bit|kbit|Mbit|Gbit|B|kB|MB|GB|TB|PB|EB|ZB|YB|KiB|MiB|GiB|TiB|PiB|EiB|ZiB|YiB|" // 74..94
  "bit/s|kbit/s|Mbit/s|Gbit/s|B/s|kB/s|MB/s|GB/s|KiB/s|MiB/s|GiB/s|" // 95..105
  "ft/s|kn|" // 106..107
