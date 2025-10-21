@@ -585,7 +585,9 @@ void addRowLabel(LabelType::Enum label) {
 void addRowLabelValue(LabelType::Enum label) {
   addRowLabel(getLabel(label));
   addHtml(getValue(label));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(getFormUnit(label));
+#endif
 }
 
 void addRowLabelValues(const LabelType::Enum labels[]) {
@@ -597,7 +599,9 @@ void addRowLabelValues(const LabelType::Enum labels[]) {
 void addRowLabelValue_copy(LabelType::Enum label) {
   addRowLabel_copy(getLabel(label));
   addHtml(getValue(label));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(getFormUnit(label));
+#endif
 }
 
 // ********************************************************************************

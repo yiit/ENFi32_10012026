@@ -122,11 +122,13 @@ void KeyValueWriter_WebForm::write(const KeyValueStruct& kv)
     }
   }
 
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   // May need to include the unit before ending </pre>
   // or else it will be shown on the next line
   if (!plain_text && (nrValues == 1) && !summary_value_only) {
     addUnit(kv.getUnit());
   }
+#endif
 
   if (format_pre) { getPrint().print(F("</pre>")); }
 

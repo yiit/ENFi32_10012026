@@ -1305,9 +1305,11 @@ String getFormNote(LabelType::Enum label)
   return flash_str;
 }
 
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
 String getFormUnit(LabelType::Enum label)
 {
   auto kv = getKeyValue(label);
 
   return kv.getUnit();
 }
+#endif

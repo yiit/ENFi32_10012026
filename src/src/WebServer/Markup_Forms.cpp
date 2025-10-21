@@ -47,7 +47,9 @@ void addFormNote(const String& text, const String& id)
 
 void addFormNote(const LabelType::Enum& label)
 {
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(getFormUnit(label));
+#endif
   addFormNote(getFormNote(label));
 }
 

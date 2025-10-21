@@ -660,11 +660,14 @@ void handle_sysinfo_Storage() {
   #   ifndef LIMIT_BUILD_SIZE
   addRowLabel(F("Page size"));
   addHtmlInt(SpiffsPagesize());
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(getFormUnit(LabelType::FREE_MEM)); // FIXME TD-er: Add labeltype
-
+#endif
   addRowLabel(F("Block size"));
   addHtmlInt(SpiffsBlocksize());
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(getFormUnit(LabelType::FREE_MEM)); // FIXME TD-er: Add labeltype
+#endif
 
   addRowLabel(F("Number of blocks"));
   addHtmlInt(SpiffsTotalBytes() / SpiffsBlocksize());

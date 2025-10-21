@@ -268,8 +268,9 @@ String getValue(LabelType::Enum label);
 String getExtendedValue(LabelType::Enum label);
 
 String getFormNote(LabelType::Enum label);
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
 String getFormUnit(LabelType::Enum label);
-
+#endif
 KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue = false);
 
 
