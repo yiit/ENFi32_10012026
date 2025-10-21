@@ -16,7 +16,6 @@ public:
 
   enum class ValueType : uint8_t {
     Unset = 0,
-    SSO_string,
     String,
     FlashString,
     Float,

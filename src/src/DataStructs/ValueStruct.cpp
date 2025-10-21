@@ -92,9 +92,9 @@ ValueStruct::ValueStruct(const float& val,
                          uint8_t      nrDecimals,
                          bool         trimTrailingZeros) :
   _isSSO(0),
-  _nrDecimals((uint64_t)nrDecimals),
   _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _valueType((uint64_t)ValueStruct::ValueType::Float),
+  _nrDecimals((uint64_t)nrDecimals),
   _size(sizeof(val) * 8),
   f_val(val)
 {}
@@ -103,9 +103,9 @@ ValueStruct::ValueStruct(const double& val,
                          uint8_t       nrDecimals,
                          bool          trimTrailingZeros) :
   _isSSO(0),
-  _nrDecimals((uint64_t)nrDecimals),
   _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _valueType((uint64_t)ValueStruct::ValueType::Double),
+  _nrDecimals((uint64_t)nrDecimals),
   _size(sizeof(val) * 8),
   d_val(val)
 {}
@@ -263,7 +263,6 @@ size_t ValueStruct::print(Print& out, ValueType& _valueType) const
       auto v = static_cast<uint32_t>(u64_val);
       return out.print(v);
     }
-    case ValueStruct::ValueType::SSO_string:
     case ValueStruct::ValueType::Unset:
       break;
   }
