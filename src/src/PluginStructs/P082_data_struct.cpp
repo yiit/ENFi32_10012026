@@ -758,7 +758,7 @@ void P082_data_struct::webformLoad_show_position_scatterplot(struct EventStruct 
         break;
     }
   }
-
+addHtml(F("<tr><td colspan=\"2\">"));
   plot_ChartJS_scatter(
     stats_long,
     stats_lat,
@@ -767,6 +767,7 @@ void P082_data_struct::webformLoad_show_position_scatterplot(struct EventStruct 
     { F("Coordinates"), F("rgb(255, 99, 132)") },
     500,
     500);
+    addHtml(F("</td></tr>"));
 }
 
 #  endif // if FEATURE_CHART_JS

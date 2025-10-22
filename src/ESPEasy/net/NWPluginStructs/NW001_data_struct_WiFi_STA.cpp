@@ -7,6 +7,7 @@
 # include "../../../src/Helpers/ESPEasy_time_calc.h"
 # include "../../../src/Helpers/LongTermOnOffTimer.h"
 # include "../../../src/Helpers/StringConverter.h"
+# include "../../../src/WebServer/HTML_wrappers.h"
 
 # include "../wifi/ESPEasyWifi.h"
 
@@ -173,7 +174,7 @@ bool NW001_data_struct_WiFi_STA::record_stats()
   if (_plugin_stats_array != nullptr) {
     EventStruct tmpEvent;
     size_t valueCount{};
-    const int rssi = 
+    const int rssi =
 #  ifdef ESP32
       WiFi.STA.RSSI();
 #  else
@@ -197,6 +198,8 @@ bool NW001_data_struct_WiFi_STA::webformLoad_show_stats(struct EventStruct *even
   if (_plugin_stats_array != nullptr) {
 #  if FEATURE_SET_WIFI_TX_PWR
 #   if FEATURE_CHART_JS
+    addHtml(F("<tr><td colspan=\"2\">"));
+
     plot_ChartJS_scatter(
       NW001_RSSI_STATS_INDEX,
       NW001_TX_PWR_STATS_INDEX,
@@ -205,6 +208,7 @@ bool NW001_data_struct_WiFi_STA::webformLoad_show_stats(struct EventStruct *even
       { F("rssi/tx_pwr"), F("rgb(255, 99, 132)") },
       500,
       500);
+    addHtml(F("</td></tr>"));
 #   endif // if FEATURE_CHART_JS
 #  endif // if FEATURE_SET_WIFI_TX_PWR
     return _plugin_stats_array->webformLoad_show_stats(event);

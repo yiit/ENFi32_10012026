@@ -321,7 +321,6 @@ void handle_sysinfo_basicInfo() {
     LabelType::TIME_SOURCE,
     LabelType::TIME_WANDER,
     LabelType::UPTIME,
-    LabelType::UPTIME,
     LabelType::LOAD_PCT,
 #  if FEATURE_INTERNAL_TEMPERATURE
     LabelType::INTERNAL_TEMPERATURE,

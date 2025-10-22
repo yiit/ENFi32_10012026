@@ -378,7 +378,7 @@ void P002_data_struct::webformLoad_calibrationCurve(struct EventStruct *event)
 {
   if (!hasADC_factory_calibration()) { return; }
 
-  addRowLabel(F("Calibration Curve"));
+  addHtml(F("<tr><td colspan=\"2\">"));
 
   const int valueCount = 33;
   int xAxisValues[valueCount];
@@ -448,6 +448,7 @@ void P002_data_struct::webformLoad_calibrationCurve(struct EventStruct *event)
       }
     }
   }
+  addHtml(F("</td></tr>"));
 }
 
 #   endif // if FEATURE_CHART_JS
@@ -502,7 +503,7 @@ void P002_data_struct::getChartRange(struct EventStruct *event, int values[], in
 
 void P002_data_struct::webformLoad_2pt_calibrationCurve(struct EventStruct *event)
 {
-  addRowLabel(F("Two Point Calibration"));
+  addHtml(F("<tr><td colspan=\"2\">"));
 
   const int valueCount = 33;
   int xAxisValues[valueCount];
@@ -559,6 +560,7 @@ void P002_data_struct::webformLoad_2pt_calibrationCurve(struct EventStruct *even
       }
     }
   }
+  addHtml(F("</td></tr>"));
 }
 
 #  endif // if FEATURE_CHART_JS
@@ -669,8 +671,7 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
   if (P002_MULTIPOINT_ENABLED)
   {
     const bool useBinning = P002_OVERSAMPLING == P002_USE_BINNING;
-    addRowLabel(useBinning ? F("Binning Curve") : F("Multipoint Curve"));
-
+    addHtml(F("<tr><td colspan=\"2\">"));
 
     ChartJS_options_scales scales;
     {
@@ -727,11 +728,12 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
         }
       }
     }
+    addHtml(F("</td></tr>"));
 
 
     if (!useBinning) {
       // Try to compute the expected mapping from ADC to multipoint values
-      addRowLabel(F("Input to Output Curve"));
+      addHtml(F("<tr><td colspan=\"2\">"));
       const int valueCount = 33;
       int xAxisValues[valueCount];
       getChartRange(event, xAxisValues, valueCount);
@@ -821,6 +823,7 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
           }
         }
       }
+      addHtml(F("</td></tr>"));
     }
   }
 }

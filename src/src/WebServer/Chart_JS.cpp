@@ -70,11 +70,13 @@ Up_KeyValueWriter add_ChartJS_chart_header(
   bool                       onlyJSON)
 {
   if (!onlyJSON) {
+    addHtml(F("<div class=\"chart-container\" style=\"position: relative; height:40vh; width:95vw\">"));
     addHtml(F("<canvas"));
     addHtmlAttribute(F("id"),     id);
-    addHtmlAttribute(F("width"),  width);
-    addHtmlAttribute(F("height"), height);
+//    addHtmlAttribute(F("width"),  F("80vw"));
+//    addHtmlAttribute(F("height"), height);
     addHtml(F("></canvas>"));
+    addHtml(F("</div>"));
     const char *id_c_str = id.c_str();
     addHtml(strformat(
               F("<script>"
@@ -118,9 +120,10 @@ void add_ChartJS_chart_JSON_header(
   auto optionsArr = parent.createChild(F("options"));
 
   if (optionsArr) {
-    const bool f(false);
-    KeyValueStruct kv(F("responsive"), f);
-    optionsArr->write(kv);
+    const bool b_true(true);
+    const bool b_false(false);
+    optionsArr->write({ F("responsive"), b_true });
+    optionsArr->write({ F("maintainAspectRatio"), b_false });
     {
       auto plugins = optionsArr->createChild(F("plugins"));
 

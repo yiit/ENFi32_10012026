@@ -363,8 +363,11 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 #  if FEATURE_CHART_JS
 
         if (NW_data->nrSamplesPresent() > 0) {
-          addRowLabel(F("Historic data"));
+          addHtml(F("<tr><td colspan=\"2\">"));
+
+          //        addRowLabel(F("Historic data"));
           NW_data->plot_ChartJS();
+          addHtml(F("</td></tr>"));
         }
 #  endif // if FEATURE_CHART_JS
         String dummy;

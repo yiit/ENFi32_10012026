@@ -187,11 +187,14 @@ void P169_data_struct::html_show_sensor_info(struct EventStruct *event)
     addEnabled(false);
   }
 
-  addRowLabel(F("Error % per cap"));
-# if FEATURE_CHART_JS
-  addCalibrationChart(event);
-# else // if FEATURE_CHART_JS
+  
 
+# if FEATURE_CHART_JS
+  addHtml(F("<tr><td colspan=\"2\">"));
+  addCalibrationChart(event);
+  addHtml(F("</td></tr>"));
+# else // if FEATURE_CHART_JS
+  addRowLabel(F("Error % per cap"));
   for (uint8_t i = 0; i < 16; ++i) {
     const int32_t freq = _sensor->getAntCapFrequency(i);
 

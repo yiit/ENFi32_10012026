@@ -210,6 +210,7 @@ boolean Plugin_028(uint8_t function, struct EventStruct *event, String& string)
         if ((P028_data_struct::BMx_DetectMode::BMP280 != static_cast<P028_data_struct::BMx_DetectMode>(P028_DETECTION_MODE)) &&
             P028_data->hasHumidity())
         {
+          addHtml(F("<tr><td colspan=\"2\">"));
           P028_data->plot_ChartJS_scatter(
             0,
             1,
@@ -218,6 +219,7 @@ boolean Plugin_028(uint8_t function, struct EventStruct *event, String& string)
             { F("temp/hum"), F("rgb(255, 99, 132)") },
             500,
             500);
+            addHtml(F("</td></tr>"));
         }
       }
 
