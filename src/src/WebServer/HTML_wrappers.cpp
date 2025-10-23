@@ -294,10 +294,23 @@ void html_add_ChartJS_script() {
     #define CDN_URL_CHART_JS_PLUGIN_ZOOM "https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"
   #endif
 
+  #ifndef CDN_URL_CHART_JS_LUXON
+    // Timestack internally uses Luxon for locale-aware time formatting.
+    #define CDN_URL_CHART_JS_LUXON "https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"
+  #endif
+
+  #ifndef CDN_URL_CHART_JS_PLUGIN_SCALE_TIMESTACK
+    // Timestack tries hard to choose the ticks looking nice for humans, i.e. 14:00, 14:30, 15:00, 15:30 in hourly view and 1, 5, 10, 15, 25 days of the month in daily view.
+    // See: https://github.com/jkmnt/chartjs-scale-timestack
+    #define CDN_URL_CHART_JS_PLUGIN_SCALE_TIMESTACK "https://cdn.jsdelivr.net/npm/chartjs-scale-timestack/dist/chartjs-scale-timestack.min.js"
+  #endif
+
   html_add_JQuery_script(F(CDN_URL_CHART_JS));
   html_add_JQuery_script(F(CDN_URL_CHART_JS_ADAPTER_DATE));
   html_add_JQuery_script(F(CDN_URL_CHART_JS_HAMMERJS));
   html_add_JQuery_script(F(CDN_URL_CHART_JS_PLUGIN_ZOOM));
+  html_add_JQuery_script(F(CDN_URL_CHART_JS_LUXON));
+  html_add_JQuery_script(F(CDN_URL_CHART_JS_PLUGIN_SCALE_TIMESTACK));
 }
 #endif // if FEATURE_CHART_JS
 

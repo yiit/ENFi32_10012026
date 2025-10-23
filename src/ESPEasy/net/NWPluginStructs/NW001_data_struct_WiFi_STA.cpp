@@ -8,6 +8,7 @@
 # include "../../../src/Helpers/LongTermOnOffTimer.h"
 # include "../../../src/Helpers/StringConverter.h"
 # include "../../../src/WebServer/HTML_wrappers.h"
+# include "../../../src/WebServer/Markup.h"
 
 # include "../wifi/ESPEasyWifi.h"
 
@@ -198,16 +199,14 @@ bool NW001_data_struct_WiFi_STA::webformLoad_show_stats(struct EventStruct *even
   if (_plugin_stats_array != nullptr) {
 #  if FEATURE_SET_WIFI_TX_PWR
 #   if FEATURE_CHART_JS
-    addHtml(F("<tr><td colspan=\"2\">"));
+    addRowColspan(2);
 
     plot_ChartJS_scatter(
       NW001_RSSI_STATS_INDEX,
       NW001_TX_PWR_STATS_INDEX,
       F("rssitxpwrscatter"),
       { F("RSSI/TX pwr Scatter Plot") },
-      { F("rssi/tx_pwr"), F("rgb(255, 99, 132)") },
-      500,
-      500);
+      { F("rssi/tx_pwr"), F("rgb(255, 99, 132)") });
     addHtml(F("</td></tr>"));
 #   endif // if FEATURE_CHART_JS
 #  endif // if FEATURE_SET_WIFI_TX_PWR

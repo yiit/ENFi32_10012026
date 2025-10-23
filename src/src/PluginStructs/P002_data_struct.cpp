@@ -378,7 +378,7 @@ void P002_data_struct::webformLoad_calibrationCurve(struct EventStruct *event)
 {
   if (!hasADC_factory_calibration()) { return; }
 
-  addHtml(F("<tr><td colspan=\"2\">"));
+  addRowColspan(2);
 
   const int valueCount = 33;
   int xAxisValues[valueCount];
@@ -395,8 +395,6 @@ void P002_data_struct::webformLoad_calibrationCurve(struct EventStruct *event)
       F("line"),
       F("fact_cal"),
       { F("Factory Calibration per Attenuation") },
-      500,
-      500,
       scales);
 
     if (chart) {
@@ -503,7 +501,7 @@ void P002_data_struct::getChartRange(struct EventStruct *event, int values[], in
 
 void P002_data_struct::webformLoad_2pt_calibrationCurve(struct EventStruct *event)
 {
-  addHtml(F("<tr><td colspan=\"2\">"));
+  addRowColspan(2);
 
   const int valueCount = 33;
   int xAxisValues[valueCount];
@@ -522,8 +520,6 @@ void P002_data_struct::webformLoad_2pt_calibrationCurve(struct EventStruct *even
       F("line"),
       F("twoPointCurve"),
       { F("Two Point Calibration Curve") },
-      500,
-      500,
       scales);
 
     if (chart) {
@@ -671,7 +667,7 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
   if (P002_MULTIPOINT_ENABLED)
   {
     const bool useBinning = P002_OVERSAMPLING == P002_USE_BINNING;
-    addHtml(F("<tr><td colspan=\"2\">"));
+    addRowColspan(2);
 
     ChartJS_options_scales scales;
     {
@@ -683,8 +679,6 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
         useBinning ? F("bar") : F("line"),
         F("mpcurve"),
         { useBinning ? F("Bin Values") : F("Multipoint Curve") },
-        500,
-        500,
         scales);
 
       if (chart) {
@@ -733,7 +727,7 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
 
     if (!useBinning) {
       // Try to compute the expected mapping from ADC to multipoint values
-      addHtml(F("<tr><td colspan=\"2\">"));
+      addRowColspan(2);
       const int valueCount = 33;
       int xAxisValues[valueCount];
       getChartRange(event, xAxisValues, valueCount);
@@ -749,8 +743,6 @@ void P002_data_struct::webformLoad_multipointCurve(struct EventStruct *event) co
           F("line"),
           F("mpCurveSimulated"),
           { F("Simulated Input to Output Curve") },
-          500,
-          500,
           scales);
 
         if (chart) {

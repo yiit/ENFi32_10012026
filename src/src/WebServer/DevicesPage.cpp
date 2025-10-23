@@ -1222,7 +1222,7 @@ void handle_devices_TaskSettingsPage(taskIndex_t taskIndex, uint8_t page)
 
 
     // add plugins content
-    if ((DEVICE_TYPE_DUMMY != device.Type) && (remoteUnit == 0)) {
+    if ((!device.NoDeviceSettings) && (remoteUnit == 0)) {
       addFormSubHeader(F("Device Settings"));
     }
 
@@ -1551,7 +1551,7 @@ void devicePage_show_task_statistics(taskIndex_t taskIndex, deviceIndex_t Device
       #  if FEATURE_CHART_JS
 
       if (taskData->nrSamplesPresent() > 0) {
-        addHtml(F("<tr><td colspan=\"2\">"));
+        addRowColspan(2);
 
         //        addRowLabel(F("Historic data"));
         taskData->plot_ChartJS();

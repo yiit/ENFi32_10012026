@@ -25,13 +25,13 @@ public:
   PluginStats_array() = default;
   ~PluginStats_array();
 
-  void   initPluginStats(taskVarIndex_t taskVarIndex);
-  void   initPluginStats(
-  taskVarIndex_t taskVarIndex,
-  const String& label,
-  uint8_t nrDecimals,
-  float errorValue,
-  const PluginStats_Config_t& displayConfig);
+  void initPluginStats(taskVarIndex_t taskVarIndex);
+  void initPluginStats(
+    taskVarIndex_t              taskVarIndex,
+    const String              & label,
+    uint8_t                     nrDecimals,
+    float                       errorValue,
+    const PluginStats_Config_t& displayConfig);
   void   clearPluginStats(taskVarIndex_t taskVarIndex);
 
   // Update any logged timestamp with this newly set system time.
@@ -75,8 +75,6 @@ public:
     const __FlashStringHelper    *id,
     const ChartJS_title         & chartTitle,
     const ChartJS_dataset_config& datasetConfig,
-    int                           width,
-    int                           height,
     bool                          showAverage = true,
     const String                & options     = EMPTY_STRING,
     bool                          onlyJSON    = false) const;

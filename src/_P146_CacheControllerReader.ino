@@ -52,6 +52,7 @@ boolean Plugin_146(uint8_t function, struct EventStruct *event, String& string)
       dev.SendDataOption    = true;
       dev.OutputDataType    = Output_Data_type_t::Default;
       dev.HideDerivedValues = true;
+      dev.NoDeviceSettings  = true;
       break;
     }
 

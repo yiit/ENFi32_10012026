@@ -39,8 +39,6 @@ Up_KeyValueWriter add_ChartJS_chart_header(
   const __FlashStringHelper *chartType,
   const __FlashStringHelper *id,
   const ChartJS_title      & chartTitle,
-  int                        width,
-  int                        height,
   ChartJS_options_scales   & options,
   bool                       enableZoom,
   size_t                     nrSamples,
@@ -50,8 +48,6 @@ Up_KeyValueWriter add_ChartJS_chart_header(
     chartType,
     String(id),
     chartTitle,
-    width,
-    height,
     options,
     enableZoom,
     nrSamples,
@@ -62,8 +58,6 @@ Up_KeyValueWriter add_ChartJS_chart_header(
   const __FlashStringHelper *chartType,
   const String             & id,
   const ChartJS_title      & chartTitle,
-  int                        width,
-  int                        height,
   ChartJS_options_scales   & options,
   bool                       enableZoom,
   size_t                     nrSamples,
@@ -73,8 +67,6 @@ Up_KeyValueWriter add_ChartJS_chart_header(
     addHtml(F("<div class=\"chart-container\" style=\"position: relative; height:40vh; width:95vw\">"));
     addHtml(F("<canvas"));
     addHtmlAttribute(F("id"),     id);
-//    addHtmlAttribute(F("width"),  F("80vw"));
-//    addHtmlAttribute(F("height"), height);
     addHtml(F("></canvas>"));
     addHtml(F("</div>"));
     const char *id_c_str = id.c_str();

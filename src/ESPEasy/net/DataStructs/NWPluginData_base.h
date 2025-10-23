@@ -76,8 +76,6 @@ struct NWPluginData_base {
     const __FlashStringHelper    *id,
     const ChartJS_title         & chartTitle,
     const ChartJS_dataset_config& datasetConfig,
-    int                           width,
-    int                           height,
     bool                          showAverage = true,
     const String                & options     = EMPTY_STRING,
     bool                          onlyJSON    = false) const;
@@ -98,11 +96,11 @@ struct NWPluginData_base {
                                                         String     & str);
 
 #ifdef ESP32
-  virtual bool handle_priority_route_changed();
+  virtual bool                         handle_priority_route_changed();
 #endif
 #if FEATURE_NETWORK_TRAFFIC_COUNT
-  void         enable_txrx_events();
-  bool         getTrafficCount(TX_RX_traffic_count& traffic);
+  void                                 enable_txrx_events();
+  bool                                 getTrafficCount(TX_RX_traffic_count& traffic);
 #endif // if FEATURE_NETWORK_TRAFFIC_COUNT
 
   virtual NWPluginData_static_runtime* getNWPluginData_static_runtime() = 0;

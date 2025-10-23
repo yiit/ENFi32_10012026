@@ -187,14 +187,14 @@ void P169_data_struct::html_show_sensor_info(struct EventStruct *event)
     addEnabled(false);
   }
 
-  
 
 # if FEATURE_CHART_JS
-  addHtml(F("<tr><td colspan=\"2\">"));
+  addRowColspan(2);
   addCalibrationChart(event);
   addHtml(F("</td></tr>"));
 # else // if FEATURE_CHART_JS
   addRowLabel(F("Error % per cap"));
+
   for (uint8_t i = 0; i < 16; ++i) {
     const int32_t freq = _sensor->getAntCapFrequency(i);
 
@@ -923,8 +923,6 @@ void P169_data_struct::addCalibrationChart(struct EventStruct *event)
         F("line"),
         F("lcoCapErrorCurve"),
         { F("LCO Resonance Frequency") },
-        500,
-        500,
         scales);
 
     if (chart) {
@@ -950,7 +948,7 @@ void P169_data_struct::addCalibrationChart(struct EventStruct *event)
             values,
             actualValueCount,
             2,
-          options);
+            options);
         }
       }
     }

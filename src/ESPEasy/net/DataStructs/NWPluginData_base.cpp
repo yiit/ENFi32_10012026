@@ -259,8 +259,6 @@ void NWPluginData_base::plot_ChartJS_scatter(
   const __FlashStringHelper    *id,
   const ChartJS_title         & chartTitle,
   const ChartJS_dataset_config& datasetConfig,
-  int                           width,
-  int                           height,
   bool                          showAverage,
   const String                & options,
   bool                          onlyJSON) const
@@ -273,8 +271,6 @@ void NWPluginData_base::plot_ChartJS_scatter(
       id,
       chartTitle,
       datasetConfig,
-      width,
-      height,
       showAverage,
       options,
       onlyJSON);

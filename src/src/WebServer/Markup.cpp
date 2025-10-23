@@ -604,14 +604,19 @@ void addRowLabelValue_copy(LabelType::Enum label) {
 #endif
 }
 
+void addRowColspan(int colspan) {
+  addHtml(strformat(
+    F("<TR><TD colspan=%d>"),
+    colspan));
+}
+
 // ********************************************************************************
 // Add a header
 // ********************************************************************************
 void addTableSeparator(const __FlashStringHelper *label, int colspan, int h_size)
 {
-  addHtml(strformat(
-    F("<TR><TD colspan=%d><H%d>"),
-    colspan, h_size));
+  addRowColspan(colspan);
+  addHtml(strformat(F("<H%d>"), h_size));
   addHtml(label);
   addHtml(strformat(
     F("</H%d></TD></TR>"),
@@ -624,9 +629,8 @@ void addTableSeparator(const __FlashStringHelper *label, int colspan, int h_size
 }
 
 void addTableSeparator(const String& label, int colspan, int h_size, const String& helpButton) {
-  addHtml(strformat(
-    F("<TR><TD colspan=%d><H%d>"),
-    colspan, h_size));
+  addRowColspan(colspan);
+  addHtml(strformat(F("<H%d>"), h_size));
   addHtml(label);
 
   if (!helpButton.isEmpty()) {

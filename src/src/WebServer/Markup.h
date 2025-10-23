@@ -156,6 +156,8 @@ void addRowLabelValues(const LabelType::Enum labels[]);
 
 void addRowLabelValue_copy(LabelType::Enum label);
 
+void addRowColspan(int colspan);
+
 // ********************************************************************************
 // Add a header
 // ********************************************************************************

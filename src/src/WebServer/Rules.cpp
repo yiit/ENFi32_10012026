@@ -522,7 +522,7 @@ bool handle_rules_edit(String originalUri, bool isAddNew) {
     addHelpButton(F("Tutorial_Rules"));
 
     // load form data from flash
-    addHtml(F("<TR><TD colspan='2'>"));
+    addRowColspan(2);
 
     Rule_showRuleTextArea(fileName);
 

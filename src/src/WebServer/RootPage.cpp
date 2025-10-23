@@ -216,8 +216,9 @@ void handle_root() {
         addFormHeader(F("Command Argument"));
         addRowLabel(F("Command"));
         addHtml(sCommand);
-
-        addHtml(F("<TR><TD colspan='2'>Command Output<BR><textarea readonly rows='10' wrap='on'>"));
+        
+        addRowColspan(2);
+        addHtml(F("Command Output<BR><textarea readonly rows='10' wrap='on'>"));
         addHtml(printWebString);
         addHtml(F("</textarea>"));
         free_string(printWebString);

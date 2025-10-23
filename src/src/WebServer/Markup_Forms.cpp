@@ -24,9 +24,8 @@
 // ********************************************************************************
 void addFormSeparator(int clspan)
 {
-  addHtml(strformat(
-    F("<TR><TD colspan='%d'><hr>"),
-    clspan));
+  addRowColspan(clspan);
+  addHtml(F("<hr>"));
 }
 
 // ********************************************************************************

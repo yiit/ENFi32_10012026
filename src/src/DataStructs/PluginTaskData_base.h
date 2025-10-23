@@ -64,8 +64,6 @@ struct PluginTaskData_base {
     const __FlashStringHelper    *id,
     const ChartJS_title         & chartTitle,
     const ChartJS_dataset_config& datasetConfig,
-    int                           width,
-    int                           height,
     bool                          showAverage = true,
     const String                & options     = EMPTY_STRING,
     bool                          onlyJSON    = false) const;
@@ -93,6 +91,7 @@ protected:
 protected:
 
   bool _baseClassOnly = false;
+
 };
 
 #endif // ifndef DATASTRUCTS_PLUGINTASKDATA_BASE_H

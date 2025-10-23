@@ -394,8 +394,6 @@ void PluginStats_array::plot_ChartJS(bool onlyJSON) const
       F("line"),
       F("TaskStatsChart"),
       {},
-      500 + (70 * (scales.nr_Y_scales() - 1)),
-      500,
       scales,
       enableZoom,
       nrSamples,
@@ -453,8 +451,6 @@ void PluginStats_array::plot_ChartJS_scatter(
   const __FlashStringHelper    *id,
   const ChartJS_title         & chartTitle,
   const ChartJS_dataset_config& datasetConfig,
-  int                           width,
-  int                           height,
   bool                          showAverage,
   const String                & options,
   bool                          onlyJSON) const
@@ -483,8 +479,6 @@ void PluginStats_array::plot_ChartJS_scatter(
       F("scatter"),
       id,
       chartTitle,
-      width,
-      height,
       scales,
       enableZoom,
       nrSamples,
@@ -524,6 +518,7 @@ void PluginStats_array::plot_ChartJS_scatter(
 
                     const uint8_t nrDecimalsX = stats_X->getNrDecimals();
                     const uint8_t nrDecimalsY = stats_Y->getNrDecimals();
+
                     // Add scatter data
                     for (size_t i = 0; i < nrSamples; ++i) {
                       const float valX = (*stats_X)[i];
@@ -554,10 +549,10 @@ void PluginStats_array::plot_ChartJS_scatter(
                     const float valX = stats_X->getSampleAvg();
                     const float valY = stats_Y->getSampleAvg();
                     add_ChartJS_scatter_data_point(
-                      *data, 
-                      valX, 
-                      valY, 
-                      stats_X->getNrDecimals(), 
+                      *data,
+                      valX,
+                      valY,
+                      stats_X->getNrDecimals(),
                       stats_Y->getNrDecimals());
                   }
                 }
