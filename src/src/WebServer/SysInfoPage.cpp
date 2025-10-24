@@ -246,7 +246,9 @@ void handle_sysinfo() {
 
   if (!isLoggedIn()) { return; }
   navMenuIndex = MENU_INDEX_TOOLS;
+#ifdef WEBSERVER_GITHUB_COPY
   html_reset_copyTextCounter();
+#endif
   TXBuffer.startStream();
   sendHeadandTail_stdtemplate(_HEAD);
 

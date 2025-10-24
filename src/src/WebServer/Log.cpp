@@ -28,7 +28,9 @@ void handle_log() {
 
   #ifdef WEBSERVER_LOG
   addHtml(F("<TR><TH id=\"headline\" align=\"left\">Log"));
+  #ifdef WEBSERVER_GITHUB_COPY
   addCopyButton(F("copyText"), EMPTY_STRING, F("Copy log to clipboard"));
+  #endif
   addHtml(F(
             "</TR></table><div  id='current_loglevel' style='font-weight: bold;'>Logging: </div><div class='logviewer' id='copyText_1'></div>"));
   addHtml(F("Autoscroll: "));

@@ -143,10 +143,15 @@ void addRowLabel_tr_id(const String& label,
 void addRowLabel(const __FlashStringHelper *label);
 void addRowLabel(const String& label,
                  const String& id = EMPTY_STRING);
-
+#ifdef WEBSERVER_GITHUB_COPY
 // Add a row label and mark it with copy markers to copy it to clipboard.
 void addRowLabel_copy(const __FlashStringHelper *label);
 void addRowLabel_copy(const String& label);
+#else
+#ifndef addRowLabel_copy
+#define addRowLabel_copy(L)  addRowLabel(L)
+#endif
+#endif
 
 void addRowLabel(LabelType::Enum label);
 

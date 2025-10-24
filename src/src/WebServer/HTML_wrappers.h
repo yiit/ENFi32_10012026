@@ -34,7 +34,7 @@ void html_TD();
 void html_TD(const __FlashStringHelper * style);
 
 void html_TD(int td_cnt);
-
+#ifdef WEBSERVER_GITHUB_COPY
 extern int copyTextCounter;
 
 void html_reset_copyTextCounter();
@@ -43,6 +43,7 @@ void html_copyText_TD();
 
 // Add some recognizable token to show which parts will be copied.
 void html_copyText_marker();
+#endif
 
 void html_add_estimate_symbol();
 

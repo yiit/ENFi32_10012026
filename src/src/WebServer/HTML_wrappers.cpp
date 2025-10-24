@@ -84,7 +84,7 @@ void html_TD(int td_cnt) {
     html_TD();
   }
 }
-
+#ifdef WEBSERVER_GITHUB_COPY
 int copyTextCounter = 0;
 
 void html_reset_copyTextCounter() {
@@ -102,6 +102,7 @@ void html_copyText_TD() {
 void html_copyText_marker() {
   addHtml(F("&#x022C4;")); //   &diam; &diamond; &Diamond; &#x022C4; &#8900;
 }
+#endif
 
 void html_add_estimate_symbol() {
   addHtml(F(" &#8793; ")); //   &#8793;  &#x2259;  &wedgeq;

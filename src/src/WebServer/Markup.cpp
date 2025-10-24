@@ -518,11 +518,7 @@ void addRowLabel_tr_id(const __FlashStringHelper *label, const __FlashStringHelp
 
 void addRowLabel_tr_id(const __FlashStringHelper *label, const String& id)
 {
-  if (id.isEmpty()) {
-    addRowLabel(label);
-  } else {
-    addRowLabel_tr_id(String(label), id);
-  }
+  addRowLabel_tr_id(String(label), id);
 }
 
 void addRowLabel_tr_id(const String& label, const String& id)
@@ -536,9 +532,7 @@ void addRowLabel_tr_id(const String& label, const String& id)
 
 void addRowLabel(const __FlashStringHelper *label)
 {
-  html_TR_TD();
-  addHtml(concat(label, F(":</td>")));
-  html_TD();
+  addRowLabel(String(label), EMPTY_STRING);
 }
 
 void addRowLabel(const String& label, const String& id)
@@ -558,15 +552,10 @@ void addRowLabel(const String& label, const String& id)
   addHtml(F("</td>"));
   html_TD();
 }
-
+#ifdef WEBSERVER_GITHUB_COPY
 // Add a row label and mark it with copy markers to copy it to clipboard.
 void addRowLabel_copy(const __FlashStringHelper *label) {
-  addHtml(F("<TR>"));
-  html_copyText_TD();
-  addHtml(label);
-  addHtml(':');
-  html_copyText_marker();
-  html_copyText_TD();
+  addRowLabel_copy(String(label));
 }
 
 void addRowLabel_copy(const String& label) {
@@ -577,6 +566,7 @@ void addRowLabel_copy(const String& label) {
   html_copyText_marker();
   html_copyText_TD();
 }
+#endif
 
 void addRowLabel(LabelType::Enum label) {
   addRowLabel(getLabel(label));
@@ -615,12 +605,7 @@ void addRowColspan(int colspan) {
 // ********************************************************************************
 void addTableSeparator(const __FlashStringHelper *label, int colspan, int h_size)
 {
-  addRowColspan(colspan);
-  addHtml(strformat(F("<H%d>"), h_size));
-  addHtml(label);
-  addHtml(strformat(
-    F("</H%d></TD></TR>"),
-    h_size));
+  addTableSeparator(String(label), colspan, h_size);
 }
 
 void addTableSeparator(const __FlashStringHelper *label, int colspan, int h_size, const __FlashStringHelper *helpButton)
@@ -630,8 +615,7 @@ void addTableSeparator(const __FlashStringHelper *label, int colspan, int h_size
 
 void addTableSeparator(const String& label, int colspan, int h_size, const String& helpButton) {
   addRowColspan(colspan);
-  addHtml(strformat(F("<H%d>"), h_size));
-  addHtml(label);
+  addHtml(strformat(F("<H%d>%s"), h_size, label.c_str()));
 
   if (!helpButton.isEmpty()) {
     addHelpButton(helpButton);

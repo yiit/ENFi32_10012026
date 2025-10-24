@@ -167,6 +167,7 @@ void addSubmitButton(const String& value, const String& name, const String& clas
   addHtml(F("/><div id='toastmessage'></div>"));
 }
 
+#ifdef WEBSERVER_GITHUB_COPY
 // add copy to clipboard button
 void addCopyButton(const String& value, const String& delimiter, const String& name)
 {
@@ -186,6 +187,7 @@ void addCopyButton(const String& value, const String& delimiter, const String& n
   html_copyText_marker();
   addHtml(F(")</button>"));
 }
+#endif
 
 void addPlugin_Add_Edit_Button(const __FlashStringHelper * urlPrefix, size_t index, bool plugin_set, bool plugin_supported, const String& symbol)
 {
