@@ -85,7 +85,6 @@ public:
       int Par6;
       int Par7;
       int Par8;
-
     };
 
     struct {
@@ -97,7 +96,6 @@ public:
       float Parf_6;
       float Parf_7;
       float Parf_8;
-
     };
 
     float ParfN[8];
@@ -106,7 +104,6 @@ public:
       int64_t Par64_2;
       int64_t Par64_3;
       int64_t Par64_4;
-
     };
     int64_t Par64N[4];
 

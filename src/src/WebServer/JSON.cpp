@@ -17,6 +17,7 @@
 #include "../Helpers/_Plugin_init.h"
 #include "../Helpers/ESPEasyStatistics.h"
 #include "../Helpers/ESPEasy_Storage.h"
+#include "../Helpers/ESPEasy_UnitOfMeasure.h"
 #include "../Helpers/KeyValueWriter_JSON.h"
 #include "../Helpers/Numerical.h"
 #include "../Helpers/StringConverter.h"
