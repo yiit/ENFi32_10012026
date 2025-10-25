@@ -102,7 +102,11 @@ private:
 
 
   // WiFi settings => Move to separate class/struct
+  #ifdef ESP32P4
   bool _disabledAtBoot = false;
+  #else
+  bool _disabledAtBoot = false;
+  #endif
 
   //  bool _passiveScan       = false;
   //  bool _includeHiddenSSID = false;

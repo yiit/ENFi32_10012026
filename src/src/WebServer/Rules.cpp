@@ -551,7 +551,7 @@ void Rule_showRuleTextArea(const String& fileName) {
   size = streamFromFS(fileName, true);
   addHtml(F("</textarea>"));
   #if FEATURE_RULES_EASY_COLOR_CODE
-  addHtml(F("<script>initCM();</script>"));
+  html_add_script(F("initCM();"), false);
   #endif
 
   html_TR_TD();

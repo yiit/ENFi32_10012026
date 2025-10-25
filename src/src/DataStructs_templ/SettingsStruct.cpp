@@ -569,6 +569,7 @@ void SettingsStruct_tmpl<N_TASKS>::validate() {
 
   // Make sure the WiFi and AP drivers are always added and set enabled when loading older settings, 
   // or factory default settings
+  bool fixedNetworkIndex_drivers_added = false;
   for (ESPEasy::net::networkDriverIndex_t index; ESPEasy::net::validNetworkDriverIndex(index); ++index)
   {
     const ESPEasy::net::NetworkDriverStruct& nw = ESPEasy::net::getNetworkDriverStruct(index);
@@ -577,9 +578,12 @@ void SettingsStruct_tmpl<N_TASKS>::validate() {
         const ESPEasy::net::nwpluginID_t nwpluginID = ESPEasy::net::getNWPluginID_from_NetworkDriverIndex(index);
         if (getNWPluginID_for_network(nw.fixedNetworkIndex) != nwpluginID) {
           setNWPluginID_for_network(nw.fixedNetworkIndex,  nwpluginID);
-          setNetworkEnabled(nw.fixedNetworkIndex, true);
+          fixedNetworkIndex_drivers_added = true;
+          setNetworkEnabled(nw.fixedNetworkIndex, nw.enabledOnFactoryReset);
         }
       }
+    } else {
+
     }
   }
 }

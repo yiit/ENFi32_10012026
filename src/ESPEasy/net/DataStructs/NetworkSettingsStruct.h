@@ -50,11 +50,9 @@ private:
 };
 
 DEF_UP(NetworkSettingsStruct);
-#define MakeNetworkSettings(T) void *calloc_ptr = special_calloc(1, sizeof(NetworkSettingsStruct)); \
-        UP_NetworkSettingsStruct T(new (calloc_ptr)  NetworkSettingsStruct());
 
-// Check to see if MakeNetworkSettings was successful
-#define AllocatedNetworkSettings() (NetworkSettings.get() != nullptr)
+UP_NetworkSettingsStruct MakeNetworkSettings();
+
 
 } // namespace net
 } // namespace ESPEasy

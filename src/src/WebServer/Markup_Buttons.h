@@ -12,6 +12,7 @@ void addButton(const String& url, const String& label);
 
 void addButton(const String& url, const String& label, const String& classes, bool enabled = true);
 
+# ifdef WEBSERVER_NEW_RULES
 void addButtonWithSvg(const String& url, const String& label);
 
 void addButtonWithSvg(const String& url, const String& label, const String& svgPath, bool needConfirm);
@@ -19,7 +20,7 @@ void addButtonWithSvg(const String& url, const String& label, const String& svgP
 void addSaveButton(const String& url, const String& label);
 
 void addDeleteButton(const String& url, const String& label);
-
+#endif
 void addWideButton(const __FlashStringHelper * url, const __FlashStringHelper * label);
 void addWideButton(const String& url, const String& label);
 

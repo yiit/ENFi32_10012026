@@ -107,9 +107,9 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
             event->kvWriter->write({ EMPTY_STRING, s });
           } else {
             KeyValueStruct kv(F("Link Speed"), ETH.linkSpeed());
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
             kv.setUnit(UOM_Mbps);
-#endif
+# endif
             event->kvWriter->write(kv);
             event->kvWriter->write({ F("Duplex Mode"), ETH.fullDuplex() ? F("Full Duplex") : F("Half Duplex") });
             event->kvWriter->write({ F("Negotiation Mode"), ETH.autoNegotiation() ? F("Auto") : F("Manual") });
@@ -119,8 +119,77 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
+    {
+      if (event->kvWriter) {
+        if (isValid(Settings.ETH_Phy_Type) && isSPI_EthernetType(Settings.ETH_Phy_Type)) {
+          success = true;
+
+          if (event->kvWriter->summaryValueOnly()) {
+            KeyValueStruct kv(EMPTY_STRING);
+            kv.appendValue(toString(Settings.ETH_Phy_Type));
+            kv.appendValue(concat(F("MAC: "), ETH.macAddress()));
+
+            event->kvWriter->write(kv);
+          } else {
+            event->kvWriter->write({
+                  F("Adapter"),
+                  toString(Settings.ETH_Phy_Type) });
+            event->kvWriter->write({
+                  F("MAC"),
+                  ETH.macAddress(),
+                  KeyValueStruct::Format::PreFormatted });
+          }
+        }
+      }
+      break;
+    }
+
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
+      if (event->kvWriter) {
+        if (isValid(Settings.ETH_Phy_Type) && isSPI_EthernetType(Settings.ETH_Phy_Type)) {
+          int8_t spi_gpios[3]{};
+
+          if (Settings.getSPI_pins(spi_gpios)) {
+            const __FlashStringHelper*labels[] = {
+              F("CLK"), F("MISO"), F("MOSI"), F("CS"), F("IRQ"), F("RST") };
+            const int pins[] = {
+              spi_gpios[0],
+              spi_gpios[1],
+              spi_gpios[2],
+              Settings.ETH_Pin_mdc_cs,
+              Settings.ETH_Pin_mdio_irq,
+              Settings.ETH_Pin_power_rst
+            };
+
+            if (event->kvWriter->summaryValueOnly()) {
+              KeyValueStruct kv(EMPTY_STRING);
+
+              for (int i = 0; i < NR_ELEMENTS(labels); ++i) {
+                if (pins[i] >= 0) {
+                  kv.appendValue(concat(labels[i], F(":&nbsp;")) + formatGpioLabel(pins[i], false));
+                }
+              }
+
+              if (kv._values.size()) {
+                success = true;
+                event->kvWriter->write(kv);
+              }
+            } else {
+              for (int i = 0; i < NR_ELEMENTS(labels); ++i) {
+                if (pins[i] >= 0) {
+                  success = true;
+                  event->kvWriter->write({
+                      concat(labels[i], F(" GPIO")),
+                      pins[i],
+                      KeyValueStruct::Format::PreFormatted });
+                }
+              }
+            }
+          }
+        }
+      }
       break;
     }
 
@@ -360,6 +429,7 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
 }
 
 } // namespace net
+
 } // namespace ESPEasy
 
 #endif // ifdef USES_NW004

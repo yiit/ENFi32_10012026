@@ -34,7 +34,7 @@ void addButton(const String& url, const String& label, const String& classes, bo
   addHtml(label);
   addHtml(F("</a>"));
 }
-
+# ifdef WEBSERVER_NEW_RULES
 void addButtonWithSvg(const String& url, const String& label)
 {
   addButtonWithSvg(url, label, EMPTY_STRING, false);
@@ -105,7 +105,7 @@ void addDeleteButton(const String& url, const String& label)
                    true);
 #endif // ifdef BUILD_MINIMAL_OTA
 }
-
+#endif
 void addWideButton(const __FlashStringHelper * url, const __FlashStringHelper * label) {
   html_add_wide_button_prefix(EMPTY_STRING, true);
   addHtml(url);

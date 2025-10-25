@@ -61,6 +61,12 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
       nw.onlySingleInstance = true;
       nw.alwaysPresent      = true;
+#ifdef ESP32P4
+      nw.enabledOnFactoryReset = false;
+//        ESPEasy::net::wifi::GetHostedMCUFwVersion() > 0x00020600;
+#else
+      nw.enabledOnFactoryReset = true;
+#endif
       nw.fixedNetworkIndex  = NWPLUGIN_ID_001 - 1; // Start counting at 0
       break;
     }
@@ -274,12 +280,25 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     }
 # endif // ifdef ESP8266
 
-    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
+#ifdef ESP32P4
+
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
-      // TODO TD-er: Show ESP32-P4 GPIOs for WiFi
+      if (event->kvWriter) {
+        success = ESPEasy::net::wifi::write_WiFi_Hosted_MCU_info(event->kvWriter);
+      }
       break;
     }
 
+    case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
+    {
+      if (event->kvWriter) {
+        // See HostedMCUStatus
+      }
+      break;
+    }
+
+#endif
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
     {
       // SSID 1
@@ -347,26 +366,17 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
+      KeyValueWriter_WebForm writer(true);
+      #ifdef ESP32P4
+      ESPEasy::net::wifi::write_WiFi_Hosted_MCU_info(
+        writer.createChild(F("ESP-Hosted-MCU")).get());
+      #endif
+
       addFormSubHeader(F("Wifi Credentials"));
 
       // TODO Add pin configuration for ESP32P4.
       // ESP32-C5 may use different SDIO pins.
       // See: https://github.com/espressif/esp-hosted-mcu/blob/main/docs/sdio.md#esp32-p4-function-ev-board-host-pin-mapping
-
-
-# ifdef ESP32P4
-      {
-        addRowLabel(F("ESP Hosted Firmware"));
-        esp_hosted_coprocessor_fwver_t ver_info{};
-        esp_hosted_get_coprocessor_fwversion(&ver_info);
-        addHtml(strformat(
-                  F("%d.%d.%d"),
-                  ver_info.major1,
-                  ver_info.minor1,
-                  ver_info.patch1));
-      }
-# endif // ifdef ESP32P4
-
 
       addFormTextBox(getLabel(LabelType::SSID), F("ssid"), SecuritySettings.WifiSSID, 31);
       addFormPasswordBox(F("WPA Key"), F("key"), SecuritySettings.WifiKey, 63);

@@ -374,13 +374,17 @@ void C013_Receive(struct EventStruct *event) {
 
           if (mustMatch && !dataReply->matchesPluginID(Settings.getPluginID_for_task(dataReply->destTaskIndex))) {
             // Mismatch in plugin ID from sending node
+            #ifndef BUILD_NO_DEBUG
             if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
-              String log = concat(F("P2P data : PluginID mismatch for task "), dataReply->destTaskIndex + 1);
-              log += concat(F(" from unit "), dataReply->sourceUnit);
-              log += concat(F(" remote: "), dataReply->deviceNumber.value);
-              log += concat(F(" local: "), Settings.getPluginID_for_task(dataReply->destTaskIndex).value);
-              addLogMove(LOG_LEVEL_ERROR, log);
+              addLogMove(LOG_LEVEL_ERROR, strformat(
+                F("P2P data : PluginID mismatch for task %d from unit %d remote: %d local: %d"),
+                dataReply->destTaskIndex + 1,
+                dataReply->sourceUnit,
+                dataReply->deviceNumber.value,
+                Settings.getPluginID_for_task(dataReply->destTaskIndex).value
+              ));
             }
+            #endif
           } else {
             struct EventStruct TempEvent(dataReply->destTaskIndex);
             TempEvent.Source = EventValueSource::Enum::VALUE_SOURCE_UDP;
@@ -405,12 +409,16 @@ void C013_Receive(struct EventStruct *event) {
                 SensorSendTask(&TempEvent);
               }
             } else {
+              #ifndef BUILD_NO_DEBUG
               // Mismatch in sensor types
               if (loglevelActiveFor(LOG_LEVEL_ERROR)) {
-                String log = concat(F("P2P data : SensorType mismatch for task "), dataReply->destTaskIndex + 1);
-                log += concat(F(" from unit "), dataReply->sourceUnit);
-                addLogMove(LOG_LEVEL_ERROR, log);
+                addLogMove(LOG_LEVEL_ERROR, strformat(
+                  F("P2P data : SensorType mismatch for task %d from unit %d"), 
+                  dataReply->destTaskIndex + 1,
+                  dataReply->sourceUnit
+                ));
               }
+              #endif
             }
           }
         }

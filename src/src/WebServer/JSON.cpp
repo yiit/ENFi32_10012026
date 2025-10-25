@@ -279,6 +279,7 @@ void handle_json()
 #ifdef WEBSERVER_NETWORK
 # ifdef ESP32
                 ESPEasy::net::write_NetworkAdapterFlags(x, writer->createChild(F("Interface")).get());
+                ESPEasy::net::write_NetworkAdapterPort(x, writer->createChild(F("Port")).get());
                 ESPEasy::net::write_IP_config(x, writer->createChild(F("IP")).get());
 # endif // ifdef ESP32
 #endif // ifdef WEBSERVER_NETWORK

@@ -487,19 +487,22 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       return KeyValueStruct(F("WiFi Connection") /*, value*/);
     }
     case LabelType::WIFI_RSSI:
-    {
-      if (extendedValue) {
-        return KeyValueStruct(F("RSSI"), strformat(
-                                F("%d [dBm] (%s)"),
-                                WiFi.RSSI(),
-                                WiFi.SSID().c_str()));
-      }
-      KeyValueStruct kv(F("RSSI"), WiFi.RSSI());
+
+      if (ESPEasy::net::wifi::WiFiConnected())
+      {
+        if (extendedValue) {
+          return KeyValueStruct(F("RSSI"), strformat(
+                                  F("%d [dBm] (%s)"),
+                                  WiFi.RSSI(),
+                                  WiFi.SSID().c_str()));
+        }
+        KeyValueStruct kv(F("RSSI"), WiFi.RSSI());
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-      KV_SETUNIT(UOM_dBm);
+        KV_SETUNIT(UOM_dBm);
 #endif
-      return kv;
-    }
+        return kv;
+      }
+      break;
     case LabelType::IP_CONFIG:
     {
       KeyValueStruct kv(F("IP Config"), useStaticIP() ? F("static") : F("DHCP"));
@@ -510,7 +513,11 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::IP6_LOCAL:
 
       if (Settings.EnableIPv6()) {
-        return KeyValueStruct(F("IPv6 link local"), formatIP(ESPEasy::net::NetworkLocalIP6(), true));
+        auto ip = ESPEasy::net::NetworkLocalIP6();
+
+        if (ip != IN6ADDR_ANY) {
+          return KeyValueStruct(F("IPv6 link local"), formatIP(ip, true));
+        }
       }
       break;
     case LabelType::IP6_GLOBAL:
@@ -1306,10 +1313,12 @@ String getFormNote(LabelType::Enum label)
 }
 
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
 String getFormUnit(LabelType::Enum label)
 {
   auto kv = getKeyValue(label);
 
   return kv.getUnit();
 }
-#endif
+
+#endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE

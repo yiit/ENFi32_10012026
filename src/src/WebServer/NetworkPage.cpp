@@ -59,7 +59,7 @@ void handle_networks()
     // TODO TD-er: Implement saving submitted settings
     const nwpluginID_t nwpluginID = nwpluginID_t::toPluginID(networkDriver_webarg_value);
 
-    MakeNetworkSettings(NetworkSettings);
+    auto NetworkSettings = MakeNetworkSettings();
 
     if (Settings.getNWPluginID_for_network(networkindex) != nwpluginID)
     {
@@ -393,6 +393,12 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
         KeyValueWriter_WebForm writer(F("Network Interface"));
         ESPEasy::net::write_NetworkAdapterFlags(networkindex, writer.createChild().get());
       }
+/*
+      {
+        KeyValueWriter_WebForm writer(F("Port"));
+        ESPEasy::net::write_NetworkAdapterPort(networkindex, writer.createChild().get());
+      }
+*/
       {
         KeyValueWriter_WebForm writer(F("IP Config"));
         ESPEasy::net::write_IP_config(networkindex, writer.createChild().get());

@@ -324,14 +324,14 @@ void html_add_Easy_color_code_script() {
 #endif
 
 void html_add_autosubmit_form() {
-  addHtml(F("<script><!--\n"
+  html_add_script(F("<!--\n"
             // "function dept_onchange(frmselect) {frmselect.submit();}"
             "function dept_onchange(e){e.submit()}"
             // "function task_select_onchange(frmselect) {var element = document.getElementById('nosave'); if (typeof(element) != 'undefined' && element != null) {element.disabled = false; element.checked = true;} frmselect.submit();}"
             "function task_select_onchange(e){var n=document.getElementById('nosave');void 0!==n&&null!=n&&(n.disabled=!1,n.checked=!0),e.submit()}"
             // "function rules_set_onchange(rulesselect) {document.getElementById('rules').disabled = true; rulesselect.submit();}"
             "function rules_set_onchange(e){document.getElementById('rules').disabled=!0,e.submit()}"
-            "\n//--></script>"));
+            "\n//-->"), false);
 }
 
 void html_add_script(const __FlashStringHelper * script, bool defer) {
@@ -374,6 +374,7 @@ void addHtmlError(const __FlashStringHelper * error) {
 void addHtmlError(const String& error) {
   if (error.length() > 0)
   {
+    addLog(LOG_LEVEL_ERROR, error);
     addHtml(F("<div class=\""));
 
     if (error.startsWith(F("Warn"))) {

@@ -58,7 +58,7 @@ To create/register a plugin, you have to :
         #define WEBSERVER_LOG
     #endif
     #ifndef WEBSERVER_GITHUB_COPY
-        #ifndef USE_SECOND_HEAP
+        #if !(defined(LIMIT_BUILD_SIZE) || defined(ESP8266))
           #define WEBSERVER_GITHUB_COPY
         #endif
     #endif

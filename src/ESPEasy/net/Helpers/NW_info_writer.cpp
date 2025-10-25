@@ -29,7 +29,7 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
 
   {
     String str;
-    const bool res = NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS, &TempEvent, str);
+    NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS, &TempEvent, str);
   }
 
   {
@@ -65,6 +65,21 @@ bool write_NetworkAdapterFlags(ESPEasy::net::networkIndex_t networkindex, KeyVal
   }
   return true;
 }
+
+bool write_NetworkAdapterPort(ESPEasy::net::networkIndex_t networkindex,
+                               KeyValueWriter              *writer)
+{
+  if (writer == nullptr) { return false; }
+  struct EventStruct TempEvent;
+  TempEvent.kvWriter = writer;
+
+  TempEvent.NetworkIndex = networkindex;
+
+  String str;
+  NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT, &TempEvent, str);
+  return true;
+}
+
 
 bool write_IP_config(ESPEasy::net::networkIndex_t networkindex, KeyValueWriter*writer)
 {

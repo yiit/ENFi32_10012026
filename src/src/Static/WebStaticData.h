@@ -85,7 +85,7 @@ static const char favicon_8b_ico[] PROGMEM = {
   0x09, 0x35, 0x8e, 0xf2, 0xa6, 0xea, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45,
   0x4e, 0x44, 0xae, 0x42, 0x60, 0x82
 };
-static const unsigned int favicon_8b_ico_len = 390;
+static constexpr unsigned int favicon_8b_ico_len = sizeof(favicon_8b_ico);
 
 #endif
 
@@ -327,7 +327,7 @@ static const char jsToastMessageEnd[] PROGMEM = {
   " },2000);"
   "} "
 };
-
+#ifdef WEBSERVER_GITHUB_COPY
 static const char jsClipboardCopyPart1[] PROGMEM = {
   "<script>function setClipboard(){var cb='';"
   // " max_loop = 100;"
@@ -359,6 +359,7 @@ static const char jsClipboardCopyPart3[] PROGMEM = {
   "alert('Copied: \"' + cb + '\" to clipboard!'); }"
   "</script>"
 };
+#endif
 
 #ifdef WEBSERVER_INCLUDE_JS
 // Manually minified js

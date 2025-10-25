@@ -28,6 +28,8 @@ namespace wifi {
     # define WIFI_STATE_MACHINE_AP_ONLY_TIMEOUT          60000
 
 void ESPEasyWiFi_t::setup() {
+  if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_STA)) return;
+
   // TODO TD-er: Must maybe also call 'disable()' first?
 
   // TODO TD-er: Load settings

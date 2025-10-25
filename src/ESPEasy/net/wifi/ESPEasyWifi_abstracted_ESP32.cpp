@@ -169,6 +169,7 @@ bool doSetWifiMode(WiFiMode_t new_mode)
     WiFi.STA.end();
     #  endif
   } else {
+
     /*
         if (cur_mode == WIFI_OFF) {
           registerWiFiEventHandler();

@@ -477,7 +477,7 @@ public:
   uint8_t       Syslog_IP[4] = {0};
   uint32_t  UDPPort = 8266;
   uint8_t       SyslogLevel = 0;
-  uint8_t       SerialLogLevel = 0;
+  uint8_t       SerialLogLevel = 2;
   uint8_t       WebLogLevel = 0;
   uint8_t       SDLogLevel = 0;
   uint32_t BaudRate = 115200;

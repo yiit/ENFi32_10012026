@@ -276,7 +276,7 @@
 #endif
 #ifndef DEFAULT_ETH_PHY_ADDR
 #ifdef ESP32P4
-#define DEFAULT_ETH_PHY_ADDR             1
+#define DEFAULT_ETH_PHY_ADDR             ETH_PHY_ADDR
 #else
 #define DEFAULT_ETH_PHY_ADDR             0
 #endif
@@ -315,7 +315,11 @@
 #endif
 #ifndef DEFAULT_ETH_CLOCK_MODE
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+#ifdef ESP32P4
+#define DEFAULT_ETH_CLOCK_MODE           ESPEasy::net::EthClockMode_t::Ext_crystal
+#else
 #define DEFAULT_ETH_CLOCK_MODE           static_cast<ESPEasy::net::EthClockMode_t>(0)
+#endif
 #else
 #define DEFAULT_ETH_CLOCK_MODE           (0)
 #endif

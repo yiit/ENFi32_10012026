@@ -15,13 +15,14 @@
 # include "../DataStructs/WiFi_AP_Candidate.h"
 
 # include "../../../src/Helpers/LongTermTimer.h"
+# include "../../../src/Helpers/KeyValueWriter.h"
 
-#ifdef ESP32
-#define SOFTAP_STATION_COUNT  WiFi.AP.stationCount()
-#endif
-#ifdef ESP8266
-#define SOFTAP_STATION_COUNT  WiFi.softAPgetStationNum()
-#endif
+# ifdef ESP32
+#  define SOFTAP_STATION_COUNT  WiFi.AP.stationCount()
+# endif
+# ifdef ESP8266
+#  define SOFTAP_STATION_COUNT  WiFi.softAPgetStationNum()
+# endif
 
 
 namespace ESPEasy {
@@ -40,14 +41,39 @@ namespace wifi {
 # define WIFI_SCAN_INTERVAL_MINIMAL          60000  // in milliSeconds
 
 
-bool  WiFiConnected();
-//void  WiFiConnectRelaxed();
-bool  prepareWiFi();
-bool  checkAndResetWiFi();
-void  resetWiFi();
-void  initWiFi();
-void  exitWiFi();
-void  loopWiFi();
+bool WiFiConnected();
+
+// void  WiFiConnectRelaxed();
+bool prepareWiFi();
+bool checkAndResetWiFi();
+void resetWiFi();
+void initWiFi();
+void exitWiFi();
+void loopWiFi();
+
+# ifdef ESP32P4
+
+// ********************************************************************************
+// ESP-Hosted-MCU
+// ********************************************************************************
+// Part of these ESP-Hosted-MCU related commands are original from Tasmota
+// and parts are developed as a cooporation between ESPEasy and Tasmota.
+
+enum class EspHostTypes {
+  ESP_HOST,
+  ESP_HOSTED
+
+};
+
+uint32_t GetHostFwVersion();
+int32_t  GetHostedMCUFwVersion();
+String   GetHostedFwVersion(EspHostTypes hostType);
+String   GetHostedMCU();
+void     HostedMCUStatus();
+
+bool     write_WiFi_Hosted_MCU_info(KeyValueWriter*writer);
+
+# endif // ifdef ESP32P4
 
 # if FEATURE_SET_WIFI_TX_PWR
 void  SetWiFiTXpower();

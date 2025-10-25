@@ -125,7 +125,7 @@ struct ControllerSettingsStruct
   };
 
 
-  ControllerSettingsStruct();
+  ControllerSettingsStruct() = default;
 
   void         reset();
 
@@ -271,7 +271,11 @@ private:
 #include "../Helpers/Memory.h"
 
 DEF_UP(ControllerSettingsStruct);
-#define MakeControllerSettings(T) void * calloc_ptr = special_calloc(1,sizeof(ControllerSettingsStruct)); UP_ControllerSettingsStruct T(new (calloc_ptr)  ControllerSettingsStruct());
+
+UP_ControllerSettingsStruct doMakeControllerSettings();
+
+
+#define MakeControllerSettings(T) UP_ControllerSettingsStruct T = doMakeControllerSettings();
 
 // Check to see if MakeControllerSettings was successful
 #define AllocatedControllerSettings() (ControllerSettings.get() != nullptr)

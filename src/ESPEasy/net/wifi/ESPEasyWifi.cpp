@@ -33,7 +33,14 @@
 
 #  ifndef ESP32P4
 #   include <esp_phy_init.h>
-#  endif
+#  else
+#   include <esp_hosted.h>
+extern "C" {
+#   include "esp_hosted_transport_config.h"
+}
+
+#   include "port/esp/freertos/include/port_esp_hosted_host_config.h"
+#  endif // ifndef ESP32P4
 
 # endif // ifdef ESP32
 
@@ -108,6 +115,7 @@ namespace wifi {
 // - Start/stop of AP mode
 // ********************************************************************************
 bool WiFiConnected() {
+  if (!Settings.getNetworkEnabled(NETWORK_INDEX_WIFI_STA)) { return false; }
   static uint32_t lastCheckedTime = 0;
 
   const int32_t timePassed = timePassedSince(lastCheckedTime);
@@ -161,6 +169,132 @@ void initWiFi() { ESPEasyWiFi.setup(); }
 void exitWiFi() { ESPEasyWiFi.disable(); }
 
 void loopWiFi() { ESPEasyWiFi.loop(); }
+
+# ifdef ESP32P4
+
+// ********************************************************************************
+// ESP-Hosted-MCU
+// ********************************************************************************
+// Part of these ESP-Hosted-MCU related commands are original from Tasmota
+// and parts are developed as a cooporation between ESPEasy and Tasmota.
+uint32_t GetHostFwVersion()
+{
+  const uint32_t host_version =
+    (ESP_HOSTED_VERSION_MAJOR_1 << 16) |
+    (ESP_HOSTED_VERSION_MINOR_1 << 8) |
+    (ESP_HOSTED_VERSION_PATCH_1);
+
+  return host_version;
+}
+
+int32_t GetHostedMCUFwVersion()
+{
+  static int hosted_version = -1;
+
+  if (!esp_hosted_is_config_valid()) {
+    return 0;
+  }
+
+  if (-1 == hosted_version) {
+    hosted_version = 6;                                              // v0.0.6
+    esp_hosted_coprocessor_fwver_t ver_info;
+    esp_err_t err = esp_hosted_get_coprocessor_fwversion(&ver_info); // This takes almost 4 seconds on <v0.0.6
+
+    if (err == ESP_OK) {
+      hosted_version = ver_info.major1 << 16 | ver_info.minor1 << 8 | ver_info.patch1;
+    } else {
+      // We can not know exactly, as API was added after 0.0.6
+      addLog(LOG_LEVEL_DEBUG, strformat(
+               F("WiFi  : ESP-Hosted-MCU Error %d, hosted version 0.0.6 or older"), err));
+    }
+  }
+  return hosted_version;
+}
+
+String GetHostedFwVersion(EspHostTypes hostType)
+{
+  const int32_t version = (hostType == EspHostTypes::ESP_HOSTED)
+    ? GetHostedMCUFwVersion()
+    : GetHostFwVersion();
+
+  const uint16_t major1 = version >> 16;
+  const uint8_t  minor1 = version >> 8;
+  const uint8_t  patch1 = version;
+
+  return strformat(F("%d.%d.%d"), major1, minor1, patch1);
+}
+
+String GetHostedMCU()
+{
+  // Function is not yet implemented in Arduino Core so emulate it here
+  if (equals(F(CONFIG_ESP_HOSTED_IDF_SLAVE_TARGET), F("esp32c6"))) {
+    return String("ESP32-C6");
+  }
+  return String("Unknown");
+}
+
+void HostedMCUStatus()
+{
+  // Execute after HostedMCU is init by WiFi.mode()
+  static bool once_shown = false;
+
+  if (once_shown) { return; }
+
+  if (esp_hosted_is_config_valid()) {
+    once_shown = true;
+    char config[128] = { 0 };
+    struct esp_hosted_transport_config *pconfig;
+
+    if (ESP_TRANSPORT_OK == esp_hosted_transport_get_config(&pconfig)) {
+      if (pconfig->transport_in_use == H_TRANSPORT_SDIO) {
+        struct esp_hosted_sdio_config *psdio_config;
+
+        if (ESP_TRANSPORT_OK == esp_hosted_sdio_get_config(&psdio_config)) {
+          snprintf_P(config,
+                     sizeof(config),
+                     PSTR(" using GPIO%02d(CLK), GPIO%02d(CMD), GPIO%02d(D0), GPIO%02d(D1), GPIO%02d(D2), GPIO%02d(D3) and GPIO%02d(RST)"),
+                     psdio_config->pin_clk.pin,
+                     psdio_config->pin_cmd.pin,
+                     psdio_config->pin_d0.pin,
+                     psdio_config->pin_d1.pin,
+                     psdio_config->pin_d2.pin,
+                     psdio_config->pin_d3.pin,
+                     psdio_config->pin_reset.pin);
+        }
+      }
+    }
+    addLog(LOG_LEVEL_INFO, strformat(
+             F("WiFi  : ESP-Hosted-MCU %s v%s%s"),
+             GetHostedMCU().c_str(),
+             GetHostedFwVersion(EspHostTypes::ESP_HOSTED).c_str(),
+             config));
+  }
+}
+
+bool write_WiFi_Hosted_MCU_info(KeyValueWriter*writer)
+{
+  if (writer == nullptr) { return false; }
+
+  if (writer->summaryValueOnly()) {
+    KeyValueStruct kv(EMPTY_STRING);
+    kv.appendValue(strformat(F("%s @ %s"), GetHostedMCU().c_str(), GetHostedFwVersion(EspHostTypes::ESP_HOSTED).c_str()));
+    kv.appendValue(concat(F("MAC: "), WiFi.macAddress()));
+    writer->write(kv);
+  } else {
+    writer->write({ F("ESP-Host Fw Version"), GetHostedFwVersion(EspHostTypes::ESP_HOST) });
+    writer->write({ F("ESP-Hosted-MCU Fw Version"), GetHostedFwVersion(EspHostTypes::ESP_HOSTED) });
+    writer->write({ F("ESP-Hosted-MCU Chip"), GetHostedMCU() });
+    writer->write({
+            F("MAC"),
+            WiFi.macAddress(),
+            KeyValueStruct::Format::PreFormatted });
+
+  }
+  return true;
+}
+
+# endif // ifdef ESP32P4
+
 
 // ********************************************************************************
 // Configure WiFi TX power
@@ -270,8 +404,8 @@ bool WiFiUseStaticIP()            { return Settings.IP[0] != 0 && Settings.IP[0]
 
 bool wifiAPmodeActivelyUsed()
 {
-  if (!WifiIsAP(WiFi.getMode()) //|| (!WiFiEventData.timerAPoff.isSet())
-     ) {
+  if (!WifiIsAP(WiFi.getMode()) // || (!WiFiEventData.timerAPoff.isSet())
+      ) {
     // AP not active or soon to be disabled in processDisableAPmode()
     return false;
   }
@@ -290,10 +424,11 @@ void setupStaticIPconfig() {
   const IPAddress subnet(Settings.Subnet);
   const IPAddress dns(Settings.DNS);
 
-//  WiFiEventData.dns0_cache = dns;
+  //  WiFiEventData.dns0_cache = dns;
 
   WiFi.config(ip, gw, subnet, dns);
-#ifndef BUILD_NO_DEBUG
+# ifndef BUILD_NO_DEBUG
+
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     addLogMove(LOG_LEVEL_INFO, strformat(
                  F("IP   : Static IP : %s GW: %s SN: %s DNS: %s"),
@@ -302,7 +437,7 @@ void setupStaticIPconfig() {
                  formatIP(subnet).c_str(),
                  getValue(LabelType::DNS).c_str()));
   }
-#endif
+# endif // ifndef BUILD_NO_DEBUG
 }
 
 // ********************************************************************************
@@ -343,14 +478,15 @@ void logConnectionStatus() {
     }
   }
   #  endif // ifdef ESP8266
-/*
-  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-    addLogMove(LOG_LEVEL_INFO, strformat(
-                 F("WIFI : Arduino wifi status: %s ESPeasy internal wifi status: %s"),
-                 ArduinoWifiStatusToString(WiFi.status()).c_str(),
-                 WiFiEventData.ESPeasyWifiStatusToString().c_str()));
-  }
-*/
+
+  /*
+     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLogMove(LOG_LEVEL_INFO, strformat(
+                   F("WIFI : Arduino wifi status: %s ESPeasy internal wifi status: %s"),
+                   ArduinoWifiStatusToString(WiFi.status()).c_str(),
+                   WiFiEventData.ESPeasyWifiStatusToString().c_str()));
+     }
+   */
 # endif // ifndef BUILD_NO_DEBUG
 }
 
@@ -373,7 +509,17 @@ bool setAP(bool enable)  { return doSetAP(enable); }
 bool setSTA_AP(bool sta_enable,
                bool ap_enable) { return doSetSTA_AP(sta_enable, ap_enable); }
 
-bool setWifiMode(WiFiMode_t new_mode) { return doSetWifiMode(new_mode); }
+bool setWifiMode(WiFiMode_t new_mode) {
+  const bool res = doSetWifiMode(new_mode);
+
+# ifdef ESP32P4
+
+  if (new_mode != WIFI_OFF) {
+    ESPEasy::net::wifi::HostedMCUStatus();
+  }
+# endif // ifdef ESP32P4
+  return res;
+}
 
 void WifiScan(bool    async,
               uint8_t channel) { doWifiScan(async, channel); }

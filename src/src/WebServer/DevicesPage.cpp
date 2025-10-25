@@ -1048,7 +1048,7 @@ void format_SPI_pin_description(int8_t spi_gpios[3], taskIndex_t x, bool showCSp
   if (Settings.InitSPI > static_cast<int>(SPI_Options_e::None)) {
     const __FlashStringHelper*labels[] = { F("CLK"), F("MISO"), F("MOSI") };
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < NR_ELEMENTS(labels); ++i) {
       if (i != 0) {
         html_BR();
       }

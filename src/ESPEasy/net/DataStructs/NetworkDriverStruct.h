@@ -17,9 +17,10 @@ struct NetworkDriverStruct
 {
   NetworkDriverStruct() = default;
 
-  bool           onlySingleInstance = true;
-  bool           alwaysPresent      = false;
-  networkIndex_t fixedNetworkIndex  = INVALID_NETWORK_INDEX;
+  bool           onlySingleInstance    = true;
+  bool           alwaysPresent         = false;
+  bool           enabledOnFactoryReset = false;
+  networkIndex_t fixedNetworkIndex     = INVALID_NETWORK_INDEX;
 
 
 };

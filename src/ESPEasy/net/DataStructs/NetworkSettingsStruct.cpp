@@ -21,7 +21,6 @@ namespace net {
 
 NetworkSettingsStruct::NetworkSettingsStruct()
 {
-  memset(this, 0, sizeof(NetworkSettingsStruct));
 }
 
 void NetworkSettingsStruct::reset() {
@@ -35,6 +34,13 @@ void NetworkSettingsStruct::reset() {
 void NetworkSettingsStruct::validate() {
 
 
+}
+
+UP_NetworkSettingsStruct MakeNetworkSettings()
+{
+  void *calloc_ptr = special_calloc(1, sizeof(NetworkSettingsStruct));
+  UP_NetworkSettingsStruct T(new (calloc_ptr)  NetworkSettingsStruct());
+  return T;
 }
 
 } // namespace net
