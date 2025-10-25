@@ -1052,7 +1052,7 @@ void format_SPI_pin_description(int8_t spi_gpios[3], taskIndex_t x, bool showCSp
   if (Settings.InitSPI > static_cast<int>(SPI_Options_e::None)) {
     const __FlashStringHelper*labels[] = { F("CLK"), F("MISO"), F("MOSI") };
 
-    for (int i = 0; i < NR_ELEMENTS(labels); ++i) {
+    for (size_t i = 0; i < NR_ELEMENTS(labels); ++i) {
       if (i != 0) {
         html_BR();
       }
@@ -1781,7 +1781,7 @@ void devicePage_show_task_values(taskIndex_t taskIndex, deviceIndex_t DeviceInde
     ++colCount;
     EventStruct uomEvent(taskIndex);
     String uomDummy;
-    bool limitedUom = PluginCall(DeviceIndex, PLUGIN_GET_UOM_GROUPS, &uomEvent, uomDummy);
+    bool limitedUom = PluginCall(PLUGIN_GET_UOM_GROUPS, &uomEvent, uomDummy);
     if (!limitedUom) {
       PluginCall(PLUGIN_GET_DEVICEVTYPE, &uomEvent, uomDummy); // Get Sensor_VType
       limitedUom = getDefaultUoMforSensorVType(&uomEvent);     // Populate UoM groups for known Sensor_VTypes

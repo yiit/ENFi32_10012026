@@ -16,7 +16,7 @@
 # include "../../../src/WebServer/ESPEasy_key_value_store_webform.h"
 
 # include "../Globals/NetworkState.h"
-
+# include "../Helpers/_NWPlugin_Helper_webform.h"
 # include <ESPEasySerialPort.h>
 # include <PPP.h>
 

@@ -30,6 +30,7 @@
 
 #include "../Helpers/Convert.h"
 #include "../Helpers/ESPEasy_Storage.h"
+#include "../Helpers/ESPEasy_UnitOfMeasure.h"
 #include "../Helpers/Hardware_device_info.h"
 #include "../Helpers/Hardware_temperature_sensor.h"
 #include "../Helpers/Memory.h"

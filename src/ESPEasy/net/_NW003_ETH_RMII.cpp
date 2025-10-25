@@ -162,7 +162,7 @@ bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& strin
           if (event->kvWriter->summaryValueOnly()) {
             KeyValueStruct kv(EMPTY_STRING);
 
-            for (int i = 0; i < NR_ELEMENTS(labels); ++i) {
+            for (size_t i = 0; i < NR_ELEMENTS(labels); ++i) {
               if (pins[i] >= 0) {
                 kv.appendValue(concat(labels[i], F(":&nbsp;")) + formatGpioLabel(pins[i], false));
               }
@@ -173,7 +173,7 @@ bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& strin
               event->kvWriter->write(kv);
             }
           } else {
-            for (int i = 0; i < NR_ELEMENTS(labels); ++i) {
+            for (size_t i = 0; i < NR_ELEMENTS(labels); ++i) {
               if (pins[i] >= 0) {
                 success = true;
                 event->kvWriter->write({

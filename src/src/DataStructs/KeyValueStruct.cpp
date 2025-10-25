@@ -1,5 +1,6 @@
 #include "../DataStructs/KeyValueStruct.h"
 
+#include "../Helpers/ESPEasy_UnitOfMeasure.h"
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringConverter_Numerical.h"
 
