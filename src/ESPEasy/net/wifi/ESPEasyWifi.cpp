@@ -15,6 +15,7 @@
 # include "../../../src/Globals/Settings.h"
 # include "../Globals/WiFi_AP_Candidates.h"
 # include "../../../src/Helpers/ESPEasy_time_calc.h"
+# include "../../../src/Helpers/ESPEasy_UnitOfMeasure.h"
 # include "../../../src/Helpers/Hardware_defines.h"
 # include "../../../src/Helpers/Misc.h"
 # include "../../../src/Helpers/Networking.h"
@@ -271,6 +272,64 @@ void HostedMCUStatus()
   }
 }
 
+bool write_WiFi_Hosted_MCU_pins(KeyValueWriter*writer)
+{
+  if (!esp_hosted_is_config_valid()) { return false; }
+  struct esp_hosted_transport_config *pconfig;
+
+  if (ESP_TRANSPORT_OK != esp_hosted_transport_get_config(&pconfig)) { return false; }
+
+  switch (pconfig->transport_in_use)
+  {
+    case H_TRANSPORT_NONE:
+    case H_TRANSPORT_SPI_HD:
+    case H_TRANSPORT_SPI:
+    case H_TRANSPORT_UART:
+      break;
+    case H_TRANSPORT_SDIO:
+    {
+      struct esp_hosted_sdio_config *psdio_config;
+
+      if (ESP_TRANSPORT_OK == esp_hosted_sdio_get_config(&psdio_config)) {
+        if (writer->summaryValueOnly()) {
+          KeyValueStruct kv(EMPTY_STRING);
+
+          kv.appendValue(concat(F("CLK: "), psdio_config->pin_clk.pin));
+          kv.appendValue(concat(F("CMD: "), psdio_config->pin_cmd.pin));
+          kv.appendValue(concat(F("RST: "), psdio_config->pin_reset.pin));
+          kv.appendValue(strformat(
+                           F("D0..3: %d/%d/%d/%d"),
+                           psdio_config->pin_d0.pin,
+                           psdio_config->pin_d1.pin,
+                           psdio_config->pin_d2.pin,
+                           psdio_config->pin_d3.pin
+                           ));
+
+          writer->write(kv);
+        } else {
+          KeyValueStruct freq(F("SDIO Freq"), psdio_config->clock_freq_khz / 1000);
+          freq.setUnit(UOM_MHz);
+          writer->write(freq);
+          writer->write({ F("SDIO D0"), psdio_config->pin_d0.pin });
+          writer->write({ F("SDIO D1"), psdio_config->pin_d1.pin });
+          writer->write({ F("SDIO D2"), psdio_config->pin_d2.pin });
+          writer->write({ F("SDIO D3"), psdio_config->pin_d3.pin });
+          writer->write({ F("SDIO CLK"), psdio_config->pin_clk.pin });
+          writer->write({ F("SDIO CMD"), psdio_config->pin_cmd.pin });
+          writer->write({ F("SDIO RST"), psdio_config->pin_reset.pin });
+          // Hide TX/RX queue size for now as it is unclear what these mean
+          //writer->write({ F("SDIO TX queue"), psdio_config->tx_queue_size });
+          //writer->write({ F("SDIO RX queue"), psdio_config->rx_queue_size });
+        }
+        return true;
+      }
+      break;
+    }
+
+  }
+  return false;
+}
+
 bool write_WiFi_Hosted_MCU_info(KeyValueWriter*writer)
 {
   if (writer == nullptr) { return false; }
@@ -293,7 +352,7 @@ bool write_WiFi_Hosted_MCU_info(KeyValueWriter*writer)
   return true;
 }
 
-# endif 
+# endif // ifdef BOARD_HAS_SDIO_ESP_HOSTED
 
 
 // ********************************************************************************

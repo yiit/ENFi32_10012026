@@ -389,24 +389,12 @@ void handle_networks_NetworkSettingsPage(ESPEasy::net::networkIndex_t networkind
 
     if (NWPluginCall(NWPlugin::Function::NWPLUGIN_GET_INTERFACE, &TempEvent, str))
     {
-      {
-        KeyValueWriter_WebForm writer(F("Network Interface"));
-        ESPEasy::net::write_NetworkAdapterFlags(networkindex, writer.createChild().get());
-      }
-/*
-      {
-        KeyValueWriter_WebForm writer(F("Port"));
-        ESPEasy::net::write_NetworkAdapterPort(networkindex, writer.createChild().get());
-      }
-*/
-      {
-        KeyValueWriter_WebForm writer(F("IP Config"));
-        ESPEasy::net::write_IP_config(networkindex, writer.createChild().get());
-      }
-      {
-        KeyValueWriter_WebForm writer(F("Connection Information"));
-        ESPEasy::net::write_NetworkConnectionInfo(networkindex, writer.createChild().get());
-      }
+      KeyValueWriter_WebForm writer(true);
+      
+      ESPEasy::net::write_NetworkAdapterFlags(networkindex, writer.createChild(F("Network Interface")).get());
+      ESPEasy::net::write_NetworkAdapterPort(networkindex, writer.createChild(F("Port")).get());
+      ESPEasy::net::write_IP_config(networkindex, writer.createChild(F("IP Config")).get());
+      ESPEasy::net::write_NetworkConnectionInfo(networkindex, writer.createChild(F("Connection Information")).get());
     }
 # endif // ifdef ESP32
 

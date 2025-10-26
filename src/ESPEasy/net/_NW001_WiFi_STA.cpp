@@ -33,9 +33,9 @@
 # include "../net/NWPluginStructs/NW001_data_struct_WiFi_STA.h"
 # include "../net/wifi/ESPEasyWifi.h"
 
-#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
-# include "../../src/WebServer/SecurityStruct_deviceSpecific_webform.h"
-#endif
+# if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+#  include "../../src/WebServer/SecurityStruct_deviceSpecific_webform.h"
+# endif
 
 
 # ifdef ESP8266
@@ -61,13 +61,14 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       NetworkDriverStruct& nw = getNetworkDriverStruct(networkDriverIndex_t::toNetworkDriverIndex(event->idx));
       nw.onlySingleInstance = true;
       nw.alwaysPresent      = true;
-#ifdef ESP32P4
+# ifdef ESP32P4
       nw.enabledOnFactoryReset = false;
-//        ESPEasy::net::wifi::GetHostedMCUFwVersion() > 0x00020600;
-#else
+
+      //        ESPEasy::net::wifi::GetHostedMCUFwVersion() > 0x00020600;
+# else // ifdef ESP32P4
       nw.enabledOnFactoryReset = true;
-#endif
-      nw.fixedNetworkIndex  = NWPLUGIN_ID_001 - 1; // Start counting at 0
+# endif // ifdef ESP32P4
+      nw.fixedNetworkIndex = NWPLUGIN_ID_001 - 1; // Start counting at 0
       break;
     }
 
@@ -146,9 +147,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
             KeyValueStruct kv(
               F("Band"),
               (WiFi.channel() < 36) ? F("2.4") : F("5"));
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
             kv.setUnit(UOM_GHz);
-#endif
+#  endif
             event->kvWriter->write(kv);
           }
 # endif // if CONFIG_SOC_WIFI_SUPPORT_5G
@@ -160,9 +161,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
             strformat(
               event->kvWriter->summaryValueOnly() ? F("RSSI: %d dBm") : F("%d"),
               WiFi.RSSI()));
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-            kv.setUnit(UOM_dBm);
-#endif
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+          kv.setUnit(UOM_dBm);
+# endif
           event->kvWriter->write(kv);
         }
 
@@ -172,13 +173,13 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
             KeyValueStruct kv(
               F("WiFi TX Power"),
               ESPEasy::net::wifi::GetWiFiTXpower(), 2);
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
             kv.setUnit(UOM_dBm);
-#endif
+#  endif
 
             event->kvWriter->write(kv);
           }
-#endif
+# endif // if FEATURE_SET_WIFI_TX_PWR
           event->kvWriter->write({
                 F("Last Disconnect Reason"),
                 getWiFi_disconnectReason_str()
@@ -199,15 +200,15 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
                   secondsToDayHourMinuteSecond(micros_to_sec_usec(tsf_time, tsf_usec)),
                   strformat(F(".%06u"), tsf_usec))
                 );
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+#  if FEATURE_TASKVALUE_UNIT_OF_MEASURE
               kv.setUnit(UOM_usec);
-#endif
+#  endif
               event->kvWriter->write(kv);
             }
           }
 # endif // ifdef ESP32
         }
-#ifndef LIMIT_BUILD_SIZE
+# ifndef LIMIT_BUILD_SIZE
         event->kvWriter->write({
               F("BSSID"),
               STA_BSSID_STR,
@@ -226,7 +227,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
                 F("Encryption Type"),
                 NW_data->getWiFi_encryptionType() });
         }
-#endif
+# endif // ifndef LIMIT_BUILD_SIZE
       }
 
       break;
@@ -241,7 +242,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       }
       break;
     }
-  
+
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
@@ -280,7 +281,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     }
 # endif // ifdef ESP8266
 
-#ifdef BOARD_HAS_SDIO_ESP_HOSTED
+# ifdef BOARD_HAS_SDIO_ESP_HOSTED
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
@@ -293,12 +294,12 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
       if (event->kvWriter) {
-        // See HostedMCUStatus
+        success = ESPEasy::net::wifi::write_WiFi_Hosted_MCU_pins(event->kvWriter);
       }
       break;
     }
 
-#endif
+# endif // ifdef BOARD_HAS_SDIO_ESP_HOSTED
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
     {
       // SSID 1
@@ -309,14 +310,15 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       strncpy_webserver_arg(SecuritySettings.WifiSSID2, F("ssid2"));
       copyFormPassword(F("key2"), SecuritySettings.WifiKey2, sizeof(SecuritySettings.WifiKey2));
 
-#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+# if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+
       for (uint16_t i = 0; i < MAX_EXTRA_WIFI_CREDENTIALS_SEPARATE_FILE; ++i) {
         store_SecurityStruct_deviceSpecific_WebFormItem(
           SecurityStruct_deviceSpecific::KeyType::WiFi_SSID, i);
         store_SecurityStruct_deviceSpecific_WebFormItem(
-          SecurityStruct_deviceSpecific::KeyType::WiFi_Password, i);        
+          SecurityStruct_deviceSpecific::KeyType::WiFi_Password, i);
       }
-#endif
+# endif // if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
 
       // Hidden SSID
       Settings.IncludeHiddenSSID(isFormItemChecked(LabelType::CONNECT_HIDDEN_SSID));
@@ -367,10 +369,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
       KeyValueWriter_WebForm writer(true);
-      #ifdef BOARD_HAS_SDIO_ESP_HOSTED
-      ESPEasy::net::wifi::write_WiFi_Hosted_MCU_info(
-        writer.createChild(F("ESP-Hosted-MCU")).get());
-      #endif
+      # ifdef BOARD_HAS_SDIO_ESP_HOSTED
+      ESPEasy::net::wifi::write_WiFi_Hosted_MCU_info(writer.createChild(F("ESP-Hosted-MCU")).get());
+      # endif // ifdef BOARD_HAS_SDIO_ESP_HOSTED
 
       addFormSubHeader(F("Wifi Credentials"));
 
@@ -384,16 +385,17 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       addFormPasswordBox(F("Fallback WPA Key"), F("key2"), SecuritySettings.WifiKey2, 63);
       addFormNote(F("WPA Key must be at least 8 characters long"));
 
-#if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
+# if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
       addFormSubHeader(F("Wifi Credentials Extra"));
+
       for (uint16_t i = 0; i < MAX_EXTRA_WIFI_CREDENTIALS_SEPARATE_FILE; ++i) {
         show_SecurityStruct_deviceSpecific_WebFormItem(
           SecurityStruct_deviceSpecific::KeyType::WiFi_SSID, i);
         show_SecurityStruct_deviceSpecific_WebFormItem(
-          SecurityStruct_deviceSpecific::KeyType::WiFi_Password, i);        
+          SecurityStruct_deviceSpecific::KeyType::WiFi_Password, i);
       }
       addFormNote(F("These credentials will be stored in a separate file: <tt>devsecurity.dat</tt>"));
-#endif
+# endif // if FEATURE_STORE_CREDENTIALS_SEPARATE_FILE
       addFormSubHeader(F("Wifi Settings"));
 
       addFormCheckBox(LabelType::CONNECT_HIDDEN_SSID,      Settings.IncludeHiddenSSID());

@@ -71,6 +71,7 @@ String   GetHostedFwVersion(EspHostTypes hostType);
 String   GetHostedMCU();
 void     HostedMCUStatus();
 
+bool     write_WiFi_Hosted_MCU_pins(KeyValueWriter*writer);
 bool     write_WiFi_Hosted_MCU_info(KeyValueWriter*writer);
 
 # endif 
