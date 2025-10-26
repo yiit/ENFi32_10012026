@@ -50,7 +50,6 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
-
     case NWPlugin::Function::NWPLUGIN_LOAD_DEFAULTS:
     {
       Settings.setRoutePrio_for_network(event->NetworkIndex, 50);
@@ -145,10 +144,7 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
       Settings.ETH_Pin_mdio_irq  = getFormItemInt(F("ethmdio"));
       Settings.ETH_Pin_power_rst = getFormItemInt(F("ethpower"));
       Settings.ETH_Phy_Type      = static_cast<EthPhyType_t>(getFormItemInt(F("ethtype")));
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-      Settings.ETH_Clock_Mode = static_cast<EthClockMode_t>(getFormItemInt(F("ethclock")));
-# endif
-      Settings.NetworkMedium = static_cast<NetworkMedium_t>(getFormItemInt(F("ethwifi")));
+      Settings.NetworkMedium     = static_cast<NetworkMedium_t>(getFormItemInt(F("ethwifi")));
 
       break;
     }
@@ -180,22 +176,6 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
       {
         const __FlashStringHelper *ethPhyTypes[] = {
           toString(EthPhyType_t::notSet),
-
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-          toString(EthPhyType_t::LAN8720),
-#  if ETH_PHY_LAN867X_SUPPORTED
-          toString(ESPEasy::net::EthPhyType_t::LAN867X),
-#  endif
-          toString(EthPhyType_t::TLK110),
-          toString(EthPhyType_t::RTL8201),
-#  if ETH_TYPE_JL1101_SUPPORTED
-          toString(EthPhyType_t::JL1101),
-#  endif
-          toString(EthPhyType_t::DP83848),
-          toString(EthPhyType_t::KSZ8041),
-          toString(EthPhyType_t::KSZ8081),
-# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-
 # if ESP_IDF_VERSION_MAJOR >= 5
 #  if CONFIG_ETH_SPI_ETHERNET_DM9051
           toString(EthPhyType_t::DM9051),
@@ -210,21 +190,6 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
         };
         const int ethPhyTypes_index[] = {
           static_cast<int>(EthPhyType_t::notSet),
-
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-          static_cast<int>(EthPhyType_t::LAN8720),
-#  if ETH_PHY_LAN867X_SUPPORTED
-          static_cast<int>(ESPEasy::net::EthPhyType_t::LAN867X),
-#  endif
-          static_cast<int>(EthPhyType_t::TLK110),
-          static_cast<int>(EthPhyType_t::RTL8201),
-#  if ETH_TYPE_JL1101_SUPPORTED
-          static_cast<int>(EthPhyType_t::JL1101),
-#  endif
-          static_cast<int>(EthPhyType_t::DP83848),
-          static_cast<int>(EthPhyType_t::KSZ8041),
-          static_cast<int>(EthPhyType_t::KSZ8081),
-# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 
 # if ESP_IDF_VERSION_MAJOR >= 5
 #  if CONFIG_ETH_SPI_ETHERNET_DM9051
@@ -257,26 +222,12 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
           choice);
       }
 
-# if CONFIG_ETH_USE_SPI_ETHERNET && CONFIG_ETH_USE_ESP32_EMAC
-#  define MDC_CS_PIN_DESCR   "Ethernet MDC/CS pin"
-#  define MIO_IRQ_PIN_DESCR  "Ethernet MDIO/IRQ pin"
-#  define PWR_RST_PIN_DESCR  "Ethernet Power/RST pin"
-# elif CONFIG_ETH_USE_SPI_ETHERNET
-#  define MDC_CS_PIN_DESCR   "Ethernet CS pin"
-#  define MIO_IRQ_PIN_DESCR  "Ethernet IRQ pin"
-#  define PWR_RST_PIN_DESCR  "Ethernet RST pin"
-# else // #elif CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-#  define MDC_CS_PIN_DESCR   "Ethernet MDC pin"
-#  define MIO_IRQ_PIN_DESCR  "Ethernet MIO pin"
-#  define PWR_RST_PIN_DESCR  "Ethernet Power pin"
-# endif // if CONFIG_ETH_USE_SPI_ETHERNET && CONFIG_ETH_USE_ESP32_EMAC
+      # define MDC_CS_PIN_DESCR   "Ethernet CS pin"
+      # define MIO_IRQ_PIN_DESCR  "Ethernet IRQ pin"
+      # define PWR_RST_PIN_DESCR  "Ethernet RST pin"
 
       addFormNumericBox(F("Ethernet PHY Address"), F("ethphy"), Settings.ETH_Phy_Addr, -1, 127);
-      addFormNote(F("I&sup2;C-address of Ethernet PHY"
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-                    " (0 or 1 for LAN8720, 31 for TLK110, -1 autodetect)"
-# endif
-                    ));
+      addFormNote(F("I&sup2;C-address of Ethernet PHY"));
       addFormPinSelect(PinSelectPurpose::Ethernet, formatGpioName_output(
                          F(MDC_CS_PIN_DESCR)),
                        F("ethmdc"), Settings.ETH_Pin_mdc_cs);
@@ -286,43 +237,6 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
       addFormPinSelect(PinSelectPurpose::Ethernet, formatGpioName_output(
                          F(PWR_RST_PIN_DESCR)),
                        F("ethpower"), Settings.ETH_Pin_power_rst);
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-      addRowLabel_tr_id(F("Ethernet Clock"), F("ethclock"));
-      {
-        #  if CONFIG_IDF_TARGET_ESP32
-        const __FlashStringHelper *ethClockOptions[] = {
-          toString(EthClockMode_t::Ext_crystal_osc),
-          toString(EthClockMode_t::Int_50MHz_GPIO_0),
-          toString(EthClockMode_t::Int_50MHz_GPIO_16),
-          toString(EthClockMode_t::Int_50MHz_GPIO_17_inv)
-        };
-        const int indices[] = {
-          static_cast<int>(EthClockMode_t::Ext_crystal_osc),
-          static_cast<int>(EthClockMode_t::Int_50MHz_GPIO_0),
-          static_cast<int>(EthClockMode_t::Int_50MHz_GPIO_16),
-          static_cast<int>(EthClockMode_t::Int_50MHz_GPIO_17_inv)
-        };
-        #  endif // if CONFIG_IDF_TARGET_ESP32
-        #  if CONFIG_IDF_TARGET_ESP32P4
-        const __FlashStringHelper *ethClockOptions[] = {
-          //          toString(EthClockMode_t::Default),
-          toString(EthClockMode_t::Ext_crystal),
-          toString(EthClockMode_t::Int_50MHz)
-        };
-        const int indices[] = {
-          //          static_cast<int>(EthClockMode_t::Default),
-          static_cast<int>(EthClockMode_t::Ext_crystal),
-          static_cast<int>(EthClockMode_t::Int_50MHz)
-        };
-        #  endif // if CONFIG_IDF_TARGET_ESP32P4
-        const FormSelectorOptions selector(
-          NR_ELEMENTS(ethClockOptions),
-          ethClockOptions,
-          indices);
-        selector.addSelector(F("ethclock"), static_cast<int>(Settings.ETH_Clock_Mode));
-      }
-# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-
       break;
     }
 
