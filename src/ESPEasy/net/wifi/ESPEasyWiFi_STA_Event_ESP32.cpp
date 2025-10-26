@@ -118,6 +118,7 @@ void ESPEasyWiFi_STA_EventHandler::WiFiEvent(WiFiEvent_t event_id, arduino_event
       addLog(LOG_LEVEL_INFO, F("SCAN_DONE"));
       break;
     case ARDUINO_EVENT_WIFI_STA_START:
+      WiFi.STA.setHostname(NetworkCreateRFCCompliantHostname().c_str());
       clear_wifi_event_sta_connected = true;
       stats_and_cache.mark_start();
       break;
