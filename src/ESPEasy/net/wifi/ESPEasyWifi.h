@@ -51,7 +51,7 @@ void initWiFi();
 void exitWiFi();
 void loopWiFi();
 
-# ifdef ESP32P4
+# ifdef BOARD_HAS_SDIO_ESP_HOSTED
 
 // ********************************************************************************
 // ESP-Hosted-MCU
@@ -73,7 +73,7 @@ void     HostedMCUStatus();
 
 bool     write_WiFi_Hosted_MCU_info(KeyValueWriter*writer);
 
-# endif // ifdef ESP32P4
+# endif 
 
 # if FEATURE_SET_WIFI_TX_PWR
 void  SetWiFiTXpower();

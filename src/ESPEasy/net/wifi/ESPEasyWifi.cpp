@@ -170,7 +170,7 @@ void exitWiFi() { ESPEasyWiFi.disable(); }
 
 void loopWiFi() { ESPEasyWiFi.loop(); }
 
-# ifdef ESP32P4
+# ifdef BOARD_HAS_SDIO_ESP_HOSTED
 
 // ********************************************************************************
 // ESP-Hosted-MCU
@@ -293,7 +293,7 @@ bool write_WiFi_Hosted_MCU_info(KeyValueWriter*writer)
   return true;
 }
 
-# endif // ifdef ESP32P4
+# endif 
 
 
 // ********************************************************************************

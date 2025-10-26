@@ -524,7 +524,11 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
     case LabelType::IP6_GLOBAL:
 
       if (Settings.EnableIPv6()) {
-        return KeyValueStruct(F("IPv6 global"), formatIP(ESPEasy::net::NetworkGlobalIP6()));
+        auto ip = ESPEasy::net::NetworkGlobalIP6();
+
+        if (ip != IN6ADDR_ANY) {
+          return KeyValueStruct(F("IPv6 global"), formatIP(ip));
+        }
       }
       break;
 
@@ -1203,7 +1207,7 @@ String getValue(LabelType::Enum label) {
 
 String getEthSpeed() {
   if (ESPEasy::net::EthLinkUp()) {
-    return strformat(F("%d [Mbps]"), ESPEasy::net::EthLinkSpeed());
+    return String(ESPEasy::net::EthLinkSpeed());
   }
   return getValue(LabelType::ETH_STATE);
 }

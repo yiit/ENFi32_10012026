@@ -280,7 +280,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     }
 # endif // ifdef ESP8266
 
-#ifdef ESP32P4
+#ifdef BOARD_HAS_SDIO_ESP_HOSTED
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
@@ -367,7 +367,7 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     {
       KeyValueWriter_WebForm writer(true);
-      #ifdef ESP32P4
+      #ifdef BOARD_HAS_SDIO_ESP_HOSTED
       ESPEasy::net::wifi::write_WiFi_Hosted_MCU_info(
         writer.createChild(F("ESP-Hosted-MCU")).get());
       #endif
