@@ -77,6 +77,9 @@ public:
 
   virtual bool              summaryValueOnly() const;
 
+  // Force to even write the header when list/array is empty.
+  virtual void              setWriteWhenEmpty() { _writeWhenEmpty = true; }
+
   // This should be override by any writer outputting data which is not intended to be human readable.
   virtual bool              dataOnlyOutput() const                      { return false; }
 
@@ -138,6 +141,8 @@ protected:
   bool _hasHeader = true;
 
   bool _isEmpty = true;
+
+  bool _writeWhenEmpty = false;
 
   bool _isArray{};
 

@@ -37,6 +37,12 @@ KeyValueWriter_JSON::KeyValueWriter_JSON(const __FlashStringHelper *header, KeyV
 
 KeyValueWriter_JSON::~KeyValueWriter_JSON()
 {
+  if (_writeWhenEmpty && _isEmpty) {
+    // Make sure the header is written and then write the closing braces.
+    write();
+  }
+
+
   if (!_isEmpty) {
 #ifdef USE_KWH_JSON_PRETTY_PRINT
     getPrint().write('\n');

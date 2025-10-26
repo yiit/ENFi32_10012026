@@ -440,6 +440,7 @@ void handle_json()
         : mainLevelWriter.createChildArray(F("Sensors"));
 
       if (sensorsWriter) {
+        sensorsWriter->setWriteWhenEmpty();
         for (taskIndex_t TaskIndex = firstTaskIndex; TaskIndex <= lastActiveTaskIndex && validTaskIndex(TaskIndex); TaskIndex++)
         {
           const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(TaskIndex);
