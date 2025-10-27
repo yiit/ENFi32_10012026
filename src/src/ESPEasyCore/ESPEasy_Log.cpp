@@ -86,7 +86,7 @@ void updateLogLevelCache() {
   }
   max_lvl = _max(max_lvl, Settings.SyslogLevel);
 
-  if (Logging.webLogActiveRead()) {
+  if (Logging.logActiveRead(LOG_TO_WEBLOG)) {
     max_lvl = _max(max_lvl, Settings.WebLogLevel);
   }
 #if FEATURE_SD
@@ -136,7 +136,7 @@ uint8_t getSerialLogLevel() {
 }
 
 uint8_t getWebLogLevel() {
-  if (Logging.webLogActiveRead()) {
+  if (Logging.logActiveRead(LOG_TO_WEBLOG)) {
     return Settings.WebLogLevel;
   }
 
@@ -158,11 +158,14 @@ bool loglevelActiveFor(uint8_t destination, uint8_t logLevel) {
   }
   #endif // ifdef ESP32
 
+  if (!Logging.logActiveRead(destination)) { return false; }
+
   uint8_t logLevelSettings = 0;
 
   switch (destination)
   {
     case LOG_TO_SERIAL:
+    case LOG_TO_SERIAL_EXTRA:
     {
       logLevelSettings = getSerialLogLevel();
       break;

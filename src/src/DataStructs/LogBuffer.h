@@ -55,14 +55,14 @@ struct LogBuffer {
   // Return the number of messages left for given log destination.
   uint32_t getNrMessages(uint8_t logDestination) const;
 
-  bool logActiveRead();
+  bool logActiveRead(uint8_t logDestination);
 
   void clearExpiredEntries();
 
 private:
 
   LogEntry_queue LogEntries;
-  uint32_t       lastReadTimeStamp{};
+  uint32_t       lastReadTimeStamp[NR_LOG_TO_DESTINATIONS]{};
 
   uint32_t cache_iterator_pos[NR_LOG_TO_DESTINATIONS]{};
 

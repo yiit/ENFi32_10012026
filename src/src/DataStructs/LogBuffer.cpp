@@ -15,9 +15,7 @@ bool LogBuffer::getNext(uint8_t logDestination, uint32_t& timestamp, String& mes
 {
   if (logDestination >= NR_LOG_TO_DESTINATIONS) { return false; }
 
-  if (logDestination == LOG_TO_WEBLOG) {
-    lastReadTimeStamp = millis();
-  }
+  lastReadTimeStamp[logDestination] = millis();
 
   while (cache_iterator_pos[logDestination] < LogEntries.size())
   {
@@ -39,27 +37,29 @@ bool LogBuffer::getNext(uint8_t logDestination, uint32_t& timestamp, String& mes
 uint32_t LogBuffer::getNrMessages(uint8_t logDestination) const
 {
   uint32_t res{};
+
   if (logDestination >= NR_LOG_TO_DESTINATIONS) { return res; }
 
   uint32_t pos = cache_iterator_pos[logDestination];
-  for (;pos < LogEntries.size(); ++pos) {
+
+  for (; pos < LogEntries.size(); ++pos) {
     if (LogEntries[pos].validForSubscriber(logDestination)) {
       ++res;
-    }    
+    }
   }
   return res;
-
-
 }
 
-bool LogBuffer::logActiveRead() {
-  clearExpiredEntries();
-  return timePassedSince(lastReadTimeStamp) < LOG_BUFFER_ACTIVE_READ_TIMEOUT;
+bool LogBuffer::logActiveRead(uint8_t logDestination) {
+  if (logDestination >= NR_LOG_TO_DESTINATIONS) { return false; }
+  return timePassedSince(lastReadTimeStamp[logDestination]) < LOG_BUFFER_ACTIVE_READ_TIMEOUT;
 }
 
 void LogBuffer::clearExpiredEntries() {
   for (auto it = LogEntries.begin(); it != LogEntries.end();)
   {
+    it->updateSubscribers();
+
     if (it->isExpired()) {
       for (size_t i = 0; i < NR_LOG_TO_DESTINATIONS; ++i) {
         if (cache_iterator_pos[i]) {

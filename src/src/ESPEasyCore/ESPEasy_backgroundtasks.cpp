@@ -76,6 +76,7 @@ void backgroundtasks()
 
   process_serialWriteBuffer();
   syslogWriter.process();
+  Logging.loop();
 
   if (!UseRTOSMultitasking) {
     serial();

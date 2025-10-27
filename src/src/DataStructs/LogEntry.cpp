@@ -117,7 +117,7 @@ void LogEntry_t::setSubscribers()
 {
   if (isValid()) {
     for (uint32_t i = 0; i < NR_LOG_TO_DESTINATIONS; ++i) {
-      bitWrite(_subscriberPendingRead, (1 << i),
+      bitWrite(_subscriberPendingRead, i,
                loglevelActiveFor(i, _logLevel));
     }
   }
@@ -127,10 +127,26 @@ void LogEntry_t::setSubscribers()
   }
 }
 
+void LogEntry_t::updateSubscribers()
+{
+  if (isValid()) {
+    for (uint32_t i = 0; i < NR_LOG_TO_DESTINATIONS; ++i) {
+      if (bitRead(_subscriberPendingRead, i)) {
+        if (!loglevelActiveFor(i, _logLevel)) {
+          bitClear(_subscriberPendingRead, i);
+        }
+      }
+    }
+    if (_subscriberPendingRead == 0) {
+      clear();
+    }
+  }
+}
+
 void LogEntry_t::markReadBySubscriber(uint8_t subscriber)
 {
   if (subscriber < NR_LOG_TO_DESTINATIONS) {
-    bitClear(_subscriberPendingRead, (1 << subscriber));
+    bitClear(_subscriberPendingRead, subscriber);
   }
 
   if (_subscriberPendingRead == 0) {
@@ -140,7 +156,7 @@ void LogEntry_t::markReadBySubscriber(uint8_t subscriber)
 
 bool LogEntry_t::validForSubscriber(uint8_t subscriber) const
 {
-  return isValid() && (subscriber < NR_LOG_TO_DESTINATIONS) && bitRead(_subscriberPendingRead, (1 << subscriber));
+  return isValid() && (subscriber < NR_LOG_TO_DESTINATIONS) && bitRead(_subscriberPendingRead, subscriber);
 }
 
 size_t LogEntry_t::print(Print& out, size_t offset, size_t length) const

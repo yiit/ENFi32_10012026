@@ -3752,12 +3752,7 @@ To create/register a plugin, you have to :
 
 #if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
 # if USES_HWCDC || USES_USBCDC
-#  ifdef ESP32P4
-// FIXME TD-er: No idea why, but with fallback enabled, the P4 will not show anything on the serial console
-#    define USES_ESPEASY_CONSOLE_FALLBACK_PORT 0
-#  else
-#   define USES_ESPEASY_CONSOLE_FALLBACK_PORT 1
-#  endif
+#  define USES_ESPEASY_CONSOLE_FALLBACK_PORT 1
 # endif // if USES_HWCDC || USES_USBCDC
 # ifndef PLUGIN_USES_SERIAL
 // Needs Plugin_Helper_serial

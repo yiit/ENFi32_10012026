@@ -23,7 +23,7 @@ public:
 
   void     loop();
 
-  bool     webLogActiveRead();
+  bool     logActiveRead(uint8_t logDestination);
 
 
   // Append to internal buffer, which will only be flushed on consolePrintln

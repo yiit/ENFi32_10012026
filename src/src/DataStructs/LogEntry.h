@@ -45,6 +45,9 @@ struct LogEntry_t {
 
   void   setSubscribers();
 
+  // This may clear pending reads when a log subscriber is no longer actively reading
+  void   updateSubscribers();
+
   void   markReadBySubscriber(uint8_t subscriber);
 
   bool   validForSubscriber(uint8_t subscriber) const;

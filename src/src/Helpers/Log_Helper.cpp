@@ -91,7 +91,10 @@ void LogHelper::loop()
   _logBuffer.clearExpiredEntries();
 }
 
-bool LogHelper::webLogActiveRead()                            { return _logBuffer.logActiveRead(); }
+bool LogHelper::logActiveRead(uint8_t logDestination)
+{ 
+  return _logBuffer.logActiveRead(logDestination); 
+}
 
 void LogHelper::consolePrint(const __FlashStringHelper *text) { _tmpConsoleOutput += text; }
 
