@@ -24,7 +24,7 @@ namespace net {
 void           setNetworkMedium(NetworkMedium_t medium);
 
 // void           NetworkConnectRelaxed();
-bool           NetworkConnected();
+bool           NetworkConnected(bool force = false);
 IPAddress      NetworkLocalIP();
 IPAddress      NetworkID();
 IPAddress      NetworkBroadcast();

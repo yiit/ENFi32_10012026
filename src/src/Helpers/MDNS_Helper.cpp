@@ -16,7 +16,7 @@
 
 void set_mDNS() {
   #if FEATURE_MDNS
-  if (!ESPEasy::net::NetworkConnected()) return;
+  if (!ESPEasy::net::NetworkConnected(true)) return;
 
   update_mDNS();
   #endif // if FEATURE_MDNS

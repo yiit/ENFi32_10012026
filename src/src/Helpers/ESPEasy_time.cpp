@@ -509,7 +509,7 @@ bool ESPEasy_time::systemTimePresent() const {
 
 bool ESPEasy_time::getNtpTime(double& unixTime_d)
 {
-  if (!Settings.UseNTP() || !NetworkConnected(10)) {
+  if (!Settings.UseNTP() || !ESPEasy::net::NetworkConnected()) {
     return false;
   }
 
@@ -526,7 +526,7 @@ bool ESPEasy_time::getNtpTime(double& unixTime_d)
   bool useNTPpool = false;
 
   if (Settings.NTPHost[0] != 0) {
-    resolveHostByName(Settings.NTPHost, timeServerIP);
+    if (!resolveHostByName(Settings.NTPHost, timeServerIP)) return false;
     log += Settings.NTPHost;
 
     // When single set host fails, retry again in 20 seconds
@@ -535,7 +535,7 @@ bool ESPEasy_time::getNtpTime(double& unixTime_d)
     // Have to do a lookup each time, since the NTP pool always returns another IP
     const String ntpServerName = strformat(
       F("%d.pool.ntp.org"), HwRandom(0, 3));
-    resolveHostByName(ntpServerName.c_str(), timeServerIP);
+    if (!resolveHostByName(ntpServerName.c_str(), timeServerIP)) return false;
     log += ntpServerName;
 
     // When pool host fails, retry can be much sooner

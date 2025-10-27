@@ -123,13 +123,23 @@ NetworkInterface* getDefaultNonAP_interface()
   return network_if;
 }
 
-bool NetworkConnected() {
+bool NetworkConnected(bool force) {
   static bool last_result = false;
   static uint32_t last_check_millis = 0;
-  if (timePassedSince(last_check_millis) > 50 || last_check_millis == 0) {
+  if (force || timePassedSince(last_check_millis) > 50 || last_check_millis == 0) {
     last_check_millis = millis();
     auto network_if = getDefaultNonAP_interface();
 
+
+    // FIXME TD-er: This is checking for NonAP interfaces, however we also have ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBSERVER_SHOULD_RUN);
+    // So maybe we should keep bitmasks for interfaces that can be used for certain services and update those whenever an interface is connected/disconnected
+    // This way a service may 'subscribe' to changes and stopped/started/restarted when needed.
+    // For example:
+    // - updateUDPport()
+    // - CheckRunningServices()
+    // - mDNS
+    // - Webserver
+    
     if (network_if == nullptr) {
       return false;
     }

@@ -71,7 +71,7 @@ void P020_Task::startServer(uint16_t portnumber) {
     gatewayPort   = portnumber;
     ser2netServer = new (std::nothrow) WiFiServer(portnumber);
 
-    if ((nullptr != ser2netServer) && ESPEasy::net::NetworkConnected()) {
+    if ((nullptr != ser2netServer) && ESPEasy::net::NetworkConnected(true)) {
       ser2netServer->begin();
 
       if (serverActive(ser2netServer)) {

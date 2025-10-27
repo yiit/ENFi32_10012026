@@ -210,7 +210,9 @@ boolean runningUPDCheck = false;
 
 void checkUDP()
 {
-  if (!ESPEasy::net::NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected(true)) {
+    portUDP.clear();
+    portUDP.stop();
     return;
   }
 
@@ -1064,7 +1066,7 @@ bool connectClient(WiFiClient& client, IPAddress ip, uint16_t port, uint32_t tim
 {
   START_TIMER;
 
-  if (!ESPEasy::net::NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected(true)) {
     client.stop();
     return false;
   }
@@ -1185,7 +1187,7 @@ bool setDNS(int index, const IPAddress& dns) {
 bool resolveHostByName(const char *aHostname, IPAddress& aResult, uint32_t timeout_ms) {
   START_TIMER;
 
-  if (!ESPEasy::net::NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected(true)) {
     return false;
   }
 
@@ -1225,7 +1227,7 @@ bool hostReachable(const String& hostname) {
 // Create a random port for the UDP connection.
 // Return true when successful.
 bool beginWiFiUDP_randomPort(WiFiUDP& udp) {
-  if (!ESPEasy::net::NetworkConnected()) {
+  if (!ESPEasy::net::NetworkConnected(true)) {
     return false;
   }
   unsigned int attempts = 3;
