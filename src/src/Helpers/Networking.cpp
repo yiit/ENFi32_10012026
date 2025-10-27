@@ -211,7 +211,7 @@ boolean runningUPDCheck = false;
 void checkUDP()
 {
   if (!ESPEasy::net::NetworkConnected(true)) {
-    portUDP.clear();
+    portUDP.PR_9453_FLUSH_TO_CLEAR();
     portUDP.stop();
     return;
   }
