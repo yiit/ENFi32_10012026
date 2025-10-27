@@ -2,14 +2,16 @@
 
 
 #include "../../ESPEasy_common.h"
+#include "../DataTypes/LogLevels.h"
 
 #include "../DataStructs/LogEntry.h"
 
-#include "../DataTypes/LogLevels.h"
 
 
 // Move the log String so it does not have to be copied in the web log
 #define addLogMove(L, S) addToLogMove(L, std::move(S))
+
+enum LogDestination : uint8_t;
 
 /********************************************************************************************\
    Logging

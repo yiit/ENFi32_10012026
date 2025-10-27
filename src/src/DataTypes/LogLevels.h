@@ -13,7 +13,7 @@
 # define LOG_LEVEL_DEBUG_DEV                 9 // use for testing/debugging only, not for regular use
 #endif // ifndef BUILD_NO_DEBUG
 
-enum LogDestination {
+enum LogDestination : uint8_t {
 
  LOG_TO_SERIAL         ,
  LOG_TO_SYSLOG         ,
