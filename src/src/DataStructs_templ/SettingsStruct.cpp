@@ -3,41 +3,45 @@
 #include "../../ESPEasy_common.h"
 
 #ifndef DATASTRUCTS_SETTINGSSTRUCT_CPP
-#define DATASTRUCTS_SETTINGSSTRUCT_CPP
+# define DATASTRUCTS_SETTINGSSTRUCT_CPP
 
 
-#include "../CustomBuild/CompiletimeDefines.h"
-#include "../CustomBuild/ESPEasyLimits.h"
-#include "../DataStructs/DeviceStruct.h"
-#include "../ESPEasy/net/DataStructs/NetworkDriverStruct.h"
-#include "../DataTypes/NPluginID.h"
-#include "../ESPEasy/net/DataTypes/NWPluginID.h"
-#include "../ESPEasy/net/DataTypes/NWPluginID.h"
-#include "../DataTypes/PluginID.h"
-#include "../DataTypes/SPI_options.h"
-#include "../Globals/CPlugins.h"
-#include "../Globals/Plugins.h"
-#include "../Helpers/Misc.h"
-#include "../Helpers/StringParser.h"
-#include "../ESPEasy/net/Helpers/_NWPlugin_init.h"
+# include "../CustomBuild/CompiletimeDefines.h"
+# include "../CustomBuild/ESPEasyLimits.h"
+# include "../DataStructs/DeviceStruct.h"
+# include "../ESPEasy/net/DataStructs/NetworkDriverStruct.h"
+# include "../DataTypes/NPluginID.h"
+# include "../ESPEasy/net/DataTypes/NWPluginID.h"
+# include "../ESPEasy/net/DataTypes/NWPluginID.h"
+# include "../DataTypes/PluginID.h"
+# include "../DataTypes/SPI_options.h"
+# include "../Globals/CPlugins.h"
+# include "../Globals/Plugins.h"
+# include "../Helpers/Misc.h"
+# include "../Helpers/StringParser.h"
+# include "../ESPEasy/net/Helpers/_NWPlugin_init.h"
 
-#include "../../ESPEasy/net/Globals/NWPlugins.h"
+# include "../../ESPEasy/net/Globals/NWPlugins.h"
 
-#if FEATURE_I2C_MULTIPLE
-#include "../Helpers/Hardware_device_info.h"
-#endif
+# if FEATURE_I2C_MULTIPLE
+#  include "../Helpers/Hardware_device_info.h"
+# endif
 
-#if ESP_IDF_VERSION_MAJOR >= 5
-#include <driver/gpio.h>
-#include "include/esp32x_fixes.h"
-#endif
+# if ESP_IDF_VERSION_MAJOR >= 5
+#  include <driver/gpio.h>
+#  include "include/esp32x_fixes.h"
+# endif // if ESP_IDF_VERSION_MAJOR >= 5
 
-#if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-#include <pins_arduino.h>
-#endif
+# if FEATURE_ETHERNET
+#  include "../../ESPEasy/net/DataTypes/EthernetParameters.h"
+# endif
+
+# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+#  include <pins_arduino.h>
+# endif
 
 /*
-// VariousBits1 defaults to 0, keep in mind when adding bit lookups.
+   // VariousBits1 defaults to 0, keep in mind when adding bit lookups.
 template<uint32_t N_TASKS>
 bool SettingsStruct_tmpl<N_TASKS>::appendUnitToHostname()  const {
   return !bitRead(VariousBits1, 1);
@@ -564,28 +568,51 @@ void SettingsStruct_tmpl<N_TASKS>::validate() {
     console_serial_rxpin = 13;
     console_serial_txpin = 15;
   }
-#endif
-  #endif
+#  endif // ifdef ESP8266
+  # endif // if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
 
-  // Make sure the WiFi and AP drivers are always added and set enabled when loading older settings, 
+  // Make sure the WiFi and AP drivers are always added and set enabled when loading older settings,
   // or factory default settings
+# if FEATURE_ETHERNET
   bool fixedNetworkIndex_drivers_added = false;
+# endif
+
   for (ESPEasy::net::networkDriverIndex_t index; ESPEasy::net::validNetworkDriverIndex(index); ++index)
   {
     const ESPEasy::net::NetworkDriverStruct& nw = ESPEasy::net::getNetworkDriverStruct(index);
+
     if (nw.alwaysPresent) {
       if (validNetworkIndex(nw.fixedNetworkIndex)) {
         const ESPEasy::net::nwpluginID_t nwpluginID = ESPEasy::net::getNWPluginID_from_NetworkDriverIndex(index);
+
         if (getNWPluginID_for_network(nw.fixedNetworkIndex) != nwpluginID) {
-          setNWPluginID_for_network(nw.fixedNetworkIndex,  nwpluginID);
+          setNWPluginID_for_network(nw.fixedNetworkIndex, nwpluginID);
+# if FEATURE_ETHERNET
           fixedNetworkIndex_drivers_added = true;
+# endif
           setNetworkEnabled(nw.fixedNetworkIndex, nw.enabledOnFactoryReset);
         }
       }
-    } else {
-      
-
     }
+# if FEATURE_ETHERNET
+    else if (fixedNetworkIndex_drivers_added) {
+      // Check to see if there are other network adapters configured in the settings and not setup yet
+      if (ETH_Phy_Type != ESPEasy::net::EthPhyType_t::notSet) {
+        const ESPEasy::net::nwpluginID_t nwpluginID = ESPEasy::net::getNWPluginID_from_NetworkDriverIndex(index);
+
+        if ((nwpluginID.value == 3 && ESPEasy::net::isRMII_EthernetType(ETH_Phy_Type)) ||
+            (nwpluginID.value == 4 && ESPEasy::net::isSPI_EthernetType(ETH_Phy_Type)))
+        {
+          const ESPEasy::net::networkIndex_t nw_index = nwpluginID.value - 1;
+
+          if (getNWPluginID_for_network(nw_index) != nwpluginID) {
+            setNWPluginID_for_network(nw_index, nwpluginID);
+            setNetworkEnabled(nw_index, nw.enabledOnFactoryReset);
+          }
+        }
+      }
+    }
+#endif
   }
 }
 

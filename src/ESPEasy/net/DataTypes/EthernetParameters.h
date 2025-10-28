@@ -86,6 +86,7 @@ enum class EthPhyType_t : uint8_t {
 bool                       isValid(EthPhyType_t phyType);
 
 bool                       isSPI_EthernetType(EthPhyType_t phyType);
+bool                       isRMII_EthernetType(EthPhyType_t phyType);
 
 // Convert to internal enum type as those enum values may not always be the same int value
 eth_phy_type_t             to_ESP_phy_type(EthPhyType_t phyType);

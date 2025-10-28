@@ -10,9 +10,9 @@ bool isValid(EthPhyType_t phyType) {
   {
 # if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     case EthPhyType_t::LAN8720:
-# if ETH_PHY_LAN867X_SUPPORTED
+#  if ETH_PHY_LAN867X_SUPPORTED
     case EthPhyType_t::LAN867X:
-# endif
+#  endif
     case EthPhyType_t::TLK110:
     case EthPhyType_t::RTL8201:
 #  if ETH_TYPE_JL1101_SUPPORTED
@@ -57,6 +57,25 @@ bool isSPI_EthernetType(EthPhyType_t phyType) {
 # else // if ESP_IDF_VERSION_MAJOR >= 5
   return false;
 # endif // if ESP_IDF_VERSION_MAJOR >= 5
+}
+
+bool isRMII_EthernetType(EthPhyType_t phyType) {
+  return
+# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+    phyType == EthPhyType_t::LAN8720 ||
+#  if ETH_PHY_LAN867X_SUPPORTED
+    phyType == EthPhyType_t::LAN867X ||
+#  endif
+    phyType == EthPhyType_t::TLK110  ||
+    phyType == EthPhyType_t::RTL8201 ||
+#  if ETH_TYPE_JL1101_SUPPORTED
+    phyType == EthPhyType_t::JL1101  ||
+#  endif
+    phyType == EthPhyType_t::DP83848 ||
+    phyType == EthPhyType_t::KSZ8041 ||
+    phyType == EthPhyType_t::KSZ8081 ||
+# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+    false;
 }
 
 eth_phy_type_t to_ESP_phy_type(EthPhyType_t phyType)
