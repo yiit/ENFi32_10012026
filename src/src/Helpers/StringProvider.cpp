@@ -1010,6 +1010,9 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
         #endif // ifdef USE_LITTLEFS
         SpiffsTotalBytes() >> 10);
       KV_SETID(F("fs_size"));
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+      KV_SETUNIT(UOM_kB);
+#endif
 
       if (!extendedValue) {
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
