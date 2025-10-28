@@ -182,6 +182,7 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       return kv;
     }
     case LabelType::WIFI_CUR_TX_PWR:
+    if (ESPEasy::net::wifi::WiFiConnected())
     {
       KeyValueStruct kv(F("Current WiFi TX Power"), ESPEasy::net::wifi::GetWiFiTXpower(), 2);
 # if FEATURE_TASKVALUE_UNIT_OF_MEASURE
@@ -189,6 +190,7 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
 # endif
       return kv;
     }
+    break;
     case LabelType::WIFI_SENS_MARGIN:
     {
       KeyValueStruct kv(F("WiFi Sensitivity Margin"), Settings.WiFi_sensitivity_margin);

@@ -467,6 +467,7 @@ void handle_sysinfo_Network() {
 #  ifndef WEBSERVER_SYSINFO_MINIMAL
 
 void handle_sysinfo_WiFiSettings() {
+  if (!ESPEasy::net::wifi::WiFiConnected()) return;
   addTableSeparator(F("WiFi Settings"), 2, 3);
 
   static const LabelType::Enum labels[] PROGMEM =
