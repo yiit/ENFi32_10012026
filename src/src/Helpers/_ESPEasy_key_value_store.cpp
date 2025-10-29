@@ -961,8 +961,11 @@ void ESPEasy_key_value_store::setValue(const KVS_StorageType::Enum& storageType,
     case KVS_StorageType::Enum::bool_type:
     case KVS_StorageType::Enum::bool_true:
     case KVS_StorageType::Enum::bool_false:
-      setValue(key, static_cast<bool>(value.toInt()));
+    {
+      const bool val = !(value.equalsIgnoreCase(F("false")) || value.equals(F("0")));
+      setValue(key, val);
       break;
+    }
     default: return;
   }
   setHasStorageType(storageType);

@@ -3,7 +3,7 @@
 #include "../../../ESPEasy_common.h"
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 
-#include "../DataTypes/NetworkIndex.h"
+# include "../DataTypes/NetworkIndex.h"
 # include "../../../src/Helpers/KeyValueWriter.h"
 
 namespace ESPEasy {
@@ -14,13 +14,13 @@ class NWPlugin_import_export
 public:
 
   static String exportConfig(
-    networkIndex_t             networkIndex,
-    KeyValueWriter            *writer,
-    bool                       includeCredentials = false);
+    networkIndex_t  networkIndex,
+    KeyValueWriter *writer,
+    bool            includeCredentials = false);
 
   static String importConfig(
-    networkIndex_t             networkIndex,
-    const String             & json);
+    networkIndex_t networkIndex,
+    const String & json);
 
 
 }; // class NWPlugin_import_export
@@ -28,4 +28,4 @@ public:
 } // namespace net
 } // namespace ESPEasy
 
-#endif
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

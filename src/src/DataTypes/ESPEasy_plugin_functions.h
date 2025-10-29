@@ -200,10 +200,6 @@ public:
 #ifndef LIMIT_BUILD_SIZE
     NWPLUGIN_WEBFORM_SHOW_PORT,        // Used for showing host information for the network adapter.
 #endif
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
-    NWPLUGIN_EXPORT_CONFIG,
-    NWPLUGIN_IMPORT_CONFIG,
-#endif
 
     NWPLUGIN_MAX_FUNCTION  // Keep as last
 

@@ -17,8 +17,6 @@
 #endif
 
 
-#define CONSOLE_INPUT_BUFFER_SIZE          128
-
 struct EspEasy_Console_Port {
 
   EspEasy_Console_Port(LogDestination log_destination);
@@ -38,7 +36,7 @@ struct EspEasy_Console_Port {
   String getPortDescription() const;
 
   int SerialInByteCounter{};
-  char InputBuffer_Serial[CONSOLE_INPUT_BUFFER_SIZE + 2]{};
+  char *InputBuffer_Serial{};
   SerialWriteBuffer_t _serialWriteBuffer;
 
 #if FEATURE_DEFINE_SERIAL_CONSOLE_PORT

@@ -7,21 +7,21 @@
 
 
 ESPEasy_key_value_store_import_export::ESPEasy_key_value_store_import_export(
-  ESPEasy_key_value_store*store,
-  LabelStringFunction     fnc,
-  NextKeyFunction         nextKey)
-  : _store(store), _LabelStringFunction(fnc), _nextKey(nextKey) {}
+  ESPEasy_key_value_store*store)
+  : _store(store) {}
+
 
 bool ESPEasy_key_value_store_import_export::write(
   uint32_t       key,
-  KeyValueWriter*writer) const
+  KeyValueWriter*writer,
+  LabelStringFunction     fnc) const
 {
-  if ((_store == nullptr) || (_LabelStringFunction == nullptr) || (writer == nullptr)) {
+  if ((_store == nullptr) || (fnc == nullptr) || (writer == nullptr)) {
     return false;
   }
   KVS_StorageType::Enum storageType = KVS_StorageType::Enum::not_set;
 
-  auto label = _LabelStringFunction(key, false, storageType);
+  auto label = fnc(key, false, storageType);
 
   if (!_store->hasKey(storageType, key)) {
     return false;
@@ -81,53 +81,13 @@ bool ESPEasy_key_value_store_import_export::write(
   return false;
 }
 
-String ESPEasy_key_value_store_import_export::read(const String& json)
+
+bool getNextKeyValue(String& json, String& key, String& value)
 {
-  if (_store == nullptr) {
-    return F("No Store Set");
-  }
-
-  if (!_store->isEmpty()) {
-    return F("Store not empty");
-  }
-
-  String tmp_json(json);
-
-  String key_str;
-  String value;
-
-  while (getNextKeyValue(tmp_json, key_str, value)) {
-    uint32_t key{};
-    KVS_StorageType::Enum storageType;
-
-    if (!findKey(key_str, key, storageType)) {
-      key_str.toLowerCase();
-      _parsedJSON[key_str] = value;
-      /*
-         return strformat(
-         F("Unknown key: '%s' with value: '%s'"),
-         key_str.c_str(),
-         value.c_str());
-       */
-    } else {
-      _store->setValue(storageType, key, value);
-    }
-  }
-
-  _store->dump();
-  return EMPTY_STRING;
-}
-
-bool ESPEasy_key_value_store_import_export::getNextKeyValue(String& json, String& key, String& value)
-{
-  json.trim();
-
-  if (json.startsWith("{") && json.endsWith("}")) {
-    json = json.substring(1, json.length() - 2);
-  }
-  json.trim();
-
-  String keyValueStr = parseStringKeepCase(json, 1);
+  String keyValueStr;
+  int pos = json.indexOf(',');
+  if (pos == -1) keyValueStr = json;
+  else keyValueStr = json.substring(0, pos);
 
   if (keyValueStr.isEmpty()) {
     return false;
@@ -140,7 +100,7 @@ bool ESPEasy_key_value_store_import_export::getNextKeyValue(String& json, String
   key   = parseStringKeepCase(keyValueStr, 1, ':');
   value = parseStringKeepCase(keyValueStr, 2, ':');
 
-  addLog(LOG_LEVEL_INFO, strformat(F("KVS : key:'%s' value:'%s'"), key.c_str(), value.c_str() ));
+  addLog(LOG_LEVEL_INFO, strformat(F("KVS : kvs: '%s' key:'%s' value:'%s'"), keyValueStr.c_str(), key.c_str(), value.c_str()));
 
   // Strip found item off
   json = json.substring(keyValueStr.length());
@@ -152,37 +112,80 @@ bool ESPEasy_key_value_store_import_export::getNextKeyValue(String& json, String
   return true;
 }
 
-bool ESPEasy_key_value_store_import_export::findKey(
-  const String         & key_str,
-  uint32_t             & key,
-  KVS_StorageType::Enum& storageType) const
+
+ESPEasy_key_value_store_import_export::ESPEasy_key_value_store_import_export(
+  ESPEasy_key_value_store*store, const String& json)
+  : _store(store)
 {
-  if ((_LabelStringFunction == nullptr) || (_nextKey == nullptr)) {
-    return false;
+  if ((_store != nullptr) && _store->isEmpty()) {
+    String tmp_json(json);
+
+    tmp_json.trim();
+
+    if (tmp_json.startsWith("{") && tmp_json.endsWith("}")) {
+      tmp_json = tmp_json.substring(1, tmp_json.length() - 1);
+    }
+    tmp_json.trim();
+
+    String key_str;
+    String value;
+
+    while (getNextKeyValue(tmp_json, key_str, value)) {
+      key_str.toLowerCase();
+      _parsedJSON[key_str] = value;
+    }
   }
-  key = _nextKey(-1);
+}
+
+
+
+
+String ESPEasy_key_value_store_import_export::read(
+  LabelStringFunction fnc,
+  NextKeyFunction     nextKey)
+{
+  if (_store == nullptr) {
+    return F("No Store Set");
+  }
+
+  if (!_store->isEmpty()) {
+    return F("Store not empty");
+  }
+  fnc = fnc;
+
+  if ((fnc == nullptr) || (nextKey == nullptr)) {
+    return F("No decoder functions set");
+  }
+
+  int32_t key = nextKey(-1);
 
   while (key >= 0) {
-    storageType = KVS_StorageType::Enum::not_set;
+    KVS_StorageType::Enum storageType = KVS_StorageType::Enum::not_set;
 
-    auto label = _LabelStringFunction(key, false, storageType);
+    auto label = fnc(key, false, storageType);
 
-    if (key_str.equalsIgnoreCase(label)) {
-      return true;
+    String value;
+
+    if (getParsedJSON(label, value)) {
+      _store->setValue(storageType, key, value);
     }
-    key = _nextKey(key);
+    key = nextKey(key);
   }
-  return false;
+
+  _store->dump();
+  return EMPTY_STRING;
 }
 
 bool ESPEasy_key_value_store_import_export::getParsedJSON(const String& key, String& value) const
 {
   String key_lc = key;
+
   key_lc.toLowerCase();
   auto it = _parsedJSON.find(key_lc);
-  if (it == _parsedJSON.end()) return false;
+
+  if (it == _parsedJSON.end()) { return false; }
   value = it->second;
-  return true;  
+  return true;
 }
 
 #endif // if FEATURE_ESPEASY_KEY_VALUE_STORE

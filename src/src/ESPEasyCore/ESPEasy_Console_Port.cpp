@@ -17,6 +17,13 @@
 #include <ESPEasySerialPort.h>
 
 
+#ifdef ESP32
+#define CONSOLE_INPUT_BUFFER_SIZE          1280
+#else
+#define CONSOLE_INPUT_BUFFER_SIZE          128
+#endif
+
+
 /*
  #if FEATURE_DEFINE_SERIAL_CONSOLE_PORT
  # include "../Helpers/_Plugin_Helper_serial.h"
@@ -24,7 +31,10 @@
  */
 
 EspEasy_Console_Port::EspEasy_Console_Port(LogDestination log_destination)
-: _serialWriteBuffer(log_destination) {}
+: _serialWriteBuffer(log_destination) 
+{
+  InputBuffer_Serial = (char*)calloc(1, CONSOLE_INPUT_BUFFER_SIZE);
+}
 
 EspEasy_Console_Port::~EspEasy_Console_Port()
 {
@@ -34,6 +44,7 @@ EspEasy_Console_Port::~EspEasy_Console_Port()
     _serial = nullptr;
   }
 #endif
+  free(InputBuffer_Serial);
 }
 
 EspEasy_Console_Port::operator bool() const

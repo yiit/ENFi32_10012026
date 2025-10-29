@@ -257,11 +257,6 @@ bool NWPlugin_005(NWPlugin::Function function, EventStruct *event, String& strin
       break;
     }
 
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
-    case NWPlugin::Function::NWPLUGIN_EXPORT_CONFIG:
-    case NWPlugin::Function::NWPLUGIN_IMPORT_CONFIG:
-#endif
-
     default:
       break;
 

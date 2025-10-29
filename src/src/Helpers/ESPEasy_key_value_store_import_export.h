@@ -4,7 +4,7 @@
 #if FEATURE_ESPEASY_KEY_VALUE_STORE
 # include "../DataTypes/ESPEasy_key_value_store_StorageType.h"
 
-#include <map>
+# include <map>
 
 class ESPEasy_key_value_store;
 class KeyValueWriter;
@@ -18,33 +18,32 @@ public:
 
   // When queried with a key of -1, it will return the first key index
   // Return next key, or -2 when no next key exists.
-  using NextKeyFunction       = int32_t (*)(int32_t);
+  using NextKeyFunction = int32_t (*)(int32_t);
+
+  ESPEasy_key_value_store_import_export(
+    ESPEasy_key_value_store*store);
+
+  bool write(uint32_t            key,
+             KeyValueWriter     *writer,
+             LabelStringFunction fnc) const;
+
 
   ESPEasy_key_value_store_import_export(
     ESPEasy_key_value_store*store,
-    LabelStringFunction  fnc,
-    NextKeyFunction        nextKey);
+    const String          & json);
 
-  bool   write(uint32_t       key,
-               KeyValueWriter*writer) const;
-  String read(const String& json);
+  String read(
+    LabelStringFunction fnc,
+    NextKeyFunction     nextKey);
 
-  static bool getNextKeyValue(String& json, String& key, String& value);
-
-  bool getParsedJSON(const String& key, String& value) const;
+  bool getParsedJSON(const String& key,
+                     String      & value) const;
 
 private:
 
-  std::map<String, String> _parsedJSON;
-
-  bool findKey(
-    const String         & key_str,
-    uint32_t             & key,
-    KVS_StorageType::Enum& storageType) const;
+  std::map<String, String>_parsedJSON;
 
   ESPEasy_key_value_store*_store{};
-  LabelStringFunction _LabelStringFunction{};
-  NextKeyFunction _nextKey{};
 
 }; // class ESPEasy_key_value_store_import_export
 

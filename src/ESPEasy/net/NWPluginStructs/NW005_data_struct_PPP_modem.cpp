@@ -49,7 +49,7 @@ static NWPluginData_static_runtime stats_and_cache(&NW_PLUGIN_INTERFACE, F("PPP"
 # define NW005_KEY_SIM_PIN              13
 # define NW005_KEY_PIN_DTR              14
 
-const __FlashStringHelper* NW005_data_struct_PPP_modem::getLabelString(uint32_t key, bool displayString, KVS_StorageType::Enum& storageType)
+const __FlashStringHelper * NW005_data_struct_PPP_modem::getLabelString(uint32_t key, bool displayString, KVS_StorageType::Enum& storageType)
 {
   storageType = KVS_StorageType::Enum::int8_type;
 
@@ -88,15 +88,19 @@ const __FlashStringHelper* NW005_data_struct_PPP_modem::getLabelString(uint32_t 
 
 int32_t NW005_data_struct_PPP_modem::getNextKey(int32_t key)
 {
-  if (key == -1) return NW005_KEY_SERIAL_PORT;
-  if (key < NW005_KEY_PIN_DTR) return key+1;
+  if (key == -1) { return NW005_KEY_SERIAL_PORT; }
+
+  if (key < NW005_KEY_PIN_DTR) { return key + 1; }
   return -2;
 }
 
 int32_t NW005_data_struct_PPP_modem::getNextKey_noCredentials(int32_t key)
 {
-  if (key == -1) return NW005_KEY_SERIAL_PORT;
-  if (key < NW005_KEY_MODEM_MODEL) return key+1;
+  if (key == -1) { return NW005_KEY_SERIAL_PORT; }
+
+  if (key < NW005_KEY_MODEM_MODEL) { return key + 1; }
+
+  if (key < NW005_KEY_PIN_DTR) { return NW005_KEY_PIN_DTR; }
   return -2;
 }
 
@@ -1101,8 +1105,7 @@ bool NW005_data_struct_PPP_modem::record_stats()
 
 NWPluginData_static_runtime * NW005_data_struct_PPP_modem::getNWPluginData_static_runtime() { return &stats_and_cache; }
 
-
-void NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_event_info_t info) {
+void                          NW005_data_struct_PPP_modem::onEvent(arduino_event_id_t event, arduino_event_info_t info) {
   // TODO TD-er: Must store flags from events in static (or global) object to act on it later.
   switch (event)
   {

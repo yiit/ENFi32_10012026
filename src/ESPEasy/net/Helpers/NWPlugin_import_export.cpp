@@ -6,7 +6,7 @@
 # include "../../../src/Helpers/_ESPEasy_key_value_store.h"
 # include "../../../src/Helpers/ESPEasy_key_value_store_import_export.h"
 
-// # include "../../../src/Helpers/StringConverter.h"
+# include "../../../src/Helpers/StringConverter.h"
 
 # include "../DataTypes/NWPluginID.h"
 # include "../Globals/NWPlugins.h"
@@ -127,15 +127,21 @@ String NWPlugin_import_export::exportConfig(
 
   if (child) {
     child->write({ F("nwpluginID"), nwpluginID.value });
+    child->write({ F("enabled"), Settings.getNetworkEnabled(networkIndex) });
     child->write({ F("route_prio"), Settings.getRoutePrio_for_network(networkIndex) });
     child->write({ F("sn_block"), Settings.getNetworkInterfaceSubnetBlockClientIP(networkIndex) });
     child->write({ F("start_delay"), Settings.getNetworkInterfaceStartupDelayAtBoot(networkIndex) });
-    ESPEasy_key_value_store_import_export e(&kvs, labelFnc, nextKeyFnc);
+
+# if FEATURE_USE_IPV6
+    child->write({ F("en_ipv6"), Settings.getNetworkEnabled_IPv6(networkIndex) });
+# endif
+
+    ESPEasy_key_value_store_import_export e(&kvs);
 
     int32_t key = nextKeyFnc(-1);
 
     while (key >= 0) {
-      e.write(key, child.get());
+      e.write(key, child.get(), labelFnc);
       key = nextKeyFnc(key);
     }
   }
@@ -152,8 +158,18 @@ String NWPlugin_import_export::importConfig(
 
   if (nwpluginID.isValid()) { return F("KVS : Network Index is already in use"); }
 
-  // FIXME set fixed right now.
-  nwpluginID.value = 5;
+  addLog(LOG_LEVEL_INFO, concat(F("KVS : JSON: "), json));
+
+  ESPEasy_key_value_store kvs;
+  ESPEasy_key_value_store_import_export e(&kvs, json);
+  {
+    String value;
+
+    if (!e.getParsedJSON(F("nwpluginID"), value)) { return F("KVS : No NWPlugin ID"); }
+    nwpluginID.value = value.toInt();
+  }
+
+  if (!nwpluginID.isValid()) { return F("KVS : No valid NWPlugin ID"); }
 
   auto labelFnc   = getLabelFnc(nwpluginID);
   auto nextKeyFnc = getNextKeyFnc(nwpluginID, true);
@@ -162,33 +178,30 @@ String NWPlugin_import_export::importConfig(
     return F("KVS : NWPlugin ID does not support import/export");
   }
 
-  ESPEasy_key_value_store kvs;
-  ESPEasy_key_value_store_import_export e(&kvs, labelFnc, nextKeyFnc);
-  String res = e.read(json);
+  String res = e.read(labelFnc, nextKeyFnc);
 
   if (res.isEmpty()) {
-    {
-      String value;
-
-      if (!e.getParsedJSON(F("nwpluginID"), value)) { return F("KVS : No NWPlugin ID"); }
-      nwpluginID.value = value.toInt();
-    }
-
-    if (!nwpluginID.isValid()) { return F("KVS : No valid NWPlugin ID"); }
 
     if (!kvs.store(
           SettingsType::Enum::NetworkInterfaceSettings_Type,
           networkIndex,
           0,
-          nwpluginID.value)) { return F("KVS : Error saving, see log for more details"); }
-    
+          nwpluginID.value))
+    {
+      return F("KVS : Error saving, see log for more details");
+    }
+
     // Add entry, calls NWPLUGIN_LOAD_DEFAULTS
     Settings.setNWPluginID_for_network(networkIndex, nwpluginID);
 
     const String non_kvs_keys[] = {
+      F("enabled"),
       F("route_prio"),
       F("sn_block"),
       F("start_delay")
+# if FEATURE_USE_IPV6
+      , F("en_ipv6")
+# endif
     };
 
     for (size_t i = 0; i < NR_ELEMENTS(non_kvs_keys); ++i) {
@@ -196,18 +209,22 @@ String NWPlugin_import_export::importConfig(
 
       if (e.getParsedJSON(non_kvs_keys[i], value))
       {
+        const bool bool_val = !(value.equalsIgnoreCase(F("false")) || value.equals(F("0")));
+
         switch (i)
         {
-          case 0: Settings.setRoutePrio_for_network(networkIndex, value.toInt());
+          case 0: Settings.setNetworkEnabled(networkIndex, bool_val);
             break;
-          case 1:
-          {
-            bool val = !(value.equalsIgnoreCase(F("false")) || value.equals(F("0")));
-            Settings.setNetworkInterfaceSubnetBlockClientIP(networkIndex, val);
+          case 1: Settings.setRoutePrio_for_network(networkIndex, value.toInt());
             break;
-          }
-          case 2: Settings.setNetworkInterfaceStartupDelayAtBoot(networkIndex, value.toInt());
+          case 2: Settings.setNetworkInterfaceSubnetBlockClientIP(networkIndex, bool_val);
             break;
+          case 3: Settings.setNetworkInterfaceStartupDelayAtBoot(networkIndex, value.toInt());
+            break;
+# if FEATURE_USE_IPV6
+          case 4: Settings.setNetworkEnabled_IPv6(networkIndex, bool_val);
+            break;
+# endif // if FEATURE_USE_IPV6
         }
       }
     }

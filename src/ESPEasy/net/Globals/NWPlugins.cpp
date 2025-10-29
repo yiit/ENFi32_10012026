@@ -267,10 +267,6 @@ bool NWPluginCall(NWPlugin::Function Function, EventStruct *event, String& str)
     case NWPlugin::Function::NWPLUGIN_GET_DEVICENAME:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_LOAD:
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SAVE:
-#if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
-    case NWPlugin::Function::NWPLUGIN_EXPORT_CONFIG:
-    case NWPlugin::Function::NWPLUGIN_IMPORT_CONFIG:
-#endif
 
     case NWPlugin::Function::NWPLUGIN_DRIVER_TEMPLATE:
     {
