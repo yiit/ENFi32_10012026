@@ -6,6 +6,7 @@
 #include "../../../src/Helpers/StringConverter.h"
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
 # include "../../../src/Helpers/_ESPEasy_key_value_store.h"
+#include "../_NWPlugin_Helper.h"
 #endif
 #ifdef ESP32
 # include "../Globals/NetworkState.h"
@@ -425,22 +426,12 @@ bool NWPluginData_base::_restore_DNS_cache()
 
 bool NWPluginData_base::_load()
 {
-  if (!_kvs) { return false; }
-  return _kvs->load(
-    SettingsType::Enum::NetworkInterfaceSettings_Type,
-    _networkIndex,
-    0,
-    _nw_data_pluginID.value);
+  return load_nwpluginTaskData_KVS(_kvs, _networkIndex, _nw_data_pluginID);
 }
 
 bool NWPluginData_base::_store()
 {
-  if (!_kvs) { return false; }
-  return _kvs->store(
-    SettingsType::Enum::NetworkInterfaceSettings_Type,
-    _networkIndex,
-    0,
-    _nw_data_pluginID.value);
+  return store_nwpluginTaskData_KVS(_kvs, _networkIndex, _nw_data_pluginID);
 }
 
 #endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

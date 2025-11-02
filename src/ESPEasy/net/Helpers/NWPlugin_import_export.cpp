@@ -36,6 +36,15 @@ ESPEasy_key_value_store_import_export::LabelStringFunction getLabelFnc(ESPEasy::
 
   switch (nwpluginID.value)
   {
+# ifdef USES_NW003
+    case 3:
+      return ESPEasy::net::eth::NW003_data_struct_ETH_RMII::getLabelString;
+# endif
+# ifdef USES_NW004
+    case 4:
+    return ESPEasy::net::eth::NW004_data_struct_ETH_SPI::getLabelString;
+# endif
+
 # ifdef USES_NW005
     case 5:
     {
@@ -49,12 +58,6 @@ ESPEasy_key_value_store_import_export::LabelStringFunction getLabelFnc(ESPEasy::
 # ifdef USES_NW002
     case 2:
 # endif
-# ifdef USES_NW003
-    case 3:
-# endif
-# ifdef USES_NW004
-    case 4:
-# endif
     default:
       break;
 
@@ -67,6 +70,14 @@ ESPEasy_key_value_store_import_export::NextKeyFunction getNextKeyFnc(ESPEasy::ne
 
   switch (nwpluginID.value)
   {
+# ifdef USES_NW003
+    case 3:
+    return ESPEasy::net::eth::NW003_data_struct_ETH_RMII::getNextKey;
+# endif
+# ifdef USES_NW004
+    case 4:
+    return ESPEasy::net::eth::NW004_data_struct_ETH_SPI::getNextKey;
+# endif
 # ifdef USES_NW005
     case 5:
     {
@@ -82,12 +93,6 @@ ESPEasy_key_value_store_import_export::NextKeyFunction getNextKeyFnc(ESPEasy::ne
 # endif
 # ifdef USES_NW002
     case 2:
-# endif
-# ifdef USES_NW003
-    case 3:
-# endif
-# ifdef USES_NW004
-    case 4:
 # endif
     default:
       break;
@@ -141,7 +146,7 @@ String NWPlugin_import_export::exportConfig(
     int32_t key = nextKeyFnc(-1);
 
     while (key >= 0) {
-      e.write(key, child.get(), labelFnc);
+      e.do_export(key, child.get(), labelFnc);
       key = nextKeyFnc(key);
     }
   }
@@ -178,9 +183,11 @@ String NWPlugin_import_export::importConfig(
     return F("KVS : NWPlugin ID does not support import/export");
   }
 
-  String res = e.read(labelFnc, nextKeyFnc);
+  String res = e.do_import(labelFnc, nextKeyFnc);
 
   if (res.isEmpty()) {
+    // Add entry, calls NWPLUGIN_LOAD_DEFAULTS
+    Settings.setNWPluginID_for_network(networkIndex, nwpluginID);
 
     if (!kvs.store(
           SettingsType::Enum::NetworkInterfaceSettings_Type,
@@ -190,9 +197,6 @@ String NWPlugin_import_export::importConfig(
     {
       return F("KVS : Error saving, see log for more details");
     }
-
-    // Add entry, calls NWPLUGIN_LOAD_DEFAULTS
-    Settings.setNWPluginID_for_network(networkIndex, nwpluginID);
 
     const String non_kvs_keys[] = {
       F("enabled"),

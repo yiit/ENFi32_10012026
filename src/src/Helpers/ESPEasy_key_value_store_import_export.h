@@ -23,7 +23,7 @@ public:
   ESPEasy_key_value_store_import_export(
     ESPEasy_key_value_store*store);
 
-  bool write(uint32_t            key,
+  bool do_export(uint32_t            key,
              KeyValueWriter     *writer,
              LabelStringFunction fnc) const;
 
@@ -32,7 +32,7 @@ public:
     ESPEasy_key_value_store*store,
     const String          & json);
 
-  String read(
+  String do_import(
     LabelStringFunction fnc,
     NextKeyFunction     nextKey);
 

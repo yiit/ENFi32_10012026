@@ -190,28 +190,36 @@ String Command_ETH_Disconnect (struct EventStruct *event, const char* Line)
 
 
 #if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS
-String Command_Network_ExportConfig (struct EventStruct *event, const char* Line)
+
+String Command_Network_ExportConfig(struct EventStruct *event, const char*Line)
 {
   ESPEasy::net::networkIndex_t networkIndex;
-  if (!validNetworkVar(event, networkIndex)) return return_command_failed();
+
+  if (!validNetworkVar(event, networkIndex)) { return return_command_failed(); }
 
   PrintToString p2s;
-  KeyValueWriter_JSON writer(true, &p2s);
+  {
+    KeyValueWriter_JSON writer(false, &p2s);
 
-  String res = ESPEasy::net::NWPlugin_import_export::exportConfig(networkIndex, &writer);
-  if (!res.isEmpty()) return res;
+    String res = ESPEasy::net::NWPlugin_import_export::exportConfig(networkIndex, &writer);
+
+    if (!res.isEmpty()) { return res; }
+  }
   return p2s.getMove();
 }
 
-String Command_Network_ImportConfig (struct EventStruct *event, const char* Line)
+String Command_Network_ImportConfig(struct EventStruct *event, const char*Line)
 {
   ESPEasy::net::networkIndex_t networkIndex;
-  if (!validNetworkVar(event, networkIndex)) return return_command_failed();
+
+  if (!validNetworkVar(event, networkIndex)) { return return_command_failed(); }
   const String json = parseStringToEndKeepCase(Line, 3);
 
   String res = ESPEasy::net::NWPlugin_import_export::importConfig(networkIndex, json);
-  if (!res.isEmpty()) return res;
- 
+
+  if (!res.isEmpty()) { return res; }
+
   return return_command_success();
 }
-#endif
+
+#endif // if FEATURE_STORE_NETWORK_INTERFACE_SETTINGS

@@ -11,7 +11,7 @@ ESPEasy_key_value_store_import_export::ESPEasy_key_value_store_import_export(
   : _store(store) {}
 
 
-bool ESPEasy_key_value_store_import_export::write(
+bool ESPEasy_key_value_store_import_export::do_export(
   uint32_t       key,
   KeyValueWriter*writer,
   LabelStringFunction     fnc) const
@@ -140,7 +140,7 @@ ESPEasy_key_value_store_import_export::ESPEasy_key_value_store_import_export(
 
 
 
-String ESPEasy_key_value_store_import_export::read(
+String ESPEasy_key_value_store_import_export::do_import(
   LabelStringFunction fnc,
   NextKeyFunction     nextKey)
 {

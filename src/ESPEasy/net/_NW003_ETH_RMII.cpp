@@ -60,16 +60,13 @@ bool NWPlugin_003(NWPlugin::Function function, EventStruct *event, String& strin
       Settings.setRoutePrio_for_network(event->NetworkIndex, 50);
       Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, false);
       Settings.setNetworkInterfaceStartupDelayAtBoot(event->NetworkIndex, 500 * event->NetworkIndex);
-      # if CONFIG_IDF_TARGET_ESP32P4
-      Settings.ETH_Clock_Mode    = EthClockMode_t::Ext_crystal;
-      Settings.ETH_Phy_Type      = EthPhyType_t::TLK110;
-      Settings.ETH_Phy_Addr      = ETH_PHY_ADDR;
-      Settings.ETH_Pin_mdc_cs    = ETH_PHY_MDC;
-      Settings.ETH_Pin_mdio_irq  = ETH_PHY_MDIO;
-      Settings.ETH_Pin_power_rst = ETH_PHY_POWER;
-      # else // if CONFIG_IDF_TARGET_ESP32P4
-      Settings.ETH_Clock_Mode = EthClockMode_t::Ext_crystal_osc;
-      # endif // if CONFIG_IDF_TARGET_ESP32P4
+
+      ESPEasy_key_value_store kvs;
+      ESPEasy::net::eth::NW003_data_struct_ETH_RMII::loadDefaults(
+        &kvs, 
+        event->NetworkIndex, 
+        ESPEasy::net::nwpluginID_t(NWPLUGIN_ID_003));
+
       break;
     }
 

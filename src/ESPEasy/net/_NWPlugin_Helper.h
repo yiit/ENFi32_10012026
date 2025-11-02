@@ -34,6 +34,9 @@ bool initNWPluginData(ESPEasy::net::networkIndex_t     networkIndex,
 NWPluginData_base* getNWPluginData(ESPEasy::net::networkIndex_t networkIndex);
 
 bool nwpluginTaskData_initialized(ESPEasy::net::networkIndex_t networkIndex);
-
+#if FEATURE_ESPEASY_KEY_VALUE_STORE
+bool load_nwpluginTaskData_KVS(ESPEasy_key_value_store *kvs, ESPEasy::net::networkIndex_t networkIndex, ESPEasy::net::nwpluginID_t nwPluginID);
+bool store_nwpluginTaskData_KVS(ESPEasy_key_value_store *kvs, ESPEasy::net::networkIndex_t networkIndex, ESPEasy::net::nwpluginID_t nwPluginID);
+#endif
 } // namespace net
 } // namespace ESPEasy

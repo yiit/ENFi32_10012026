@@ -599,29 +599,14 @@ void NW005_data_struct_PPP_modem::webform_load(EventStruct *event)
 
 void NW005_data_struct_PPP_modem::webform_save(EventStruct *event)
 {
-  const uint32_t keys[] {
-    NW005_KEY_SERIAL_PORT,
-    NW005_KEY_PIN_RX,
-    NW005_KEY_PIN_TX,
-    NW005_KEY_PIN_RTS,
-    NW005_KEY_PIN_CTS,
-    NW005_KEY_PIN_RESET,
-    NW005_KEY_PIN_RESET_ACTIVE_LOW,
-    NW005_KEY_PIN_RESET_DELAY,
-    NW005_KEY_BAUDRATE,
-    NW005_KEY_FLOWCTRL,
-    NW005_KEY_MODEM_MODEL,
-    NW005_KEY_APN,
-    NW005_KEY_SIM_PIN,
-    NW005_KEY_PIN_DTR
-  };
+  // TODO TD-er: Move this to a central function, like done with import/export
+  int32_t key = getNextKey(-1);
 
-
-  for (int i = 0; i < NR_ELEMENTS(keys); ++i)
-  {
+  while (key >= 0) {
     KVS_StorageType::Enum storageType;
-    const __FlashStringHelper *id = getLabelString(keys[i], false, storageType);
-    storeWebformItem(*_kvs, keys[i], storageType, id);
+    const __FlashStringHelper *id = getLabelString(key, false, storageType);
+    storeWebformItem(*_kvs, key, storageType, id);
+    key = getNextKey(key);
   }
   _store();
 }
