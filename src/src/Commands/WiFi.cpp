@@ -177,7 +177,9 @@ String Command_Wifi_OTA_hosted_mcu(
     }
     addLog(LOG_LEVEL_INFO, concat(F("OTA update esp-hosted-mcu: "), url));
 
-
+// FIXME TD-er: Must implement new API. See https://github.com/espressif/esp-hosted-mcu/blob/main/examples/host_performs_slave_ota/main/main.c
+// Current implementation does not work, so will disable for now...
+/*
     esp_err_t err = esp_hosted_slave_ota(url.c_str());
 
     if (err != ESP_OK) {
@@ -185,6 +187,7 @@ String Command_Wifi_OTA_hosted_mcu(
       addLog(LOG_LEVEL_ERROR, str);
       return str;
     }
+*/
   }
   return return_command_success_flashstr();
 }
