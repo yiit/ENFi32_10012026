@@ -5,6 +5,7 @@
 # include "../../../src/Globals/Settings.h"
 
 # include "../../../src/Helpers/ESPEasy_time_calc.h"
+# include "../../../src/Helpers/Hardware_GPIO.h"
 # include "../../../src/Helpers/LongTermOnOffTimer.h"
 # include "../../../src/Helpers/StringConverter.h"
 
@@ -115,8 +116,7 @@ WebFormItemParams NW004_makeWebFormItemParams(uint32_t key) {
 
 NW004_data_struct_ETH_SPI::NW004_data_struct_ETH_SPI(networkIndex_t networkIndex, NetworkInterface *netif)
   : NWPluginData_base(nwpluginID_t(NW_PLUGIN_ID), networkIndex, netif)
-{
-}
+{}
 
 NW004_data_struct_ETH_SPI::~NW004_data_struct_ETH_SPI()
 {
@@ -245,7 +245,7 @@ void NW004_data_struct_ETH_SPI::webform_load(EventStruct *event)
   }
 }
 
-void NW004_data_struct_ETH_SPI::webform_save(EventStruct *event)        
+void NW004_data_struct_ETH_SPI::webform_save(EventStruct *event)
 {
   // TODO TD-er: Move this to a central function, like done with import/export
   int32_t key = getNextKey(-1);
@@ -277,16 +277,185 @@ bool NW004_data_struct_ETH_SPI::init(EventStruct *event)
   return true;
 }
 
-bool NW004_data_struct_ETH_SPI::exit(EventStruct *event)
-{
-  return true;
-}
+bool                          NW004_data_struct_ETH_SPI::exit(EventStruct *event)         { return true; }
 
-NWPluginData_static_runtime * NW004_data_struct_ETH_SPI::getNWPluginData_static_runtime() { 
+NWPluginData_static_runtime * NW004_data_struct_ETH_SPI::getNWPluginData_static_runtime() {
   return ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getNWPluginData_static_runtime(_networkIndex);
 }
 
+void NW004_data_struct_ETH_SPI::ethResetGPIOpins() {
+  // fix an disconnection issue after rebooting Olimex POE - this forces a clean state for all GPIO involved in RMII
+  // Thanks to @s-hadinger and @Jason2866
+  // Resetting state of power pin is done in ethPower()
+  addLog(LOG_LEVEL_INFO, F("ethResetGPIOpins()"));
+  gpio_reset_pin((gpio_num_t)_kvs->getValueAsInt(NW004_KEY_ETH_PIN_CS));
+  gpio_reset_pin((gpio_num_t)_kvs->getValueAsInt(NW004_KEY_ETH_PIN_IRQ));
+# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 
+  gpio_reset_pin(GPIO_NUM_19); // EMAC_TXD0 - hardcoded
+  gpio_reset_pin(GPIO_NUM_21); // EMAC_TX_EN - hardcoded
+  gpio_reset_pin(GPIO_NUM_22); // EMAC_TXD1 - hardcoded
+  gpio_reset_pin(GPIO_NUM_25); // EMAC_RXD0 - hardcoded
+  gpio_reset_pin(GPIO_NUM_26); // EMAC_RXD1 - hardcoded
+  gpio_reset_pin(GPIO_NUM_27); // EMAC_RX_CRS_DV - hardcoded
+# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+
+  /*
+     switch (Settings.ETH_Clock_Mode) {
+     case EthClockMode_t::Ext_crystal_osc:       // ETH_CLOCK_GPIO0_IN
+     case EthClockMode_t::Int_50MHz_GPIO_0:      // ETH_CLOCK_GPIO0_OUT
+      gpio_reset_pin(GPIO_NUM_0);
+      break;
+     case EthClockMode_t::Int_50MHz_GPIO_16:     // ETH_CLOCK_GPIO16_OUT
+      gpio_reset_pin(GPIO_NUM_16);
+      break;
+     case EthClockMode_t::Int_50MHz_GPIO_17_inv: // ETH_CLOCK_GPIO17_OUT
+      gpio_reset_pin(GPIO_NUM_17);
+      break;
+     }
+   */
+  delay(1);
+
+}
+
+bool NW004_data_struct_ETH_SPI::ethCheckSettings() {
+  const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW004_KEY_ETH_PHY_TYPE));
+
+  const int rstPin = _kvs->getValueAsInt_or_default(NW004_KEY_ETH_PIN_RST, -1);
+  const int irqPin = _kvs->getValueAsInt_or_default(NW004_KEY_ETH_PIN_IRQ, -1);
+
+  return isValid(phyType)
+         && validGpio(_kvs->getValueAsInt(NW004_KEY_ETH_PIN_CS))
+         && ((validGpio(irqPin) || (irqPin == -1)) &&
+             (validGpio(rstPin) || (rstPin == -1))
+             ); // IRQ and RST are optional
+}
+
+void NW004_data_struct_ETH_SPI::ethPrintSettings() {
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    String log;
+
+    if (log.reserve(115)) {
+
+      const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW004_KEY_ETH_PHY_TYPE));
+
+      log += F("ETH PHY Type: ");
+      log += toString(phyType);
+      log += F(" PHY Addr: ");
+      log += _kvs->getValueAsInt(NW004_KEY_ETH_PHY_ADDR);
+      log += strformat(F(" CS: %d IRQ: %d RST: %d"),
+                       _kvs->getValueAsInt(NW004_KEY_ETH_PIN_CS),
+                       _kvs->getValueAsInt(NW004_KEY_ETH_PIN_IRQ),
+                       _kvs->getValueAsInt(NW004_KEY_ETH_PIN_RST));
+      addLogMove(LOG_LEVEL_INFO, log);
+    }
+  }
+}
+
+bool NW004_data_struct_ETH_SPI::ETHConnectRelaxed() {
+  auto data = getNWPluginData_static_runtime();
+
+  auto iface = ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getInterface(_networkIndex);
+
+  if (!(data && iface)) { return false; }
+
+  if (data->started() && data->connected()) {
+    return EthLinkUp();
+  }
+  ethPrintSettings();
+
+  if (!ethCheckSettings())
+  {
+    addLog(LOG_LEVEL_ERROR, F("ETH: Settings not correct!!!"));
+    data->mark_stop();
+    return false;
+  }
+
+  data->mark_begin_establish_connection();
+
+  bool success = data->started();
+
+  if (!success) {
+# if FEATURE_USE_IPV6
+
+    if (Settings.EnableIPv6()) {
+      iface->enableIPv6(true);
+    }
+# endif // if FEATURE_USE_IPV6
+
+    const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW004_KEY_ETH_PHY_TYPE));
+
+    const int phy_addr = _kvs->getValueAsInt(NW004_KEY_ETH_PHY_ADDR);
+    const int rstPin   = _kvs->getValueAsInt(NW004_KEY_ETH_PIN_RST);
+    const int csPin    = _kvs->getValueAsInt(NW004_KEY_ETH_PIN_CS);
+    const int irqPin   = _kvs->getValueAsInt(NW004_KEY_ETH_PIN_IRQ);
+
+
+    spi_host_device_t SPI_host = Settings.getSPI_host();
+
+    if (SPI_host == spi_host_device_t::SPI_HOST_MAX) {
+      addLog(LOG_LEVEL_ERROR, F("SPI not enabled"));
+        # ifdef ESP32C3
+
+      // FIXME TD-er: Fallback for ETH01-EVO board
+      SPI_host              = spi_host_device_t::SPI2_HOST;
+      Settings.InitSPI      = static_cast<int>(SPI_Options_e::UserDefined);
+      Settings.SPI_SCLK_pin = 7;
+      Settings.SPI_MISO_pin = 3;
+      Settings.SPI_MOSI_pin = 10;
+        # endif // ifdef ESP32C3
+    }
+
+    // else
+    {
+# if ETH_SPI_SUPPORTS_CUSTOM
+      success = iface->begin(
+        to_ESP_phy_type(phyType),
+        phy_addr,
+        csPin,
+        irqPin,
+        rstPin,
+        SPI);
+# else // if ETH_SPI_SUPPORTS_CUSTOM
+      success = iface->begin(
+        to_ESP_phy_type(phyType),
+        phy_addr,
+        csPin,
+        irqPin,
+        rstPin,
+        SPI_host,
+        static_cast<int>(Settings.SPI_SCLK_pin),
+        static_cast<int>(Settings.SPI_MISO_pin),
+        static_cast<int>(Settings.SPI_MOSI_pin));
+# endif // if ETH_SPI_SUPPORTS_CUSTOM
+    }
+  }
+
+  if (success) {
+    // FIXME TD-er: Not sure if this is correctly set to false
+    // EthEventData.ethConnectAttemptNeeded = false;
+
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      addLog(LOG_LEVEL_INFO, strformat(
+               F("ETH  : MAC: %s phy addr: %d speed: %dM %s Link: %s"),
+               iface->macAddress().c_str(),
+               iface->phyAddr(),
+               iface->linkSpeed(),
+               concat(
+                 iface->fullDuplex() ? F("Full Duplex") : F("Half Duplex"),
+                 iface->autoNegotiation() ? F("(auto)") : F("")).c_str(),
+               String(iface->linkUp() ? F("Up") : F("Down")).c_str()));
+    }
+
+    if (EthLinkUp()) {
+      // We might miss the connected event, since we are already connected.
+      data->mark_connected();
+    }
+  } else {
+    addLog(LOG_LEVEL_ERROR, F("ETH  : Failed to initialize ETH"));
+  }
+  return success;
+}
 
 } // namespace eth
 } // namespace net

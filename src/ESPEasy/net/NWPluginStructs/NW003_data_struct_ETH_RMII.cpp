@@ -332,7 +332,7 @@ void NW003_data_struct_ETH_RMII::ethResetGPIOpins() {
   addLog(LOG_LEVEL_INFO, F("ethResetGPIOpins()"));
   gpio_reset_pin((gpio_num_t)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC));
   gpio_reset_pin((gpio_num_t)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO));
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+#ifdef CONFIG_IDF_TARGET_ESP32
 
   gpio_reset_pin(GPIO_NUM_19); // EMAC_TXD0 - hardcoded
   gpio_reset_pin(GPIO_NUM_21); // EMAC_TX_EN - hardcoded
@@ -340,7 +340,7 @@ void NW003_data_struct_ETH_RMII::ethResetGPIOpins() {
   gpio_reset_pin(GPIO_NUM_25); // EMAC_RXD0 - hardcoded
   gpio_reset_pin(GPIO_NUM_26); // EMAC_RXD1 - hardcoded
   gpio_reset_pin(GPIO_NUM_27); // EMAC_RX_CRS_DV - hardcoded
-# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
+# endif
 
   /*
      switch (Settings.ETH_Clock_Mode) {
@@ -400,7 +400,6 @@ void NW003_data_struct_ETH_RMII::ethPower(bool enable)
   GPIO_Write(PLUGIN_GPIO, powerpin, enable ? 1 : 0);
 
   if (!enable) {
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     const EthClockMode_t ETH_ClockMode = static_cast<EthClockMode_t>(_kvs->getValueAsInt(NW003_KEY_CLOCK_MODE));
       #  if CONFIG_IDF_TARGET_ESP32P4
     const bool isExternalCrystal = ETH_ClockMode == EthClockMode_t::Ext_crystal;
@@ -412,7 +411,6 @@ void NW003_data_struct_ETH_RMII::ethPower(bool enable)
       delay(600); // Give some time to discharge any capacitors
       // Delay is needed to make sure no clock signal remains present which may cause the ESP to boot into flash mode.
     }
-# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
   } else {
     delay(400); // LAN chip needs to initialize before calling Eth.begin()
   }
@@ -425,9 +423,7 @@ bool NW003_data_struct_ETH_RMII::ethCheckSettings() {
   const int powerPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_POWER);
 
   return isValid(phyType)
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
          && (isValid(ETH_ClockMode) /* || isSPI_EthernetType(Settings.ETH_Phy_Type)*/)
-# endif
          && validGpio(_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC))
          && (validGpio(_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO)) &&
              (validGpio(powerPin) || (powerPin == -1))
@@ -499,52 +495,9 @@ bool NW003_data_struct_ETH_RMII::ETHConnectRelaxed() {
   const int mdcPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC);
   const int mdioPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO);
 
-
-    if (isSPI_EthernetType(phyType)) {
-      spi_host_device_t SPI_host = Settings.getSPI_host();
-
-      if (SPI_host == spi_host_device_t::SPI_HOST_MAX) {
-        addLog(LOG_LEVEL_ERROR, F("SPI not enabled"));
-        # ifdef ESP32C3
-
-        // FIXME TD-er: Fallback for ETH01-EVO board
-        SPI_host              = spi_host_device_t::SPI2_HOST;
-        Settings.InitSPI      = static_cast<int>(SPI_Options_e::UserDefined);
-        Settings.SPI_SCLK_pin = 7;
-        Settings.SPI_MISO_pin = 3;
-        Settings.SPI_MOSI_pin = 10;
-        # endif // ifdef ESP32C3
-      }
-
-      // else
-      {
-# if ETH_SPI_SUPPORTS_CUSTOM
-        success = iface->begin(
-          to_ESP_phy_type(phyType),
-          phy_addr,
-          mdcPin,
-          mdioPin,
-          powerPin,
-          SPI);
-# else // if ETH_SPI_SUPPORTS_CUSTOM
-        success = iface->begin(
-          to_ESP_phy_type(phyType),
-          phy_addr,
-          mdcPin,
-          mdioPin,
-          powerPin,
-          SPI_host,
-          static_cast<int>(Settings.SPI_SCLK_pin),
-          static_cast<int>(Settings.SPI_MISO_pin),
-          static_cast<int>(Settings.SPI_MOSI_pin));
-# endif // if ETH_SPI_SUPPORTS_CUSTOM
-      }
-    } else {
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
 #  ifndef ESP32P4
       ethResetGPIOpins();
 #  endif
-iface->enableIPv6(true);
       success = iface->begin(
         to_ESP_phy_type(phyType),
         phy_addr,
@@ -552,9 +505,6 @@ iface->enableIPv6(true);
         mdioPin,
         powerPin,
         (eth_clock_mode_t)Settings.ETH_Clock_Mode);
-iface->enableIPv6(true);
-# endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-    }
   }
 
   if (success) {
@@ -562,14 +512,6 @@ iface->enableIPv6(true);
     // EthEventData.ethConnectAttemptNeeded = false;
 
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-# if ESP_IDF_VERSION_MAJOR < 5
-      addLog(LOG_LEVEL_INFO, strformat(
-               F("ETH  : MAC: %s speed: %dM %s Link: %s"),
-               iface->macAddress().c_str(),
-               iface->linkSpeed(),
-               String(iface->fullDuplex() ? F("Full Duplex") : F("Half Duplex")).c_str(),
-               String(iface->linkUp() ? F("Up") : F("Down")).c_str()));
-# else // if ESP_IDF_VERSION_MAJOR < 5
       addLog(LOG_LEVEL_INFO, strformat(
                F("ETH  : MAC: %s phy addr: %d speed: %dM %s Link: %s"),
                iface->macAddress().c_str(),
@@ -579,7 +521,6 @@ iface->enableIPv6(true);
                  iface->fullDuplex() ? F("Full Duplex") : F("Half Duplex"),
                  iface->autoNegotiation() ? F("(auto)") : F("")).c_str(),
                String(iface->linkUp() ? F("Up") : F("Down")).c_str()));
-# endif // if ESP_IDF_VERSION_MAJOR < 5
     }
 
     if (EthLinkUp()) {

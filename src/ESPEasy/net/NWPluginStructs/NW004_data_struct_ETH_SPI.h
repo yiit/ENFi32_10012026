@@ -42,15 +42,17 @@ struct NW004_data_struct_ETH_SPI : public NWPluginData_base {
 
 private:
 
-  static void   onEvent(arduino_event_id_t   event,
-                        arduino_event_info_t info);
-
   static String formatGpioLabel(uint32_t          key,
                                 PinSelectPurpose& purpose,
                                 bool              shortNotation = false);
 
+void ethResetGPIOpins();
 
-  network_event_handle_t nw_event_id = 0;
+bool ethCheckSettings();
+
+void ethPrintSettings();
+
+bool ETHConnectRelaxed();
 
 };
 

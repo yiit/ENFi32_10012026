@@ -179,6 +179,7 @@ bool ETHConnectRelaxed(ETHClass& iface, NWPluginData_static_runtime& runtimeData
 #  ifndef ESP32P4
       ethResetGPIOpins();
 #  endif
+iface.enableIPv6(true);
       success = iface.begin(
         to_ESP_phy_type(Settings.ETH_Phy_Type),
         Settings.ETH_Phy_Addr,
@@ -186,6 +187,7 @@ bool ETHConnectRelaxed(ETHClass& iface, NWPluginData_static_runtime& runtimeData
         Settings.ETH_Pin_mdio_irq,
         Settings.ETH_Pin_power_rst,
         (eth_clock_mode_t)Settings.ETH_Clock_Mode);
+iface.enableIPv6(true);
 # endif // if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
     }
   }
