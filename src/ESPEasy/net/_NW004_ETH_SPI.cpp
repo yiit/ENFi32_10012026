@@ -103,35 +103,22 @@ bool NWPlugin_004(NWPlugin::Function function, EventStruct *event, String& strin
 
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_HW_ADDRESS:
     {
-      auto iface = ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getInterface(event->NetworkIndex);
+      ESPEasy::net::eth::NW004_data_struct_ETH_SPI *NW_data =
+        static_cast<ESPEasy::net::eth::NW004_data_struct_ETH_SPI *>(getNWPluginData(event->NetworkIndex));
 
-      if (iface) {
-        success = ESPEasy::net::write_Eth_HW_Address(*iface, event->kvWriter);
+      if (NW_data) {
+        success = NW_data->write_Eth_HW_Address(event->kvWriter);
       }
       break;
     }
 # ifndef LIMIT_BUILD_SIZE
     case NWPlugin::Function::NWPLUGIN_WEBFORM_SHOW_PORT:
     {
-      if (event->kvWriter) {
-        if (isValid(Settings.ETH_Phy_Type) && isSPI_EthernetType(Settings.ETH_Phy_Type)) {
-          int8_t spi_gpios[3]{};
+      ESPEasy::net::eth::NW004_data_struct_ETH_SPI *NW_data =
+        static_cast<ESPEasy::net::eth::NW004_data_struct_ETH_SPI *>(getNWPluginData(event->NetworkIndex));
 
-          if (Settings.getSPI_pins(spi_gpios)) {
-            const __FlashStringHelper*labels[] = {
-              F("CLK"), F("MISO"), F("MOSI"), F("CS"), F("IRQ"), F("RST") };
-            const int pins[] = {
-              spi_gpios[0],
-              spi_gpios[1],
-              spi_gpios[2],
-              Settings.ETH_Pin_mdc_cs,
-              Settings.ETH_Pin_mdio_irq,
-              Settings.ETH_Pin_power_rst
-            };
-
-            success = write_NetworkPort(labels, pins, NR_ELEMENTS(labels), event->kvWriter);
-          }
-        }
+      if (NW_data) {
+        success = NW_data->write_Eth_port(event->kvWriter);
       }
       break;
     }

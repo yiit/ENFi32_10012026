@@ -18,12 +18,7 @@ namespace eth {
 
 bool        ethUseStaticIP();
 void        ethSetupStaticIPconfig();
-bool        ethCheckSettings();
-void        ethPrintSettings();
-bool        ETHConnectRelaxed(ETHClass& iface, NWPluginData_static_runtime& runtimeData);
 bool        ETHConnected();
-void        ethPower(NWPluginData_static_runtime& runtimeData, bool enable);
-void        ethResetGPIOpins();
 MAC_address ETHMacAddress();
 
 

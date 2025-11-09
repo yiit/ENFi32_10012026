@@ -8,6 +8,8 @@
 
 #include "../Globals/NWPlugins.h"
 
+#include "../Helpers/NW_info_writer.h"
+
 namespace ESPEasy {
 namespace net {
 
@@ -170,25 +172,28 @@ bool write_Eth_Show_Connected(const ETHClass& eth, KeyValueWriter *writer)
   return true;
 }
 
-bool write_Eth_HW_Address(const ETHClass& eth, KeyValueWriter *writer)
+bool write_Eth_HW_Address(
+  const ESPEasy::net::EthPhyType_t phyType,
+  const ETHClass* eth, KeyValueWriter *writer)
 {
   if (writer == nullptr) { return false; }
 
   if (writer->summaryValueOnly()) {
     KeyValueStruct kv(EMPTY_STRING);
-    kv.appendValue(toString(Settings.ETH_Phy_Type));
-    kv.appendValue(concat(F("MAC: "), eth.macAddress()));
+    kv.appendValue(toString(phyType));
+    kv.appendValue(concat(F("MAC: "), eth->macAddress()));
 
     writer->write(kv);
   } else {
     writer->write({
           F("Adapter"),
-          toString(Settings.ETH_Phy_Type) });
+          toString(phyType) });
     writer->write({
           F("MAC"),
-          eth.macAddress(),
+          eth->macAddress(),
           KeyValueStruct::Format::PreFormatted });
   }
+
   return true;
 }
 

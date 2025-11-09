@@ -602,11 +602,14 @@ void addFormPinStateSelect(int gpio, int choice)
         createGPIO_label(gpio, pinnr, input, output, warning)), 
       id,
       choice);
-    addUnit(getConflictingUse(gpio));
     #ifdef ESP32
     if (isPSRAMInterfacePin(gpio)) {
       addUnit(getConflictingUse(gpio, PinSelectPurpose::Generic, true));
+    } else {
+      addUnit(getConflictingUse(gpio));
     }
+    #else
+    addUnit(getConflictingUse(gpio));
     #endif // ifdef ESP32
   }
 }

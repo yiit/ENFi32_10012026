@@ -7,6 +7,7 @@
 #include "../DataTypes/NetworkIndex.h"
 
 #if defined(USES_NW003) || defined(USES_NW004)
+#include "../DataTypes/EthernetParameters.h"
 #include <ETH.h>
 #endif
 
@@ -33,7 +34,8 @@ bool write_NetworkConnectionInfo(ESPEasy::net::networkIndex_t networkindex,
 bool write_Eth_Show_Connected(const ETHClass& eth,
                               KeyValueWriter *writer);
 
-bool write_Eth_HW_Address(const ETHClass& eth,
+bool write_Eth_HW_Address(const ESPEasy::net::EthPhyType_t phyType,
+    const ETHClass* eth,
                           KeyValueWriter *writer);
 
 #endif // if defined(USES_NW003) || defined(USES_NW004)

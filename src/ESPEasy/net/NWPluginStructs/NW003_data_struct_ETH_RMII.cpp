@@ -18,6 +18,8 @@
 
 # include "../Globals/NetworkState.h"
 
+# include "../Helpers/NW_info_writer.h"
+
 # include "../eth/ESPEasyEth.h"
 
 # define NW_PLUGIN_ID  3
@@ -325,6 +327,39 @@ NWPluginData_static_runtime * NW003_data_struct_ETH_RMII::getNWPluginData_static
   return ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getNWPluginData_static_runtime(_networkIndex);
 }
 
+bool NW003_data_struct_ETH_RMII::write_Eth_HW_Address(KeyValueWriter *writer)
+{
+  if (writer == nullptr) { return false; }
+  auto data  = getNWPluginData_static_runtime();
+  auto iface = ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getInterface(_networkIndex);
+
+  if (!(data && iface)) { return false; }
+  const int phyType_int = _kvs->getValueAsInt_or_default(NW003_KEY_ETH_PHY_TYPE, -1);
+
+  if (phyType_int == -1) { return false; }
+  return ESPEasy::net::write_Eth_HW_Address(
+    static_cast<ESPEasy::net::EthPhyType_t>(phyType_int),
+    iface,
+    writer);
+}
+
+bool NW003_data_struct_ETH_RMII::write_Eth_port(KeyValueWriter *writer)
+{
+  if (writer == nullptr) { return false; }
+  const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW003_KEY_ETH_PHY_TYPE));
+
+  if (!isValid(phyType)) { return false; }
+
+  const __FlashStringHelper*labels[] = {
+    F("MDC"), F("MDIO"), F("Power") };
+  const int pins[] = {
+    (int)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC),
+    (int)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO),
+    (int)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_POWER)
+  };
+  return write_NetworkPort(labels, pins, NR_ELEMENTS(labels), writer);
+}
+
 void NW003_data_struct_ETH_RMII::ethResetGPIOpins() {
   // fix an disconnection issue after rebooting Olimex POE - this forces a clean state for all GPIO involved in RMII
   // Thanks to @s-hadinger and @Jason2866
@@ -332,7 +367,7 @@ void NW003_data_struct_ETH_RMII::ethResetGPIOpins() {
   addLog(LOG_LEVEL_INFO, F("ethResetGPIOpins()"));
   gpio_reset_pin((gpio_num_t)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC));
   gpio_reset_pin((gpio_num_t)_kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO));
-#ifdef CONFIG_IDF_TARGET_ESP32
+# ifdef CONFIG_IDF_TARGET_ESP32
 
   gpio_reset_pin(GPIO_NUM_19); // EMAC_TXD0 - hardcoded
   gpio_reset_pin(GPIO_NUM_21); // EMAC_TX_EN - hardcoded
@@ -340,7 +375,7 @@ void NW003_data_struct_ETH_RMII::ethResetGPIOpins() {
   gpio_reset_pin(GPIO_NUM_25); // EMAC_RXD0 - hardcoded
   gpio_reset_pin(GPIO_NUM_26); // EMAC_RXD1 - hardcoded
   gpio_reset_pin(GPIO_NUM_27); // EMAC_RX_CRS_DV - hardcoded
-# endif
+# endif // ifdef CONFIG_IDF_TARGET_ESP32
 
   /*
      switch (Settings.ETH_Clock_Mode) {
@@ -401,11 +436,11 @@ void NW003_data_struct_ETH_RMII::ethPower(bool enable)
 
   if (!enable) {
     const EthClockMode_t ETH_ClockMode = static_cast<EthClockMode_t>(_kvs->getValueAsInt(NW003_KEY_CLOCK_MODE));
-      #  if CONFIG_IDF_TARGET_ESP32P4
+      # if CONFIG_IDF_TARGET_ESP32P4
     const bool isExternalCrystal = ETH_ClockMode == EthClockMode_t::Ext_crystal;
-      #  else
+      # else
     const bool isExternalCrystal = ETH_ClockMode == EthClockMode_t::Ext_crystal_osc;
-      #  endif // if CONFIG_IDF_TARGET_ESP32P4
+      # endif // if CONFIG_IDF_TARGET_ESP32P4
 
     if (isExternalCrystal) {
       delay(600); // Give some time to discharge any capacitors
@@ -487,24 +522,24 @@ bool NW003_data_struct_ETH_RMII::ETHConnectRelaxed() {
     }
 # endif // if FEATURE_USE_IPV6
 
-  const EthClockMode_t ETH_ClockMode       = static_cast<EthClockMode_t>(_kvs->getValueAsInt(NW003_KEY_CLOCK_MODE));
-  const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW003_KEY_ETH_PHY_TYPE));
+    const EthClockMode_t ETH_ClockMode       = static_cast<EthClockMode_t>(_kvs->getValueAsInt(NW003_KEY_CLOCK_MODE));
+    const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW003_KEY_ETH_PHY_TYPE));
 
-  const int phy_addr = _kvs->getValueAsInt(NW003_KEY_ETH_PHY_ADDR);
-  const int powerPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_POWER);
-  const int mdcPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC);
-  const int mdioPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO);
+    const int phy_addr = _kvs->getValueAsInt(NW003_KEY_ETH_PHY_ADDR);
+    const int powerPin = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_POWER);
+    const int mdcPin   = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDC);
+    const int mdioPin  = _kvs->getValueAsInt(NW003_KEY_ETH_PIN_MDIO);
 
-#  ifndef ESP32P4
-      ethResetGPIOpins();
-#  endif
-      success = iface->begin(
-        to_ESP_phy_type(phyType),
-        phy_addr,
-        mdcPin,
-        mdioPin,
-        powerPin,
-        (eth_clock_mode_t)Settings.ETH_Clock_Mode);
+# ifndef ESP32P4
+    ethResetGPIOpins();
+# endif
+    success = iface->begin(
+      to_ESP_phy_type(phyType),
+      phy_addr,
+      mdcPin,
+      mdioPin,
+      powerPin,
+      (eth_clock_mode_t)Settings.ETH_Clock_Mode);
   }
 
   if (success) {
@@ -512,15 +547,13 @@ bool NW003_data_struct_ETH_RMII::ETHConnectRelaxed() {
     // EthEventData.ethConnectAttemptNeeded = false;
 
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      addLog(LOG_LEVEL_INFO, strformat(
-               F("ETH  : MAC: %s phy addr: %d speed: %dM %s Link: %s"),
-               iface->macAddress().c_str(),
-               iface->phyAddr(),
-               iface->linkSpeed(),
-               concat(
-                 iface->fullDuplex() ? F("Full Duplex") : F("Half Duplex"),
-                 iface->autoNegotiation() ? F("(auto)") : F("")).c_str(),
-               String(iface->linkUp() ? F("Up") : F("Down")).c_str()));
+      PrintToString p2s;
+      KeyValueWriter_WebForm writer(false, &p2s);
+      writer.setSummaryValueOnly();
+
+      if (write_Eth_Show_Connected(*iface, &writer)) {
+        addLog(LOG_LEVEL_INFO, concat(F("ETH  : "), p2s.get()));
+      }
     }
 
     if (EthLinkUp()) {

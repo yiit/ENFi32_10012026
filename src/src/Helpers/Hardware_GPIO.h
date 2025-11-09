@@ -5,7 +5,8 @@
 #include "../../ESPEasy_common.h"
 
 #ifdef ESP32
-#include "soc/soc_caps.h"
+# include "soc/soc_caps.h"
+# include <esp32-hal-periman.h>
 #endif
 
 // ********************************************************************************
@@ -52,6 +53,11 @@ int  touchPinToGpio(int touch_pin);
 bool getDAC_gpio_info(int  gpio_pin,
                       int& dac);
 #endif
+
+bool getPeriman_gpio_info(int  gpio_pin,
+    peripheral_bus_type_t& bus_type,
+    String& gpio_str,
+    String& typeName,int& bus_number, int& bus_channel);
 
 #endif // ifdef ESP32
 

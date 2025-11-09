@@ -15,6 +15,8 @@
 
 # include "../Globals/NetworkState.h"
 
+# include "../Helpers/NW_info_writer.h"
+
 # include "../eth/ESPEasyEth.h"
 
 # define NW_PLUGIN_ID  4
@@ -264,15 +266,7 @@ bool NW004_data_struct_ETH_SPI::webform_getPort(KeyValueWriter *writer) { return
 bool NW004_data_struct_ETH_SPI::init(EventStruct *event)
 {
   _load();
-  auto data = getNWPluginData_static_runtime();
-
-  auto iface = ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getInterface(_networkIndex);
-
-  if (data && iface) {
-    ESPEasy::net::eth::ETHConnectRelaxed(
-      *iface,
-      *data);
-  }
+  ETHConnectRelaxed();
 
   return true;
 }
@@ -281,6 +275,44 @@ bool                          NW004_data_struct_ETH_SPI::exit(EventStruct *event
 
 NWPluginData_static_runtime * NW004_data_struct_ETH_SPI::getNWPluginData_static_runtime() {
   return ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getNWPluginData_static_runtime(_networkIndex);
+}
+
+bool NW004_data_struct_ETH_SPI::write_Eth_HW_Address(KeyValueWriter *writer)
+{
+  if (writer == nullptr) { return false; }
+  auto data  = getNWPluginData_static_runtime();
+  auto iface = ESPEasy::net::eth::ETH_NWPluginData_static_runtime::getInterface(_networkIndex);
+
+  if (!(data && iface)) { return false; }
+  const int phyType_int = _kvs->getValueAsInt_or_default(NW004_KEY_ETH_PHY_TYPE, -1);
+
+  if (phyType_int == -1) { return false; }
+  return ESPEasy::net::write_Eth_HW_Address(
+    static_cast<ESPEasy::net::EthPhyType_t>(phyType_int),
+    iface,
+    writer);
+}
+
+bool NW004_data_struct_ETH_SPI::write_Eth_port(KeyValueWriter *writer)
+{
+  if (writer == nullptr) { return false; }
+  const ESPEasy::net::EthPhyType_t phyType = static_cast<ESPEasy::net::EthPhyType_t>(_kvs->getValueAsInt(NW004_KEY_ETH_PHY_TYPE));
+
+  if (!isValid(phyType)) { return false; }
+
+  int8_t spi_gpios[3]{};
+
+  if (!Settings.getSPI_pins(spi_gpios)) { return false; }
+  const __FlashStringHelper*labels[] = {
+    F("CLK"), F("MISO"), F("MOSI"), F("CS"), F("IRQ"), F("RST") };
+  const int pins[] = {
+    spi_gpios[0],
+    spi_gpios[1],
+    spi_gpios[2],
+    (int)_kvs->getValueAsInt(NW004_KEY_ETH_PIN_CS),
+    (int)_kvs->getValueAsInt(NW004_KEY_ETH_PIN_IRQ),
+    (int)_kvs->getValueAsInt(NW004_KEY_ETH_PIN_RST) };
+  return write_NetworkPort(labels, pins, NR_ELEMENTS(labels), writer);
 }
 
 void NW004_data_struct_ETH_SPI::ethResetGPIOpins() {
@@ -436,15 +468,13 @@ bool NW004_data_struct_ETH_SPI::ETHConnectRelaxed() {
     // EthEventData.ethConnectAttemptNeeded = false;
 
     if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-      addLog(LOG_LEVEL_INFO, strformat(
-               F("ETH  : MAC: %s phy addr: %d speed: %dM %s Link: %s"),
-               iface->macAddress().c_str(),
-               iface->phyAddr(),
-               iface->linkSpeed(),
-               concat(
-                 iface->fullDuplex() ? F("Full Duplex") : F("Half Duplex"),
-                 iface->autoNegotiation() ? F("(auto)") : F("")).c_str(),
-               String(iface->linkUp() ? F("Up") : F("Down")).c_str()));
+      PrintToString p2s;
+      KeyValueWriter_WebForm writer(false, &p2s);
+      writer.setSummaryValueOnly();
+
+      if (write_Eth_Show_Connected(*iface, &writer)) {
+        addLog(LOG_LEVEL_INFO, concat(F("ETH  : "), p2s.get()));
+      }
     }
 
     if (EthLinkUp()) {
