@@ -96,42 +96,6 @@ String Command_Subnet (struct EventStruct *event, const char* Line)
 }
 
 #if FEATURE_ETHERNET
-String Command_ETH_Phy_Addr (struct EventStruct *event, const char* Line)
-{
-  return Command_GetORSetInt8_t(event, F("ETH_Phy_Addr:"), Line, reinterpret_cast<int8_t*>(&Settings.ETH_Phy_Addr),1);
-}
-
-String Command_ETH_Pin_mdc (struct EventStruct *event, const char* Line)
-{
-  return Command_GetORSetInt8_t(event, F("ETH_Pin_mdc_cs:"), Line, reinterpret_cast<int8_t*>(&Settings.ETH_Pin_mdc_cs),1);
-}
-
-String Command_ETH_Pin_mdio (struct EventStruct *event, const char* Line)
-{
-  return Command_GetORSetInt8_t(event, F("ETH_Pin_mdio_irq:"), Line, reinterpret_cast<int8_t*>(&Settings.ETH_Pin_mdio_irq),1);
-}
-
-String Command_ETH_Pin_power (struct EventStruct *event, const char* Line)
-{
-  return Command_GetORSetInt8_t(event, F("ETH_Pin_power_rst:"), Line, reinterpret_cast<int8_t*>(&Settings.ETH_Pin_power_rst),1);
-}
-
-String Command_ETH_Phy_Type (struct EventStruct *event, const char* Line)
-{
-  return Command_GetORSetInt8_t(event, F("ETH_Phy_Type:"), Line, reinterpret_cast<int8_t*>(&Settings.ETH_Phy_Type),1);
-}
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-String Command_ETH_Clock_Mode (struct EventStruct *event, const char* Line)
-{
-  return Command_GetORSetETH(event, 
-                             F("ETH_Clock_Mode:"), 
-                             toString(Settings.ETH_Clock_Mode),
-                             Line, 
-                             reinterpret_cast<uint8_t*>(&Settings.ETH_Clock_Mode),
-                             1);
-}
-#endif
-
 String Command_ETH_IP (struct EventStruct *event, const char* Line)
 {
   return Command_GetORSetIP(event, F("ETH_IP:"), Line, Settings.ETH_IP,ETH.localIP(),1);

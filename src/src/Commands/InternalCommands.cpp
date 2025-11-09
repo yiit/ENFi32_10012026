@@ -303,14 +303,6 @@ bool InternalCommands::executeInternalCommand()
     case ESPEasy_cmd_e::dns:                        COMMAND_CASE_R(Command_DNS,                  1);         // Network Command
     case ESPEasy_cmd_e::dst:                        COMMAND_CASE_R(Command_DST,                  1);         // Time.h
 #if FEATURE_ETHERNET
-    case ESPEasy_cmd_e::ethphyadr:                  COMMAND_CASE_R(Command_ETH_Phy_Addr,   1);               // Network Command
-    case ESPEasy_cmd_e::ethpinmdc:                  COMMAND_CASE_R(Command_ETH_Pin_mdc,    1);               // Network Command
-    case ESPEasy_cmd_e::ethpinmdio:                 COMMAND_CASE_R(Command_ETH_Pin_mdio,   1);               // Network Command
-    case ESPEasy_cmd_e::ethpinpower:                COMMAND_CASE_R(Command_ETH_Pin_power,  1);               // Network Command
-    case ESPEasy_cmd_e::ethphytype:                 COMMAND_CASE_R(Command_ETH_Phy_Type,   1);               // Network Command
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-    case ESPEasy_cmd_e::ethclockmode:               COMMAND_CASE_R(Command_ETH_Clock_Mode, 1);               // Network Command
-#endif
     case ESPEasy_cmd_e::ethip:                      COMMAND_CASE_R(Command_ETH_IP,         1);               // Network Command
     case ESPEasy_cmd_e::ethgateway:                 COMMAND_CASE_R(Command_ETH_Gateway,    1);               // Network Command
     case ESPEasy_cmd_e::ethsubnet:                  COMMAND_CASE_R(Command_ETH_Subnet,     1);               // Network Command

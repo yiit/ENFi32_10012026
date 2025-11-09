@@ -71,14 +71,6 @@ const char Internal_commands_e[] PROGMEM =
   "event|"
   "executerules|"
 #if FEATURE_ETHERNET
-  "ethphyadr|"
-  "ethpinmdc|"
-  "ethpinmdio|"
-  "ethpinpower|"
-  "ethphytype|"
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-  "ethclockmode|"
-#endif
   "ethip|"
   "ethgateway|"
   "ethsubnet|"

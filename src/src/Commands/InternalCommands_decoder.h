@@ -48,14 +48,6 @@ enum class ESPEasy_cmd_e : uint8_t {
   event,
   executerules,
 #if FEATURE_ETHERNET
-  ethphyadr,
-  ethpinmdc,
-  ethpinmdio,
-  ethpinpower,
-  ethphytype,
-# if CONFIG_ETH_USE_ESP32_EMAC && FEATURE_ETHERNET
-  ethclockmode,
-#endif
   ethip,
   ethgateway,
   ethsubnet,
