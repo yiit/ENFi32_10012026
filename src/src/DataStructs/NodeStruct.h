@@ -29,7 +29,7 @@ struct __attribute__((__packed__)) NodeStruct
   // - lower load (TODO TD-er)
   bool operator<(const NodeStruct &other) const;
 
-  const __FlashStringHelper * getNodeTypeDisplayString() const;
+  String getNodeTypeDisplayString() const;
 
   String        getNodeName() const;
 

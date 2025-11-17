@@ -19,6 +19,8 @@
 #define NODE_TYPE_ID_ESP_EASY32C5_STD      41
 #define NODE_TYPE_ID_ESP_EASY32P4_STD      42
 #define NODE_TYPE_ID_ESP_EASY32H21_STD     43
+#define NODE_TYPE_ID_ESP_EASY32H4_STD      44
+#define NODE_TYPE_ID_ESP_EASY32P4r3_STD    45
 #define NODE_TYPE_ID_ARDUINO_EASY_STD      65
 #define NODE_TYPE_ID_NANO_EASY_STD         81
 
@@ -47,8 +49,12 @@
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32H2_STD
   # elif defined(ESP32H21)
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32H21_STD
+  # elif defined(ESP32H4)
+    #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32H4_STD
   # elif defined(ESP32P4)
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32P4_STD
+  # elif defined(ESP32P4r3)
+    #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32P4r3_STD
   # elif defined(ESP32_CLASSIC)
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32_STD
   # else 
@@ -59,6 +65,6 @@ static_assert(false, "Implement processor architecture");
 #endif
 
 
-const __FlashStringHelper* toNodeTypeDisplayString(uint8_t nodeType);
+String toNodeTypeDisplayString(uint8_t nodeType);
 
 #endif // ifndef DATATYPES_NODETYPEID_H

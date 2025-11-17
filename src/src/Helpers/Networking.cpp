@@ -450,11 +450,11 @@ uint8_t getTypeForUnit(uint8_t unit) {
   return it->second.nodeType;
 }
 
-const __FlashStringHelper* getTypeStringForUnit(uint8_t unit) {
+String getTypeStringForUnit(uint8_t unit) {
   auto it = Nodes.find(unit);
 
   if (it == Nodes.end()) {
-    return F("");
+    return EMPTY_STRING;
   }
   return it->second.getNodeTypeDisplayString();
 }

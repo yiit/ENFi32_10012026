@@ -135,7 +135,7 @@ bool NodeStruct::operator<(const NodeStruct &other) const {
 }
 
 
-const __FlashStringHelper * NodeStruct::getNodeTypeDisplayString() const {
+String NodeStruct::getNodeTypeDisplayString() const {
   return toNodeTypeDisplayString(nodeType);
 }
 

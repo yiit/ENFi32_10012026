@@ -80,7 +80,7 @@ uint8_t getTypeForUnit(uint8_t unit);
 /*********************************************************************************************\
    Get nodeTypeString for specific unit
 \*********************************************************************************************/
-const __FlashStringHelper* getTypeStringForUnit(uint8_t unit);
+String getTypeStringForUnit(uint8_t unit);
 
 /*********************************************************************************************\
    Send UDP message to specific unit (unit 255=broadcast)
