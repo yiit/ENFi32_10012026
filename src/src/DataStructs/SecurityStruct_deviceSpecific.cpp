@@ -71,6 +71,15 @@ void SecurityStruct_deviceSpecific::clearWiFiCredentials()
   }
 }
 
+bool SecurityStruct_deviceSpecific::hasWiFiCredentials() const
+{
+  for (uint8_t i = 0; i < MAX_EXTRA_WIFI_CREDENTIALS_SEPARATE_FILE; ++i)
+  {
+    if (hasWiFiCredentials(i)) return true;
+  }
+  return false;
+}
+
 bool SecurityStruct_deviceSpecific::hasWiFiCredentials(uint8_t index) const
 {
   return

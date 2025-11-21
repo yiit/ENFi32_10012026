@@ -47,6 +47,8 @@ public:
 
   void clearWiFiCredentials();
 
+  bool hasWiFiCredentials() const;
+
   bool hasWiFiCredentials(uint8_t index) const;
 
   // Move all set WiFi credentials to free up first entry

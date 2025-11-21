@@ -79,15 +79,15 @@ void WiFi_AP_CandidatesList::load_knownCredentials() {
         HeapSelectDram ephemeral;
         # endif // ifdef USE_SECOND_HEAP
 
-        known.emplace_back(index, ssid);
-
+        WiFi_AP_Candidate tmp_known(index, ssid);
         if (SettingsIndexMatchCustomCredentials(index)) {
           if (SettingsIndexMatchEmergencyFallback(index)) {
-            known.back().bits.isEmergencyFallback = true;
+            tmp_known.bits.isEmergencyFallback = true;
           } else {
-            known.back().bits.lowPriority = true;
+            tmp_known.bits.lowPriority = true;
           }
         }
+        known.push_back(tmp_known);
         ++index;
       }
     }
@@ -131,7 +131,7 @@ void WiFi_AP_CandidatesList::process_WiFiscan() {
   // Append or update found APs from scan.
   int scancount = WiFi.scanComplete();
 
-  if (scancount < 0) {} else {
+  if (scancount > 0) {
     for (int i = 0; i < scancount; ++i) {
       const WiFi_AP_Candidate tmp(i);
 
@@ -371,14 +371,14 @@ void WiFi_AP_CandidatesList::loadCandidatesFromScanned() {
     } else {
       if (scan->bits.isHidden) {
         if (Settings.IncludeHiddenSSID()) {
-          if (SecuritySettings.hasWiFiCredentials()) {
+          if (WiFi_AP_CandidatesList::hasWiFiCredentials()) {
             candidates.push_back(*scan);
           }
         }
       } else if (scan->ssid.length() > 0) {
         for (auto kn_it = known.begin(); kn_it != known.end(); ++kn_it) {
           if (scan->ssid.equals(kn_it->ssid)) {
-            WiFi_AP_Candidate tmp = *scan;
+            WiFi_AP_Candidate tmp(*scan);
             tmp.index                    = kn_it->index;
             tmp.bits.lowPriority         = kn_it->bits.lowPriority;
             tmp.bits.isEmergencyFallback = kn_it->bits.isEmergencyFallback;
@@ -533,11 +533,11 @@ bool WiFi_AP_CandidatesList::get_SSID_key(uint8_t index, String& ssid, String& k
   switch (index)
   {
     case 1:
-      ssid = SecuritySettings.WifiSSID;
+      ssid = SecuritySettings.getSSID(SecurityStruct::WiFiCredentialsSlot::first);
       key  = SecuritySettings.WifiKey;
       break;
     case 2:
-      ssid = SecuritySettings.WifiSSID2;
+      ssid = SecuritySettings.getSSID(SecurityStruct::WiFiCredentialsSlot::second);
       key  = SecuritySettings.WifiKey2;
       break;
     case WIFI_CUSTOM_DEPLOYMENT_KEY_INDEX:
@@ -591,6 +591,17 @@ bool WiFi_AP_CandidatesList::get_SSID_key(uint8_t index, String& ssid, String& k
 
   // Spaces are allowed in both SSID and pass phrase, so make sure to not trim the ssid and key.
   return !ssid.isEmpty() && key.length() >= 8;
+}
+
+bool WiFi_AP_CandidatesList::hasWiFiCredentials()
+{
+  uint8_t index = 1; // Index 0 is the "unset" value
+
+  for (; index < WIFI_CREDENTIALS_MAX_INDEX; ++index) {
+    String ssid;
+    if (get_SSID(index, ssid)) return true;
+  }
+  return false;
 }
 
 bool WiFi_AP_CandidatesList::get_SSID(uint8_t index, String& ssid)

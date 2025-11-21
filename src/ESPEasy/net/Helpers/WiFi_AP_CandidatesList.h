@@ -96,6 +96,8 @@ private:
                            String& ssid,
                            String& key);
 
+  static bool hasWiFiCredentials();
+
 public:
 
   static bool   get_SSID(uint8_t index,

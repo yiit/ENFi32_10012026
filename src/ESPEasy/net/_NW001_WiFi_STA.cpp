@@ -387,9 +387,9 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       // ESP32-C5 may use different SDIO pins.
       // See: https://github.com/espressif/esp-hosted-mcu/blob/main/docs/sdio.md#esp32-p4-function-ev-board-host-pin-mapping
 
-      addFormTextBox(getLabel(LabelType::SSID), F("ssid"), SecuritySettings.WifiSSID, 31);
+      addFormTextBox(getLabel(LabelType::SSID), F("ssid"), SecuritySettings.getSSID(SecurityStruct::WiFiCredentialsSlot::first), 31);
       addFormPasswordBox(F("WPA Key"), F("key"), SecuritySettings.WifiKey, 63);
-      addFormTextBox(F("Fallback SSID"), F("ssid2"), SecuritySettings.WifiSSID2, 31);
+      addFormTextBox(F("Fallback SSID"), F("ssid2"), SecuritySettings.getSSID(SecurityStruct::WiFiCredentialsSlot::second), 31);
       addFormPasswordBox(F("Fallback WPA Key"), F("key2"), SecuritySettings.WifiKey2, 63);
       addFormNote(F("WPA Key must be at least 8 characters long"));
 

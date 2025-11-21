@@ -40,6 +40,8 @@ struct SecurityStruct
 
   bool hasWiFiCredentials(WiFiCredentialsSlot slot) const;
 
+  String getSSID(WiFiCredentialsSlot slot) const;
+
   String getPassword() const;
 
   char          WifiSSID[32];
