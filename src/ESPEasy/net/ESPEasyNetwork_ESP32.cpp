@@ -129,8 +129,7 @@ bool NetworkConnected(bool force) {
 
   if (force || (timePassedSince(last_check_millis) > 50) || (last_check_millis == 0)) {
     last_check_millis = millis();
-    auto network_if = getDefaultNonAP_interface();
-
+    last_result = Network.isOnline();
 
     // FIXME TD-er: This is checking for NonAP interfaces, however we also have
     // ESPEasy::net::NWPluginCall(NWPlugin::Function::NWPLUGIN_WEBSERVER_SHOULD_RUN);
@@ -143,11 +142,7 @@ bool NetworkConnected(bool force) {
     // - mDNS
     // - Webserver
 
-    if (network_if == nullptr) {
-      return false;
-    }
     processNetworkEvents();
-    last_result = network_if->connected();
   }
   return last_result;
 }
