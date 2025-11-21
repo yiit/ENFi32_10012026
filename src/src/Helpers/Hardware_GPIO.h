@@ -20,7 +20,8 @@ bool getGpioInfo(int   gpio,
                  bool& warning);
 
 
-// For ESP32, see: https://github.com/espressif/arduino-esp32/blob/9d84c78cf2d44911639530e54a9dbb9ee9164f6c/cores/esp32/esp32-hal.h#L64-L75                 
+// For ESP32, see: https://github.com/espressif/arduino-esp32/blob/9d84c78cf2d44911639530e54a9dbb9ee9164f6c/cores/esp32/esp32-hal.h#L64-L75
+// BOOT_PIN is defined for all ESP32 chips.
 bool isBootModePin(int gpio);
 
 bool isBootStrapPin(int gpio);

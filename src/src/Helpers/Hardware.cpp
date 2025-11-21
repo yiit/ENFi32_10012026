@@ -457,14 +457,18 @@ int  getCPU_MaxFreqMHz()
 #elif CONFIG_IDF_TARGET_ESP32C6
     return 160;
 #elif CONFIG_IDF_TARGET_ESP32C61
-    return 120;
+    return 160;
 #elif CONFIG_IDF_TARGET_ESP32C5
     return 240;
 #elif CONFIG_IDF_TARGET_ESP32H2
     //IDF-6570
     return 96;
 #elif CONFIG_IDF_TARGET_ESP32P4
+  #ifdef CONFIG_ESP32P4_SELECTS_REV_LESS_V3 
+    return 360;
+  #else
     return 400;
+  #endif
 #elif CONFIG_IDF_TARGET_ESP32S2
     return 240;
 #elif CONFIG_IDF_TARGET_ESP32S3

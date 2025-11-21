@@ -7,7 +7,8 @@
 const __FlashStringHelper* getChipModel(uint32_t chip_model, uint32_t chip_revision, uint32_t pkg_version, bool single_core)
 {
   if (18 == chip_model) { // ESP32-P4
-    return F("ESP32-P4");
+    const uint16_t rev = getChipRevision_val();
+    return rev < 300 ? F("ESP32-P4") : F("ESP32-P4r3");
   }
 
   return F("Unknown");

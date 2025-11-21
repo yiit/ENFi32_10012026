@@ -5,7 +5,7 @@
       },
       "core": "esp32",
       "extra_flags": "-DARDUINO_TASMOTA -DBOARD_HAS_PSRAM -DARDUINO_USB_MODE=1 -DUSE_USB_CDC_CONSOLE -DESP32_8M -DESP32C61 -DARDUINO_USB_CDC_ON_BOOT=1",
-      "f_cpu": "120000000L",
+      "f_cpu": "160000000L",
       "f_flash": "80000000L",
       "flash_mode": "qio",
       "mcu": "esp32c61",

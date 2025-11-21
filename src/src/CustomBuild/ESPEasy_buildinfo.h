@@ -49,7 +49,11 @@
   #elif defined(ESP32H21)
     # define BUILD_NOTES                 " - Mega32-h21"
   #elif defined(ESP32P4)
+  #ifdef CONFIG_ESP32P4_SELECTS_REV_LESS_V3 
     # define BUILD_NOTES                 " - Mega32-p4"
+  #else
+    # define BUILD_NOTES                 " - Mega32-p4r3"
+  #endif
   # elif defined(ESP32_CLASSIC)
     # define BUILD_NOTES                 " - Mega32"
   # else

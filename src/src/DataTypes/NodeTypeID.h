@@ -52,9 +52,11 @@
   # elif defined(ESP32H4)
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32H4_STD
   # elif defined(ESP32P4)
+  #ifdef CONFIG_ESP32P4_SELECTS_REV_LESS_V3
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32P4_STD
-  # elif defined(ESP32P4r3)
+  #else
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32P4r3_STD
+  #endif
   # elif defined(ESP32_CLASSIC)
     #  define NODE_TYPE_ID            NODE_TYPE_ID_ESP_EASY32_STD
   # else 

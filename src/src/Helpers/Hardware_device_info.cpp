@@ -383,8 +383,8 @@ bool isESP8285() {
 
 #endif // ifdef ESP32
 
-
-String getChipRevision() {
+uint16_t getChipRevision_val()
+{
   static uint16_t rev = 0;
 
   #ifdef ESP32
@@ -400,6 +400,12 @@ String getChipRevision() {
     # endif // if ESP_IDF_VERSION_MAJOR < 5
   }
   #endif // ifdef ESP32
+  return rev;
+}
+
+
+String getChipRevision() {
+  const uint16_t rev = getChipRevision_val();
   return strformat(F("%d.%02d"), rev / 100, rev % 100);
 }
 
