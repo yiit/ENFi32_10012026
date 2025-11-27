@@ -745,7 +745,7 @@ void SettingsStruct_tmpl<N_TASKS>::clearMisc() {
   I2C_clockSpeed                   = DEFAULT_I2C_CLOCK_SPEED;
   WebserverPort                    = 80;
   SyslogPort                       = 514;
-  GlobalSync                       = false;
+  GlobalSync_unused                = false;
   ConnectionFailuresThreshold      = 0;
   MQTTRetainFlag_unused            = false;
   InitSPI                          = DEFAULT_SPI;

@@ -320,10 +320,10 @@ void ResetFactory(bool formatFS)
   Settings.NetworkMedium = gpio_settings.network_medium;
 
   /*
-          Settings.GlobalSync						= DEFAULT_USE_GLOBAL_SYNC;
+          Settings.GlobalSync_unused	= DEFAULT_USE_GLOBAL_SYNC;
 
           Settings.IP_Octet						= DEFAULT_IP_OCTET;
-          Settings.WDI2CAddress					= DEFAULT_WD_IC2_ADDRESS;
+          Settings.WDI2CAddress			  = DEFAULT_WD_IC2_ADDRESS;
           Settings.UseSSDP						= DEFAULT_USE_SSDP;
           Settings.ConnectionFailuresThreshold	= DEFAULT_CON_FAIL_THRES;
           Settings.WireClockStretchLimit			= DEFAULT_I2C_CLOCK_LIMIT;

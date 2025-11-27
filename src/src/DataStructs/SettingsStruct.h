@@ -482,7 +482,7 @@ public:
   boolean       UseSSDP = false;
   uint8_t       ExternalTimeSource = 0;
   uint32_t WireClockStretchLimit = 0;
-  boolean       GlobalSync = false;
+  boolean       GlobalSync_unused = false;
   uint32_t ConnectionFailuresThreshold = 0;
   int16_t       TimeZone = 0;
   boolean       MQTTRetainFlag_unused = false;
