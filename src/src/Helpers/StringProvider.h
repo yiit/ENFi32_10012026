@@ -270,16 +270,6 @@ String getEthSpeed();
 String getEthLinkSpeedState();
 #endif // if FEATURE_ETHERNET
 
-
-String getLabel(
-    LabelType::Enum label, 
-    String&         internalLabel,
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-    String&         unit,
-#endif
-    String&         note,
-    char            replaceSpace = '_');
-
 String getInternalLabel(const KeyValueStruct& kv,
                         char            replaceSpace = '_');
 String getInternalLabel(LabelType::Enum label,
@@ -289,6 +279,8 @@ String getLabel(const KeyValueStruct& kv);
 String getLabel(LabelType::Enum label);
 
 String getValue(const KeyValueStruct& kv);
+int64_t getValue_int(const KeyValueStruct& kv);
+double  getValue_float(const KeyValueStruct& kv);
 String getValue(LabelType::Enum label);
 String getExtendedValue(LabelType::Enum label);
 

@@ -93,21 +93,12 @@ void FormSelectorOptions::clearClassName()
 
 void FormSelectorOptions::addFormSelector(LabelType::Enum label, int selectedIndex) const
 {
-  String internalLabel;
+  auto kv = getKeyValue(label);
+  addFormSelector(getLabel(kv), getInternalLabel(kv), selectedIndex);
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  String unit;
+  addUnit(kv.getUnit());
   #endif
-  String note;
-  const String labelStr = getLabel(label, internalLabel
-    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-    , unit
-    #endif
-    ,note);
-  addFormSelector(labelStr, internalLabel, selectedIndex);
-  #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  addUnit(unit);
-  #endif
-  addFormNote(note);
+  addFormNote(label);
 }
 
 void FormSelectorOptions::addFormSelector(

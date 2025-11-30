@@ -67,7 +67,6 @@ void addFormCheckBox(const __FlashStringHelper * label, const String& id, bool c
 // Add a Numeric Box form
 // ********************************************************************************
 void addFormNumericBox(LabelType::Enum label,
-                       int             value,
                        int             min = INT_MIN,
                        int             max = INT_MAX
                        #if FEATURE_TOOLTIPS
@@ -106,7 +105,6 @@ void addFormNumericBox(const String& label,
 
 
 void addFormFloatNumberBox(LabelType::Enum label,
-                           float           value,
                            float           min,
                            float           max,
                            uint8_t         nrDecimals = 6,

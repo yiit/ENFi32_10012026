@@ -634,6 +634,10 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       KeyValueStruct kv(F("DNS"));
       kv.appendValue(getValue(LabelType::DNS_1));
       kv.appendValue(getValue(LabelType::DNS_2));
+      #ifdef ESP32
+      kv.appendValue(formatIP(ESPEasy::net::NetworkDnsIP(2)));
+      #endif
+
       return kv;
     }
     case LabelType::DNS_1:
@@ -1228,31 +1232,6 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
   return KeyValueStruct();
 }
 
-String getLabel(
-    LabelType::Enum label, 
-    String&         internalLabel,
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-    String&         unit,
-#endif
-    String&         note,
-    char            replaceSpace)
-{
-  auto kv = getKeyValue(label);
-  internalLabel = kv.getID();
-  if (replaceSpace != '\0') internalLabel.replace(" ", String(replaceSpace));
-
-  if (kv._key.isEmpty()) {
-    return F("MissingString");
-  }
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  unit = kv.getUnit();
-#endif
-#ifndef MINIMAL_OTA
-  note = getFormNote(label);
-#endif
-  return kv._key.toString();
-}
-
 String getInternalLabel(const KeyValueStruct& kv,
                         char            replaceSpace)
 {
@@ -1284,6 +1263,22 @@ String getValue(const KeyValueStruct& kv)
 {
   if (kv._values.size() && kv._values[0].isSet()) { return kv._values[0].toString(); }
   return EMPTY_STRING;
+}
+
+int64_t getValue_int(const KeyValueStruct& kv)
+{
+  if (kv._values.size() && kv._values[0].isSet()) { 
+    return kv._values[0].toInt();
+  }
+  return 0;
+}
+
+double  getValue_float(const KeyValueStruct& kv)
+{
+  if (kv._values.size() && kv._values[0].isSet()) { 
+    return kv._values[0].toFloat();
+  }
+  return 0;
 }
 
 String getValue(LabelType::Enum label) {

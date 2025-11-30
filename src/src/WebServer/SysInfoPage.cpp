@@ -9,7 +9,9 @@
 # include "../../ESPEasy/net/Globals/NetworkState.h"
 # include "../../ESPEasy/net/Helpers/NWAccessControl.h"
 # include "../../ESPEasy/net/Helpers/NW_info_writer.h"
+#if FEATURE_ETHERNET
 # include "../../ESPEasy/net/eth/ESPEasyEth.h"
+#endif
 # include "../../ESPEasy/net/wifi/ESPEasyWifi.h"
 # include "../Commands/Diagnostic.h"
 # include "../CustomBuild/CompiletimeDefines.h"
@@ -283,13 +285,11 @@ void handle_sysinfo() {
 
   handle_sysinfo_Network();
 
-#  if FEATURE_ETHERNET
-  handle_sysinfo_Ethernet();
-#  endif // if FEATURE_ETHERNET
-
 #  ifndef WEBSERVER_SYSINFO_MINIMAL
   handle_sysinfo_WiFiSettings();
 #  endif
+
+  handle_sysinfo_NetworkAdapters();
 
   handle_sysinfo_Firmware();
 
@@ -386,28 +386,6 @@ void handle_sysinfo_memory() {
 
 #  endif // ifndef WEBSERVER_SYSINFO_MINIMAL
 
-#  if FEATURE_ETHERNET
-
-void handle_sysinfo_Ethernet() {
-  if (active_network_medium == ESPEasy::net::NetworkMedium_t::Ethernet) {
-    addTableSeparator(F("Ethernet"), 2, 3);
-
-    static const LabelType::Enum labels[] PROGMEM =
-    {
-      LabelType::ETH_CHIP,
-      LabelType::ETH_STATE,
-      LabelType::ETH_SPEED,
-      LabelType::ETH_DUPLEX,
-      LabelType::ETH_MAC,
-
-      LabelType::MAX_LABEL
-    };
-
-    addRowLabelValues(labels);
-  }
-}
-
-#  endif // if FEATURE_ETHERNET
 
 void handle_sysinfo_Network() {
   addTableSeparator(F("Network"), 2, 3);
@@ -438,6 +416,9 @@ void handle_sysinfo_Network() {
 
     addRowLabelValues(labels);
   }
+}
+
+void handle_sysinfo_NetworkAdapters() {
 #ifndef LIMIT_BUILD_SIZE
   for (ESPEasy::net::networkIndex_t x = 0; x < NETWORK_MAX; ++x)
   {

@@ -80,6 +80,10 @@ public:
 
   String       toString(ValueType& valueType) const;
 
+  int64_t      toInt() const;
+
+  double       toFloat() const;
+
   size_t       print(Print& out) const;
 
   bool         isEmpty() const;

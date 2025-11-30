@@ -114,7 +114,7 @@ void addFormCheckBox(LabelType::Enum label, bool disabled
                      #endif // if FEATURE_TOOLTIPS
                      ) {
   auto kv = getKeyValue(label);
-  const bool checked = !getValue(kv).equals("0");
+  const bool checked = getValue_int(kv) != 0;
 
   addFormCheckBox(getLabel(kv), getInternalLabel(kv), checked, disabled
                   #if FEATURE_TOOLTIPS
@@ -134,33 +134,24 @@ void addFormCheckBox_disabled(LabelType::Enum label) {
 // ********************************************************************************
 // Add a Numeric Box form
 // ********************************************************************************
-void addFormNumericBox(LabelType::Enum label, int value, int min, int max
+void addFormNumericBox(LabelType::Enum label, int min, int max
                        #if FEATURE_TOOLTIPS
                        , const String& tooltip
                        #endif // if FEATURE_TOOLTIPS
                        , bool disabled
                        )
 {
-  String internalLabel;
-  #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  String unit;
-  #endif
-  String note;
-  const String labelStr = getLabel(label, internalLabel
-    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-    , unit
-    #endif
-    ,note);
-  addFormNumericBox(labelStr, internalLabel, value, min, max
+  auto kv = getKeyValue(label);
+  addFormNumericBox(getLabel(kv), getInternalLabel(kv), getValue(kv).toInt(), min, max
                     #if FEATURE_TOOLTIPS
                     , tooltip
                     #endif // if FEATURE_TOOLTIPS
                     , disabled
                     );
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  addUnit(unit);
+  addUnit(kv.getUnit());
   #endif
-  addFormNote(note);
+  addFormNote(label);
 }
 
 void addFormNumericBox(const __FlashStringHelper * label, 
@@ -202,30 +193,22 @@ void addFormNumericBox(const String& label, const String& id, int value, int min
                 );
 }
 
-void addFormFloatNumberBox(LabelType::Enum label, float value, float min, float max, uint8_t nrDecimals, float stepsize
+void addFormFloatNumberBox(LabelType::Enum label, float min, float max, uint8_t nrDecimals, float stepsize
                            #if FEATURE_TOOLTIPS
                            , const String& tooltip
                            #endif // if FEATURE_TOOLTIPS
                            ) {
-  String internalLabel;
-  #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  String unit;
-  #endif
-  String note;
-  const String labelStr = getLabel(label, internalLabel
-    #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-    , unit
-    #endif
-    ,note);
-  addFormFloatNumberBox(labelStr, internalLabel, value, min, max, nrDecimals, stepsize
+  auto kv = getKeyValue(label);
+
+  addFormFloatNumberBox(getLabel(kv), getInternalLabel(kv), getValue_float(kv), min, max, nrDecimals, stepsize
                         #if FEATURE_TOOLTIPS
                         , tooltip
                         #endif // if FEATURE_TOOLTIPS
                         );
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  addUnit(unit);
+  addUnit(kv.getUnit());
   #endif
-  addFormNote(note);
+  addFormNote(label);
 }
 
 void addFormFloatNumberBox(const String& label,

@@ -282,7 +282,7 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
           LabelType::WIFI_AP_CHANNEL,
           Settings.WiFiAP_channel);
 # else // if CONFIG_SOC_WIFI_SUPPORT_5G
-        addFormNumericBox(LabelType::WIFI_AP_CHANNEL, Settings.WiFiAP_channel, 1, 14);
+        addFormNumericBox(LabelType::WIFI_AP_CHANNEL, 1, 14);
 # endif // if CONFIG_SOC_WIFI_SUPPORT_5G
 
       }
@@ -299,8 +299,8 @@ bool NWPlugin_002(NWPlugin::Function function, EventStruct *event, String& strin
         addFormCheckBoxes(labels, NR_ELEMENTS(labels));
       }
 
-      addFormNumericBox(LabelType::WIFI_MAX_UPTIME_AUTO_START_AP, Settings.APfallback_autostart_max_uptime_m(), 0, 255);
-      addFormNumericBox(LabelType::WIFI_AP_MINIMAL_ON_TIME,       Settings.APfallback_minimal_on_time_sec(),    0, 255);
+      addFormNumericBox(LabelType::WIFI_MAX_UPTIME_AUTO_START_AP, 0, 255);
+      addFormNumericBox(LabelType::WIFI_AP_MINIMAL_ON_TIME,       0, 255);
       break;
     }
 

@@ -461,14 +461,14 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
       addFormSubHeader(F("WiFi Power"));
       addFormCheckBox(LabelType::FORCE_WIFI_NOSLEEP);
 # if FEATURE_SET_WIFI_TX_PWR
-      addFormFloatNumberBox(LabelType::WIFI_TX_MAX_PWR, Settings.getWiFi_TX_power(), 0.0f, MAX_TX_PWR_DBM_11b, 2, 0.25f);
-      addFormNumericBox(LabelType::WIFI_SENS_MARGIN, Settings.WiFi_sensitivity_margin, -20, 30);
+      addFormFloatNumberBox(LabelType::WIFI_TX_MAX_PWR, 0.0f, MAX_TX_PWR_DBM_11b, 2, 0.25f);
+      addFormNumericBox(LabelType::WIFI_SENS_MARGIN, -20, 30);
       addFormCheckBox(LabelType::WIFI_SEND_AT_MAX_TX_PWR);
 # endif // if FEATURE_SET_WIFI_TX_PWR
 
       addFormSubHeader(F("WiFi Tweaks"));
 
-      addFormNumericBox(LabelType::WIFI_NR_RECONNECT_ATTEMPTS, Settings.ConnectFailRetryCount, 0, 255);
+      addFormNumericBox(LabelType::WIFI_NR_RECONNECT_ATTEMPTS, 0, 255);
       {
         LabelType::Enum labels[]{
           LabelType::RESTART_WIFI_LOST_CONN

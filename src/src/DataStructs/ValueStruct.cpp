@@ -212,6 +212,67 @@ String ValueStruct::toString(ValueType& valueType) const
   return res;
 }
 
+int64_t ValueStruct::toInt() const
+{
+  switch(getValueType())
+  {
+    case ValueStruct::ValueType::Bool:
+    {
+      return u64_val == 0 ? 0 : 1;
+    }
+    case ValueStruct::ValueType::Int:
+    {
+      return i64_val;
+    }
+    case ValueStruct::ValueType::UInt:
+    {
+      if (u64_val < std::numeric_limits<int64_t>::max()) {
+        return u64_val;
+      }
+      break;
+    }
+    case ValueStruct::ValueType::String:
+    case ValueStruct::ValueType::FlashString:
+    case ValueStruct::ValueType::Float:
+    case ValueStruct::ValueType::Double:
+    case ValueStruct::ValueType::Unset:
+      break;
+  }
+  return toString().toInt();
+}
+
+double ValueStruct::toFloat() const
+{
+  switch(getValueType())
+  {
+    case ValueStruct::ValueType::Bool:
+    {
+      return u64_val == 0 ? 0 : 1;
+    }
+    case ValueStruct::ValueType::Int:
+    {
+      return i64_val;
+    }
+    case ValueStruct::ValueType::UInt:
+    {
+      return u64_val;
+    }
+    case ValueStruct::ValueType::Float:
+    {
+      return f_val;
+    }
+    case ValueStruct::ValueType::Double:
+    {
+      return d_val;
+    }
+    case ValueStruct::ValueType::String:
+    case ValueStruct::ValueType::FlashString:
+    case ValueStruct::ValueType::Unset:
+      break;
+  }
+  return 0.0;
+}
+
 size_t ValueStruct::print(Print& out) const
 {
   ValueStruct::ValueType v;

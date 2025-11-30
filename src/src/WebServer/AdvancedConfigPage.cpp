@@ -395,7 +395,7 @@ void handle_advanced() {
   addFormCheckBox_disabled(F("Use SSDP"), F("usessdp"), Settings.UseSSDP);
   #endif // if FEATURE_SSDP
 
-  addFormNumericBox(LabelType::CONNECTION_FAIL_THRESH, Settings.ConnectionFailuresThreshold, 0, 100);
+  addFormNumericBox(LabelType::CONNECTION_FAIL_THRESH, 0, 100);
 
 
 
