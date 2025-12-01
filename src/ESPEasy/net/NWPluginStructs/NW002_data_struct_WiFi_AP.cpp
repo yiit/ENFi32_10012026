@@ -81,18 +81,21 @@ NW002_data_struct_WiFi_AP::~NW002_data_struct_WiFi_AP()
   stats_and_cache.processEvent_and_clear();
 }
 
-void NW002_data_struct_WiFi_AP::webform_load(EventStruct *event) {}
+void NW002_data_struct_WiFi_AP::webform_load(EventStruct *event)        {}
 
-void NW002_data_struct_WiFi_AP::webform_save(EventStruct *event) {}
+void NW002_data_struct_WiFi_AP::webform_save(EventStruct *event)        {}
 
-bool NW002_data_struct_WiFi_AP::webform_getPort(KeyValueWriter *writer)     { return true; }
+bool NW002_data_struct_WiFi_AP::webform_getPort(KeyValueWriter *writer) { return true; }
 
 bool NW002_data_struct_WiFi_AP::init(EventStruct *event)
 {
 # ifdef ESP32
   nw002_enable_NAPT = Settings.WiFi_AP_enable_NAPT();
 # endif
-  ESPEasy::net::wifi::setAPinternal(true);
+
+  if (Settings.StartAP_on_NW002_init()) {
+    ESPEasy::net::wifi::setAPinternal(true);
+  }
 # ifdef ESP32
   NW002_update_NAPT();
 # endif
@@ -122,7 +125,6 @@ NWPluginData_static_runtime * NW002_data_struct_WiFi_AP::getNWPluginData_static_
   }
   return nullptr;
 }
-
 
 # ifdef ESP32
 

@@ -44,14 +44,6 @@ void addFormNote(const String& text, const String& id)
   addHtmlDiv(F("note"), concat(F("Note: "), text));
 }
 
-void addFormNote(const LabelType::Enum& label)
-{
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  addUnit(getFormUnit(label));
-#endif
-  addFormNote(getFormNote(label));
-}
-
 // ********************************************************************************
 // Create Forms
 // ********************************************************************************
@@ -124,7 +116,7 @@ void addFormCheckBox(LabelType::Enum label, bool disabled
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(kv.getUnit());
   #endif
-  addFormNote(label);
+  addFormNote(getFormNote(label));
 }
 
 void addFormCheckBox_disabled(LabelType::Enum label) {
@@ -151,7 +143,7 @@ void addFormNumericBox(LabelType::Enum label, int min, int max
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(kv.getUnit());
   #endif
-  addFormNote(label);
+  addFormNote(getFormNote(label));
 }
 
 void addFormNumericBox(const __FlashStringHelper * label, 
@@ -208,7 +200,7 @@ void addFormFloatNumberBox(LabelType::Enum label, float min, float max, uint8_t 
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(kv.getUnit());
   #endif
-  addFormNote(label);
+  addFormNote(getFormNote(label));
 }
 
 void addFormFloatNumberBox(const String& label,

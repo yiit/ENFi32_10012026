@@ -96,6 +96,7 @@ void ESPEasyWiFi_t::loop()
       //      setState(WiFiState_e::IdleWaiting, 100);
       break;
     case WiFiState_e::AP_only:
+    case WiFiState_e::AP_Fallback:
 
       if (WiFi_AP_Candidates.hasCandidates() ||
           (_state_timeout.timeReached() &&
@@ -183,8 +184,9 @@ void ESPEasyWiFi_t::loop()
         if (WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::WiFiOFF, 100);
         } else {
-          if (!Settings.DoNotStartAPfallback_ConnectFail()) {
-            setState(WiFiState_e::AP_only, WIFI_STATE_MACHINE_AP_ONLY_TIMEOUT);
+          if (shouldStartAP_fallback()) {
+            setState(WiFiState_e::AP_Fallback, Settings.APfallback_minimal_on_time_sec() * 1000);
+            // TODO TD-er: Must keep track of whether the user has forced AP to be autostarted.
           } else {
             setState(WiFiState_e::WiFiOFF, 1000);
           }
@@ -317,7 +319,8 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
   }
 # endif // ifndef BUILD_NO_DEBUG
 
-  if (_state == WiFiState_e::AP_only) {
+  if (_state == WiFiState_e::AP_only ||
+      _state == WiFiState_e::AP_Fallback) {
     setAPinternal(false);
     setAP(false);
   }
@@ -364,6 +367,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       setSTA_AP(false, false);
       break;
     case WiFiState_e::AP_only:
+    case WiFiState_e::AP_Fallback:
       setAPinternal(true);
       break;
     case WiFiState_e::IdleWaiting:
@@ -383,6 +387,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
     case WiFiState_e::STA_Reconnecting:
 
       // Start connecting
+      ++_connect_attempt;
       if (!connectSTA()) {
         // TODO TD-er: Must keep track of failed attempts and start AP when either no credentials present or nr. of attempts failed > some
         // threshold.
@@ -400,6 +405,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       // FIXME TD-er: Must move to ESP32-specific cpp file
       // WiFi.STA.setDefault();
 # endif // ifdef ESP32
+      _connect_attempt = 0;
       _last_seen_connected.setNow();
       _state_timeout.clear();
       auto wifi_STA_data = getWiFi_STA_NWPluginData_static_runtime();

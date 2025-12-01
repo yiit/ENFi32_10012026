@@ -260,15 +260,26 @@ class SettingsStruct_tmpl
   inline bool StartAPfallback_NoCredentials() const  { return !VariousBits_2.StartAPfallback_NoCredentials; }
   inline void StartAPfallback_NoCredentials(bool value) { VariousBits_2.StartAPfallback_NoCredentials = !value; }
 
+  inline bool StartAP_on_NW002_init() const  { return VariousBits_2.StartAP_on_NW002_init; }
+  inline void StartAP_on_NW002_init(bool value) { VariousBits_2.StartAP_on_NW002_init = value; }
+
   inline bool DoNotStartAPfallback_ConnectFail() const  { return VariousBits_1.DoNotStartAPfallback_ConnectFail; }
   inline void DoNotStartAPfallback_ConnectFail(bool value) { VariousBits_1.DoNotStartAPfallback_ConnectFail = value; }
 
   inline uint8_t APfallback_autostart_max_uptime_m() const { return VariousBits_2.APfallback_autostart_max_uptime_m; }
   inline void    APfallback_autostart_max_uptime_m(uint8_t count) { VariousBits_2.APfallback_autostart_max_uptime_m = count; }
 
-  inline uint8_t APfallback_minimal_on_time_sec() const { return VariousBits_2.APfallback_minimal_on_time_sec; }
-  inline void    APfallback_minimal_on_time_sec(uint8_t count) { VariousBits_2.APfallback_minimal_on_time_sec = count; }
-
+  inline uint8_t APfallback_minimal_on_time_sec() const { 
+    if (VariousBits_2.APfallback_minimal_on_time_sec == 0) {
+      return DEFAULT_AP_FALLBACK_MINIMAL_ON_TIME_SEC;
+    }
+    return VariousBits_2.APfallback_minimal_on_time_sec;
+  }
+  inline void    APfallback_minimal_on_time_sec(uint8_t count) { 
+    VariousBits_2.APfallback_minimal_on_time_sec = 
+      (count == DEFAULT_AP_FALLBACK_MINIMAL_ON_TIME_SEC)
+      ? 0 : count;
+  }
 
   inline bool UseAlternativeDeepSleep() const { return VariousBits_1.UseAlternativeDeepSleep; }
   inline void UseAlternativeDeepSleep(bool value) { VariousBits_1.UseAlternativeDeepSleep = value; }
@@ -707,7 +718,7 @@ public:
       uint32_t MQTTConnectInBackground             : 1; // Bit 13  // inverted
 
       uint32_t StartAPfallback_NoCredentials       : 1; // Bit 14 // inverted
-      uint32_t StartAPfallback_NoKnownAP_visible   : 1; // Bit 15 // inverted
+      uint32_t StartAP_on_NW002_init               : 1; // Bit 15
       uint32_t APfallback_minimal_on_time_sec      : 8; // Bit 16 - 23
       uint32_t APfallback_autostart_max_uptime_m   : 8; // Bit 23 - 31  '0' == disabled
     };

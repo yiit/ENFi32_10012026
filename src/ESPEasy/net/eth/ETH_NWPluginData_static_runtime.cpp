@@ -209,7 +209,9 @@ void ETH_NWPluginData_static_runtime::onEvent(
           ETH_stats_and_cache[i]->mark_lost_IP(&info.lost_ip);
           break;
 
-        default: addLog(LOG_LEVEL_INFO, concat(F("ETH Event: "), event));
+        default:
+          // addLog(LOG_LEVEL_INFO, concat(F("ETH Event: "), event));
+          break;
       }
     }
   }

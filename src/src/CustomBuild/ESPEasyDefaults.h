@@ -51,6 +51,10 @@
 #define DEFAULT_AP_KEY      "configesp"         // Enter network WPA key for AP (config) mode
 #endif
 
+#ifndef DEFAULT_AP_FALLBACK_MINIMAL_ON_TIME_SEC
+#define DEFAULT_AP_FALLBACK_MINIMAL_ON_TIME_SEC  60  // Minimal time to leave the AP on to allow a user to connect to it for entering setup
+#endif
+
 // --- Wifi Client Mode -----------------------------------------------------------------------------
 #ifndef DEFAULT_SSID
 #define DEFAULT_SSID        "ssid"              // Enter your Wifi network SSID

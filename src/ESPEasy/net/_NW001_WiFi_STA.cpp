@@ -79,6 +79,8 @@ bool NWPlugin_001(NWPlugin::Function function, EventStruct *event, String& strin
 # endif // ifdef ESP32
       Settings.setNetworkInterfaceSubnetBlockClientIP(event->NetworkIndex, false);
       Settings.setNetworkInterfaceStartupDelayAtBoot(event->NetworkIndex, 1000);
+
+      Settings.ConnectFailRetryCount = 1;
       break;
     }
 

@@ -98,7 +98,7 @@ void FormSelectorOptions::addFormSelector(LabelType::Enum label, int selectedInd
   #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   addUnit(kv.getUnit());
   #endif
-  addFormNote(label);
+  addFormNote(getFormNote(label));
 }
 
 void FormSelectorOptions::addFormSelector(

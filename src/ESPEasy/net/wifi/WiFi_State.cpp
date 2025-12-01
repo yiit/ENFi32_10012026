@@ -14,6 +14,7 @@ const __FlashStringHelper* toString(WiFiState_e state)
     case ESPEasy::net::wifi::WiFiState_e::Disabled: return F("Disabled");
     case ESPEasy::net::wifi::WiFiState_e::WiFiOFF: return F("OFF");
     case ESPEasy::net::wifi::WiFiState_e::AP_only: return F("AP_only");
+    case ESPEasy::net::wifi::WiFiState_e::AP_Fallback: return F("AP_Fallback");
     case ESPEasy::net::wifi::WiFiState_e::IdleWaiting: return F("IdleWaiting");
     case ESPEasy::net::wifi::WiFiState_e::STA_Scanning: return F("STA_Scanning");
     case ESPEasy::net::wifi::WiFiState_e::STA_AP_Scanning: return F("STA_AP_Scanning");

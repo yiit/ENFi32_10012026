@@ -33,7 +33,7 @@ namespace wifi {
    STA_Scanning:
    When finished:
     If known candidate present -> IdleWaiting
-    else if no known candidate present -> start AP_only -> IdleWaiting
+    else if no known candidate present -> start AP_Fallback -> IdleWaiting
 
    STA_Connecting:
    When failed -> STA_Reconnecting
@@ -61,7 +61,12 @@ enum class WiFiState_e
   WiFiOFF,
 
   // Only running in AP mode
+  // Typically this is only used when STA is off and AP Auto Start is checked
+  // TODO TD-er: Must implement this.
   AP_only,
+
+  // Fallback mode which is started when connecting to AP was not possible
+  AP_Fallback,
 
   // WiFi was in some kind of error state or needs waiting period
   IdleWaiting,

@@ -73,6 +73,8 @@ private:
 
   STA_connected_state getSTA_connected_state() const;
 
+  bool shouldStartAP_fallback() const;
+
   //  WiFi_AP_Candidate _active_sta;
   //  WiFi_AP_Candidate _AP_conf;
 
@@ -89,7 +91,8 @@ private:
 
   //  LongTermTimer _AP_start_timestamp;
 
-  //uint32_t _connect_attempt = 0;
+  uint32_t _connect_attempt = 0;
+  
 
 
   //  uint32_t _nrReconnects = 0;
