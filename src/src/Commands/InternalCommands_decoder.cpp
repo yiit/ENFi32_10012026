@@ -96,14 +96,24 @@ const char Internal_commands_fghij[] PROGMEM =
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
 ;
 
+#if FEATURE_LAT_LONG_VAR_CMD
+#define Int_cmd_l_offset ESPEasy_cmd_e::latitude
+#else // if FEATURE_LAT_LONG_VAR_CMD
 #define Int_cmd_l_offset ESPEasy_cmd_e::let
+#endif // if FEATURE_LAT_LONG_VAR_CMD
 const char Internal_commands_l[] PROGMEM =
+  #if FEATURE_LAT_LONG_VAR_CMD
+  "latitude|"
+  #endif // if FEATURE_LAT_LONG_VAR_CMD
   "let|"
   #if FEATURE_STRING_VARIABLES
   "letstr|"
   #endif
   "load|"
   "logentry|"
+  #if FEATURE_LAT_LONG_VAR_CMD
+  "longitude|"
+  #endif // if FEATURE_LAT_LONG_VAR_CMD
   "looptimerset|"
   "looptimerset_ms|"
   "looptimersetandrun|"

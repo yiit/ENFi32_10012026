@@ -18,6 +18,10 @@
 #include "../Commands/InternalCommands_decoder.h"
 #include "../Commands/i2c.h"
 
+#if FEATURE_LAT_LONG_VAR_CMD
+#include "../Commands/LatitudeLongitude.h"
+#endif // if FEATURE_LAT_LONG_VAR_CMD
+
 #if FEATURE_MQTT
 # include "../Commands/MQTT.h"
 #endif // if FEATURE_MQTT
@@ -319,12 +323,18 @@ bool InternalCommands::executeInternalCommand()
 #ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
     case ESPEasy_cmd_e::jsonportstatus:             COMMAND_CASE_A(Command_JSONPortStatus, -1);              // Diagnostic.h
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
+    #if FEATURE_LAT_LONG_VAR_CMD
+    case ESPEasy_cmd_e::latitude:                   COMMAND_CASE_A(Command_Latitude,               -1);      // LatitudeLongitude.h
+    #endif // if FEATURE_LAT_LONG_VAR_CMD
     case ESPEasy_cmd_e::let:                        COMMAND_CASE_A(Command_Rules_Let,               2);      // Rules.h
     #if FEATURE_STRING_VARIABLES
     case ESPEasy_cmd_e::letstr:                     COMMAND_CASE_A(Command_Rules_LetStr,            2);      // Rules.h
     #endif // if FEATURE_STRING_VARIABLES
     case ESPEasy_cmd_e::load:                       COMMAND_CASE_A(Command_Settings_Load,           0);      // Settings.h
     case ESPEasy_cmd_e::logentry:                   COMMAND_CASE_A(Command_logentry,               -1);      // Diagnostic.h
+    #if FEATURE_LAT_LONG_VAR_CMD
+    case ESPEasy_cmd_e::longitude:                  COMMAND_CASE_A(Command_Longitude,              -1);      // LatitudeLongitude.h
+    #endif // if FEATURE_LAT_LONG_VAR_CMD
     case ESPEasy_cmd_e::looptimerset:               COMMAND_CASE_A(Command_Loop_Timer_Set,          3);      // Timers.h
     case ESPEasy_cmd_e::looptimerset_ms:            COMMAND_CASE_A(Command_Loop_Timer_Set_ms,       3);      // Timers.h
     case ESPEasy_cmd_e::looptimersetandrun:         COMMAND_CASE_A(Command_Loop_Timer_SetAndRun,    3);      // Timers.h

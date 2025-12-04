@@ -4151,6 +4151,15 @@ To create/register a plugin, you have to :
   #define FEATURE_MQTT_CONNECT_BACKGROUND     0 // Disable always on ESP8266
 #endif // if defined(ESP8266) && FEATURE_MQTT_CONNECT_BACKGROUND
 
+#ifndef FEATURE_LAT_LONG_VAR_CMD
+  #ifdef ESP32
+    #define FEATURE_LAT_LONG_VAR_CMD    1
+  #endif
+  #ifdef ESP8266
+    #define FEATURE_LAT_LONG_VAR_CMD    0
+  #endif
+#endif // ifndef FEATURE_LAT_LONG_VAR_CMD
+
 //-------------------HTTPResponseParser Section----------------
 #ifndef FEATURE_THINGSPEAK_EVENT
   #if defined(PLUGIN_BUILD_MAX_ESP32)

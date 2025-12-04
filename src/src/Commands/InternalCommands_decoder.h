@@ -76,12 +76,18 @@ enum class ESPEasy_cmd_e : uint8_t {
   jsonportstatus,
 #endif // ifndef BUILD_NO_DIAGNOSTIC_COMMANDS
 
+  #if FEATURE_LAT_LONG_VAR_CMD
+  latitude,
+  #endif // if FEATURE_LAT_LONG_VAR_CMD
   let,
   #if FEATURE_STRING_VARIABLES
   letstr,
   #endif // if FEATURE_STRING_VARIABLES
   load,
   logentry,
+  #if FEATURE_LAT_LONG_VAR_CMD
+  longitude,
+  #endif // if FEATURE_LAT_LONG_VAR_CMD
   looptimerset,
   looptimerset_ms,
   looptimersetandrun,
