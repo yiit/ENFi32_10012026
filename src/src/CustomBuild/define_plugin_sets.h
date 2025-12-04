@@ -2329,6 +2329,17 @@ To create/register a plugin, you have to :
   #ifndef USES_C011
     #define USES_C011   // HTTP Advanced
   #endif
+
+  #ifdef ESP32
+    #ifndef USES_C018
+//      #define USES_C018 // TTN RN2483
+    #endif
+    #ifndef USES_C023
+      #define USES_C023 // LoRa TTN - Dragino LA66 LoRaWAN
+    #endif
+  #endif
+
+
 #endif // ifdef PLUGIN_CLIMATE_A_COLLECTION
 
 #ifdef PLUGIN_CLIMATE_B_COLLECTION
@@ -2413,6 +2424,14 @@ To create/register a plugin, you have to :
   // Controllers
   #ifndef USES_C011
     #define USES_C011   // HTTP Advanced
+  #endif
+  #ifdef ESP32
+    #ifndef USES_C018
+//      #define USES_C018 // TTN RN2483
+    #endif
+    #ifndef USES_C023
+      #define USES_C023 // LoRa TTN - Dragino LA66 LoRaWAN
+    #endif
   #endif
 #endif // ifdef PLUGIN_CLIMATE_B_COLLECTION
 
@@ -2510,6 +2529,9 @@ To create/register a plugin, you have to :
   #ifdef ESP32
     #ifndef USES_C018
       #define USES_C018 // TTN RN2483
+    #endif
+    #ifndef USES_C023
+      #define USES_C023 // LoRa TTN - Dragino LA66 LoRaWAN
     #endif
   #endif
   #ifndef USES_C019
@@ -2961,6 +2983,10 @@ To create/register a plugin, you have to :
   #ifndef USES_C018
     #define USES_C018 // TTN RN2483
   #endif
+  #ifndef USES_C023
+    #define USES_C023 // LoRa TTN - Dragino LA66 LoRaWAN
+  #endif
+
 
   // Notifiers
 
@@ -3042,7 +3068,7 @@ To create/register a plugin, you have to :
   #define FEATURE_ESPEASY_P2P 1
 #endif
 
-#if defined(USES_C018)
+#if defined(USES_C018) || defined(USES_C023)
   #ifdef FEATURE_PACKED_RAW_DATA
     #undef FEATURE_PACKED_RAW_DATA
   #endif
@@ -3268,6 +3294,10 @@ To create/register a plugin, you have to :
   #ifdef USES_C018
     #undef USES_C018 // LoRa TTN - RN2483/RN2903
   #endif
+  #ifdef USES_C023
+    #undef USES_C023 // LoRa TTN - Dragino LA66 LoRaWAN
+  #endif
+
   #if defined(FEATURE_TRIGONOMETRIC_FUNCTIONS_RULES) && !defined(KEEP_TRIGONOMETRIC_FUNCTIONS_RULES)
     #undef FEATURE_TRIGONOMETRIC_FUNCTIONS_RULES
   #endif

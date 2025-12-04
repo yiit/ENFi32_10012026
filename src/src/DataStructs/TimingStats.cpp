@@ -289,6 +289,7 @@ const __FlashStringHelper* getMiscStatsName_F(TimingStatsElements stat) {
     case TimingStatsElements::NTP_FAIL:                   return F("NTP Fail");
     case TimingStatsElements::SYSTIME_UPDATED:            return F("Systime Set");
     case TimingStatsElements::C018_AIR_TIME:              return F("C018 LoRa TTN - Air Time");
+    case TimingStatsElements::C023_AIR_TIME:              return F("C023 LoRa TTN - Air Time");
 #ifdef LIMIT_BUILD_SIZE
     default: break;
 #else

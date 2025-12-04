@@ -272,11 +272,12 @@ DEFINE_Cxxx_DELAY_QUEUE_MACRO(0, 18)
  #endif
  */
 
-/*
+
  #ifdef USES_C023
+ # include "../ControllerQueue/C023_queue_element.h"
    DEFINE_Cxxx_DELAY_QUEUE_MACRO(0, 23)
  #endif
- */
+
 
 /*
  #ifdef USES_C024
