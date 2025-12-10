@@ -448,3 +448,41 @@ String formatToHex_decimal(unsigned long value, unsigned long factor) {
   result += ')';
   return result;
 }
+
+
+int intFromHexChar(char a)
+{
+  if ((a >= 'A') && (a <= 'F'))      { return a - 'A' + 10; }
+  else if ((a >= 'a') && (a <= 'f')) { return a - 'a' + 10; }
+  else if ((a >= '0') && (a <= '9')) { return a - '0'; }
+  return -1;
+}
+
+String stringFromHexArray(const String& arr)
+{
+  const size_t arr_length = arr.length();
+  String res;
+
+  res.reserve(arr_length / 2);
+  uint8_t decoded_c{};
+  bool    secondNibble = false;
+
+  for (size_t i = 0; i < arr_length; ++i) {
+    const char c = arr[i];
+
+    if (isHexadecimalDigit(c)) {
+      const int hexChar = intFromHexChar(c) & 0xF;
+
+      if (secondNibble) {
+        decoded_c <<= 4;
+        decoded_c  += hexChar;
+        res        += static_cast<char>(decoded_c);
+        secondNibble = false;
+      } else {
+        decoded_c = hexChar;
+        secondNibble = true;
+      }
+    }
+  }
+  return res;
+}

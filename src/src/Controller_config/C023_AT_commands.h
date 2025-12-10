@@ -34,6 +34,9 @@ public:
     NWKSKEY,       // 3.7 AT+NWKSKEY: Network Session Key
     CFM,           // 4.1 AT+CFM: Confirm Mode
     NJM,           // 4.3 AT+NJM: LoRa® Network Join Mode
+                   //  0 = ABP
+                   //  1 = OTAA
+                   //  2 = P2P
     NJS,           // 4.4 AT+NJS: LoRa® Network Join Status
     RECV,          // 4.5 AT+RECV: Print Last Received Data in Raw Format
     RECVB,         // 4.6 AT+RECVB: Print Last Received Data in Binary Format

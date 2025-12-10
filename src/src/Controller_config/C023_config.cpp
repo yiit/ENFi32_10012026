@@ -15,10 +15,11 @@ void C023_ConfigStruct::validate() {
   if ((baudrate < 2400) || (baudrate > 115200)) {
     reset();
   }
-/*
-  if (stackVersion >= RN2xx3_datatypes::TTN_stack_version::TTN_NOT_SET) {
-    stackVersion = RN2xx3_datatypes::TTN_stack_version::TTN_v3;
+  if (LoRaWAN_Class > static_cast<uint8_t>(LoRaWANclass_e::C)) {
+    // Set to default class A
+    LoRaWAN_Class = static_cast<uint8_t>(LoRaWANclass_e::A);
   }
+/*
 
   switch (frequencyplan) {
     case RN2xx3_datatypes::Freq_plan::SINGLE_CHANNEL_EU:
@@ -101,16 +102,17 @@ void C023_ConfigStruct::webform_load(C023_data_struct *C023_data) {
     addUnit(F("Hz"));
     addFormNote(F("0 = default, or else override default"));
   }
+    */
   {
-    const __FlashStringHelper *options[] = { F("TTN v2"), F("TTN v3") };
+    const __FlashStringHelper *options[] = { F("A"), F("C") };
     constexpr int values[] {
-      RN2xx3_datatypes::TTN_stack_version::TTN_v2,
-      RN2xx3_datatypes::TTN_stack_version::TTN_v3
+      0,
+      2
     };
     const FormSelectorOptions selector(NR_ELEMENTS(options), options, values);
-    selector.addFormSelector(F("TTN Stack"), F("ttnstack"), stackVersion);
+    selector.addFormSelector(F("LoRaWAN Class"), F("loraclass"), LoRaWAN_Class);
   }
-*/
+
   addFormNumericBox(F("Spread Factor"), F("sf"), sf, 7, 12);
   addFormCheckBox(F("Adaptive Data Rate (ADR)"), F("adr"), adr);
 
@@ -132,15 +134,27 @@ void C023_ConfigStruct::webform_load(C023_data_struct *C023_data) {
   // Optional reset pin RN2xx3
   addFormPinSelect(PinSelectPurpose::Generic_output, formatGpioName_output_optional(F("Reset")), F("taskdevicepin3"), resetpin);
 
-  addTableSeparator(F("Device Status"), 2, 3);
+    addTableSeparator(F("Downlink Messages"), 2, 3);
+
+    {
+    const __FlashStringHelper *options[] = { 
+      F("PortNr in EventPar"),
+      F("PortNr as 1st EventValue"),
+      F("PortNr both EventPar & 1st EventValue")
+    };
+    constexpr int values[] {
+      static_cast<int>(EventFormatStructure_e::PortNr_in_eventPar),
+      static_cast<int>(EventFormatStructure_e::PortNr_as_first_eventvalue),
+      static_cast<int>(EventFormatStructure_e::PortNr_both_eventPar_eventvalue)
+    };
+    const FormSelectorOptions selector(NR_ELEMENTS(options), options, values);
+    selector.addFormSelector(F("Event Format"), F("eventformat"), eventFormat);
+  }
+
 
   if (C023_data != nullptr) {
+    addTableSeparator(F("Statistics"), 2, 3);
     // Some information on detected device
-    addRowLabel(F("Hardware DevEUI"));
-    addHtml(C023_data->hweui());
-    addRowLabel(F("Version Number"));
-    addHtml(C023_data->sysver());
-
     addRowLabel(F("Voltage"));
     addHtmlFloat(static_cast<float>(C023_data->getVbat()) / 1000.0f, 3);
 
@@ -199,10 +213,10 @@ void C023_ConfigStruct::webform_save() {
   txpin         = getFormItemInt(F("taskdevicepin2"), txpin);
   resetpin      = getFormItemInt(F("taskdevicepin3"), resetpin);
   sf            = getFormItemInt(F("sf"), sf);
-  frequencyplan = getFormItemInt(F("frequencyplan"), frequencyplan);
+  eventFormat   = getFormItemInt(F("eventformat"), eventFormat);
   rx2_freq      = getFormItemInt(F("rx2freq"), rx2_freq);
   joinmethod    = getFormItemInt(F("joinmethod"), joinmethod);
-  stackVersion  = getFormItemInt(F("ttnstack"), stackVersion);
+  LoRaWAN_Class = getFormItemInt(F("loraclass"), LoRaWAN_Class);
   adr           = isFormItemChecked(F("adr"));
   serialHelper_webformSave(serialPort, rxpin, txpin);
 }

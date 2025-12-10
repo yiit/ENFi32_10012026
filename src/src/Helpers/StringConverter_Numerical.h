@@ -121,4 +121,8 @@ String formatToHex_decimal(unsigned long value);
 String formatToHex_decimal(unsigned long value,
                            unsigned long factor);
 
+int intFromHexChar(char a);
+
+String stringFromHexArray(const String& arr);
+
 #endif // ifndef HELPERS_STRINGCONVERTER_NUMERICAL_H

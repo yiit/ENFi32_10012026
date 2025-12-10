@@ -18,33 +18,52 @@ struct C023_data_struct;
 
 struct C023_ConfigStruct
 {
+  enum class LoRaWANclass_e {
+    A,
+    B,
+    C
+
+  };
+
+  enum class EventFormatStructure_e {
+    PortNr_in_eventPar,
+    PortNr_as_first_eventvalue,
+    PortNr_both_eventPar_eventvalue
+
+  };
+
   C023_ConfigStruct() = default;
 
-  void validate();
+  void                   validate();
 
-  void reset();
+  void                   reset();
 
   // Send all to the web interface
-  void webform_load(C023_data_struct* C023_data);
+  void                   webform_load(C023_data_struct*C023_data);
 
   // Collect all data from the web interface
-  void webform_save();
+  void                   webform_save();
+
+  LoRaWANclass_e         getClass() const       { return static_cast<LoRaWANclass_e>(LoRaWAN_Class); }
+
+  EventFormatStructure_e getEventFormat() const { return static_cast<EventFormatStructure_e>(eventFormat); }
 
   char          DeviceEUI[C023_DEVICE_EUI_LEN]                  = { 0 };
   char          DeviceAddr[C023_DEVICE_ADDR_LEN]                = { 0 };
   char          NetworkSessionKey[C023_NETWORK_SESSION_KEY_LEN] = { 0 };
   char          AppSessionKey[C023_APP_SESSION_KEY_LEN]         = { 0 };
-  unsigned long baudrate                                        = 57600;
+  unsigned long baudrate                                        = 9600;
   int8_t        rxpin                                           = -1;
   int8_t        txpin                                           = -1;
   int8_t        resetpin                                        = -1;
   uint8_t       sf                                              = 7;
-  uint8_t       frequencyplan;//                                   = RN2xx3_datatypes::Freq_plan::TTN_EU;
+  uint8_t       eventFormat                                     = static_cast<uint8_t>(EventFormatStructure_e::PortNr_in_eventPar);
   uint8_t       joinmethod                                      = C023_USE_OTAA;
   uint8_t       serialPort                                      = 0;
-  uint8_t       stackVersion;//                                    = RN2xx3_datatypes::TTN_stack_version::TTN_v2;
+  uint8_t       LoRaWAN_Class                                   = static_cast<uint8_t>(LoRaWANclass_e::A);
   uint8_t       adr                                             = 0;
   uint32_t      rx2_freq                                        = 0;
+
 };
 
 DEF_UP(C023_ConfigStruct);

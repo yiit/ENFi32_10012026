@@ -236,6 +236,7 @@ KeyValueStruct C023_AT_commands::getKeyValue(C023_AT_commands::AT_cmd at_cmd, co
         (at_cmd == C023_AT_commands::AT_cmd::ADR) ||
         (at_cmd == C023_AT_commands::AT_cmd::DCS) ||
         (at_cmd == C023_AT_commands::AT_cmd::PNM) ||
+        (at_cmd == C023_AT_commands::AT_cmd::CHS) ||        
         (at_cmd == C023_AT_commands::AT_cmd::SLEEP) ||
         (at_cmd == C023_AT_commands::AT_cmd::SYNCMOD))
     {

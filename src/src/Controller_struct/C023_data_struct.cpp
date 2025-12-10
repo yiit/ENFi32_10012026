@@ -10,21 +10,37 @@ C023_data_struct::C023_data_struct() :
   C023_easySerial(nullptr) {}
 
 C023_data_struct::~C023_data_struct() {
-  reset();
+  if (C023_easySerial != nullptr) {
+    C023_easySerial->end();
+    delete C023_easySerial;
+    C023_easySerial = nullptr;
+  }
 }
 
 void C023_data_struct::reset() {
   if (C023_easySerial != nullptr) {
+    C023_easySerial->end();
     delete C023_easySerial;
     C023_easySerial = nullptr;
   }
-  free_string(cacheDevAddr);
-  free_string(cacheHWEUI);
-  free_string(cacheSysVer);
+  _cachedValues.clear();
+  _queuedQueries.clear();
+  _queryPending = C023_AT_commands::AT_cmd::Unknown;
 }
 
-bool C023_data_struct::init(const uint8_t port, const int8_t serial_rx, const int8_t serial_tx, unsigned long baudrate,
-                            bool joinIsOTAA, taskIndex_t sampleSet_Initiator, int8_t reset_pin) {
+bool C023_data_struct::init(
+  const C023_ConfigStruct& config,
+  taskIndex_t              sampleSet_Initiator)
+{
+  const uint8_t port      = config.serialPort;
+  const int8_t  serial_rx = config.rxpin;
+  const int8_t  serial_tx = config.txpin;
+  unsigned long baudrate  = config.baudrate;
+  bool   joinIsOTAA       = (config.joinmethod == C023_USE_OTAA);
+  int8_t reset_pin        = config.resetpin;
+
+  _eventFormatStructure = config.getEventFormat();
+
   if ((serial_rx < 0) || (serial_tx < 0)) {
     // Both pins are needed, or else no serial possible
     return false;
@@ -59,25 +75,26 @@ bool C023_data_struct::init(const uint8_t port, const int8_t serial_rx, const in
   if (C023_easySerial != nullptr) {
     C023_easySerial->begin(baudrate);
 
-    //    C023_easySerial->println(F("ATZ")); // Reset LA66
+    const bool isClassA = config.getClass() == C023_ConfigStruct::LoRaWANclass_e::A;
+    C023_easySerial->println(F("ATZ")); // Reset LA66
     delay(1000);
-    C023_easySerial->println(F("AT+CFG")); // AT+CFG: Print all configurations
 
+    C023_easySerial->println(concat(F("AT+CLASS="), isClassA ? 'A' : 'C'));
+    delay(1000);
+
+    C023_easySerial->println(F("AT+CFG")); // AT+CFG: Print all configurations
   }
   return isInitialized();
 }
 
-bool C023_data_struct::hasJoined() const {
+bool C023_data_struct::hasJoined() {
   if (!isInitialized()) { return false; }
-  return true; // myLora->hasJoined();
+  return getInt(C023_AT_commands::AT_cmd::NJS, 0) != 0;
 }
 
-bool C023_data_struct::useOTAA() const {
+bool C023_data_struct::useOTAA() {
   if (!isInitialized()) { return true; }
-  bool res = true; // = myLora->useOTAA();
-
-  C023_logError(F("useOTA()"));
-  return res;
+  return getInt(C023_AT_commands::AT_cmd::NJM, 1) == 1;
 }
 
 bool C023_data_struct::command_finished() const {
@@ -87,7 +104,6 @@ bool C023_data_struct::command_finished() const {
 bool C023_data_struct::txUncnfBytes(const uint8_t *data, uint8_t size, uint8_t port) {
   bool res = true; // myLora->txBytes(data, size, port) != RN2xx3_datatypes::TX_return_type::TX_FAIL;
 
-  C023_logError(F("txUncnfBytes()"));
   return res;
 }
 
@@ -109,30 +125,24 @@ bool C023_data_struct::txHexBytes(const String& data, uint8_t port) {
       sendData.length() / 2, // payload length
       sendData.c_str()));    // payload(HEX)
 
-  C023_logError(F("txHexBytes()"));
   return res;
 }
 
 bool C023_data_struct::txUncnf(const String& data, uint8_t port) {
   bool res = true; // myLora->tx(data, port) != RN2xx3_datatypes::TX_return_type::TX_FAIL;
 
-  C023_logError(F("txUncnf()"));
   return res;
 }
 
 bool C023_data_struct::setSF(uint8_t sf) {
   if (!isInitialized()) { return false; }
   bool res = true; // myLora->setSF(sf);
-
-  C023_logError(F("setSF()"));
   return res;
 }
 
 bool C023_data_struct::setAdaptiveDataRate(bool enabled) {
   if (!isInitialized()) { return false; }
   bool res = true; // myLora->setAdaptiveDataRate(enabled);
-
-  C023_logError(F("setAdaptiveDataRate()"));
   return res;
 }
 
@@ -140,10 +150,6 @@ bool C023_data_struct::initOTAA(const String& AppEUI, const String& AppKey, cons
   //  if (myLora == nullptr) { return false; }
   bool success = true; // myLora->initOTAA(AppEUI, AppKey, DevEUI);
 
-  free_string(cacheDevAddr);
-
-  C023_logError(F("initOTAA()"));
-  updateCacheOnInit();
   return success;
 }
 
@@ -151,10 +157,6 @@ bool C023_data_struct::initABP(const String& addr, const String& AppSKey, const 
   //  if (myLora == nullptr) { return false; }
   bool success = true; // myLora->initABP(addr, AppSKey, NwkSKey);
 
-  cacheDevAddr = addr;
-
-  C023_logError(F("initABP()"));
-  updateCacheOnInit();
   return success;
 }
 
@@ -167,15 +169,10 @@ String C023_data_struct::sendRawCommand(const String& command) {
     addLogMove(LOG_LEVEL_INFO, log);
   }
   String res; // = myLora->sendRawCommand(command);
-
-  C023_logError(F("sendRawCommand()"));
   return res;
 }
 
-int C023_data_struct::getVbat() {
-  if (!isInitialized()) { return -1; }
-  return -1; // myLora->getVbat();
-}
+int    C023_data_struct::getVbat() { return getInt(C023_AT_commands::AT_cmd::BAT, -1); }
 
 String C023_data_struct::peekLastError() {
   if (!isInitialized()) { return EMPTY_STRING; }
@@ -187,18 +184,9 @@ String C023_data_struct::getLastError() {
   return EMPTY_STRING; // myLora->getLastError();
 }
 
-String C023_data_struct::getDataRate() {
-  if (!isInitialized()) { return EMPTY_STRING; }
-  String res; // = myLora->getDataRate();
+String   C023_data_struct::getDataRate() { return get(C023_AT_commands::AT_cmd::DR); }
 
-  C023_logError(F("getDataRate()"));
-  return res;
-}
-
-int C023_data_struct::getRSSI() {
-  if (!isInitialized()) { return 0; }
-  return 0; // myLora->getRSSI();
-}
+int      C023_data_struct::getRSSI()     { return getInt(C023_AT_commands::AT_cmd::RSSI, 0); }
 
 uint32_t C023_data_struct::getRawStatus() {
   if (!isInitialized()) { return 0; }
@@ -207,47 +195,25 @@ uint32_t C023_data_struct::getRawStatus() {
 
 bool C023_data_struct::getFrameCounters(uint32_t& dnctr, uint32_t& upctr) {
   if (!isInitialized()) { return false; }
-  bool res = true; // myLora->getFrameCounters(dnctr, upctr);
-
-  C023_logError(F("getFrameCounters()"));
-  return res;
+  dnctr = getInt(C023_AT_commands::AT_cmd::FCD, 0);
+  upctr = getInt(C023_AT_commands::AT_cmd::FCU, 0);
+  return true;
 }
 
 bool C023_data_struct::setFrameCounters(uint32_t dnctr, uint32_t upctr) {
   if (!isInitialized()) { return false; }
   bool res = true; // myLora->setFrameCounters(dnctr, upctr);
 
-  C023_logError(F("setFrameCounters()"));
   return res;
 }
 
 // Cached data, only changing occasionally.
 
-String C023_data_struct::getDevaddr() {
-  if (cacheDevAddr.isEmpty())
-  {
-    updateCacheOnInit();
-  }
-  return cacheDevAddr;
-}
+String  C023_data_struct::getDevaddr() { return get(C023_AT_commands::AT_cmd::DADDR); }
 
-String C023_data_struct::hweui() {
-  if (cacheHWEUI.isEmpty()) {
-    if (isInitialized()) {
-      // cacheHWEUI = myLora->hweui();
-    }
-  }
-  return cacheHWEUI;
-}
+String  C023_data_struct::hweui()      { return get(C023_AT_commands::AT_cmd::DEUI); }
 
-String C023_data_struct::sysver() {
-  if (cacheSysVer.isEmpty()) {
-    if (isInitialized()) {
-      // cacheSysVer = myLora->sysver();
-    }
-  }
-  return cacheSysVer;
-}
+String  C023_data_struct::sysver()     { return get(C023_AT_commands::AT_cmd::VER); }
 
 uint8_t C023_data_struct::getSampleSetCount() const {
   return sampleSetCounter;
@@ -291,30 +257,33 @@ void C023_data_struct::async_loop() {
     while (C023_easySerial->available()) {
       const int ret = C023_easySerial->read();
 
-      if (ret < 0) { return; }
-      const char c = static_cast<char>(ret);
+      if (ret >= 0) {
+        const char c = static_cast<char>(ret);
 
-      switch (c)
-      {
-        case '\n':
-        case '\r':
+        switch (c)
         {
-          // End of line
-          if (!_fromLA66.isEmpty()) {
-            addLog(LOG_LEVEL_INFO, concat(F("LA66 recv: "), _fromLA66));
+          case '\n':
+          case '\r':
+          {
+            // End of line
+            if (!_fromLA66.isEmpty()) {
+              addLog(LOG_LEVEL_INFO, concat(F("LA66 recv: "), _fromLA66));
 
-            // TODO TD-er: Process received data
-            processReceived(_fromLA66);
+              // TODO TD-er: Process received data
+              processReceived(_fromLA66);
+            }
+
+            _fromLA66.clear();
+            break;
           }
-
-          _fromLA66.clear();
-          return;
+          default:
+            _fromLA66 += c;
+            break;
         }
-        default:
-          _fromLA66 += c;
-          break;
       }
     }
+
+    sendNextQueuedQuery();
   }
 }
 
@@ -337,7 +306,7 @@ bool C023_data_struct::writeCachedValues(KeyValueWriter*writer)
 
 String C023_data_struct::get(C023_AT_commands::AT_cmd at_cmd)
 {
-  if (at_cmd != C023_AT_commands::AT_cmd::Unknown) {
+  if (isInitialized() && (at_cmd != C023_AT_commands::AT_cmd::Unknown)) {
     auto it = _cachedValues.find(static_cast<size_t>(at_cmd));
 
     if (it != _cachedValues.end()) {
@@ -346,9 +315,19 @@ String C023_data_struct::get(C023_AT_commands::AT_cmd at_cmd)
       }
       _cachedValues.erase(it);
     }
+    sendQuery(at_cmd);
   }
-  sendQuery(at_cmd);
   return EMPTY_STRING;
+}
+
+int C023_data_struct::getInt(C023_AT_commands::AT_cmd at_cmd, int errorvalue)
+{
+  String value = get(at_cmd);
+
+  if (value.isEmpty()) {
+    return errorvalue;
+  }
+  return value.toInt();
 }
 
 bool C023_data_struct::processReceived(const String& receivedData)
@@ -362,16 +341,22 @@ bool C023_data_struct::processReceived(const String& receivedData)
     } else if (receivedData.equals(F("rxDone"))) {
       sendQuery(C023_AT_commands::AT_cmd::FCD);
       sendQuery(C023_AT_commands::AT_cmd::SNR);
+    } else if (receivedData.equals(F("ADR Message"))) {
+      sendQuery(C023_AT_commands::AT_cmd::ADR);
+      sendQuery(C023_AT_commands::AT_cmd::DR, true);
+    } else if (receivedData.equals(F("JOINED"))) {
+      C023_easySerial->println(F("AT+CFG")); // AT+CFG: Print all configurations
+      //      sendQuery(C023_AT_commands::AT_cmd::NJM);
+      //      sendQuery(C023_AT_commands::AT_cmd::NJS);
+      eventQueue.add(F("LA66#joined"));
     } else if (receivedData.equals(F("rxTimeout"))) {
       // Just skip this one, no data received
     } else if (receivedData.startsWith(F("Rssi"))) {
-      String value = getValueFromReceivedData(receivedData);
-
-      if (!value.isEmpty()) {
-        _cachedValues.emplace(static_cast<size_t>(C023_AT_commands::AT_cmd::RSSI), std::move(value));
-      }
+      cacheValue(C023_AT_commands::AT_cmd::RSSI, getValueFromReceivedData(receivedData));
+    } else if (receivedData.indexOf(F("DevEui")) != -1) {
+      cacheValue(C023_AT_commands::AT_cmd::DEUI, getValueFromReceivedData(receivedData));
     } else if (receivedData.indexOf(F("AT+RECVB=?")) != -1) {
-      sendQuery(C023_AT_commands::AT_cmd::RECVB);
+      sendQuery(C023_AT_commands::AT_cmd::RECVB, true);
     } else if (receivedData.startsWith(F("*****")) ||
                receivedData.startsWith(F("TX on")) ||
                receivedData.startsWith(F("RX on")))
@@ -388,7 +373,7 @@ bool C023_data_struct::processReceived(const String& receivedData)
       receivedData.equals(F("AT_NO_NETWORK_JOINED")) ||   // the LoRa® network has not been joined yet
       receivedData.equals(F("AT_RX_ERROR")))              // error detection during the reception of the command
     {
-      if (_queuedQueries.empty()) {
+      if (!queryPending()) {
         addLog(LOG_LEVEL_ERROR, strformat(
                  F("LA66   : %s"),
                  receivedData.c_str()));
@@ -396,57 +381,109 @@ bool C023_data_struct::processReceived(const String& receivedData)
         addLog(LOG_LEVEL_ERROR, strformat(
                  F("LA66   : %s while processing %s"),
                  receivedData.c_str(),
-                 C023_AT_commands::toString(static_cast<C023_AT_commands::AT_cmd>(_queuedQueries.front())).c_str()));
-        _queuedQueries.pop_front();
+                 C023_AT_commands::toString(_queryPending).c_str()));
+        _queryPending = C023_AT_commands::AT_cmd::Unknown;
       }
     }
 
     else if (receivedData.equals(F("OK"))) {
-//      if (!_queuedQueries.empty()) {
-//        _queuedQueries.pop_front();
-//      }
+      // Just ignore
     } else {
-      if (!_queuedQueries.empty()) {
-        String tmp(receivedData);
-
-        //        C023_timestamped_value ts_value(std::move(tmp));
-        //        _cachedValues[_queuedQueries.front()] = ts_value;
-        auto it = _cachedValues.find(_queuedQueries.front());
-
-        if (it != _cachedValues.end()) {
-          _cachedValues.erase(it);
-        }
-        _cachedValues.emplace(_queuedQueries.front(), std::move(tmp));
-        addLog(LOG_LEVEL_INFO, strformat(
-                 F("LA66 : Process Query: %s -> %s"),
-                 C023_AT_commands::toString(static_cast<C023_AT_commands::AT_cmd>(_queuedQueries.front())).c_str(),
-                 receivedData.c_str()));
-
-        _queuedQueries.pop_front();
-      }
+      processPendingQuery(receivedData);
     }
 
     return false;
   }
-
-  //  addLog(LOG_LEVEL_INFO, concat(C023_AT_commands::toString(at_cmd), receivedData));
-
-  _cachedValues.emplace(static_cast<size_t>(at_cmd), std::move(value));
-
-  //  _cachedValues[static_cast<size_t>(at_cmd)] = C023_timestamped_value(std::move(value));
+  cacheValue(at_cmd, std::move(value));
 
   return true;
 }
 
-void C023_data_struct::sendQuery(C023_AT_commands::AT_cmd at_cmd)
+bool C023_data_struct::processPendingQuery(const String& receivedData)
+{
+  if (!queryPending()) {
+    return false;
+  }
+
+  if (_queryPending == C023_AT_commands::AT_cmd::RECVB) {
+    int port{};
+    String value = getValueFromReceivedBinaryData(port, receivedData);
+
+    if ((port > 0) && (value.length() != 0)) {
+      switch (_eventFormatStructure)
+      {
+        case C023_ConfigStruct::EventFormatStructure_e::PortNr_in_eventPar:
+          eventQueue.addMove(strformat(F("LA66#received%d=%s"), port, value.c_str()));
+          break;
+        case C023_ConfigStruct::EventFormatStructure_e::PortNr_as_first_eventvalue:
+          eventQueue.addMove(strformat(F("LA66#received=%d,%s"), port, value.c_str()));
+          break;
+        case C023_ConfigStruct::EventFormatStructure_e::PortNr_both_eventPar_eventvalue:
+          eventQueue.addMove(strformat(F("LA66#received%d=%d,%s"), port, port, value.c_str()));
+          break;
+      }
+    }
+
+    cacheValue(_queryPending, strformat(
+                 F("%s -> %d : %s"), receivedData.c_str(), port, value.c_str()));
+  } else {
+    cacheValue(_queryPending, receivedData);
+  }
+  addLog(LOG_LEVEL_INFO, strformat(
+           F("LA66 : Process Query: %s -> %s"),
+           C023_AT_commands::toString(_queryPending).c_str(),
+           receivedData.c_str()));
+
+  _queryPending = C023_AT_commands::AT_cmd::Unknown;
+  return true;
+
+}
+
+void C023_data_struct::sendQuery(C023_AT_commands::AT_cmd at_cmd, bool prioritize)
 {
   if (C023_easySerial) {
-    _queuedQueries.push_back(static_cast<size_t>(at_cmd));
-    const String query = concat(C023_AT_commands::toString(at_cmd), F("=?"));
-    addLog(LOG_LEVEL_INFO, concat(F("LA66 : Queried "), query));
-    C023_easySerial->println(query);
+    if (prioritize) {
+      _queuedQueries.push_front(static_cast<size_t>(at_cmd));
+    } else {
+      _queuedQueries.push_back(static_cast<size_t>(at_cmd));
+    }
 
-    // TODO: Wait for result and store in cached value.
+    if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+      const String query = concat(C023_AT_commands::toString(at_cmd), F("=?"));
+      addLog(LOG_LEVEL_INFO, concat(F("LA66 : Add to queue: "), query));
+    }
+  }
+}
+
+void C023_data_struct::sendNextQueuedQuery()
+{
+  if (!queryPending() && !_queuedQueries.empty()) {
+    _queryPending = static_cast<C023_AT_commands::AT_cmd>(_queuedQueries.front());
+    _queuedQueries.pop_front();
+    const String query = concat(C023_AT_commands::toString(_queryPending), F("=?"));
+    addLog(LOG_LEVEL_INFO, concat(F("LA66 : Queried "), query));
+
+    C023_easySerial->println(query);
+  }
+}
+
+void C023_data_struct::cacheValue(C023_AT_commands::AT_cmd at_cmd, const String& value)
+{
+  String tmp(value);
+
+  cacheValue(at_cmd, std::move(tmp));
+}
+
+void C023_data_struct::cacheValue(C023_AT_commands::AT_cmd at_cmd, String&& value)
+{
+  if (value.isEmpty()) { return; }
+  const size_t key = static_cast<size_t>(at_cmd);
+  auto it          = _cachedValues.find(key);
+
+  if (it != _cachedValues.end()) {
+    it->second.value = std::move(value);
+  } else {
+    _cachedValues.emplace(key, std::move(value));
   }
 }
 
@@ -460,33 +497,18 @@ String C023_data_struct::getValueFromReceivedData(const String& receivedData)
   return res;
 }
 
-void C023_data_struct::C023_logError(const __FlashStringHelper *command) const {
-  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
-    String error; // = myLora->peekLastError();
+String C023_data_struct::getValueFromReceivedBinaryData(int& port, const String& receivedData)
+{
+  port = -1;
+  int pos = receivedData.indexOf(':');
 
-    //    String error = myLora->getLastError();
+  if (pos == -1) { return EMPTY_STRING; }
+  port = receivedData.substring(0, pos).toInt();
 
-    if (error.length() > 0) {
-      String log = F("RN2483: ");
-      log += command;
-      log += F(": ");
-      log += error;
-      addLogMove(LOG_LEVEL_INFO, log);
-    }
-  }
-}
+  addLog(LOG_LEVEL_INFO, concat(
+           F("LA66 fromHex: "), receivedData.substring(pos + 1)));
 
-void C023_data_struct::updateCacheOnInit() {
-  if (isInitialized()) {
-    if (cacheDevAddr.isEmpty() /* && myLora->getStatus().Joined*/)
-    {
-      // cacheDevAddr = myLora->sendRawCommand(F("mac get devaddr"));
-
-      if (cacheDevAddr == F("00000000")) {
-        free_string(cacheDevAddr);
-      }
-    }
-  }
+  return stringFromHexArray(receivedData.substring(pos + 1));
 }
 
 #endif // ifdef USES_C023

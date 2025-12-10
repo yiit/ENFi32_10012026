@@ -6,17 +6,13 @@
 #ifdef USES_C023
 
 # include "../Controller_config/C023_AT_commands.h"
+# include "../Controller_config/C023_config.h"
 
 
 class ESPeasySerial;
 
 
 struct C023_data_struct {
-private:
-
-  void C023_logError(const __FlashStringHelper *command) const;
-  void updateCacheOnInit();
-
 public:
 
   C023_data_struct();
@@ -25,21 +21,17 @@ public:
 
   void reset();
 
-  bool init(const uint8_t port,
-            const int8_t  serial_rx,
-            const int8_t  serial_tx,
-            unsigned long baudrate,
-            bool          joinIsOTAA,
-            taskIndex_t   sampleSet_Initiator,
-            int8_t        reset_pin);
+  bool init(
+    const C023_ConfigStruct& config,
+    taskIndex_t              sampleSet_Initiator);
 
   bool isInitialized() const {
     return C023_easySerial != nullptr;
   }
 
-  bool hasJoined() const;
+  bool hasJoined();
 
-  bool useOTAA() const;
+  bool useOTAA();
 
   bool command_finished() const;
 
@@ -106,25 +98,46 @@ public:
 
 private:
 
-  String        get(C023_AT_commands::AT_cmd at_cmd);
-  bool          processReceived(const String& receivedData);
+  String get(C023_AT_commands::AT_cmd at_cmd);
+  int    getInt(C023_AT_commands::AT_cmd at_cmd,
+                int                      errorvalue);
+  bool   processReceived(const String& receivedData);
 
-  void          sendQuery(C023_AT_commands::AT_cmd at_cmd);
+  bool   processPendingQuery(const String& receivedData);
+
+  void   sendQuery(C023_AT_commands::AT_cmd at_cmd,
+                   bool                     prioritize = false);
+
+  void   sendNextQueuedQuery();
+
+  bool   queryPending() const {
+    return _queryPending != C023_AT_commands::AT_cmd::Unknown;
+  }
+
+  void          cacheValue(C023_AT_commands::AT_cmd at_cmd,
+                           const String           & value);
+  void          cacheValue(C023_AT_commands::AT_cmd at_cmd,
+                           String                && value);
 
   static String getValueFromReceivedData(const String& receivedData);
 
+  // Decode HEX stream
+  static String getValueFromReceivedBinaryData(int         & port,
+                                               const String& receivedData);
+
   std::map<size_t, C023_timestamped_value>_cachedValues;
-  std::list<size_t> _queuedQueries;
+  std::list<size_t>                       _queuedQueries;
+  C023_AT_commands::AT_cmd                _queryPending = C023_AT_commands::AT_cmd::Unknown;
 
 
-  ESPeasySerial *C023_easySerial = nullptr;
-  String         cacheDevAddr;
-  String         cacheHWEUI;
-  String         cacheSysVer;
+  ESPeasySerial *C023_easySerial    = nullptr;
   unsigned long  _baudrate          = 9600;
   uint8_t        sampleSetCounter   = 0;
   taskIndex_t    sampleSetInitiator = INVALID_TASK_INDEX;
   int8_t         _resetPin          = -1;
+
+  C023_ConfigStruct::EventFormatStructure_e _eventFormatStructure = C023_ConfigStruct::EventFormatStructure_e::PortNr_in_eventPar;
+
 
   String _fromLA66;
 

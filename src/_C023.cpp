@@ -355,9 +355,8 @@ bool C023_init(struct EventStruct *event) {
   LoadCustomControllerSettings(event->ControllerIndex, reinterpret_cast<uint8_t *>(customConfig.get()), sizeof(C023_ConfigStruct));
   customConfig->validate();
 
-  if (!C023_data->init(customConfig->serialPort, customConfig->rxpin, customConfig->txpin, customConfig->baudrate,
-                       (customConfig->joinmethod == C023_USE_OTAA),
-                       SampleSetInitiator, customConfig->resetpin))
+  if (!C023_data->init(*customConfig,
+                       SampleSetInitiator))
   {
     return false;
   }
