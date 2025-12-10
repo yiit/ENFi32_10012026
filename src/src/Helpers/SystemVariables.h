@@ -59,6 +59,10 @@ public:
     LCLTIME,
     LCLTIME_AM,
     LF,
+    #if FEATURE_LAT_LONG_VAR_CMD
+    LATITUDE,
+    LONGITUDE,
+    #endif // if FEATURE_LAT_LONG_VAR_CMD
     SUNRISE_M,
     SUNSET_M,
     MAC,
