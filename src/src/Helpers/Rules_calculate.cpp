@@ -540,13 +540,12 @@ CalculateReturnCode RulesCalculate_t::doCalculate(const char *input, ESPEASY_RUL
           *(TokenPos) = 0; // Mark end of token string
           // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate popping stack sl: %u token: %s sc: %d"), sl, token, sc));
           if (sc == '(') {
-            const ESPEASY_RULES_FLOAT_TYPE first = pop(); // Get last value from stack
-            push(first); // push back
-            error = push(first); // Push as a result of ()
-            // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate pop&push 2x last value: %.4f sl: %u"), first, sl));
+            // const auto first = pop(); // Get last value from stack
+            // push(first); // push back
+            // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate at ( last value: %.4f sl: %u"), first, sl));
           } else {
             error = RPNCalculate(token);
-            // const ESPEASY_RULES_FLOAT_TYPE first = pop(); // Get last value from stack
+            // const auto first = pop(); // Get last value from stack
             // push(first); // push back
             // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate last value on stack: %.4f sl: %u"), first, sl));
           }
@@ -627,7 +626,7 @@ CalculateReturnCode RulesCalculate_t::doCalculate(const char *input, ESPEASY_RUL
     // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate closing up stack sl: %u token: %s sc: %d"), sl, token, sc));
     error       = RPNCalculate(token);
     TokenPos    = token;
-    // const ESPEASY_RULES_FLOAT_TYPE first = pop(); // Get last value from stack
+    // const auto first = pop(); // Get last value from stack
     // push(first); // push back
     // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate closing, last value on stack: %.4f sl: %u"), first, sl));
 
@@ -640,7 +639,7 @@ CalculateReturnCode RulesCalculate_t::doCalculate(const char *input, ESPEASY_RUL
   *(TokenPos) = 0; // Mark end of token string
   error       = RPNCalculate(token);
   TokenPos    = token;
-  // const ESPEASY_RULES_FLOAT_TYPE first = pop(); // Get last value from stack
+  // const auto first = pop(); // Get last value from stack
   // push(first); // push back
   // addLog(LOG_LEVEL_INFO, strformat(F("doCalculate final value on stack: %.4f sl: %u"), first, sl));
 
