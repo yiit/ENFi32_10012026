@@ -157,6 +157,8 @@ const __FlashStringHelper* Command_WiFi_Erase(struct EventStruct *event, const c
 #  include "esp_hosted.h"
 
 // Perform OTA update on the esp-hosted-mcu firmware of the external WiFi module (typically ESP32-C6)
+// Latest builds are available here: 
+// https://pioarduino.github.io/esp-hosted-mcu-firmware/
 String Command_Wifi_OTA_hosted_mcu(
   struct EventStruct *event, const char *Line)
 {
