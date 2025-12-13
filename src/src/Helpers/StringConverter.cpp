@@ -1709,6 +1709,10 @@ void parseStandardConversions(String& s, bool useURLencode) {
   #if FEATURE_STRING_VARIABLES
   SMART_CONV(F("%c_ts2wday%"),  get_weekday_from_timestamp(static_cast<uint32_t>(data.arg1)))
   #endif // if FEATURE_STRING_VARIABLES
+  #ifndef LIMIT_BUILD_SIZE
+  SMART_CONV(F("%c_d2r%"),    doubleToString(radians(data.arg1)))
+  SMART_CONV(F("%c_r2d%"),    doubleToString(degrees(data.arg1)))
+  #endif // ifndef LIMIT_BUILD_SIZE
   #undef SMART_CONV
 
   // Conversions with 2 parameters
