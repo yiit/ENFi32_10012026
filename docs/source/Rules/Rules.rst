@@ -1664,7 +1664,7 @@ Radian Angle:
 * ``aSin(x)`` Arc Sine of x (radian)
 * ``aCos(x)`` Arc Cosine of x (radian)
 * ``aTan(x)`` Arc Tangent of x (radian)
-* ``aTan2(x:y)`` Arc Tangent of y / x (radian) Added: 2025-12-13
+* ``aTan2(x:y)`` Arc Tangent of x / y (radian) Added: 2025-12-13
 
 Degree Angle:
 
