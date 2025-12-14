@@ -92,7 +92,11 @@ void handle_sysvars() {
       SystemVariables::LF,
       SystemVariables::SPACE,
       SystemVariables::S_CR,
-      SystemVariables::S_LF
+      SystemVariables::S_LF,
+      #ifndef LIMIT_BUILD_SIZE
+      SystemVariables::S_E,
+      SystemVariables::S_PI,
+      #endif // ifndef LIMIT_BUILD_SIZE
     };
     addSysVar_enum_html(vars, NR_ELEMENTS(vars));
   }
@@ -401,6 +405,12 @@ void handle_sysvars() {
       F(""), // addFormSeparator(3,
       F("cm to imperial: %c_cm2imp%(190)"),
       F("mm to imperial: %c_mm2imp%(1900)"),
+
+      #ifndef LIMIT_BUILD_SIZE
+      F(""), // addFormSeparator(3,
+      F("Degrees to radians: %c_d2r%(22)"),
+      F("Radians to degrees: %c_r2d%(0.357)"),
+      #endif // ifndef LIMIT_BUILD_SIZE
 
       F(""), // addFormSeparator(3,
       F("Mins to days: %c_m2day%(1900)"),

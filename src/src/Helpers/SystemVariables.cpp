@@ -31,6 +31,10 @@
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringProvider.h"
 
+#ifndef LIMIT_BUILD_SIZE
+#include <math.h>
+#include "../Helpers/StringConverter_Numerical.h"
+#endif // ifndef LIMIT_BUILD_SIZE
 
 #if defined(ESP8266)
   # include <ESP8266WiFi.h>
@@ -199,6 +203,24 @@ String SystemVariables::getSystemVariable(SystemVariables::Enum enumval) {
     case LCLTIME_AM:        return node_time.getDateTimeString_ampm('-', ':', ' ');
     case LF:                return String('\n');
     case MAC_INT:           intvalue = getChipId(); break; // Last 24 bit of MAC address as integer, to be used in rules.
+    #ifndef LIMIT_BUILD_SIZE
+    case S_PI:              {
+                              constexpr ESPEASY_RULES_FLOAT_TYPE _pi = M_PI;
+                              #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+                              return doubleToString(_pi, maxNrDecimals_fpType(_pi));
+                              #else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+                              return toString(_pi, maxNrDecimals_fpType(_pi));
+                              #endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+                            }
+    case S_E:               {
+                              constexpr ESPEASY_RULES_FLOAT_TYPE _e = M_E;
+                              #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+                              return doubleToString(_e, maxNrDecimals_fpType(_e));
+                              #else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+                              return toString(_e, maxNrDecimals_fpType(_e));
+                              #endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+                            }
+    #endif // ifndef LIMIT_BUILD_SIZE
     case SPACE:             return String(' ');
     case SSID:              return (WiFiEventData.WiFiDisconnected()) ? String(F("--")) : WiFi.SSID();
     case SYSBUILD_DATE:     return get_build_date();
@@ -540,6 +562,10 @@ SystemVariables::Enum SystemVariables::startIndex_beginWith(const char* begincha
     case 'd': return Enum::DNS;
 #if FEATURE_ETHERNET
     case 'e': return Enum::ETHCONNECTED;
+#else // if FEATURE_ETHERNET
+#ifndef LIMIT_BUILD_SIZE
+    case 'e': return Enum::S_E;
+#endif // ifndef LIMIT_BUILD_SIZE
 #endif // if FEATURE_ETHERNET
     case 'f': return Enum::FLASH_CHIP_MODEL;
     case 'g': return Enum::GATEWAY;
@@ -551,6 +577,9 @@ SystemVariables::Enum SystemVariables::startIndex_beginWith(const char* begincha
     case 'l': return Enum::LCLTIME;
     case 'm': return Enum::SUNRISE_M;
     case 'n': return Enum::S_LF;
+#ifndef LIMIT_BUILD_SIZE
+    case 'p': return Enum::S_PI;
+#endif // ifndef LIMIT_BUILD_SIZE
     case 'r': return Enum::S_CR;
     case 's': return Enum::SPACE;
     case 'u': return Enum::UNIT_sysvar;
@@ -578,6 +607,9 @@ const __FlashStringHelper * SystemVariables::toFlashString(SystemVariables::Enum
     case Enum::DNS:                return F("dns");
     case Enum::DNS_1:              return F("dns1");
     case Enum::DNS_2:              return F("dns2");
+    #ifndef LIMIT_BUILD_SIZE
+    case Enum::S_E:                return F("e");
+    #endif // ifndef LIMIT_BUILD_SIZE
 #if FEATURE_ETHERNET
     case Enum::ETHCONNECTED:       return F("ethconnected");
     case Enum::ETHDUPLEX:          return F("ethduplex");
@@ -621,6 +653,9 @@ const __FlashStringHelper * SystemVariables::toFlashString(SystemVariables::Enum
     case Enum::MAC:                return F("mac");
     case Enum::MAC_INT:            return F("mac_int");
     case Enum::S_LF:               return F("N");
+    #ifndef LIMIT_BUILD_SIZE
+    case Enum::S_PI:               return F("pi");
+    #endif // ifndef LIMIT_BUILD_SIZE
     case Enum::S_CR:               return F("R");
     case Enum::RSSI:               return F("rssi");
     case Enum::SPACE:              return F("SP");

@@ -244,13 +244,11 @@ String Command_GetORSetFloatMinMax(struct EventStruct        *event,
                                    float                      _min,
                                    float                      _max)
 {
-  bool hasArgument = false;
   {
     // Check if command is valid. Leave in separate scope to delete the TmpStr1
     String TmpStr1;
 
     if (GetArgv(Line, TmpStr1, arg + 1)) {
-      hasArgument = true;
       TmpStr1.toLowerCase();
 
       float tmp_float{};
