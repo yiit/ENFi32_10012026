@@ -73,14 +73,14 @@ bool RulesCalculate_t::is_unary_operator(char c)
   */
 }
 
-#ifndef LIMIT_BUILD_SIZE
+#if !defined(LIMIT_BUILD_SIZE) && FEATURE_TRIGONOMETRIC_FUNCTIONS_RULES
 // binary = 2-argument functions
 bool RulesCalculate_t::is_binary_operator(char c)
 {
   return (c >= static_cast<char>(BinaryOperator::ArcTan2) &&
           c <= static_cast<char>(BinaryOperator::FMod));
 }
-#endif // ifndef LIMIT_BUILD_SIZE
+#endif // if !defined(LIMIT_BUILD_SIZE) && FEATURE_TRIGONOMETRIC_FUNCTIONS_RULES
 
 // quinary = 5-argument functions
 bool RulesCalculate_t::is_quinary_operator(char c)
