@@ -21,6 +21,7 @@ struct C023_data_struct;
 struct C023_ConfigStruct
 {
 
+
   C023_ConfigStruct() = default;
 
   void                   validate();
@@ -52,7 +53,7 @@ struct C023_ConfigStruct
   uint8_t       joinmethod                                      = C023_USE_OTAA;
   uint8_t       serialPort                                      = 0;
   uint8_t       LoRaWAN_Class                                   = static_cast<uint8_t>(LoRa_Helper::LoRaWANclass_e::A);
-  uint8_t       adr_unused                                      = 0;
+  uint8_t       LoRa_module                                     = 0; // static_cast<uint8_t>(C023_AT_commands::LoRaModule_e::Dragino_LA66);
   uint32_t      rx2_freq                                        = 0;
 
 };

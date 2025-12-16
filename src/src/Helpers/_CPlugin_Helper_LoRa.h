@@ -35,9 +35,9 @@ public:
   *************************************************/
 
   enum class LoRaWANclass_e {
-    A,
-    B,
-    C
+    A, // Class A: Bi-directional, allows downlink only after an uplink transmission
+    B, // Class B: Bi-directional, allows periodic downlink windows
+    C  // Class C: Bi-directional, allows continuous listening for downlinks
 
   };
 

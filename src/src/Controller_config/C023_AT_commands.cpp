@@ -13,10 +13,21 @@ bool C023_timestamped_value::expired() const
 void C023_timestamped_value::set(const String& val) {
   lastCheck = millis();
 
-  if (!value.equals(val)) { 
-    lastChange = millis(); 
-    value = val;
+  if (!value.equals(val)) {
+    lastChange = millis();
+    value      = val;
   }
+}
+
+const __FlashStringHelper * C023_AT_commands::toString(LoRaModule_e module)
+{
+  switch (module)
+  {
+    case LoRaModule_e::Dragino_LA66: return F("Dragino LA66");
+    case LoRaModule_e::RAK_3172:     return F("RAK 3172");
+    case LoRaModule_e::MAX_TYPE:     break;
+  }
+  return F("");
 }
 
 bool C023_AT_commands::isVolatileValue(C023_AT_commands::AT_cmd at_cmd)
@@ -38,66 +49,117 @@ bool C023_AT_commands::isVolatileValue(C023_AT_commands::AT_cmd at_cmd)
   }
 }
 
-const __FlashStringHelper * C023_AT_commands::toFlashString(C023_AT_commands::AT_cmd at_cmd)
+bool C023_AT_commands::supported(AT_cmd at_cmd, LoRaModule_e module)
 {
+  // Not supported commands
 
+  if (module == LoRaModule_e::Dragino_LA66) {
+    switch (at_cmd)
+    {
+      case C023_AT_commands::AT_cmd::DEVADDR:
+      case C023_AT_commands::AT_cmd::DEVEUI:
+      case C023_AT_commands::AT_cmd::NETID:
+        return false;
+
+      default: return true;
+    }
+  }
+
+  if (module == LoRaModule_e::RAK_3172) {
+    switch (at_cmd)
+    {
+      case C023_AT_commands::AT_cmd::DADDR:
+      case C023_AT_commands::AT_cmd::DEUI:
+      case C023_AT_commands::AT_cmd::NWKID:
+      case C023_AT_commands::AT_cmd::RECVB:
+      case C023_AT_commands::AT_cmd::UUID:
+      case C023_AT_commands::AT_cmd::FCD:
+      case C023_AT_commands::AT_cmd::FCU:
+      case C023_AT_commands::AT_cmd::PORT:
+      case C023_AT_commands::AT_cmd::RJTDC:
+      case C023_AT_commands::AT_cmd::RPL:
+      case C023_AT_commands::AT_cmd::SLEEP:
+      case C023_AT_commands::AT_cmd::CHS:
+      case C023_AT_commands::AT_cmd::TIMESTAMP:
+      case C023_AT_commands::AT_cmd::LEAPSEC:
+      case C023_AT_commands::AT_cmd::SYNCMOD:
+      case C023_AT_commands::AT_cmd::SYNCTDC:
+      case C023_AT_commands::AT_cmd::DDETECT:
+      case C023_AT_commands::AT_cmd::SETMAXNBTRANS:
+        return false;
+
+      default: return true;
+    }
+  }
+  return false;
+}
+
+const __FlashStringHelper * C023_AT_commands::toFlashString(
+  C023_AT_commands::AT_cmd at_cmd, LoRaModule_e module)
+{
   // Uncrustify must not be used on macros, so turn it off
   // *INDENT-OFF*
   #define C023_AT_STR(S) case C023_AT_commands::AT_cmd::S:  return F(#S);
   // Uncrustify must not be used on macros, but we're now done, so turn Uncrustify on again        
  // *INDENT-ON*
 
-  switch (at_cmd)
-  {
-  C023_AT_STR(UUID);
-  C023_AT_STR(VER);
-  C023_AT_STR(APPEUI);
-  C023_AT_STR(APPKEY);
-  C023_AT_STR(APPSKEY);
-  C023_AT_STR(DADDR);
-  C023_AT_STR(DEUI);
-  C023_AT_STR(NWKID);
-  C023_AT_STR(NWKSKEY);
-  C023_AT_STR(CFM);
-  C023_AT_STR(NJM);
-  C023_AT_STR(NJS);
-  C023_AT_STR(RECV);
-  C023_AT_STR(RECVB);
-  C023_AT_STR(ADR);
-  C023_AT_STR(CLASS);
-  C023_AT_STR(DCS);
-  C023_AT_STR(DR);
-  C023_AT_STR(FCD);
-  C023_AT_STR(FCU);
-  C023_AT_STR(JN1DL);
-  C023_AT_STR(JN2DL);
-  C023_AT_STR(PNM);
-  C023_AT_STR(RX1DL);
-  C023_AT_STR(RX2DL);
-  C023_AT_STR(RX2DR);
-  C023_AT_STR(RX2FQ);
-  C023_AT_STR(TXP);
-  C023_AT_STR(RSSI);
-  C023_AT_STR(SNR);
-  C023_AT_STR(PORT);
-  C023_AT_STR(CHS);
-  C023_AT_STR(SLEEP);
-  C023_AT_STR(BAT);
-  C023_AT_STR(RJTDC);
-  C023_AT_STR(RPL);
-  C023_AT_STR(TIMESTAMP);
-  C023_AT_STR(LEAPSEC);
-  C023_AT_STR(SYNCMOD);
-  C023_AT_STR(SYNCTDC);
-  C023_AT_STR(DDETECT);
-  C023_AT_STR(SETMAXNBTRANS);
-    case C023_AT_commands::AT_cmd::Unknown: break;
+  if (supported(at_cmd, module)) {
+    switch (at_cmd)
+    {
+    C023_AT_STR(UUID);
+    C023_AT_STR(VER);
+    C023_AT_STR(APPEUI);
+    C023_AT_STR(APPKEY);
+    C023_AT_STR(APPSKEY);
+    C023_AT_STR(DADDR);
+    C023_AT_STR(DEVADDR);
+    C023_AT_STR(DEUI);
+    C023_AT_STR(DEVEUI);
+    C023_AT_STR(NWKID);
+    C023_AT_STR(NETID);
+    C023_AT_STR(NWKSKEY);
+    C023_AT_STR(CFM);
+    C023_AT_STR(NJM);
+    C023_AT_STR(NJS);
+    C023_AT_STR(RECV);
+    C023_AT_STR(RECVB);
+    C023_AT_STR(ADR);
+    C023_AT_STR(CLASS);
+    C023_AT_STR(DCS);
+    C023_AT_STR(DR);
+    C023_AT_STR(FCD);
+    C023_AT_STR(FCU);
+    C023_AT_STR(JN1DL);
+    C023_AT_STR(JN2DL);
+    C023_AT_STR(PNM);
+    C023_AT_STR(RX1DL);
+    C023_AT_STR(RX2DL);
+    C023_AT_STR(RX2DR);
+    C023_AT_STR(RX2FQ);
+    C023_AT_STR(TXP);
+    C023_AT_STR(RSSI);
+    C023_AT_STR(SNR);
+    C023_AT_STR(PORT);
+    C023_AT_STR(CHS);
+    C023_AT_STR(SLEEP);
+    C023_AT_STR(BAT);
+    C023_AT_STR(RJTDC);
+    C023_AT_STR(RPL);
+    C023_AT_STR(TIMESTAMP);
+    C023_AT_STR(LEAPSEC);
+    C023_AT_STR(SYNCMOD);
+    C023_AT_STR(SYNCTDC);
+    C023_AT_STR(DDETECT);
+    C023_AT_STR(SETMAXNBTRANS);
+      case C023_AT_commands::AT_cmd::Unknown: break;
+    }
   }
   return F("Unknown");
 #undef C023_AT_STR
 }
 
-String                      C023_AT_commands::toString(C023_AT_commands::AT_cmd at_cmd) { return concat(F("AT+"), toFlashString(at_cmd)); }
+String                      C023_AT_commands::toString(
+  C023_AT_commands::AT_cmd at_cmd, LoRaModule_e module) { return concat(F("AT+"), toFlashString(at_cmd, module)); }
 
 const __FlashStringHelper * C023_AT_commands::toDisplayString(C023_AT_commands::AT_cmd at_cmd)
 {
@@ -106,13 +168,16 @@ const __FlashStringHelper * C023_AT_commands::toDisplayString(C023_AT_commands::
     case C023_AT_commands::AT_cmd::Unknown: break;
 
     case C023_AT_commands::AT_cmd::UUID:          return F("UUID");
-    case C023_AT_commands::AT_cmd::VER:           return F("Image Version and Frequency Band");          // 2.4 AT+VER
+    case C023_AT_commands::AT_cmd::VER:           return F("Firmware Version");                          // 2.4 AT+VER
     case C023_AT_commands::AT_cmd::APPEUI:        return F("Application EUI");                           // 3.1 AT+APPEUI
     case C023_AT_commands::AT_cmd::APPKEY:        return F("Application Key");                           // 3.2 AT+APPKEY
     case C023_AT_commands::AT_cmd::APPSKEY:       return F("Application Session Key");                   // 3.3 AT+APPSKEY
-    case C023_AT_commands::AT_cmd::DADDR:         return F("Device Address");                            // 3.4 AT+DADDR
-    case C023_AT_commands::AT_cmd::DEUI:          return F("Device EUI");                                // 3.5 AT+DEUI
-    case C023_AT_commands::AT_cmd::NWKID:         return F("Network ID");                                // 3.6 AT+NWKID
+    case C023_AT_commands::AT_cmd::DADDR:
+    case C023_AT_commands::AT_cmd::DEVADDR:       return F("Device Address");                            // 3.4 AT+DADDR
+    case C023_AT_commands::AT_cmd::DEUI:
+    case C023_AT_commands::AT_cmd::DEVEUI:        return F("Device EUI");                                // 3.5 AT+DEUI
+    case C023_AT_commands::AT_cmd::NWKID:
+    case C023_AT_commands::AT_cmd::NETID:         return F("Network ID");                                // 3.6 AT+NWKID
     case C023_AT_commands::AT_cmd::NWKSKEY:       return F("Network Session Key");                       // 3.7 AT+NWKSKEY
     case C023_AT_commands::AT_cmd::CFM:           return F("Confirm Mode");                              // 4.1 AT+CFM
     case C023_AT_commands::AT_cmd::NJM:           return F("LoRa Network Join Mode");                    // 4.3 AT+NJM
@@ -185,6 +250,8 @@ C023_AT_commands::AT_cmd C023_AT_commands::determineReceivedDataType(const Strin
         MATCH_STRING(DCS);
         MATCH_STRING(DDETECT);
         MATCH_STRING(DEUI);
+        MATCH_STRING(DEVADDR);
+        MATCH_STRING(DEVEUI);
         MATCH_STRING(DR);
         break;
       case 'F':
@@ -201,6 +268,7 @@ C023_AT_commands::AT_cmd C023_AT_commands::determineReceivedDataType(const Strin
       case 'N':
         MATCH_STRING(NJM);
         MATCH_STRING(NJS);
+        MATCH_STRING(NETID);
         MATCH_STRING(NWKID);
         MATCH_STRING(NWKSKEY);
         break;
@@ -258,7 +326,11 @@ C023_AT_commands::AT_cmd C023_AT_commands::decode(const String& receivedData, St
   return res;
 }
 
-KeyValueStruct C023_AT_commands::getKeyValue(C023_AT_commands::AT_cmd at_cmd, const String& value, bool extendedValue)
+KeyValueStruct C023_AT_commands::getKeyValue(
+  C023_AT_commands::AT_cmd at_cmd,
+  LoRaModule_e             module,
+  const String           & value,
+  bool                     extendedValue)
 {
   if ((at_cmd != C023_AT_commands::AT_cmd::Unknown) && !value.isEmpty()) {
     if ((at_cmd == C023_AT_commands::AT_cmd::NJS) ||
@@ -276,14 +348,14 @@ KeyValueStruct C023_AT_commands::getKeyValue(C023_AT_commands::AT_cmd at_cmd, co
       return KeyValueStruct(
         extendedValue
             ? toDisplayString(at_cmd)
-            : toFlashString(at_cmd),
+            : toFlashString(at_cmd, module),
         boolValue);
     }
 
     return KeyValueStruct(
       extendedValue
             ? toDisplayString(at_cmd)
-            : toFlashString(at_cmd),
+            : toFlashString(at_cmd, module),
       value,
       KeyValueStruct::Format::PreFormatted);
   }

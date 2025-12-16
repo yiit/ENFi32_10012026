@@ -104,11 +104,20 @@ private:
   int    getInt(C023_AT_commands::AT_cmd at_cmd,
                 int                      errorvalue, 
                 uint32_t& lastChange);
+  float  getFloat(C023_AT_commands::AT_cmd at_cmd,
+                float                     errorvalue, 
+                uint32_t& lastChange);
 
   String get(C023_AT_commands::AT_cmd at_cmd);
   int    getInt(C023_AT_commands::AT_cmd at_cmd,
                 int                      errorvalue);
+  float  getFloat(C023_AT_commands::AT_cmd at_cmd,
+                float                     errorvalue);
+
   bool   processReceived(const String& receivedData);
+  bool   processReceived_Dragino_LA66(const String& receivedData, C023_AT_commands::AT_cmd at_cmd);
+  bool   processReceived_RAK_3172(const String& receivedData, C023_AT_commands::AT_cmd at_cmd);
+
 
   bool   processPendingQuery(const String& receivedData);
 
@@ -154,6 +163,7 @@ private:
   LoRa_Helper::LoRaWAN_DR _dr = LoRa_Helper::LoRaWAN_DR::ADR;
 
   LoRa_Helper::DownlinkEventFormat_e _eventFormatStructure = LoRa_Helper::DownlinkEventFormat_e::PortNr_in_eventPar;
+  C023_AT_commands::LoRaModule_e    _loraModule = C023_AT_commands::LoRaModule_e::Dragino_LA66;
 
 
   String _fromLA66;

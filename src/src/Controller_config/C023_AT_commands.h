@@ -23,6 +23,18 @@ class C023_AT_commands
 {
 public:
 
+  // Value is stored, so do not change numerical values
+  enum class LoRaModule_e : uint8_t {
+    Dragino_LA66 = 0,
+    RAK_3172 = 1,
+
+
+    MAX_TYPE  // Leave as last, used to iterate over all enum values
+  };
+
+  static const __FlashStringHelper * toString(LoRaModule_e module);
+
+
   // Received types.
   // These commands can be used to get and/or set a value.
   enum class AT_cmd : size_t {
@@ -32,8 +44,11 @@ public:
     APPKEY,        // 3.2 AT+APPKEY: Application Key
     APPSKEY,       // 3.3 AT+APPSKEY: Application Session Key
     DADDR,         // 3.4 AT+DADDR: Device Address
+    DEVADDR,
     DEUI,          // 3.5 AT+DEUI: Device EUI
+    DEVEUI,
     NWKID,         // 3.6 AT+NWKID: Network ID(You can enter this command change only after successful network connection)
+    NETID,
     NWKSKEY,       // 3.7 AT+NWKSKEY: Network Session Key
     CFM,           // 4.1 AT+CFM: Confirm Mode
     NJM,           // 4.3 AT+NJM: LoRa® Network Join Mode
@@ -119,9 +134,11 @@ public:
 
   static bool isVolatileValue(AT_cmd at_cmd);
 
-  static const __FlashStringHelper* toFlashString(AT_cmd at_cmd);
+  static bool supported(AT_cmd at_cmd, LoRaModule_e module);
 
-  static String                     toString(AT_cmd at_cmd);
+  static const __FlashStringHelper* toFlashString(AT_cmd at_cmd, LoRaModule_e module);
+
+  static String                     toString(AT_cmd at_cmd, LoRaModule_e module);
   static const __FlashStringHelper* toDisplayString(AT_cmd at_cmd);
 
   static AT_cmd                     determineReceivedDataType(const String& receivedData);
@@ -130,6 +147,7 @@ public:
                                            String      & value);
 
   static KeyValueStruct             getKeyValue(AT_cmd        at_cmd,
+     LoRaModule_e module,
                                                 const String& value,
                                                 bool          extendedValue);
 

@@ -30,6 +30,16 @@
 
 // eWBM LoRa AT command: https://www.tme.eu/Document/6fd083ba11ae9feedaadc9c7221ab46e/eWBM_LoRa_AT_Command_v0.6.pdf
 
+// M5Stack LoRaWAN Atom DTU RAK 3172  AT-commands:
+//  https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/docs/products/unit/Unit%20LoRaWAN-CN470/AT%20command%20manual.pdf
+//  https://github.com/m5stack/M5-LoRaWAN-RAK
+// RAK RUI3 AT Command Manual  
+//  https://docs.rakwireless.com/product-categories/software-apis-and-libraries/rui3/at-command-manual/
+// RAK AT Command Migration Guide to RUI3
+//  https://learn.rakwireless.com/hc/en-us/articles/26687498449559-AT-Command-Migration-Guide-of-RAK3172-to-RUI3-RAKwireless-Unified-Interface-V3?_gl=1*kgdaj4*_gcl_au*MTI0NDgyNDMyMy4xNzY1ODQzMTg4
+
+
+
 # define CPLUGIN_023
 # define CPLUGIN_ID_023         23
 # define CPLUGIN_NAME_023       "AT-command LoRaWAN"

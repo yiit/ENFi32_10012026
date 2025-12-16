@@ -105,6 +105,20 @@ void C023_ConfigStruct::webform_load(C023_data_struct *C023_data) {
   LoRa_Helper::addLoRaWANclass_FormSelector(
     F("LoRaWAN Class"), F("loraclass"), getClass());
 
+  addTableSeparator(F("LoRaWAN module"), 2, 3);
+  {
+    const __FlashStringHelper *options[] = {
+      C023_AT_commands::toString(C023_AT_commands::LoRaModule_e::Dragino_LA66),
+      C023_AT_commands::toString(C023_AT_commands::LoRaModule_e::RAK_3172)
+    };
+    int values[] =
+    {
+      static_cast<int>(C023_AT_commands::LoRaModule_e::Dragino_LA66),
+      static_cast<int>(C023_AT_commands::LoRaModule_e::RAK_3172)
+    };
+    const FormSelectorOptions selector(NR_ELEMENTS(options), options, values);
+    selector.addFormSelector(F("Module"), F("module"), LoRa_module);
+  }
 
   addTableSeparator(F("Serial Port Configuration"), 2, 3);
 
@@ -154,21 +168,6 @@ void C023_ConfigStruct::webform_load(C023_data_struct *C023_data) {
 
     addRowLabel(F("Data Rate"));
     addHtml(C023_data->getDataRate_str());
-
-    /*
-       {
-       RN2xx3_status status = C023_data->getStatus();
-
-       addRowLabel(F("Status RAW value"));
-       addHtmlInt(status.getRawStatus());
-
-       addRowLabel(F("Activation Status"));
-       addEnabled(status.Joined);
-
-       addRowLabel(F("Silent Immediately"));
-       addHtmlInt(static_cast<uint32_t>(status.SilentImmediately ? 1 : 0));
-       }
-     */
   }
 }
 
@@ -192,6 +191,7 @@ void C023_ConfigStruct::webform_save() {
   rx2_freq      = getFormItemInt(F("rx2freq"), rx2_freq);
   joinmethod    = getFormItemInt(F("joinmethod"), joinmethod);
   LoRaWAN_Class = getFormItemInt(F("loraclass"), LoRaWAN_Class);
+  LoRa_module   = getFormItemInt(F("module"), LoRa_module);
   serialHelper_webformSave(serialPort, rxpin, txpin);
 }
 
