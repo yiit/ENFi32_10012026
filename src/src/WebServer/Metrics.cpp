@@ -137,7 +137,8 @@ void handle_metrics_devices() {
                 addHtml(F("{valueName=\""));
                 addHtml(Cache.getTaskDeviceValueName(x, varNr));
                 addHtml(F("\"} "));
-                addHtml(formatUserVarNoCheck(&TempEvent, varNr));
+                const String value(formatUserVarNoCheck(&TempEvent, varNr));
+                addHtml(value.isEmpty() ? F("0") : value); // Return 0 for not-set values
                 addHtml('\n');
               }
             }
