@@ -2636,6 +2636,11 @@ void AdafruitGFX_helper::printText(const char     *string,
 
   _display->getTextBounds(newString, _x, _y, &xText, &yText, &wText, &hText); // Calculate length
 
+  if ((hText < hChar1) && _columnRowMode) {                                   // If the text-height is lower than the default height
+    yText -= (hChar1 - hText);                                                // Subtract height-difference between A and current height
+    hText  = hChar1;                                                          // Use default height
+  }
+
   if ((maxWidth > 0) && ((_x - xOffset) + maxWidth <= res_x)) {
     res_x = (_x - xOffset) + maxWidth;
     _w    = maxWidth;
