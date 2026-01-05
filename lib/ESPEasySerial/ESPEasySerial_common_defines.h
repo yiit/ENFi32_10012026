@@ -48,7 +48,14 @@ static_assert(false, "Implement processor architecture");
 
 // ESP32C3/S3 embedded USB using JTAG interface
 #    ifndef USES_HWCDC
-#     define USES_HWCDC 1
+#     if CONFIG_IDF_TARGET_ESP32S2
+#      define USES_HWCDC 0
+#      ifndef USES_USBCDC
+#       define USES_USBCDC 1
+#      endif // ifndef USES_USBCDC
+#     else
+#      define USES_HWCDC 1
+#     endif
 #    endif // ifndef USES_HWCDC
 #   else // No ARDUINO_USB_MODE
 #    ifndef USES_USBCDC
@@ -96,7 +103,11 @@ static_assert(false, "Implement processor architecture");
 #endif // ifndef USES_HWCDC
 
 #ifndef USES_USBCDC
+#ifdef ESP32S2
+# define USES_USBCDC 1
+#else
 # define USES_USBCDC 0
+#endif
 #endif // ifndef USES_USBCDC
 
 

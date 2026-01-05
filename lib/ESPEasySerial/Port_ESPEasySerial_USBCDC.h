@@ -52,8 +52,8 @@ public:
 
 private:
 
-# if ARDUINO_USB_CDC_ON_BOOT
-  USBCDC *_serial = &Serial;
+#if USB_SERIAL_IS_DEFINED
+  USBCDC *_serial = &USBSerial;
 # else // if ARDUINO_USB_CDC_ON_BOOT
   USBCDC *_serial = nullptr;
 # endif // if ARDUINO_USB_CDC_ON_BOOT
@@ -61,12 +61,11 @@ private:
 
 
 // Need to define these objects as extern as they need to be defined before setup() is being called.
-# if ARDUINO_USB_CDC_ON_BOOT
-# else
+# if !USB_SERIAL_IS_DEFINED
 extern USBCDC ESPEasySerial_USBCDC_port0;
 
 // extern USBCDC ESPEasySerial_USBCDC_port1;
-# endif // if ARDUINO_USB_CDC_ON_BOOT
+# endif
 
 
 #endif // if USES_USBCDC

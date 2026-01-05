@@ -87,9 +87,21 @@
 #   if ARDUINO_USB_MODE
 
 // ESP32C3/S3 embedded USB using JTAG interface
-#    define USES_HWCDC 1
+#    ifndef USES_HWCDC
+#     if CONFIG_IDF_TARGET_ESP32S2
+#      define USES_HWCDC 0
+#      ifndef USES_USBCDC
+#       define USES_USBCDC 1
+#      endif // ifndef USES_USBCDC
+#     else
+#      define USES_HWCDC 1
+#     endif
+#    endif // ifndef USES_HWCDC
+
 #   else // No ARDUINO_USB_MODE
-#    define USES_USBCDC 1
+#    ifndef USES_USBCDC
+#     define USES_USBCDC 1
+#    endif // ifndef USES_USBCDC
 #   endif // if ARDUINO_USB_MODE
 #  endif // ifdef USE_USB_CDC_CONSOLE
 # endif // if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
