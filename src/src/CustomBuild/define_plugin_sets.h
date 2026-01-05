@@ -1899,6 +1899,9 @@ To create/register a plugin, you have to :
    #ifndef USES_P085
      #define USES_P085   // AcuDC24x
    #endif
+  #if !defined(USES_P087) && defined(ESP32)
+    #define USES_P087   // SerialProxy
+  #endif
   #ifndef USES_P089
     #define USES_P089 // Ping
   #endif
