@@ -3770,11 +3770,19 @@ To create/register a plugin, you have to :
 
 
 #ifndef FEATURE_NETWORK_STATS
+#if defined(ESP32) && !defined(LIMIT_BUILD_SIZE) && defined(FEATURE_CHART_JS) && FEATURE_CHART_JS && defined(FEATURE_PLUGIN_STATS) && FEATURE_PLUGIN_STATS
+#define FEATURE_NETWORK_STATS                 1
+#else
 #define FEATURE_NETWORK_STATS                 0
+#endif
 #endif
 
 #ifndef FEATURE_NETWORK_TRAFFIC_COUNT
+#if FEATURE_NETWORK_STATS
+#define FEATURE_NETWORK_TRAFFIC_COUNT         1
+#else
 #define FEATURE_NETWORK_TRAFFIC_COUNT         0
+#endif
 #endif
 
 
@@ -4105,7 +4113,7 @@ To create/register a plugin, you have to :
 #endif
 
 #ifndef FEATURE_USE_IPV6
-# if ESP_IDF_VERSION_MAJOR>=5 && defined(LWIP_IPV6) && !defined(ESP32C2)
+# if ESP_IDF_VERSION_MAJOR>=5 && defined(LWIP_IPV6)// && !defined(ESP32C2)
 #  define FEATURE_USE_IPV6   1
 # else 
 #  define FEATURE_USE_IPV6   0

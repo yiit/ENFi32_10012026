@@ -8,6 +8,10 @@
 
 #include "../wifi/ESPEasyWifi.h"
 
+#ifdef ESP32
+#include <esp_netif.h>
+#endif
+
 
 namespace ESPEasy {
 namespace net {
