@@ -203,7 +203,17 @@ bool WiFi_AP_Candidate::usable() const {
   }
 
   if (!bits.isHidden && (ssid.isEmpty())) { return false; }
-  return !expired();
+  if (!fromScan()) {
+    // Not from a scan, thus usable
+    return true;
+  }
+
+  return channel != 0 && !expired();
+}
+
+bool WiFi_AP_Candidate::fromScan() const
+{
+  return last_seen != 0;
 }
 
 bool WiFi_AP_Candidate::expired() const {

@@ -392,7 +392,7 @@ void ESPEasyWiFi_t::setState(WiFiState_e newState, uint32_t timeout) {
       if (!connectSTA()) {
         // TODO TD-er: Must keep track of failed attempts and start AP when either no credentials present or nr. of attempts failed > some
         // threshold.
-        if (!WiFi_AP_Candidates.hasCandidateCredentials()) {
+        if (!WiFi_AP_Candidates.hasCandidates()) {
           setState(WiFiState_e::STA_Scanning, WIFI_STATE_MACHINE_STA_CONNECTING_TIMEOUT);
         } else {
           setState(WiFiState_e::IdleWaiting, 100);

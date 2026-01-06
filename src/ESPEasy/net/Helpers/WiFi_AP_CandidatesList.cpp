@@ -209,7 +209,7 @@ void              WiFi_AP_CandidatesList::markAttempt() { if (attemptsLeft > 0) 
 
 WiFi_AP_Candidate WiFi_AP_CandidatesList::getBestCandidate() const {
   for (auto it = candidates.begin(); it != candidates.end(); ++it) {
-    if (it->rssi < -1) { return *it; }
+    if (it->rssi < -1 && it->usable()) { return *it; }
   }
   return WiFi_AP_Candidate();
 }
@@ -220,7 +220,8 @@ bool WiFi_AP_CandidatesList::hasCandidateCredentials() {
 }
 
 bool WiFi_AP_CandidatesList::hasCandidates() const {
-  return !candidates.empty();
+//  return !candidates.empty();
+  return getBestCandidate().usable();
 }
 
 void WiFi_AP_CandidatesList::markCurrentConnectionStable() {
@@ -453,6 +454,9 @@ void WiFi_AP_CandidatesList::addFromRTC() {
 
   if ((candidates.size() > 0) && candidates.front().ssid.equals(fromRTC.ssid)) {
     // Front candidate was already from RTC.
+    // Copy all flags, before removing it from list
+    fromRTC = candidates.front();
+    fromRTC.index = RTC.lastWiFiSettingsIndex;
     candidates.pop_front();
   }
 

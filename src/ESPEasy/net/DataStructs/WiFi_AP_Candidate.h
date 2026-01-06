@@ -41,6 +41,8 @@ struct WiFi_AP_Candidate {
   // Check if the candidate data can be used to actually connect to an AP.
   bool               usable() const;
 
+  bool               fromScan() const;
+
   // Check if the candidate was recently seen
   bool               expired() const;
 
