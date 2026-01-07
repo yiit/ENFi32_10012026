@@ -690,6 +690,10 @@ To create/register a plugin, you have to :
         #undef FEATURE_EXT_RTC
     #endif
     #define FEATURE_EXT_RTC 0
+    #ifdef FEATURE_SYSLOG
+    #undef FEATURE_SYSLOG
+    #define FEATURE_SYSLOG 0
+    #endif
 #endif
 
 
@@ -4398,6 +4402,9 @@ To create/register a plugin, you have to :
   #endif
 #endif
 
+#ifndef FEATURE_SYSLOG
+#define FEATURE_SYSLOG 1
+#endif
 
 #if !defined(SOC_WIFI_SUPPORTED) && defined(ESP32)
 #define FEATURE_OTA_FW_UPDATE_ESP_HOSTED_MCU   1

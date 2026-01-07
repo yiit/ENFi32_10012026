@@ -2,6 +2,8 @@
 
 #include "../../ESPEasy_common.h"
 
+#if FEATURE_SYSLOG
+
 #include "../Helpers/LogStreamWriter.h"
 
 
@@ -21,3 +23,5 @@ private:
   void prepare_prefix() override;
 
 };
+
+#endif

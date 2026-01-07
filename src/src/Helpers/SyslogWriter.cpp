@@ -1,5 +1,8 @@
 #include "../Helpers/SyslogWriter.h"
 
+#if FEATURE_SYSLOG
+
+
 #include "../../ESPEasy/net/ESPEasyNetwork.h"
 #include "../../ESPEasy/net/Globals/NetworkState.h"
 #include "../Globals/ESPEasy_time.h"
@@ -133,3 +136,4 @@ void SyslogWriter::prepare_prefix()
     formattedTimestamp.c_str(),
     hostname.c_str());
 }
+#endif

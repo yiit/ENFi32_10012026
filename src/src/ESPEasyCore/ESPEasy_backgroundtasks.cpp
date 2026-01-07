@@ -75,7 +75,9 @@ void backgroundtasks()
    */
 
   process_serialWriteBuffer();
+  #if FEATURE_SYSLOG
   syslogWriter.process();
+  #endif
   Logging.loop();
 
   if (!UseRTOSMultitasking) {
