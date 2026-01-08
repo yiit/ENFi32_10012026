@@ -58,6 +58,7 @@ def parse_filename(file, version, variant, file_suffix):
     #print("{} : {} {} {}".format(file, version, variant, file_suffix))
 
     chipFamily = 'NotSet'
+    chipVariant = ''
     manifest_suff = ''
     add_improv = True
 
@@ -94,6 +95,10 @@ def parse_filename(file, version, variant, file_suffix):
                 chipFamily = 'ESP32-H2'
             elif 'ESP32p4' in variant:
                 chipFamily = 'ESP32-P4'
+                if 'rev300' in variant:
+                    chipVariant = 'rev300'
+                else:
+                    chipVariant = 'rev0'
             else:
                 chipFamily = 'ESP32'
 
@@ -177,8 +182,6 @@ def parse_filename(file, version, variant, file_suffix):
                     specials.append('IR')
                 if '_VCC' in variant:
                     specials.append('VCC')
-                if '_ETH' in variant:
-                    specials.append('ETH')
                 if 'solo1' in variant:
                     specials.append('Solo1')
 
@@ -204,6 +207,11 @@ def parse_filename(file, version, variant, file_suffix):
                 main_group = 'Custom Misc'
             else:
                 main_group = 'Custom'
+        if 'safeboot_' in variant:
+            if 'Misc' in main_group:
+                main_group = 'SafeBoot Misc'
+            else:
+                main_group = 'Safeboot'
         if 'hard_' in variant:
             main_group = 'Device Specific'
 
@@ -212,10 +220,10 @@ def parse_filename(file, version, variant, file_suffix):
             # Thus make a separate group for the solo1
             main_group = '4M Flash ESP32-solo1'
 
-        if 'LittleFS' in variant:
-            main_group += ' LittleFS'
+        if 'ESP32' in variant:
+            main_group += ' ESP32'
         else:
-            main_group += ' SPIFFS'
+            main_group += ' ESP8266'
 
     if ".factory.bin" in file_suffix or 'ESP32' not in file:
         #print('{:10s}: {:34s}\t{:10s} {} / {}'.format(state, sub_group, chipFamily, version, file))
@@ -237,17 +245,17 @@ def parse_filename(file, version, variant, file_suffix):
             manifest['build_flags'] = build_flags
             parts = dict([('path', file), ('offset', 0)])
             if add_improv:
-                builds = dict([('chipFamily', chipFamily), ('improv', False), ('parts', [parts])])
+                builds = dict([('chipFamily', chipFamily), ('chipVariant', chipVariant), ('improv', False), ('parts', [parts])])
             else:
-                builds = dict([('chipFamily', chipFamily), ('parts', [parts])])
+                builds = dict([('chipFamily', chipFamily), ('chipVariant', chipVariant), ('parts', [parts])])
             manifest['builds'] = [builds]
             manifest_binfiles[main_group][sub_group] = manifest
         else:
             parts = dict([('path', file), ('offset', 0)])
             if add_improv:
-                builds = dict([('chipFamily', chipFamily), ('improv', False), ('parts', [parts])])
+                builds = dict([('chipFamily', chipFamily), ('chipVariant', chipVariant), ('improv', False), ('parts', [parts])])
             else:
-                builds = dict([('chipFamily', chipFamily), ('parts', [parts])])
+                builds = dict([('chipFamily', chipFamily), ('chipVariant', chipVariant), ('parts', [parts])])
             manifest_binfiles[main_group][sub_group]['builds'].append(builds)
             manifest_binfiles[main_group][sub_group]['families'].append(chipFamily)
 
@@ -300,8 +308,8 @@ def generate_manifest_files(bin_folder, output_prefix):
     main_group_list_littlefs = []
     main_group_list_spiffs = []
     for main_group in main_group_list:
-        main_group_list_littlefs.append("{} {}".format(main_group, 'LittleFS'))
-        main_group_list_spiffs.append("{} {}".format(main_group, 'SPIFFS'))
+        main_group_list_littlefs.append("{} {}".format(main_group, 'ESP32'))
+        main_group_list_spiffs.append("{} {}".format(main_group, 'ESP8266'))
 
     main_group_list_littlefs.extend(main_group_list_spiffs)
     main_group_list = main_group_list_littlefs
@@ -371,7 +379,7 @@ def generate_manifest_files(bin_folder, output_prefix):
             '    </style>\n',
             '    <script\n',
             '      type="module"\n',
-            '      src="https://unpkg.com/tasmota-esp-web-tools@8.1.5/dist/web/install-button.js?module"\n',
+            '      src="https://unpkg.com/tasmota-esp-web-tools@8.1.14/dist/web/install-button.js?module"\n',
             '    ></script>\n',
             '  </head>\n',
             '  <body>\n',
@@ -405,6 +413,8 @@ def generate_manifest_files(bin_folder, output_prefix):
             '    <br>\n',
             '    <h2>Migrate ESP32 installs from SPIFFS to LittleFS</h2>\n',
             '    From 2025/06/26 onward, there will be no longer SPIFFS builds for ESP32-xx.\n',
+            '    <br>\n',
+            '    This means all ESP32 builds are now LittleFS and thus this is no longer mentioned in the name of the build.'
             '    <br>\n',
             '    See <a href="https://espeasy.readthedocs.io/en/latest/Reference/Migrate_SPIFFS_to_LittleFS.html" >Migrate from SPIFFS to LittleFS (ESP32)</a> in the documentation on how to migrate older (ESP32) SPIFFS installs to LittleFS\n',
 
