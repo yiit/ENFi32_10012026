@@ -77,7 +77,9 @@ void handle_tools() {
   addWideButtonPlusDescription(F("advanced"),    F("Advanced"),     F("Open advanced settings"));
   # endif // ifdef WEBSERVER_ADVANCED
 
+  # ifdef WEBSERVER_JSON
   addWideButtonPlusDescription(F("json"),        F("Show JSON"),    F("Open JSON output"));
+  # endif
 
   # ifdef WEBSERVER_METRICS
   addWideButtonPlusDescription(F("metrics"),        F("Show Metrics"),    F("Open Prometheus Metrics"));

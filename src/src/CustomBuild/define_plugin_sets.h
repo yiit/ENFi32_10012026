@@ -57,6 +57,9 @@ To create/register a plugin, you have to :
     #ifndef WEBSERVER_LOG
         #define WEBSERVER_LOG
     #endif
+    #ifndef WEBSERVER_JSON
+        #define WEBSERVER_JSON
+    #endif
     #ifndef WEBSERVER_GITHUB_COPY
         #if !(defined(LIMIT_BUILD_SIZE) || defined(ESP8266))
           #define WEBSERVER_GITHUB_COPY
@@ -644,6 +647,9 @@ To create/register a plugin, you have to :
         #ifdef WEBSERVER_LOG
             #undef WEBSERVER_LOG
         #endif
+        #ifdef WEBSERVER_JSON
+            #undef WEBSERVER_JSON
+        #endif
         #ifdef WEBSERVER_GITHUB_COPY
             #undef WEBSERVER_GITHUB_COPY
         #endif
@@ -692,8 +698,8 @@ To create/register a plugin, you have to :
     #define FEATURE_EXT_RTC 0
     #ifdef FEATURE_SYSLOG
     #undef FEATURE_SYSLOG
-    #define FEATURE_SYSLOG 0
     #endif
+    #define FEATURE_SYSLOG 0
 #endif
 
 

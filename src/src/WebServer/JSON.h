@@ -13,6 +13,7 @@
 void handle_csvval();
 #endif
 
+#ifdef WEBSERVER_JSON
 // ********************************************************************************
 // Web Interface JSON page (no password!)
 // ********************************************************************************
@@ -25,7 +26,7 @@ void handle_json_stream_task_value_data(KeyValueWriter* parent,
                                         const String & value,
                                         const String & presentation,
                                         const String & uom);
-
+#endif
 // ********************************************************************************
 // JSON formatted timing statistics
 // ********************************************************************************

@@ -114,6 +114,7 @@ void handle_csvval()
 
 #endif // ifdef WEBSERVER_CSVVAL
 
+#ifdef WEBSERVER_JSON
 // ********************************************************************************
 // Web Interface JSON page (no password!)
 // ********************************************************************************
@@ -252,9 +253,13 @@ void handle_json()
             LabelType::TIMEZONE_OFFSET,
             LabelType::LATITUDE,
             LabelType::LONGITUDE,
+#if FEATURE_SYSLOG
             LabelType::SYSLOG_LOG_LEVEL,
+#endif
             LabelType::SERIAL_LOG_LEVEL,
+# ifdef WEBSERVER_LOG
             LabelType::WEB_LOG_LEVEL,
+#endif
 #if FEATURE_SD
             LabelType::SD_LOG_LEVEL,
 #endif // if FEATURE_SD
@@ -705,6 +710,7 @@ void handle_json_stream_task_value_data(KeyValueWriter*parent,
     writer->write({ F("Value"), value });
   }
 }
+#endif
 
 // ********************************************************************************
 // JSON formatted timing statistics

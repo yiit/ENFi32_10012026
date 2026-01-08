@@ -196,9 +196,13 @@ struct LabelType {
     I2C_BUS_STATE,
     I2C_BUS_CLEARED_COUNT,
 #endif
+#if FEATURE_SYSLOG
     SYSLOG_LOG_LEVEL,
+#endif
     SERIAL_LOG_LEVEL,
+# ifdef WEBSERVER_LOG
     WEB_LOG_LEVEL,
+#endif
 #if FEATURE_SD
     SD_LOG_LEVEL,
 #endif // if FEATURE_SD

@@ -531,9 +531,13 @@ void handle_sysinfo_SystemStatus() {
   static const LabelType::Enum labels[] PROGMEM =
   {
     // Actual Loglevel
+#if FEATURE_SYSLOG
     LabelType::SYSLOG_LOG_LEVEL,
+#endif
     LabelType::SERIAL_LOG_LEVEL,
+# ifdef WEBSERVER_LOG
     LabelType::WEB_LOG_LEVEL,
+#endif
 #   if FEATURE_SD
     LabelType::SD_LOG_LEVEL,
 #   endif // if FEATURE_SD

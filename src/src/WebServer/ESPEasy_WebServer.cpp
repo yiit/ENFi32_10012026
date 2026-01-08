@@ -275,7 +275,9 @@ void WebServerInit()
   #ifdef WEBSERVER_I2C_SCANNER
   web_server.on(F("/i2cscanner"),      handle_i2cscanner);
   #endif // ifdef WEBSERVER_I2C_SCANNER
+  #ifdef WEBSERVER_JSON
   web_server.on(F("/json"),            handle_json);     // Also part of WEBSERVER_NEW_UI
+  #endif
   #ifdef WEBSERVER_CSVVAL
   web_server.on(F("/csv"),             handle_csvval);
   #endif

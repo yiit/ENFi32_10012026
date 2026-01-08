@@ -846,19 +846,22 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       return KeyValueStruct(F("I2C bus cleared count"), I2C_bus_cleared_count);
     }
 #endif // if FEATURE_CLEAR_I2C_STUCK
-
+#if FEATURE_SYSLOG
     case LabelType::SYSLOG_LOG_LEVEL:
     {
       return KeyValueStruct(F("Syslog Log Level"), getLogLevelDisplayString(Settings.SyslogLevel));
     }
+#endif
     case LabelType::SERIAL_LOG_LEVEL:
     {
       return KeyValueStruct(F("Serial Log Level"), getLogLevelDisplayString(getSerialLogLevel()));
     }
+# ifdef WEBSERVER_LOG
     case LabelType::WEB_LOG_LEVEL:
     {
       return KeyValueStruct(F("Web Log Level"), getLogLevelDisplayString(getWebLogLevel()));
     }
+#endif
   #if FEATURE_SD
     case LabelType::SD_LOG_LEVEL:
     {

@@ -75,9 +75,13 @@ void handle_advanced() {
 #endif
 
 #endif
+#if FEATURE_SYSLOG
     setLogLevelFor(LOG_TO_SYSLOG, LabelType::SYSLOG_LOG_LEVEL);
+#endif
     setLogLevelFor(LOG_TO_SERIAL, LabelType::SERIAL_LOG_LEVEL);
+# ifdef WEBSERVER_LOG
     setLogLevelFor(LOG_TO_WEBLOG, LabelType::WEB_LOG_LEVEL);
+#endif
 #if FEATURE_SD
     setLogLevelFor(LOG_TO_SDCARD, LabelType::SD_LOG_LEVEL);
 #endif // if FEATURE_SD
@@ -240,11 +244,14 @@ void handle_advanced() {
 
   addFormIPBox(F("Syslog IP"), F("syslogip"), Settings.Syslog_IP);
   addFormNumericBox(F("Syslog UDP port"), F("syslogport"), Settings.SyslogPort, 0, 65535);
-
+#if FEATURE_SYSLOG
   addFormLogLevelSelect(LabelType::SYSLOG_LOG_LEVEL, Settings.SyslogLevel);
   addFormLogFacilitySelect(F("Syslog Facility"), F("syslogfacility"), Settings.SyslogFacility);
+#endif
   addFormLogLevelSelect(LabelType::SERIAL_LOG_LEVEL, Settings.SerialLogLevel);
+# ifdef WEBSERVER_LOG
   addFormLogLevelSelect(LabelType::WEB_LOG_LEVEL,    Settings.WebLogLevel);
+#endif
 
 #if FEATURE_SD
   addFormLogLevelSelect(LabelType::SD_LOG_LEVEL,     Settings.SDLogLevel);
@@ -488,6 +495,7 @@ void addFormLogLevelSelect(LabelType::Enum label, int choice)
   addLogLevelFormSelectorOptions(getInternalLabel(label), choice);
 }
 
+#if FEATURE_SYSLOG
 void addFormLogFacilitySelect(const __FlashStringHelper * label, const __FlashStringHelper * id, int choice)
 {
   addRowLabel(label);
@@ -499,5 +507,6 @@ void addFormLogFacilitySelect(const __FlashStringHelper * label, const __FlashSt
   const FormSelectorOptions selector(NR_ELEMENTS(options), options, optionValues);
   selector.addSelector(id, choice);
 }
+#endif
 
 #endif // ifdef WEBSERVER_ADVANCED
