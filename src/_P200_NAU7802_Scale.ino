@@ -1,4 +1,5 @@
 #include "src/PluginStructs/PluginStructs_P200.h"
+#include <NAU7802.h>
 
 /*
    ========================================
@@ -64,35 +65,26 @@
 // I2C default address
 #define P200_I2C_ADDRESS_DEFAULT 0x2A
 
-// NAU7802 I2C Commands
-#define NAU7802_READ_REG        0x00
-#define NAU7802_WRITE_REG       0x01
-#define NAU7802_CHIP_ID         0x0F
-#define NAU7802_ADC_RESULT      0x12
-#define NAU7802_CTRL1           0x00
-#define NAU7802_CTRL2           0x01
-#define NAU7802_PU_CTRL         0x02
-#define NAU7802_GAINS           0x04
-#define NAU7802_SAMPLING_RATE   0x05
-
 struct P200_data_struct {
   P200_data_struct() : nau7802(nullptr), 
                         filter_index(0),
                         last_raw_value(0),
                         zero_offset(0),
-                        scale_factor(1000000),  // 1:1 default scaling
+                        calibration_factor(1000.0f),  // Default: 1 gram per 1000 ADC units
                         max_capacity(10000),
                         status(P200_STATUS_OK),
-                        last_read_time(0) {}
+                        last_read_time(0),
+                        initialized(false) {}
 
-  void *nau7802;
+  NAU7802 *nau7802;
   uint8_t filter_index;
   int32_t last_raw_value;
   int32_t zero_offset;
-  int32_t scale_factor;
+  float calibration_factor;
   uint32_t max_capacity;
   uint8_t status;
   unsigned long last_read_time;
+  boolean initialized;
 };
 
 P200_data_struct P200_data[TASKS_MAX];
@@ -216,12 +208,19 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String& string)
       {
         uint8_t taskIndex = event->TaskIndex;
         P200_data[taskIndex].zero_offset = P200_ZERO_OFFSET_L;
-        P200_data[taskIndex].scale_factor = P200_SCALE_FACTOR_L;
+        P200_data[taskIndex].calibration_factor = P200_SCALE_FACTOR_L > 0 ? 
+                                                   P200_SCALE_FACTOR_L / 1000.0f : 1000.0f;
         P200_data[taskIndex].max_capacity = P200_MAX_CAPACITY_L;
+        
+        // NAU7802 nesnesini oluştur ve başlat
+        if(P200_data[taskIndex].nau7802 == nullptr) {
+          P200_data[taskIndex].nau7802 = new NAU7802();
+        }
         
         if(P200_initDevice(taskIndex)) {
           P200_data[taskIndex].status = P200_STATUS_OK;
-          addLog(LOG_LEVEL_INFO, F("P200: NAU7802 Scale initialized"));
+          P200_data[taskIndex].initialized = true;
+          addLog(LOG_LEVEL_INFO, F("P200: NAU7802 Scale initialized successfully"));
           success = true;
         } else {
           P200_data[taskIndex].status = P200_STATUS_NOT_FOUND;
@@ -234,38 +233,55 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String& string)
       {
         uint8_t taskIndex = event->TaskIndex;
         
-        if(P200_data[taskIndex].status == P200_STATUS_OK) {
-          int32_t raw_value = P200_readADC(taskIndex);
+        if(P200_data[taskIndex].status == P200_STATUS_OK && P200_data[taskIndex].initialized) {
+          NAU7802 *nau = P200_data[taskIndex].nau7802;
           
-          if(raw_value != -1) {
-            // Apply zero offset
-            int32_t offset_value = raw_value - P200_data[taskIndex].zero_offset;
+          if(nau && nau->isAvailable()) {
+            int32_t raw_value = nau->readADCValue();
             
-            // Apply scale factor (convert to weight in grams)
-            float weight = (float)offset_value * P200_data[taskIndex].scale_factor / 1000000.0f;
-            
-            // Apply decimal places
-            int decimal_places = P200_DECIMAL_PLACES;
-            float divisor = pow(10.0f, decimal_places);
-            weight = floor(weight * divisor) / divisor;
-            
-            // Set output values
-            UserVar.setFloat(event->TaskIndex, 0, weight);
-            UserVar.setFloat(event->TaskIndex, 1, (float)raw_value);  // Raw ADC value
-            UserVar.setFloat(event->TaskIndex, 2, P200_data[taskIndex].status);  // Status
-            
-            if(P200_200_DEBUG) {
-              String debug = F("P200: Raw=");
-              debug += raw_value;
-              debug += F(" Weight=");
-              debug += weight;
-              addLog(LOG_LEVEL_DEBUG_MORE, debug);
+            if(raw_value != 0) {
+              // Apply zero offset (tare)
+              int32_t offset_value = raw_value - P200_data[taskIndex].zero_offset;
+              
+              // Convert ADC value to weight using calibration factor
+              float weight = (float)offset_value / P200_data[taskIndex].calibration_factor;
+              
+              // Apply decimal places
+              int decimal_places = P200_DECIMAL_PLACES;
+              if(decimal_places > 0) {
+                float divisor = pow(10.0f, decimal_places);
+                weight = floor(weight * divisor) / divisor;
+              }
+              
+              // Check if exceeds max capacity
+              if(weight > P200_data[taskIndex].max_capacity) {
+                P200_data[taskIndex].status = P200_STATUS_ERROR;
+                addLog(LOG_LEVEL_WARNING, F("P200: Weight exceeds max capacity"));
+              }
+              
+              // Set output values
+              UserVar.setFloat(event->TaskIndex, 0, weight);
+              UserVar.setFloat(event->TaskIndex, 1, (float)raw_value);  // Raw ADC value
+              UserVar.setFloat(event->TaskIndex, 2, P200_data[taskIndex].status);  // Status
+              
+              if(P200_200_DEBUG) {
+                String debug = F("P200: Raw=");
+                debug += raw_value;
+                debug += F(" Offset=");
+                debug += offset_value;
+                debug += F(" Weight=");
+                debug += weight;
+                addLog(LOG_LEVEL_DEBUG_MORE, debug);
+              }
+              
+              success = true;
+            } else {
+              P200_data[taskIndex].status = P200_STATUS_NO_DATA;
+              addLog(LOG_LEVEL_WARNING, F("P200: No valid data from ADC"));
             }
-            
-            success = true;
           } else {
-            P200_data[taskIndex].status = P200_STATUS_NO_DATA;
-            addLog(LOG_LEVEL_WARNING, F("P200: No data from ADC"));
+            P200_data[taskIndex].status = P200_STATUS_NOT_FOUND;
+            addLog(LOG_LEVEL_WARNING, F("P200: NAU7802 not available"));
           }
         }
       }
@@ -274,43 +290,76 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_WRITE:
       {
         String command = parseString(string, 1);
+        uint8_t taskIndex = event->TaskIndex;
+        NAU7802 *nau = P200_data[taskIndex].nau7802;
         
         if(command == F("p200tare")) {
           // Zero calibration (tare)
-          uint8_t taskIndex = event->TaskIndex;
-          int32_t raw = P200_readADC(taskIndex);
-          if(raw != -1) {
+          if(nau && nau->isAvailable()) {
+            int32_t raw = nau->readADCValue();
             P200_ZERO_OFFSET_L = raw;
             P200_data[taskIndex].zero_offset = raw;
-            addLog(LOG_LEVEL_INFO, F("P200: Zero calibration done"));
+            addLog(LOG_LEVEL_INFO, F("P200: Zero calibration (tare) completed"));
             success = true;
           }
         }
         else if(command == F("p200calibrate")) {
           // Load calibration - syntax: p200calibrate <weight_in_grams>
-          uint8_t taskIndex = event->TaskIndex;
-          int32_t raw = P200_readADC(taskIndex);
-          if(raw != -1 && string.length() > 14) {
+          if(nau && nau->isAvailable() && string.length() > 14) {
+            int32_t raw = nau->readADCValue();
             float calib_weight = parseFloat(string, 2);
             if(calib_weight > 0) {
               int32_t offset_raw = raw - P200_data[taskIndex].zero_offset;
-              // scale_factor = (calib_weight * 1000000) / offset_raw
-              P200_SCALE_FACTOR_L = (int32_t)((calib_weight * 1000000.0f) / offset_raw);
-              P200_data[taskIndex].scale_factor = P200_SCALE_FACTOR_L;
-              addLog(LOG_LEVEL_INFO, F("P200: Load calibration done"));
-              success = true;
+              if(offset_raw != 0) {
+                // calibration_factor = ADC_reading / weight
+                P200_data[taskIndex].calibration_factor = (float)offset_raw / calib_weight;
+                P200_SCALE_FACTOR_L = (int32_t)(P200_data[taskIndex].calibration_factor * 1000.0f);
+                
+                String debug = F("P200: Load calibration done. Factor=");
+                debug += P200_data[taskIndex].calibration_factor;
+                addLog(LOG_LEVEL_INFO, debug);
+                success = true;
+              }
             }
           }
         }
         else if(command == F("p200setmax")) {
           // Set maximum capacity - syntax: p200setmax <grams>
-          uint8_t taskIndex = event->TaskIndex;
           if(string.length() > 11) {
             uint32_t max_g = (uint32_t)parseFloat(string, 2);
             P200_MAX_CAPACITY_L = max_g;
             P200_data[taskIndex].max_capacity = max_g;
-            addLog(LOG_LEVEL_INFO, F("P200: Max capacity set"));
+            
+            String debug = F("P200: Max capacity set to ");
+            debug += max_g;
+            debug += F("g");
+            addLog(LOG_LEVEL_INFO, debug);
             success = true;
+          }
+        }
+        else if(command == F("p200gain")) {
+          // Set gain - syntax: p200gain <0-7> (0=x1, 1=x2, 2=x4, 3=x8, 4=x16, 5=x32, 6=x64, 7=x128)
+          if(nau && string.length() > 8) {
+            uint8_t gain_val = (uint8_t)parseFloat(string, 2);
+            if(gain_val <= 7) {
+              nau->setGain((Gain)gain_val);
+              String debug = F("P200: Gain set to ");
+              debug += (1 << gain_val);
+              addLog(LOG_LEVEL_INFO, debug);
+              success = true;
+            }
+          }
+        }
+        else if(command == F("p200rate")) {
+          // Set sample rate - syntax: p200rate <0-4> (0=10Hz, 1=20Hz, 2=40Hz, 3=80Hz, 4=320Hz)
+          if(nau && string.length() > 8) {
+            uint8_t rate_val = (uint8_t)parseFloat(string, 2);
+            if(rate_val <= 4) {
+              nau->setSampleRate((SampleRate)rate_val);
+              String debug = F("P200: Sample rate set");
+              addLog(LOG_LEVEL_INFO, debug);
+              success = true;
+            }
           }
         }
       }
@@ -319,7 +368,12 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_EXIT:
       {
         uint8_t taskIndex = event->TaskIndex;
-        // Cleanup if needed
+        // Cleanup: delete NAU7802 object
+        if(P200_data[taskIndex].nau7802 != nullptr) {
+          delete P200_data[taskIndex].nau7802;
+          P200_data[taskIndex].nau7802 = nullptr;
+        }
+        P200_data[taskIndex].initialized = false;
         success = true;
       }
       break;
@@ -331,65 +385,51 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String& string)
 // Helper Functions
 
 boolean P200_initDevice(uint8_t taskIndex) {
-  // Check if NAU7802 is available on I2C bus
-  uint8_t i2c_addr = P200_I2C_ADDR;
-  if(i2c_addr == 0) i2c_addr = P200_I2C_ADDRESS_DEFAULT;
+  NAU7802 *nau = P200_data[taskIndex].nau7802;
   
-  Wire.begin();
-  Wire.beginTransmission(i2c_addr);
-  if(Wire.endTransmission() == 0) {
-    // Device found, initialize with settings
-    P200_setupGain(taskIndex, P200_GAIN_INDEX);
-    P200_setupSampleRate(taskIndex, P200_RATE_INDEX);
-    return true;
-  }
-  return false;
-}
-
-int32_t P200_readADC(uint8_t taskIndex) {
-  // Read ADC value from NAU7802
-  // This is a simplified version - full implementation depends on NAU7802 library usage
-  uint8_t i2c_addr = P200_I2C_ADDR;
-  if(i2c_addr == 0) i2c_addr = P200_I2C_ADDRESS_DEFAULT;
-  
-  Wire.beginTransmission(i2c_addr);
-  Wire.write(NAU7802_ADC_RESULT);
-  if(Wire.endTransmission() != 0) return -1;
-  
-  Wire.requestFrom(i2c_addr, (uint8_t)3);
-  if(Wire.available() < 3) return -1;
-  
-  uint32_t value = 0;
-  value |= ((uint32_t)Wire.read() << 16);
-  value |= ((uint32_t)Wire.read() << 8);
-  value |= Wire.read();
-  
-  // Convert from 24-bit unsigned to 32-bit signed
-  if(value & 0x800000) {
-    value |= 0xFF000000;  // Sign extend
+  if(nau == nullptr) {
+    return false;
   }
   
-  return (int32_t)value;
-}
-
-void P200_setupGain(uint8_t taskIndex, uint8_t gain_index) {
-  // Set amplifier gain: 0=x128, 1=x64, 2=x32, 3=x16
-  uint8_t i2c_addr = P200_I2C_ADDR;
-  if(i2c_addr == 0) i2c_addr = P200_I2C_ADDRESS_DEFAULT;
+  // Try to initialize NAU7802
+  if(!nau->begin()) {
+    addLog(LOG_LEVEL_ERROR, F("P200: Failed to initialize NAU7802"));
+    return false;
+  }
   
-  Wire.beginTransmission(i2c_addr);
-  Wire.write(NAU7802_GAINS);
-  Wire.write(gain_index & 0x03);
-  Wire.endTransmission();
-}
-
-void P200_setupSampleRate(uint8_t taskIndex, uint8_t rate_index) {
-  // Set sample rate: 0=10Hz, 1=20Hz, 2=40Hz, 3=80Hz
-  uint8_t i2c_addr = P200_I2C_ADDR;
-  if(i2c_addr == 0) i2c_addr = P200_I2C_ADDRESS_DEFAULT;
+  // Power up the device
+  if(!nau->powerUp()) {
+    addLog(LOG_LEVEL_ERROR, F("P200: Failed to power up NAU7802"));
+    return false;
+  }
   
-  Wire.beginTransmission(i2c_addr);
-  Wire.write(NAU7802_SAMPLING_RATE);
-  Wire.write(rate_index & 0x03);
-  Wire.endTransmission();
+  // Set gain
+  uint8_t gain_idx = P200_GAIN_INDEX;
+  nau->setGain((Gain)gain_idx);
+  
+  // Set sample rate
+  uint8_t rate_idx = P200_RATE_INDEX;
+  nau->setSampleRate((SampleRate)rate_idx);
+  
+  // Select channel
+  uint8_t channel_idx = P200_CHANNEL;
+  if(channel_idx == 0) {
+    nau->setChannel(CHANNEL1);
+  } else if(channel_idx == 1) {
+    nau->setChannel(CHANNEL2);
+  }
+  
+  // Perform offset calibration
+  if(!nau->calibrate()) {
+    addLog(LOG_LEVEL_WARNING, F("P200: Calibration step skipped"));
+  }
+  
+  String debug = F("P200: Device initialized - Gain=");
+  debug += (1 << gain_idx);
+  debug += F("x, Rate=");
+  debug += (10 * (gain_idx + 1));
+  debug += F("Hz");
+  addLog(LOG_LEVEL_INFO, debug);
+  
+  return true;
 }
