@@ -1,4 +1,4 @@
-#include "src/PluginStructs/PluginStructs_P200.h"
+#include "PluginStructs/PluginStructs_P200.h"
 #include <NAU7802.h>
 
 /*
