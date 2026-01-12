@@ -1,6 +1,7 @@
 #include "PluginStructs/PluginStructs_P200.h"
-#include "NAU7802/software files/src/NAU7802.h"
+#include "../lib/NAU7802/software files/src/NAU7802.h"
 #include "_Plugin_Helper.h"
+#include "src/WebServer/Markup_Forms.h"
 
 /*
    ========================================
@@ -131,8 +132,9 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String &string)
     {
         // I2C Address
         uint8_t addr = P200_I2C_ADDR;
-        if (addr == 0) addr = 0x2A;  // default
-        addFormTextBox(F("I2C Address (Hex)"), F("i2caddr"), String(addr, HEX));
+        if (addr == 0)
+            addr = 0x2A; // default
+        addFormTextBox(F("I2C Address (Hex)"), F("i2caddr"), String(addr, HEX), 10);
 
         // Channel Selection
         {
@@ -310,8 +312,8 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String &string)
             if (nau && nau->isAvailable())
             {
                 int32_t raw = nau->readADCValue();
-                float calib_weight = string2float(parseString(string, 2));
-                if (calib_weight > 0)
+                float calib_weight = 0;
+                if (string2float(parseString(string, 2), calib_weight) && calib_weight > 0)
                 {
                     int32_t offset_raw = raw - P200_data[taskIndex].zero_offset;
                     if (offset_raw != 0)
@@ -331,29 +333,37 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String &string)
         else if (command == F("p200setmax"))
         {
             // Set maximum capacity - syntax: p200setmax <grams>
-            uint32_t max_g = (uint32_t)string2float(parseString(string, 2));
-            P200_MAX_CAPACITY_L = max_g;
-            P200_data[taskIndex].max_capacity = max_g;
+            float max_g_f = 0;
+            if (string2float(parseString(string, 2), max_g_f))
+            {
+                uint32_t max_g = (uint32_t)max_g_f;
+                P200_MAX_CAPACITY_L = max_g;
+                P200_data[taskIndex].max_capacity = max_g;
 
-            String debug = F("P200: Max capacity set to ");
-            debug += max_g;
-            debug += F("g");
-            addLogMove(LOG_LEVEL_INFO, debug);
-            success = true;
+                String debug = F("P200: Max capacity set to ");
+                debug += max_g;
+                debug += F("g");
+                addLogMove(LOG_LEVEL_INFO, debug);
+                success = true;
+            }
         }
         else if (command == F("p200gain"))
         {
             // Set gain - syntax: p200gain <0-7> (0=x1, 1=x2, 2=x4, 3=x8, 4=x16, 5=x32, 6=x64, 7=x128)
             if (nau)
             {
-                uint8_t gain_val = (uint8_t)string2float(parseString(string, 2));
-                if (gain_val <= 7)
+                float gain_f = 0;
+                if (string2float(parseString(string, 2), gain_f))
                 {
-                    nau->setGain((Gain)gain_val);
-                    String debug = F("P200: Gain set to ");
-                    debug += (1 << gain_val);
-                    addLogMove(LOG_LEVEL_INFO, debug);
-                    success = true;
+                    uint8_t gain_val = (uint8_t)gain_f;
+                    if (gain_val <= 7)
+                    {
+                        nau->setGain((Gain)gain_val);
+                        String debug = F("P200: Gain set to ");
+                        debug += (1 << gain_val);
+                        addLogMove(LOG_LEVEL_INFO, debug);
+                        success = true;
+                    }
                 }
             }
         }
@@ -362,12 +372,16 @@ boolean Plugin_200(uint8_t function, struct EventStruct *event, String &string)
             // Set sample rate - syntax: p200rate <0-4> (0=10Hz, 1=20Hz, 2=40Hz, 3=80Hz, 4=320Hz)
             if (nau)
             {
-                uint8_t rate_val = (uint8_t)string2float(parseString(string, 2));
-                if (rate_val <= 4)
+                float rate_f = 0;
+                if (string2float(parseString(string, 2), rate_f))
                 {
-                    nau->setSampleRate((SampleRate)rate_val);
-                    addLogMove(LOG_LEVEL_INFO, F("P200: Sample rate set"));
-                    success = true;
+                    uint8_t rate_val = (uint8_t)rate_f;
+                    if (rate_val <= 4)
+                    {
+                        nau->setSampleRate((SampleRate)rate_val);
+                        addLogMove(LOG_LEVEL_INFO, F("P200: Sample rate set"));
+                        success = true;
+                    }
                 }
             }
         }
