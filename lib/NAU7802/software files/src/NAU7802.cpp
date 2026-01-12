@@ -1,4 +1,4 @@
-#include <NAU7802.h>
+#include "NAU7802.h"
 
 int32_t offSetValue = 0;
 
@@ -90,6 +90,7 @@ bool NAU7802::powerUp() {
 bool NAU7802::powerDown() {
     clearBit(NAU7802_PU_CTRL, PU_CTRL_PUD);
     clearBit(NAU7802_PU_CTRL, PU_CTRL_PUA);
+    return true;
 }
 
 /**
